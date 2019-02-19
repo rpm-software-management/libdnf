@@ -259,6 +259,31 @@ public:
 
     void setSubstitutions(const std::map<std::string, std::string> & substitutions);
 
+    /**
+    * @brief Check in with the repository server for statistical purposes.
+    *
+    * Reports to the server the existence of this system and its intention to be counted, by
+    * performing an HTTP GET request for the metalink URL (if available) with a special parameter
+    * that says "count me in".
+    *
+    * This method is intended to be called periodically, such as from a systemd timer.
+    *
+    * Regardless of how many times this method is called, only one check-in will be performed
+    * within the current time window specified by CHECK_IN_WINDOW and CHECK_IN_OFFSET.  This is to
+    * improve the metrics by not counting the same system twice throughout a pre-defined time
+    * window.
+    *
+    * The window starts at CHECK_IN_OFFSET and moves to the right (step size = CHECK_IN_WINDOW) as
+    * time progresses so that the current point in time always stays inside of it:
+    *
+    * epoch                         now
+    * |---|-----+-----+-----+-----[-|---]---->
+    *     CHECK_IN_OFFSET         window
+    *
+    * @return bool whether a check-in was performed
+    */
+    bool checkIn();
+
     ~Repo();
 
     void delReference();

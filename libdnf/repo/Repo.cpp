@@ -37,6 +37,14 @@
  * containing changelogs for packages */
 #define MD_TYPE_OTHER "other"
 
+// width of the sliding window used for check-ins (in seconds)
+#define CHECK_IN_WINDOW (7*24*60*60)  // one week
+// starting point of the sliding window (in seconds since epoch)
+// allows for aligning the window with a specific weekday
+#define CHECK_IN_OFFSET (345600)  // 1970-01-05 00:00:00 UTC (Monday)
+#define CHECK_IN_COOKIE "lastcheckin"
+#define CHECK_IN_PARAM "countme=1"
+
 #include "../log.hpp"
 #include "Repo-private.hpp"
 #include "../dnf-utils.h"
@@ -451,6 +459,56 @@ std::string Repo::getMetadataContent(const std::string &metadataType)
     const auto &content = mdfile->getContent();
     mdfile->close();
     return content;
+}
+
+bool Repo::checkIn()
+{
+    long int winPos = 0;  // sliding window position (UNIX timestamp)
+    std::string cookieFn = getCachedir() + "/" + CHECK_IN_COOKIE;
+    std::fstream fs;
+
+    // load last checked-in window position (if available)
+    fs.open(cookieFn);
+    if (fs.is_open()) {
+        fs >> winPos;
+    } else {
+        fs.clear();
+        fs.open(cookieFn, std::ios::out);
+    }
+
+    // has the window advanced since?
+    long int now = time(NULL);
+    if ((now - winPos) <= CHECK_IN_WINDOW) {
+        // nope, nothing to do
+        fs.close();
+        return false;
+    }
+    // it has, go on
+
+    // do a GET request on the metalink URL with the magic parameter appended
+    auto metalink = pImpl->conf->metalink();
+    std::string url;
+    if (metalink.empty() || (url = metalink.getValue()).empty()) {
+        fs.close();
+        return false;
+    }
+    if (url.find('?') != url.npos) {
+        url += '&';
+    } else {
+        url += '?';
+    }
+    url += CHECK_IN_PARAM;
+    int fd = open("/dev/null", O_RDWR);
+    downloadUrl(url.c_str(), fd);
+    close(fd);
+
+    // store the new window position
+    winPos = now - ((now - CHECK_IN_OFFSET) % CHECK_IN_WINDOW);
+    fs.seekg(fs.beg);
+    fs << winPos;
+    fs.close();
+
+    return true;
 }
 
 std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
