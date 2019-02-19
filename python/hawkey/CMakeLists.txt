@@ -1,25 +1,25 @@
-if (${PYTHON_VERSION_MAJOR} STREQUAL "2")
+if(${PYTHON_VERSION_MAJOR} STREQUAL "2")
     message("Building for python2")
-    SET(HAWKEY_MODULE_NAME "_hawkeymodule")
+    set(HAWKEY_MODULE_NAME "_hawkeymodule")
 else()
     message("Building for python3")
-    SET(HAWKEY_MODULE_NAME "_hawkey")
+    set(HAWKEY_MODULE_NAME "_hawkey")
 endif()
 
-FIND_PACKAGE(PythonInstDir)
-INCLUDE_DIRECTORIES (${PYTHON_INCLUDE_PATH})
-INCLUDE_DIRECTORIES ("${CMAKE_SOURCE_DIR}/libdnf")
+find_package(PythonInstDir)
+include_directories(${PYTHON_INCLUDE_PATH})
+include_directories("${CMAKE_SOURCE_DIR}/libdnf")
 
-MESSAGE(STATUS "Python install dir is ${PYTHON_INSTALL_DIR}")
+message(STATUS "Python install dir is ${PYTHON_INSTALL_DIR}")
 
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-strict-aliasing")
-set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fno-strict-aliasing")
-set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fno-strict-aliasing")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-strict-aliasing")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fno-strict-aliasing")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fno-strict-aliasing")
 
-SET (hawkey_COPIES __init__.py)
-FILE(COPY ${hawkey_COPIES} DESTINATION ./hawkey/)
+set(hawkey_COPIES __init__.py)
+file(COPY ${hawkey_COPIES} DESTINATION ./hawkey/)
 
-SET (hawkeymodule_SRCS
+set(hawkeymodule_SRCS
     advisory-py.cpp
     advisorypkg-py.cpp
     advisoryref-py.cpp
@@ -37,16 +37,17 @@ SET (hawkeymodule_SRCS
     sack-py.cpp
     selector-py.cpp
     subject-py.cpp
-    pycomp.cpp)
+    pycomp.cpp
+)
 
-ADD_LIBRARY(_hawkeymodule SHARED ${hawkeymodule_SRCS})
-SET_TARGET_PROPERTIES(_hawkeymodule PROPERTIES PREFIX "")
-SET_TARGET_PROPERTIES(_hawkeymodule PROPERTIES OUTPUT_NAME ${HAWKEY_MODULE_NAME})
-SET_TARGET_PROPERTIES(_hawkeymodule PROPERTIES LIBRARY_OUTPUT_DIRECTORY "./hawkey")
-TARGET_LINK_LIBRARIES(_hawkeymodule libdnf ${SOLV_LIBRARY} ${SOLVEXT_LIBRARY})
-TARGET_LINK_LIBRARIES(_hawkeymodule ${PYTHON_LIBRARY})
+add_library(_hawkeymodule SHARED ${hawkeymodule_SRCS})
+set_target_properties(_hawkeymodule PROPERTIES PREFIX "")
+set_target_properties(_hawkeymodule PROPERTIES OUTPUT_NAME ${HAWKEY_MODULE_NAME})
+set_target_properties(_hawkeymodule PROPERTIES LIBRARY_OUTPUT_DIRECTORY "./hawkey")
+target_link_libraries(_hawkeymodule libdnf ${SOLV_LIBRARY} ${SOLVEXT_LIBRARY})
+target_link_libraries(_hawkeymodule ${PYTHON_LIBRARY})
 
-INSTALL(FILES __init__.py DESTINATION ${PYTHON_INSTALL_DIR}/hawkey)
-INSTALL(TARGETS _hawkeymodule LIBRARY DESTINATION ${PYTHON_INSTALL_DIR}/hawkey)
+install(FILES __init__.py DESTINATION ${PYTHON_INSTALL_DIR}/hawkey)
+install(TARGETS _hawkeymodule LIBRARY DESTINATION ${PYTHON_INSTALL_DIR}/hawkey)
 
-ADD_SUBDIRECTORY(tests)
+add_subdirectory(tests)

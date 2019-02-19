@@ -1,4 +1,4 @@
-SET (LIBDNF_SRCS
+set(LIBDNF_SRCS
     dnf-advisorypkg.cpp
     dnf-advisoryref.cpp
     dnf-advisory.cpp
@@ -29,59 +29,61 @@ SET (LIBDNF_SRCS
     dnf-repo.cpp
     dnf-state.cpp
     dnf-transaction.cpp
-    dnf-utils.cpp)
+    dnf-utils.cpp
+)
 
-INCLUDE_DIRECTORIES (transaction)
-ADD_SUBDIRECTORY ("transaction")
+include_directories(transaction)
+add_subdirectory("transaction")
 
-configure_file ("config.h.in" ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
-configure_file ("dnf-version.h.in"  ${CMAKE_CURRENT_SOURCE_DIR}/dnf-version.h)
-configure_file ("libdnf.pc.in" ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc @ONLY)
+configure_file("config.h.in" ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
+configure_file("dnf-version.h.in"  ${CMAKE_CURRENT_SOURCE_DIR}/dnf-version.h)
+configure_file("libdnf.pc.in" ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc @ONLY)
 
-ADD_SUBDIRECTORY(goal)
-ADD_SUBDIRECTORY(repo)
-ADD_SUBDIRECTORY(module)
-ADD_SUBDIRECTORY(utils)
-ADD_SUBDIRECTORY(conf)
-ADD_SUBDIRECTORY(sack)
-ADD_SUBDIRECTORY(plugin)
+add_subdirectory(goal)
+add_subdirectory(repo)
+add_subdirectory(module)
+add_subdirectory(utils)
+add_subdirectory(conf)
+add_subdirectory(sack)
+add_subdirectory(plugin)
 
-SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${GOAL_SOURCES})
-SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${MODULE_SOURCES})
-SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${UTILS_SOURCES})
-SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${CONF_SOURCES})
-SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${SACK_SOURCES})
-SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${REPO_SOURCES})
-SET(LIBDNF_SRCS ${LIBDNF_SRCS} ${PLUGIN_SOURCES})
+set(LIBDNF_SRCS ${LIBDNF_SRCS} ${GOAL_SOURCES})
+set(LIBDNF_SRCS ${LIBDNF_SRCS} ${MODULE_SOURCES})
+set(LIBDNF_SRCS ${LIBDNF_SRCS} ${UTILS_SOURCES})
+set(LIBDNF_SRCS ${LIBDNF_SRCS} ${CONF_SOURCES})
+set(LIBDNF_SRCS ${LIBDNF_SRCS} ${SACK_SOURCES})
+set(LIBDNF_SRCS ${LIBDNF_SRCS} ${REPO_SOURCES})
+set(LIBDNF_SRCS ${LIBDNF_SRCS} ${PLUGIN_SOURCES})
 
-ADD_LIBRARY(libdnf SHARED ${LIBDNF_SRCS})
-TARGET_LINK_LIBRARIES(libdnf
-                      ${CMAKE_DL_LIBS}
-                      ${REPO_LIBRARIES}
-                      ${GLIB_LIBRARIES}
-                      ${GLIB_GOBJECT_LIBRARIES}
-                      ${GLIB_GIO_LIBRARIES}
-                      ${GLIB_GIO_UNIX_LIBRARIES}
-                      ${LIBSOLV_LIBRARY}
-                      ${LIBSOLV_EXT_LIBRARY}
-                      ${OPENSSL_CRYPTO_LIBRARY}
-                      ${RPM_LIBRARIES}
-                      ${SCOLS_LIBRARIES}
-                      ${SQLite3_LIBRARIES}
-                      ${JSONC_LIBRARIES}
-                      ${LIBMODULEMD_LIBRARIES}
-                      ${SMARTCOLS_LIBRARIES}
-                      ${GPGME_VANILLA_LIBRARIES})
+add_library(libdnf SHARED ${LIBDNF_SRCS})
+target_link_libraries(libdnf
+    ${CMAKE_DL_LIBS}
+    ${REPO_LIBRARIES}
+    ${GLIB_LIBRARIES}
+    ${GLIB_GOBJECT_LIBRARIES}
+    ${GLIB_GIO_LIBRARIES}
+    ${GLIB_GIO_UNIX_LIBRARIES}
+    ${LIBSOLV_LIBRARY}
+    ${LIBSOLV_EXT_LIBRARY}
+    ${OPENSSL_CRYPTO_LIBRARY}
+    ${RPM_LIBRARIES}
+    ${SCOLS_LIBRARIES}
+    ${SQLite3_LIBRARIES}
+    ${JSONC_LIBRARIES}
+    ${LIBMODULEMD_LIBRARIES}
+    ${SMARTCOLS_LIBRARIES}
+    ${GPGME_VANILLA_LIBRARIES}
+)
 
-if (ENABLE_RHSM_SUPPORT)
-    target_link_libraries (libdnf ${RHSM_LIBRARIES})
-endif ()
+if(ENABLE_RHSM_SUPPORT)
+    target_link_libraries(libdnf ${RHSM_LIBRARIES})
+endif()
 
-SET(DNF_SO_VERSION 2)
-SET_TARGET_PROPERTIES(libdnf PROPERTIES OUTPUT_NAME "dnf")
-SET_TARGET_PROPERTIES(libdnf PROPERTIES SOVERSION ${DNF_SO_VERSION})
+set(DNF_SO_VERSION 2)
+set_target_properties(libdnf PROPERTIES OUTPUT_NAME "dnf")
+set_target_properties(libdnf PROPERTIES SOVERSION ${DNF_SO_VERSION})
 
-SET(LIBHAWKEY_headers
+set(LIBHAWKEY_headers
     hy-goal.h
     hy-package.h
     hy-packageset.h
@@ -91,9 +93,9 @@ SET(LIBHAWKEY_headers
     hy-subject.h
     hy-types.h
     hy-util.h
-    )
+)
 
-SET(LIBDNF_headers
+set(LIBDNF_headers
     config.h
     log.hpp
     nevra.hpp
@@ -120,13 +122,15 @@ SET(LIBDNF_headers
     dnf-types.h
     dnf-utils.h
     dnf-version.h
-    libdnf.h)
+    libdnf.h
+)
 
-MESSAGE (STATUS "Building for python${PYTHON_VERSION_MAJOR}")
+message(STATUS "Building for python${PYTHON_VERSION_MAJOR}")
 
-install (FILES ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc
-         DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig)
-INSTALL(FILES ${LIBDNF_headers} DESTINATION include/libdnf)
-INSTALL(FILES ${LIBHAWKEY_headers} DESTINATION include/libdnf)
-INSTALL(TARGETS libdnf LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
-INSTALL(FILES "README.plugins" DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}/libdnf/plugins" RENAME "README")
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc
+    DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig
+)
+install(FILES ${LIBDNF_headers} DESTINATION include/libdnf)
+install(FILES ${LIBHAWKEY_headers} DESTINATION include/libdnf)
+install(TARGETS libdnf LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
+install(FILES "README.plugins" DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}/libdnf/plugins" RENAME "README")
