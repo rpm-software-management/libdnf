@@ -74,6 +74,7 @@ class ConfigRepo::Impl {
     OptionChild<OptionBool> skip_if_unavailable{masterConfig.skip_if_unavailable()};
     OptionString enabled_metadata{""};
     OptionChild<OptionString> user_agent{masterConfig.user_agent()};
+    OptionChild<OptionBool> countme{masterConfig.countme()};
     OptionEnum<std::string> failovermethod{"priority", {"priority", "roundrobin"}};
 };
 
@@ -150,6 +151,7 @@ ConfigRepo::Impl::Impl(Config & owner, ConfigMain & masterConfig)
     owner.optBinds().add("skip_if_unavailable", skip_if_unavailable);
     owner.optBinds().add("enabled_metadata", enabled_metadata);
     owner.optBinds().add("user_agent", user_agent);
+    owner.optBinds().add("countme", countme);
 }
 
 ConfigRepo::ConfigRepo(ConfigMain & masterConfig) : pImpl(new Impl(*this, masterConfig)) {}
@@ -200,6 +202,7 @@ OptionChild<OptionNumber<std::uint32_t> > & ConfigRepo::deltarpm_percentage() { 
 OptionChild<OptionBool> & ConfigRepo::skip_if_unavailable() { return pImpl->skip_if_unavailable; }
 OptionString & ConfigRepo::enabled_metadata() { return pImpl->enabled_metadata; }
 OptionChild<OptionString> & ConfigRepo::user_agent() { return pImpl->user_agent; }
+OptionChild<OptionBool> & ConfigRepo::countme() { return pImpl->countme; }
 OptionEnum<std::string> & ConfigRepo::failovermethod() { return pImpl->failovermethod; }
 
 }
