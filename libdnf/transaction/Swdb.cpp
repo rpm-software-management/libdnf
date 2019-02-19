@@ -54,9 +54,12 @@ Swdb::Swdb(const std::string &path)
   : conn(nullptr)
   , autoClose(true)
 {
-    // check if DB file is present
-    if (!pathExists(path.c_str())) {
-        // file not present
+    if (path == ":memory:") {
+        // writing to an in-memory database
+        conn = std::make_shared< SQLite3 >(path);
+        Transformer::createDatabase(conn);
+    } else if (!pathExists(path.c_str())) {
+        // writing to a file that doesn't exist and must be created
 
         // extract persistdir from path - "/var/lib/dnf/"
         auto found = path.find_last_of("/");
@@ -66,6 +69,7 @@ Swdb::Swdb(const std::string &path)
 
         conn = std::make_shared< SQLite3 >(path);
     } else {
+        // writing to an existing file
         conn = std::make_shared< SQLite3 >(path);
     }
 }

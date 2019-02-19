@@ -1517,7 +1517,8 @@ dnf_transaction_new(DnfContext *context)
 {
     auto transaction = DNF_TRANSACTION(g_object_new(DNF_TYPE_TRANSACTION, NULL));
     auto priv = GET_PRIVATE(transaction);
-    priv->swdb = new libdnf::Swdb(libdnf::Swdb::defaultPath);
+    std::string dbPath = dnf_context_get_write_history(context) ? libdnf::Swdb::defaultPath : ":memory:";
+    priv->swdb = new libdnf::Swdb(dbPath);
     priv->context = context;
     g_object_add_weak_pointer(G_OBJECT(priv->context), (void **)&priv->context);
     priv->ts = rpmtsCreate();

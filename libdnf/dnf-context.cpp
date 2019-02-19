@@ -135,6 +135,7 @@ typedef struct
     gboolean         keep_cache;
     gboolean         enrollment_valid;
     gboolean         zchunk;
+    gboolean         write_history;
     DnfLock         *lock;
     DnfTransaction  *transaction;
     GThread         *transaction_thread;
@@ -230,6 +231,7 @@ dnf_context_init(DnfContext *context)
     priv->check_transaction = TRUE;
     priv->enable_filelists = TRUE;
     priv->zchunk = TRUE;
+    priv->write_history = TRUE;
     priv->state = dnf_state_new();
     priv->lock = dnf_lock_new();
     priv->cache_age = 60 * 60 * 24 * 7; /* 1 week */
@@ -806,6 +808,23 @@ dnf_context_get_zchunk(DnfContext *context)
 }
 
 /**
+ * dnf_context_get_write_history
+ * @context: a #DnfContext instance.
+ *
+ * Gets whether writing to history database is enabled.
+ *
+ * Returns: %TRUE if writing to history database is enabled
+ *
+ * Since: 0.27.2
+ **/
+gboolean
+dnf_context_get_write_history(DnfContext *context)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    return priv->write_history;
+}
+
+/**
  * dnf_context_get_enable_filelists:
  * @context: a #DnfContext instance.
  *
@@ -1189,6 +1208,22 @@ dnf_context_set_zchunk(DnfContext *context, gboolean zchunk)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     priv->zchunk = zchunk;
+}
+
+/**
+ * dnf_context_set_write_history:
+ * @context: a #DnfContext instance.
+ * @value: %TRUE write history database
+ *
+ * Enables or disables writing to history database.
+ *
+ * Since: 0.27.2
+ **/
+void
+dnf_context_set_write_history(DnfContext *context, gboolean value)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    priv->write_history = value;
 }
 
 /**
