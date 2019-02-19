@@ -68,6 +68,18 @@ std::vector<std::string> getDirContent(const std::string &dirPath);
 void decompress(const char * inPath, const char * outPath, mode_t outMode, const char * compressType = nullptr);
 }
 
+namespace numeric {
+/**
+* @brief Return a random number in the given range.
+*
+* Each possible value has an equal likelihood of being produced.
+*
+* @param min  lower bound of the range
+* @param max  upper bound of the range
+*/
+int random(const int min, const int max);
+}
+
 }
 
 #endif //LIBDNF_UTILS_HPP

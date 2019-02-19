@@ -128,7 +128,7 @@ public:
 
     std::unique_ptr<LrHandle> lrHandleInitBase();
     std::unique_ptr<LrHandle> lrHandleInitLocal();
-    std::unique_ptr<LrHandle> lrHandleInitRemote(const char *destdir, bool mirrorSetup = true);
+    std::unique_ptr<LrHandle> lrHandleInitRemote(const char *destdir, bool mirrorSetup = true, bool countme = false);
 
     void attachLibsolvRepo(LibsolvRepo * libsolvRepo);
     void detachLibsolvRepo();
@@ -187,6 +187,7 @@ private:
     Repo * owner;
     std::unique_ptr<LrResult> lrHandlePerform(LrHandle * handle, const std::string & destDirectory,
         bool setGPGHomeDir);
+    void embedCountmeFlag(std::string & url);
     bool isMetalinkInSync();
     bool isRepomdInSync();
     void resetMetadataExpired();
