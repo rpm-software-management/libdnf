@@ -24,6 +24,20 @@
 #define MIRRORLIST_FILENAME  "mirrorlist"
 #define RECOGNIZED_CHKSUMS {"sha512", "sha256"}
 
+// COUNTME MACROS
+// width of the sliding time window (in seconds)
+#define COUNTME_WINDOW (7*24*60*60)  // 1 week
+// starting point of the sliding time window relative to the UNIX epoch
+// allows for aligning the window with a specific weekday
+#define COUNTME_OFFSET (345600)  // Monday (1970-01-05 00:00:00 UTC)
+// estimated number of metalink requests sent over the window
+// used to generate the probability distribution of counting events
+#define COUNTME_BUDGET (4)  // metadata_expire defaults to 2 days
+// cookie file name
+#define COUNTME_COOKIE "countme"
+// cookie file format version
+#define COUNTME_VERSION (0)
+
 #include "../log.hpp"
 #include "Repo-private.hpp"
 #include "../dnf-utils.h"
@@ -493,7 +507,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitLocal()
     return h;
 }
 
-std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bool mirrorSetup)
+std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bool mirrorSetup, bool countme)
 {
     std::unique_ptr<LrHandle> h(lrHandleInitBase());
     handleSetOpt(h.get(), LRO_HTTPHEADER, httpHeaders.get());
@@ -513,8 +527,10 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bo
 
     enum class Source {NONE, METALINK, MIRRORLIST} source{Source::NONE};
     std::string tmp;
-    if (!conf->metalink().empty() && !(tmp=conf->metalink().getValue()).empty())
+    if (!conf->metalink().empty() && !(tmp=conf->metalink().getValue()).empty()) {
         source = Source::METALINK;
+        if (countme) embedCountmeFlag(tmp);
+    }
     else if (!conf->mirrorlist().empty() && !(tmp=conf->mirrorlist().getValue()).empty())
         source = Source::MIRRORLIST;
     if (source != Source::NONE) {
@@ -1004,6 +1020,64 @@ bool Repo::Impl::loadCache(bool throwExcept)
     return true;
 }
 
+void Repo::Impl::embedCountmeFlag(std::string & url) {
+    /*
+     * The countme flag will be embedded once (and only once) in every position
+     * of a sliding time window (COUNTME_WINDOW) that starts at COUNTME_OFFSET
+     * and moves along the time axis, by one length at a time, in such a way
+     * that the current point in time always stays within:
+     *
+     * UNIX epoch                    now
+     * |                             |
+     * |---*-----|-----|-----|-----[-*---]---> time
+     *     |                       ~~~~~~~
+     *     COUNTME_OFFSET          COUNTME_WINDOW
+     *
+     * This is to align the time window with an absolute point in time rather
+     * than the last counting event (which could facilitate tracking across
+     * multiple such events).
+     *
+     * Possible TODO:
+     *   - Provide proof for this function being epsilon-differentially private
+     *   - Increment countme flag (hint: Basic RAPPOR)
+     */
+
+    // Load the cookie
+    std::string fname = getPersistdir() + "/" + COUNTME_COOKIE;
+    int ver = COUNTME_VERSION;      // file format version (for future use)
+    time_t epoch = 0;               // position of first-ever counted window
+    time_t win = COUNTME_OFFSET;    // position of last counted window
+    int budget = -1;                // budget for this window (-1 = generate)
+    std::ifstream(fname) >> ver >> epoch >> win >> budget;
+
+    // Bail out if the window has not advanced since
+    time_t now = time(NULL);
+    time_t delta = now - win;
+    if (delta < COUNTME_WINDOW) return;
+
+    // Evenly distribute the probability of the counting event over the first N
+    // requests in this window (where N = COUNTME_BUDGET), by defining a random
+    // "budget" of ordinary requests that we first have to spend.  This ensures
+    // that no particular request is special and thus no privacy loss is
+    // incurred by embedding the flag within N requests.
+    if (budget < 0) budget = numeric::random(1, COUNTME_BUDGET);
+    budget--;
+    if (!budget) {
+        // Budget exhausted, counting!
+        url.find('?') != url.npos ? url += '&' : url += '?';
+        url += "countme=1";
+        // Compute the position of this window
+        win = now - (delta % COUNTME_WINDOW);
+        if (!epoch) epoch = win;
+        // Request a new budget
+        budget = -1;
+    }
+
+    // Save the cookie
+    std::ofstream(fname) << COUNTME_VERSION << " " << epoch << " " << win
+                         << " " << budget;
+}
+
 // Use metalink to check whether our metadata are still current.
 bool Repo::Impl::isMetalinkInSync()
 {
@@ -1014,7 +1088,8 @@ bool Repo::Impl::isMetalinkInSync()
         dnf_remove_recursive(tmpdir, NULL);
     });
 
-    std::unique_ptr<LrHandle> h(lrHandleInitRemote(tmpdir));
+    bool countme = conf->countme().getValue();
+    std::unique_ptr<LrHandle> h(lrHandleInitRemote(tmpdir, true, countme));
 
     handleSetOpt(h.get(), LRO_FETCHMIRRORS, 1L);
     auto r = lrHandlePerform(h.get(), tmpdir, false);
