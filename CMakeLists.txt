@@ -51,9 +51,9 @@ find_package(OpenSSL REQUIRED)
 
 # build dependencies via pkg-config
 pkg_check_modules(CHECK REQUIRED check)
-pkg_check_modules(GLIB gio-unix-2.0>=2.46.0 REQUIRED)
+pkg_check_modules(GLIB REQUIRED gio-unix-2.0>=2.46.0)
 include_directories(${GLIB_INCLUDE_DIRS})
-pkg_check_modules(JSONC json-c)
+pkg_check_modules(JSONC REQUIRED json-c)
 include_directories(${JSONC_INCLUDE_DIRS})
 pkg_check_modules(LIBMODULEMD REQUIRED modulemd)
 pkg_check_modules(REPO REQUIRED librepo)
@@ -61,7 +61,7 @@ include_directories(${REPO_INCLUDE_DIRS})
 link_directories(${REPO_LIBRARY_DIRS})
 pkg_check_modules(RPM REQUIRED rpm>=4.11.0)
 pkg_check_modules(SMARTCOLS REQUIRED smartcols)
-pkg_check_modules(SQLite3 sqlite3 REQUIRED)
+pkg_check_modules(SQLite3 REQUIRED sqlite3)
 
 # always enable linking with libdnf utils
 include_directories(${CMAKE_SOURCE_DIR} libdnf/utils/)
