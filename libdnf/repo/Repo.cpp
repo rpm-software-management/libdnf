@@ -463,6 +463,10 @@ std::string Repo::getMetadataContent(const std::string &metadataType)
 
 bool Repo::checkIn()
 {
+    if (!pImpl->conf->countme().getValue()) {
+        return false;
+    }
+
     long int winPos = 0;  // sliding window position (UNIX timestamp)
     std::string cookieFn = getCachedir() + "/" + CHECK_IN_COOKIE;
     std::fstream fs;

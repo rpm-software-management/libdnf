@@ -121,6 +121,7 @@ public:
 
     OptionString & module_platform_id();
     OptionString & user_agent();
+    OptionBool & countme();
 
     // Repo main config
     OptionNumber<std::uint32_t> & retries();

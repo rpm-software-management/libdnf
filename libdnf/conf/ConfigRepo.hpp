@@ -89,6 +89,7 @@ public:
     // option recognized by other tools, e.g. gnome-software, but unused in dnf
     OptionString & enabled_metadata();
     OptionChild<OptionString> & user_agent();
+    OptionChild<OptionBool> & countme();
     // yum compatibility options
     OptionEnum<std::string> & failovermethod();
 

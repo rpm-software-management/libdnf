@@ -275,6 +275,7 @@ class ConfigMain::Impl {
         // paths are sorted by precedence (see os-release(5) for details)
         getOsReleaseData({"/etc/os-release", "/usr/lib/os-release"})
     )};
+    OptionBool countme{true};
 
     // Repo main config
 
@@ -422,6 +423,7 @@ ConfigMain::Impl::Impl(Config & owner)
     owner.optBinds().add("ignorearch", ignorearch);
     owner.optBinds().add("module_platform_id", module_platform_id);
     owner.optBinds().add("user_agent", user_agent);
+    owner.optBinds().add("countme", countme);
 
     // Repo main config
 
@@ -549,6 +551,7 @@ OptionBool & ConfigMain::ignorearch() { return pImpl->ignorearch; }
 
 OptionString & ConfigMain::module_platform_id() { return pImpl->module_platform_id; }
 OptionString & ConfigMain::user_agent() { return pImpl->user_agent; }
+OptionBool & ConfigMain::countme() { return pImpl->countme; }
 
 // Repo main config
 OptionNumber<std::uint32_t> & ConfigMain::retries() { return pImpl->retries; }
