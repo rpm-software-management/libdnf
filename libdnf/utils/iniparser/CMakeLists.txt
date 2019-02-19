@@ -1,5 +1,5 @@
-SET (UTILS_SOURCES
-        ${UTILS_SOURCES}
-        ${CMAKE_CURRENT_SOURCE_DIR}/iniparser.cpp
-        PARENT_SCOPE
-        )
+set(UTILS_SOURCES
+    ${UTILS_SOURCES}
+    ${CMAKE_CURRENT_SOURCE_DIR}/iniparser.cpp
+    PARENT_SCOPE
+)

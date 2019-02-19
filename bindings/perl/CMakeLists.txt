@@ -1,24 +1,24 @@
-FIND_PACKAGE (SWIG REQUIRED)
-INCLUDE (UseSWIG)
+find_package(SWIG REQUIRED)
+include(UseSWIG)
 
 
-MESSAGE ("Building for perl")
-FIND_PACKAGE (Perl REQUIRED)
-FIND_PACKAGE (PerlLibs REQUIRED)
+message("Building for perl")
+find_package(Perl REQUIRED)
+find_package(PerlLibs REQUIRED)
 
 
-INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR})
-INCLUDE_DIRECTORIES (${PERL_INCLUDE_PATH})
-INCLUDE (UseSWIG)
+include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${PERL_INCLUDE_PATH})
+include(UseSWIG)
 
 
-SET_SOURCE_FILES_PROPERTIES (../swig/utils.i PROPERTIES CPLUSPLUS ON)
-SWIG_ADD_MODULE (utils perl ../swig/utils.i)
-SWIG_LINK_LIBRARIES (utils libdnf)
-SWIG_LINK_LIBRARIES (utils ${PERL_LIBRARY})
-SWIG_LINK_LIBRARIES (utils ${SQLite3_LIBRARIES})
+set_source_files_properties(../swig/utils.i PROPERTIES CPLUSPLUS ON)
+swig_add_module(utils perl ../swig/utils.i)
+swig_link_libraries(utils libdnf)
+swig_link_libraries(utils ${PERL_LIBRARY})
+swig_link_libraries(utils ${SQLite3_LIBRARIES})
 
-SET_SOURCE_FILES_PROPERTIES (../swig/transaction.i PROPERTIES CPLUSPLUS ON)
-SWIG_ADD_MODULE (transaction perl ../swig/transaction.i)
-SWIG_LINK_LIBRARIES (transaction libdnf)
-SWIG_LINK_LIBRARIES (transaction ${PERL_LIBRARY})
+set_source_files_properties(../swig/transaction.i PROPERTIES CPLUSPLUS ON)
+swig_add_module(transaction perl ../swig/transaction.i)
+swig_link_libraries(transaction libdnf)
+swig_link_libraries(transaction ${PERL_LIBRARY})

@@ -1,2 +1,2 @@
-ADD_SUBDIRECTORY (module)
-ADD_SUBDIRECTORY (tests)
+add_subdirectory(module)
+add_subdirectory(tests)
