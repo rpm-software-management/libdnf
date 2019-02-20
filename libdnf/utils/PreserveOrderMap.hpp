@@ -23,6 +23,7 @@
 
 #ifdef LIBDNF_UNSTABLE_API
 
+#include <cstddef>
 #include <iterator>
 #include <stdexcept>
 #include <vector>
