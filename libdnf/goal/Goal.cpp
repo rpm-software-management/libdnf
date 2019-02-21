@@ -191,7 +191,7 @@ libdnf_problemruleinfo2str(Solver *solv, SolverRuleinfo type, Id source, Id targ
 static void
 packageToJob(DnfPackage * package, Queue * job, int solver_action)
 {
-    libdnf::IdQueue pkgs;
+    IdQueue pkgs;
 
     Pool *pool = dnf_package_get_pool(package);
     DnfSack *sack = dnf_package_get_sack(package);
@@ -215,7 +215,7 @@ jobHas(Queue *job, Id what, Id id)
 }
 
 static int
-filterArchToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
+filterArchToJob(DnfSack *sack, const Filter *f, Queue *job)
 {
     if (!f)
         return 0;
@@ -246,7 +246,7 @@ filterArchToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 }
 
 static int
-filterEvrToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
+filterEvrToJob(DnfSack *sack, const Filter *f, Queue *job)
 {
     if (!f)
         return 0;
@@ -274,7 +274,7 @@ filterEvrToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 }
 
 static int
-filterFileToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
+filterFileToJob(DnfSack *sack, const Filter *f, Queue *job)
 {
     if (!f)
         return 0;
@@ -306,7 +306,7 @@ filterPkgToJob(Id what, Queue *job)
 }
 
 static int
-filterNameToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
+filterNameToJob(DnfSack *sack, const Filter *f, Queue *job)
 {
     if (!f)
         return 0;
@@ -344,7 +344,7 @@ filterNameToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 }
 
 static int
-filterProvidesToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
+filterProvidesToJob(DnfSack *sack, const Filter *f, Queue *job)
 {
     if (!f)
         return 0;
@@ -381,7 +381,7 @@ filterProvidesToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
 }
 
 static int
-filterReponameToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
+filterReponameToJob(DnfSack *sack, const Filter *f, Queue *job)
 {
     Id i;
     Repo *repo;
@@ -397,7 +397,7 @@ filterReponameToJob(DnfSack *sack, const libdnf::Filter *f, Queue *job)
         return MULTIPLE_MATCH_OBJECTS;
     }
 
-    libdnf::IdQueue repo_sel;
+    IdQueue repo_sel;
     Pool *pool = dnf_sack_get_pool(sack);
     FOR_REPOS(i, repo)
         if (!strcmp(matches[0].str, repo->name)) {
@@ -425,12 +425,12 @@ sltrToJob(const HySelector sltr, Queue *job, int solver_action)
     int any_req_filter = sltr->getFilterName() || sltr->getFilterProvides()
         || sltr->getFilterFile() || sltr->getPkgs();
 
-    libdnf::IdQueue job_sltr;
+    IdQueue job_sltr;
 
     if (!any_req_filter) {
         if (any_opt_filter) {
             // no name or provides or file in the selector is an error
-            throw libdnf::Goal::Exception("Ill-formed Selector. No name or"
+            throw Goal::Exception("Ill-formed Selector. No name or"
                 "provides or file in the selector.", DNF_ERROR_BAD_SELECTOR);
         }
         goto finish;
@@ -465,7 +465,7 @@ sltrToJob(const HySelector sltr, Queue *job, int solver_action)
 
  finish:
     if (ret > 1) {
-        throw libdnf::Goal::Exception(TM_(ERROR_DICT[ret], 1), DNF_ERROR_BAD_SELECTOR);
+        throw Goal::Exception(TM_(ERROR_DICT[ret], 1), DNF_ERROR_BAD_SELECTOR);
     }
 }
 
