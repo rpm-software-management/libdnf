@@ -536,7 +536,7 @@ std::string Repo::getMetadataContent(const std::string &metadataType)
     auto path = getMetadataPath(metadataType);
     if (path.empty()) return "";
 
-    auto mdfile = libdnf::File::newFile(path);
+    auto mdfile = File::newFile(path);
     mdfile->open("r");
     const auto &content = mdfile->getContent();
     mdfile->close();

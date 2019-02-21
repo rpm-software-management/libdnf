@@ -122,15 +122,15 @@ public:
     void writeDebugdata(const char *dir);
 
     /* result processing */
-    libdnf::PackageSet listErasures();
-    libdnf::PackageSet listInstalls();
-    libdnf::PackageSet listObsoleted();
-    libdnf::PackageSet listReinstalls();
-    libdnf::PackageSet listUnneeded();
-    libdnf::PackageSet listSuggested();
-    libdnf::PackageSet listUpgrades();
-    libdnf::PackageSet listDowngrades();
-    libdnf::PackageSet listObsoletedByPackage(DnfPackage * pkg);
+    PackageSet listErasures();
+    PackageSet listInstalls();
+    PackageSet listObsoleted();
+    PackageSet listReinstalls();
+    PackageSet listUnneeded();
+    PackageSet listSuggested();
+    PackageSet listUpgrades();
+    PackageSet listDowngrades();
+    PackageSet listObsoletedByPackage(DnfPackage * pkg);
 
 private:
     friend Query;

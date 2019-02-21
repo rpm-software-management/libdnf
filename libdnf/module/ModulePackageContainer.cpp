@@ -89,7 +89,7 @@ toString(const ModulePackageContainer::ModuleState &state) {
 
 static std::string getFileContent(const std::string &filePath)
 {
-    auto yaml = libdnf::File::newFile(filePath);
+    auto yaml = File::newFile(filePath);
 
     yaml->open("r");
     const auto &yamlContent = yaml->getContent();
@@ -113,7 +113,7 @@ private:
     std::unique_ptr<ModulePersistor> persistor;
     std::map<Id, std::unique_ptr<ModulePackage>> modules;
     DnfSack * moduleSack;
-    std::unique_ptr<libdnf::PackageSet> activatedModules;
+    std::unique_ptr<PackageSet> activatedModules;
     std::string installRoot;
     ModuleDefaultsContainer defaultConteiner;
     std::map<std::string, std::string> moduleDefaults;
@@ -153,11 +153,11 @@ private:
         ModuleState state;
         bool locked;
     };
-    std::pair<libdnf::ConfigParser, struct Config> & getEntry(const std::string & moduleName);
+    std::pair<ConfigParser, struct Config> & getEntry(const std::string & moduleName);
     bool update(const std::string &name);
     void reset(const std::string &name);
 
-    std::map<std::string, std::pair<libdnf::ConfigParser, struct Config>> configs;
+    std::map<std::string, std::pair<ConfigParser, struct Config>> configs;
 };
 
 ModulePackageContainer::EnableMultipleStreamsException::EnableMultipleStreamsException(
@@ -268,7 +268,7 @@ ModulePackageContainer::addPlatformPackage(const std::string& osReleasePath,
 
 void ModulePackageContainer::createConflictsBetweenStreams()
 {
-    // TODO Use libdnf::Query for filtering
+    // TODO Use Query for filtering
     for (const auto &iter : pImpl->modules) {
         const auto &modulePackage = iter.second;
 
@@ -292,17 +292,17 @@ ModulePackage * ModulePackageContainer::getModulePackage(Id id)
 }
 
 std::vector<ModulePackage *>
-ModulePackageContainer::requiresModuleEnablement(const libdnf::PackageSet & packages)
+ModulePackageContainer::requiresModuleEnablement(const PackageSet & packages)
 {
     auto activatedModules = pImpl->activatedModules.get();
     if (!activatedModules) {
         return {};
     }
     std::vector<ModulePackage *> output;
-    libdnf::Query baseQuery(packages.getSack());
+    Query baseQuery(packages.getSack());
     baseQuery.addFilter(HY_PKG, HY_EQ, &packages);
     baseQuery.apply();
-    libdnf::Query testQuery(baseQuery);
+    Query testQuery(baseQuery);
     Id moduleId = -1;
     while ((moduleId = activatedModules->next(moduleId)) != -1) {
         auto module = getModulePackage(moduleId);
@@ -498,13 +498,13 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackage *> & m
     }
     dnf_sack_recompute_considered(moduleSack);
     dnf_sack_make_provides_ready(moduleSack);
-    libdnf::Goal goal(moduleSack);
-    libdnf::Goal goalWeak(moduleSack);
+    Goal goal(moduleSack);
+    Goal goalWeak(moduleSack);
     for (const auto &module : modules) {
         std::ostringstream ss;
         auto name = module->getName();
         ss << "module(" << name << ":" << module->getStream() << ":" << module->getVersion() << ")";
-        libdnf::Selector selector(moduleSack);
+        Selector selector(moduleSack);
         bool optional = persistor->getState(name) == ModuleState::DEFAULT;
         selector.set(HY_PKG_PROVIDES, HY_EQ, ss.str().c_str());
         goal.install(&selector, optional);
@@ -526,26 +526,26 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackage *> & m
             dnf_sack_add_excludes(moduleSack, conflictingPkgs.get());
             ret = goalWeak.run(DNF_NONE);
             if (ret) {
-                auto logger(libdnf::Log::getLogger());
+                auto logger(Log::getLogger());
                 logger->critical("Modularity filtering totally broken\n");
                 problemType = ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULES;
                 activatedModules.reset();
             } else {
                 problemType = ModulePackageContainer::ModuleErrorType::ERROR;
-                activatedModules.reset(new libdnf::PackageSet(std::move(goalWeak.listInstalls())));
+                activatedModules.reset(new PackageSet(std::move(goalWeak.listInstalls())));
             }
         } else {
             problemType = ModulePackageContainer::ModuleErrorType::ERROR_IN_DEFAULTS;
-            activatedModules.reset(new libdnf::PackageSet(std::move(goal.listInstalls())));
+            activatedModules.reset(new PackageSet(std::move(goal.listInstalls())));
         }
     } else {
-        activatedModules.reset(new libdnf::PackageSet(std::move(goal.listInstalls())));
+        activatedModules.reset(new PackageSet(std::move(goal.listInstalls())));
     }
     return make_pair(problems, problemType);
 }
 
 std::vector<ModulePackage *>
-ModulePackageContainer::query(libdnf::Nsvcap& moduleNevra)
+ModulePackageContainer::query(Nsvcap& moduleNevra)
 {
     return query(moduleNevra.getName(), moduleNevra.getStream(), moduleNevra.getVersion(),
                  moduleNevra.getContext(), moduleNevra.getArch());
@@ -556,7 +556,7 @@ ModulePackageContainer::query(std::string subject)
 {
     // Alternatively a search using module provides could be performed
     std::vector<ModulePackage *> result;
-    libdnf::Query query(pImpl->moduleSack, HY_IGNORE_EXCLUDES);
+    Query query(pImpl->moduleSack, HY_IGNORE_EXCLUDES);
     // platform modules are installed and not in modules std::Map.
     query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     std::ostringstream ss;
@@ -576,7 +576,7 @@ ModulePackageContainer::query(std::string name, std::string stream, std::string 
 {
     // Alternatively a search using module provides could be performed
     std::vector<ModulePackage *> result;
-    libdnf::Query query(pImpl->moduleSack, HY_IGNORE_EXCLUDES);
+    Query query(pImpl->moduleSack, HY_IGNORE_EXCLUDES);
     // platform modules are installed and not in modules std::Map.
     query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     std::ostringstream ss;
@@ -600,13 +600,13 @@ void ModulePackageContainer::enableDependencyTree(std::vector<ModulePackage *> &
     if (!pImpl->activatedModules) {
         return;
     }
-    libdnf::PackageSet toEnable(pImpl->moduleSack);
-    libdnf::PackageSet enabled(pImpl->moduleSack);
+    PackageSet toEnable(pImpl->moduleSack);
+    PackageSet enabled(pImpl->moduleSack);
     for (auto & modulePackage: modulePackages) {
         if (!isModuleActive(modulePackage)) {
             continue;
         }
-        libdnf::Query query(pImpl->moduleSack);
+        Query query(pImpl->moduleSack);
         query.addFilter(HY_PKG, HY_EQ, pImpl->activatedModules.get());
         auto pkg = dnf_package_new(pImpl->moduleSack, modulePackage->getId());
         auto requires = dnf_package_get_requires(pkg);
@@ -624,7 +624,7 @@ void ModulePackageContainer::enableDependencyTree(std::vector<ModulePackage *> &
         while ((moduleId = toEnable.next(moduleId)) != -1) {
             enable(pImpl->modules.at(moduleId).get());
             enabled.set(moduleId);
-            libdnf::Query query(pImpl->moduleSack);
+            Query query(pImpl->moduleSack);
             query.addFilter(HY_PKG, HY_EQ, pImpl->activatedModules.get());
             query.addFilter(HY_PKG, HY_NEQ, &enabled);
             auto pkg = dnf_package_new(pImpl->moduleSack, moduleId);
@@ -886,7 +886,7 @@ ModulePackageContainer::resolveActiveModulePackages(bool debugSolver)
     dnf_sack_reset_excludes(pImpl->moduleSack);
     std::vector<ModulePackage *> packages;
 
-    libdnf::PackageSet excludes(pImpl->moduleSack);
+    PackageSet excludes(pImpl->moduleSack);
     // Use only Enabled or Default modules for transaction
     for (const auto &iter : pImpl->modules) {
         auto module = iter.second.get();
@@ -993,7 +993,7 @@ ModulePackageContainer::Impl::ModulePersistor::getStream(const std::string & nam
     return getEntry(name).second.stream;
 }
 
-inline std::pair<libdnf::ConfigParser, struct ModulePackageContainer::Impl::ModulePersistor::Config> &
+inline std::pair<ConfigParser, struct ModulePackageContainer::Impl::ModulePersistor::Config> &
 ModulePackageContainer::Impl::ModulePersistor::getEntry(const std::string & moduleName)
 {
     try {
@@ -1079,7 +1079,7 @@ bool ModulePackageContainer::Impl::ModulePersistor::changeState(
 }
 
 static bool
-isConfigValid(const libdnf::ConfigParser::Container::mapped_type &config, const std::string &name)
+isConfigValid(const ConfigParser::Container::mapped_type &config, const std::string &name)
 {
     /* name = <module_name> */
     auto optName = config.find("name");
@@ -1104,7 +1104,7 @@ isConfigValid(const libdnf::ConfigParser::Container::mapped_type &config, const 
 }
 
 static inline void
-initConfig(libdnf::ConfigParser::Container::mapped_type &config, const std::string &name)
+initConfig(ConfigParser::Container::mapped_type &config, const std::string &name)
 {
     config["name"] = name;
     config["stream"] = EMPTY_STREAM;
@@ -1113,16 +1113,16 @@ initConfig(libdnf::ConfigParser::Container::mapped_type &config, const std::stri
 }
 
 static inline void
-parseConfig(libdnf::ConfigParser &parser, const std::string &name, const char *path)
+parseConfig(ConfigParser &parser, const std::string &name, const char *path)
 {
-    auto logger(libdnf::Log::getLogger());
+    auto logger(Log::getLogger());
     auto &data = parser.getData();
 
     try {
         const auto fname = name + ".module";
         g_autofree gchar *cfn = g_build_filename(path, fname.c_str(), NULL);
         parser.read(cfn);
-    } catch (const libdnf::ConfigParser::CantOpenFile &) {
+    } catch (const ConfigParser::CantOpenFile &) {
         /* No module config file present. Fill values in */
         initConfig(data[name], name);
         return;
@@ -1152,13 +1152,13 @@ bool ModulePackageContainer::Impl::ModulePersistor::insert(
         return false;
     }
 
-    auto newEntry = configs.emplace(moduleName, std::make_pair(libdnf::ConfigParser{}, Config()));
+    auto newEntry = configs.emplace(moduleName, std::make_pair(ConfigParser{}, Config()));
     auto & parser = newEntry.first->second.first;
     auto & newConfig = newEntry.first->second.second;
 
     parseConfig(parser, moduleName, path);
 
-    libdnf::OptionStringList slist{std::vector<std::string>()};
+    OptionStringList slist{std::vector<std::string>()};
     const auto &plist = parser.getValue(moduleName, "profiles");
     newConfig.profiles = std::move(slist.fromString(plist));
 
@@ -1184,7 +1184,7 @@ bool ModulePackageContainer::Impl::ModulePersistor::update(const std::string & n
         changed = true;
     }
 
-    libdnf::OptionStringList slist{std::vector<std::string>()};
+    OptionStringList slist{std::vector<std::string>()};
     auto profiles = std::move(slist.toString(getProfiles(name)));
     profiles = profiles.substr(1, profiles.size()-2);
     if (data[name]["profiles"] != profiles) {
@@ -1202,7 +1202,7 @@ void ModulePackageContainer::Impl::ModulePersistor::reset(const std::string & na
 
     entry.second.stream = data[name]["stream"];
     entry.second.state = fromString(data[name]["state"]);
-    libdnf::OptionStringList slist{std::vector<std::string>()};
+    OptionStringList slist{std::vector<std::string>()};
     entry.second.profiles = slist.fromString(data[name]["profiles"]);
 }
 
@@ -1320,7 +1320,7 @@ ModulePackageContainer::Impl::ModulePersistor::getInstalledProfiles()
 {
     std::map<std::string, std::vector<std::string>> profiles;
     for (auto & it : configs) {
-        libdnf::OptionStringList slist{std::vector<std::string>()};
+        OptionStringList slist{std::vector<std::string>()};
         const auto & name = it.first;
         const auto & parser = it.second.first;
         auto & newProfiles = it.second.second.profiles;
@@ -1347,7 +1347,7 @@ ModulePackageContainer::Impl::ModulePersistor::getRemovedProfiles()
     std::map<std::string, std::vector<std::string>> profiles;
 
     for (auto & it : configs) {
-        libdnf::OptionStringList slist{std::vector<std::string>()};
+        OptionStringList slist{std::vector<std::string>()};
         const auto & name = it.first;
         const auto & parser = it.second.first;
         auto & newProfiles = it.second.second.profiles;

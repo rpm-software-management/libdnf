@@ -5,7 +5,7 @@
 
 namespace libdnf {
 
-class CompressedFile : public libdnf::File
+class CompressedFile : public File
 {
 public:
     explicit CompressedFile(const std::string &filePath);

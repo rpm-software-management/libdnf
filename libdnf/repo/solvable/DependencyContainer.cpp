@@ -87,7 +87,7 @@ void DependencyContainer::add(Id id)
 
 bool DependencyContainer::addReldepWithGlob(const char *reldepStr)
 {
-    libdnf::DependencySplitter depSplitter;
+    DependencySplitter depSplitter;
     if(!depSplitter.parse(reldepStr))
         return false;
     Dataiterator di;

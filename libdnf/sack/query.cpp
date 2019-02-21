@@ -553,7 +553,7 @@ Filter::Filter(int keyname, int cmp_type, const DnfPackageSet *pset) : pImpl(new
     pImpl->cmpType = cmp_type;
     pImpl->matchType = _HY_PKG;
     _Match match_in;
-    match_in.pset = new libdnf::PackageSet(*pset);
+    match_in.pset = new PackageSet(*pset);
     pImpl->matches.push_back(match_in);
 }
 Filter::Filter(int keyname, int cmp_type, const Dependency * reldep) : pImpl(new Impl)
@@ -2005,13 +2005,13 @@ Query::filterDuplicated()
 }
 
 int
-Query::filterUnneeded(const libdnf::Swdb &swdb, bool debug_solver)
+Query::filterUnneeded(const Swdb &swdb, bool debug_solver)
 {
     apply();
     DnfSack * sack = pImpl->sack;
-    libdnf::Goal goal(sack);
+    Goal goal(sack);
     Pool *pool = dnf_sack_get_pool(sack);
-    libdnf::Query installed(sack);
+    Query installed(sack);
     installed.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
     auto userInstalled = installed.getResultPset();
 
@@ -2089,14 +2089,14 @@ Query::getAdvisoryPkgs(int cmpType, std::vector<AdvisoryPkg> & advisoryPkgs)
 }
 
 void
-Query::filterUserInstalled(const libdnf::Swdb &swdb)
+Query::filterUserInstalled(const Swdb &swdb)
 {
     addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
     swdb.filterUserinstalled(*getResultPset());
 }
 
 void
-hy_query_to_name_ordered_queue(HyQuery query, libdnf::IdQueue * samename)
+hy_query_to_name_ordered_queue(HyQuery query, IdQueue * samename)
 {
     hy_query_apply(query);
     Pool *pool = dnf_sack_get_pool(query->getSack());
@@ -2106,12 +2106,12 @@ hy_query_to_name_ordered_queue(HyQuery query, libdnf::IdQueue * samename)
         if (MAPTST(result, i))
             samename->pushBack(i);
 
-    solv_sort(samename->data(), samename->size(), sizeof(Id), libdnf::filter_latest_sortcmp,
+    solv_sort(samename->data(), samename->size(), sizeof(Id), filter_latest_sortcmp,
         pool);
 }
 
 void
-hy_query_to_name_arch_ordered_queue(HyQuery query, libdnf::IdQueue * samename)
+hy_query_to_name_arch_ordered_queue(HyQuery query, IdQueue * samename)
 {
     hy_query_apply(query);
     Pool *pool = dnf_sack_get_pool(query->getSack());
@@ -2122,7 +2122,7 @@ hy_query_to_name_arch_ordered_queue(HyQuery query, libdnf::IdQueue * samename)
             samename->pushBack(i);
 
     solv_sort(samename->data(), samename->size(), sizeof(Id),
-        libdnf::filter_latest_sortcmp_byarch, pool);
+        filter_latest_sortcmp_byarch, pool);
 }
 
 }

@@ -116,7 +116,7 @@ public:
     /**
     * @brief Remove packages from PackageSet that were installed as Dependency or WEAK_DEPENDENCY
     */
-    void filterUserinstalled(libdnf::PackageSet & installed) const;
+    void filterUserinstalled(PackageSet & installed) const;
 
 protected:
     friend class Transformer;

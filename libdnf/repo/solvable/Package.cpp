@@ -86,92 +86,92 @@ Id Package::getId() const
     return id;
 }
 
-std::shared_ptr<libdnf::DependencyContainer> Package::getConflicts() const
+std::shared_ptr<DependencyContainer> Package::getConflicts() const
 {
     return getDependencies(SOLVABLE_CONFLICTS);
 };
 
-std::shared_ptr<libdnf::DependencyContainer> Package::getEnhances() const
+std::shared_ptr<DependencyContainer> Package::getEnhances() const
 {
     return getDependencies(SOLVABLE_ENHANCES);
 }
 
-std::shared_ptr<libdnf::DependencyContainer> Package::getObsoletes() const
+std::shared_ptr<DependencyContainer> Package::getObsoletes() const
 {
     return getDependencies(SOLVABLE_OBSOLETES);
 }
 
-std::shared_ptr<libdnf::DependencyContainer> Package::getProvides() const
+std::shared_ptr<DependencyContainer> Package::getProvides() const
 {
     return getDependencies(SOLVABLE_PROVIDES);
 }
 
-std::shared_ptr<libdnf::DependencyContainer> Package::getRecommends() const
+std::shared_ptr<DependencyContainer> Package::getRecommends() const
 {
     return getDependencies(SOLVABLE_RECOMMENDS);
 }
 
-std::shared_ptr<libdnf::DependencyContainer> Package::getRequires() const
+std::shared_ptr<DependencyContainer> Package::getRequires() const
 {
     return getDependencies(SOLVABLE_REQUIRES, 0);
 }
 
-std::shared_ptr<libdnf::DependencyContainer> Package::getRequiresPre() const
+std::shared_ptr<DependencyContainer> Package::getRequiresPre() const
 {
     return getDependencies(SOLVABLE_REQUIRES, 1);
 }
 
-std::shared_ptr<libdnf::DependencyContainer> Package::getSuggests() const
+std::shared_ptr<DependencyContainer> Package::getSuggests() const
 {
     return getDependencies(SOLVABLE_SUGGESTS);
 }
 
-std::shared_ptr<libdnf::DependencyContainer> Package::getSupplements() const
+std::shared_ptr<DependencyContainer> Package::getSupplements() const
 {
     return getDependencies(SOLVABLE_SUPPLEMENTS);
 }
 
-void Package::addConflicts(std::shared_ptr<libdnf::Dependency> dependency)
+void Package::addConflicts(std::shared_ptr<Dependency> dependency)
 {
     addDependency(std::move(dependency), SOLVABLE_CONFLICTS);
 }
 
-void Package::addEnhances(std::shared_ptr<libdnf::Dependency> dependency)
+void Package::addEnhances(std::shared_ptr<Dependency> dependency)
 {
     addDependency(std::move(dependency), SOLVABLE_ENHANCES);
 }
 
-void Package::addObsoletes(std::shared_ptr<libdnf::Dependency> dependency)
+void Package::addObsoletes(std::shared_ptr<Dependency> dependency)
 {
     addDependency(std::move(dependency), SOLVABLE_OBSOLETES);
 }
 
-void Package::addProvides(std::shared_ptr<libdnf::Dependency> dependency)
+void Package::addProvides(std::shared_ptr<Dependency> dependency)
 {
     addDependency(std::move(dependency), SOLVABLE_PROVIDES);
 }
 
-void Package::addRecommends(std::shared_ptr<libdnf::Dependency> dependency)
+void Package::addRecommends(std::shared_ptr<Dependency> dependency)
 {
     addDependency(std::move(dependency), SOLVABLE_RECOMMENDS);
 }
 
-void Package::addRequires(std::shared_ptr<libdnf::Dependency> dependency)
+void Package::addRequires(std::shared_ptr<Dependency> dependency)
 {
     addDependency(std::move(dependency), SOLVABLE_REQUIRES, 0);
 }
 
-void Package::addRequiresPre(std::shared_ptr<libdnf::Dependency> dependency)
+void Package::addRequiresPre(std::shared_ptr<Dependency> dependency)
 {
     addDependency(std::move(dependency), SOLVABLE_REQUIRES, 1);
 }
 
-void Package::addSuggests(std::shared_ptr<libdnf::Dependency> dependency)
+void Package::addSuggests(std::shared_ptr<Dependency> dependency)
 {
     addDependency(std::move(dependency), SOLVABLE_SUGGESTS);
 }
 
-void Package::addSupplements(std::shared_ptr<libdnf::Dependency> dependency)
+void Package::addSupplements(std::shared_ptr<Dependency> dependency)
 {
     addDependency(std::move(dependency), SOLVABLE_SUPPLEMENTS);
 }
@@ -191,10 +191,10 @@ void Package::fillSolvableData(const char *name, const char *version,
     solvable_set_str(solvable, SOLVABLE_ARCH, arch);
 }
 
-std::shared_ptr<libdnf::DependencyContainer> Package::getDependencies(Id type, Id marker) const
+std::shared_ptr<DependencyContainer> Package::getDependencies(Id type, Id marker) const
 {
     auto queue = getDependencyQueue(type, marker);
-    auto container = std::make_shared<libdnf::DependencyContainer>(sack, *queue);
+    auto container = std::make_shared<DependencyContainer>(sack, *queue);
 
     queue_free(queue);
     delete queue;
@@ -223,7 +223,7 @@ Queue *Package::getDependencyQueue(Id type, Id marker) const
     return queue;
 }
 
-void Package::addDependency(std::shared_ptr<libdnf::Dependency> dependency, int type, Id marker)
+void Package::addDependency(std::shared_ptr<Dependency> dependency, int type, Id marker)
 {
     Solvable *solvable = pool_id2solvable(dnf_sack_get_pool(sack), id);
     solvable_add_deparray(solvable, type, dependency->getId(), marker);

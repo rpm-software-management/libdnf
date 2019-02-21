@@ -98,7 +98,7 @@ Dependency::getReldepId(DnfSack *sack, const char * reldepStr)
             throw std::runtime_error("Cannot parse a dependency string");
         return id;
     } else {
-        libdnf::DependencySplitter depSplitter;
+        DependencySplitter depSplitter;
         if(!depSplitter.parse(reldepStr))
             throw std::runtime_error("Cannot parse a dependency string");
         return getReldepId(sack, depSplitter.getNameCStr(), depSplitter.getEVRCStr(),

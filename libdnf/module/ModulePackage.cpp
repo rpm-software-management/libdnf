@@ -337,7 +337,7 @@ void ModulePackage::addStreamConflict(const ModulePackage * package)
 
 static std::pair<std::string, std::string> getPlatformStream(const std::string &osReleasePath)
 {
-    auto file = libdnf::File::newFile(osReleasePath);
+    auto file = File::newFile(osReleasePath);
     file->open("r");
     std::string line;
     while (file->readLine(line)) {

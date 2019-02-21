@@ -522,7 +522,7 @@ Swdb::createCompsGroupItem()
  * \return list of user installed package IDs
  */
 void
-Swdb::filterUserinstalled(libdnf::PackageSet & installed) const
+Swdb::filterUserinstalled(PackageSet & installed) const
 {
     Pool * pool = dnf_sack_get_pool(installed.getSack());
 
