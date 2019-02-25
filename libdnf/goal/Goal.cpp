@@ -384,7 +384,7 @@ static int
 filterReponameToJob(DnfSack *sack, const Filter *f, Queue *job)
 {
     Id i;
-    Repo *repo;
+    LibsolvRepo *repo;
 
     if (!f)
         return 0;

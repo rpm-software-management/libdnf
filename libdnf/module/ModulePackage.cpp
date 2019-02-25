@@ -68,7 +68,7 @@ static void setSovable(Pool * pool, Solvable *solvable, std::string name,
 
 ModulePackage::~ModulePackage() = default;
 
-ModulePackage::ModulePackage(DnfSack * moduleSack, Repo * repo,
+ModulePackage::ModulePackage(DnfSack * moduleSack, LibsolvRepo * repo,
     ModuleMetadata && metadata,  const std::string & repoID)
         : metadata(std::move(metadata))
         , moduleSack(moduleSack)
@@ -375,7 +375,7 @@ ModulePackage::createPlatformSolvable(DnfSack * moduleSack, const std::string & 
 {
     Pool * pool = dnf_sack_get_pool(moduleSack);
     HyRepo hrepo = hy_repo_create(HY_SYSTEM_REPO_NAME);
-    Repo *repo = repo_create(pool, HY_SYSTEM_REPO_NAME);
+    LibsolvRepo *repo = repo_create(pool, HY_SYSTEM_REPO_NAME);
     repo->appdata = hrepo;
     hrepo->libsolv_repo = repo;
     hrepo->needs_internalizing = 1;

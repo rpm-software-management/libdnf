@@ -77,7 +77,7 @@ public:
 private:
     friend struct ModulePackageContainer;
 
-    ModulePackage(DnfSack * moduleSack, Repo * repo,
+    ModulePackage(DnfSack * moduleSack, LibsolvRepo * repo,
         ModuleMetadata && metadata, const std::string & repoID);
 
     static Id createPlatformSolvable(DnfSack * moduleSack, const std::string &osReleasePath,

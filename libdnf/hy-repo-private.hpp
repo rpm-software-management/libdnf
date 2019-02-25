@@ -28,6 +28,10 @@
 #include "hy-iutil.h"
 #include "hy-repo.h"
 
+namespace libdnf {
+typedef ::Repo LibsolvRepo;
+}
+
 enum _hy_repo_state {
     _HY_NEW,
     _HY_LOADED_FETCH,

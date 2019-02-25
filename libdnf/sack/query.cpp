@@ -1418,7 +1418,7 @@ Query::Impl::filterReponame(const Filter & f, Map *m)
 {
     Pool *pool = dnf_sack_get_pool(sack);
     Solvable *s;
-    Repo *r;
+    LibsolvRepo *r;
     Id id;
     bool ourids[pool->nrepos];
     auto resultPset = result.get();

@@ -177,7 +177,7 @@ ModulePackageContainer::ModulePackageContainer(bool allArch, std::string install
     }
     Pool * pool = dnf_sack_get_pool(pImpl->moduleSack);
     HyRepo hrepo = hy_repo_create("available");
-    Repo *repo = repo_create(pool, "available");
+    LibsolvRepo *repo = repo_create(pool, "available");
     repo->appdata = hrepo;
     hrepo->libsolv_repo = repo;
     hrepo->needs_internalizing = 1;
@@ -197,7 +197,7 @@ void
 ModulePackageContainer::add(DnfSack * sack)
 {
     Pool * pool = dnf_sack_get_pool(sack);
-    Repo * r;
+    LibsolvRepo * r;
     Id id;
 
     FOR_REPOS(id, r) {
@@ -242,7 +242,7 @@ ModulePackageContainer::add(const std::string &fileContent, const std::string & 
 {
     Pool * pool = dnf_sack_get_pool(pImpl->moduleSack);
     auto metadata = ModuleMetadata::metadataFromString(fileContent);
-    Repo * r;
+    LibsolvRepo * r;
     Id id;
 
     FOR_REPOS(id, r) {
