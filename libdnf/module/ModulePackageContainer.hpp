@@ -21,14 +21,16 @@
 #ifndef LIBDNF_MODULEPACKAGECONTAINER_HPP
 #define LIBDNF_MODULEPACKAGECONTAINER_HPP
 
+#include "libdnf/dnf-utils.h"
+#include "ModulePackage.hpp"
+#include "libdnf/nsvcap.hpp"
+
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
 #include <set>
 
-#include "ModulePackage.hpp"
-#include "libdnf/nsvcap.hpp"
 
 //class ModulePackageContainer;
 //typedef std::shared_ptr<ModulePackageContainer> ModulePackageContainerPtr;
@@ -199,9 +201,17 @@ public:
      * @brief list of name:stream for module streams that are to be disabled
      */
     std::map<std::string, std::string> getDisabledStreams();
+
+    /**
+     * @brief list of names of modules that are to be reset
+     */
+    std::vector<std::string> getResetModules();
+
     /**
      * @brief list of name:stream for module streams that are to be reset
+     * "Will be removed after 2019-12-31. Use getResetModules() instead."
      */
+    DEPRECATED("Will be removed after 2019-12-31. Use getResetModules() instead.")
     std::map<std::string, std::string> getResetStreams();
     /**
      * @brief list of name:<old_stream:new_stream> for modules whose stream has changed

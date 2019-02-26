@@ -129,6 +129,8 @@ public:
 
     std::map<std::string, std::string> getEnabledStreams();
     std::map<std::string, std::string> getDisabledStreams();
+    std::vector<std::string> getResetModules();
+
     std::map<std::string, std::string> getResetStreams();
     std::map<std::string, std::pair<std::string, std::string>> getSwitchedStreams();
     std::map<std::string, std::vector<std::string>> getInstalledProfiles();
@@ -962,6 +964,11 @@ std::map<std::string, std::string> ModulePackageContainer::getDisabledStreams()
     return pImpl->persistor->getDisabledStreams();
 }
 
+std::vector<std::string> ModulePackageContainer::getResetModules()
+{
+    return pImpl->persistor->getResetModules();
+}
+
 std::map<std::string, std::string> ModulePackageContainer::getResetStreams()
 {
     return pImpl->persistor->getResetStreams();
@@ -1244,6 +1251,30 @@ ModulePackageContainer::Impl::ModulePersistor::getDisabledStreams()
     }
 
     return disabled;
+}
+
+
+std::vector<std::string>
+ModulePackageContainer::Impl::ModulePersistor::getResetModules()
+{
+    std::vector<std::string> result;
+
+    for (const auto & it : configs) {
+        const auto & name = it.first;
+        const auto & newVal = it.second.second.state;
+        const auto & oldVal = fromString(it.second.first.getValue(name, "state"));
+        // when resetting module state, UNKNOWN and DEFAULT are treated equally,
+        // because they are both represented as 'state=' in the config file
+        // and the only difference is internal state based on module defaults
+        if (oldVal == ModuleState::UNKNOWN || oldVal == ModuleState::DEFAULT) {
+            continue;
+        }
+        if (newVal == ModuleState::UNKNOWN || newVal == ModuleState::DEFAULT) {
+            result.emplace_back(name);
+        }
+    }
+
+    return result;
 }
 
 std::map<std::string, std::string>
