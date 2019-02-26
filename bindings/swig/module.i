@@ -4,6 +4,8 @@
 #define SWIG_PYTHON_2_UNICODE
 %}
 
+#define DEPRECATED(x)
+
 %include <exception.i>
 %include <std_map.i>
 %include <std_vector.i>
