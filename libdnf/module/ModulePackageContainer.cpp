@@ -443,7 +443,7 @@ bool ModulePackageContainer::isChanged()
     if (!getDisabledModules().empty()) {
         return true;
     }
-    if (!getResetStreams().empty()) {
+    if (!getResetModules().empty()) {
         return true;
     }
     if (!getSwitchedStreams().empty()) {
