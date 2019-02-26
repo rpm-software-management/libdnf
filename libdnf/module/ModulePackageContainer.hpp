@@ -31,7 +31,6 @@
 #include <vector>
 #include <set>
 
-
 //class ModulePackageContainer;
 //typedef std::shared_ptr<ModulePackageContainer> ModulePackageContainerPtr;
 namespace libdnf {
@@ -197,9 +196,17 @@ public:
      * @brief list of name:stream for module streams that are to be enable
      */
     std::map<std::string, std::string> getEnabledStreams();
+
+    /**
+     * @brief list of names of modules that are to be disabled
+     */
+    std::vector<std::string> getDisabledModules();
+
     /**
      * @brief list of name:stream for module streams that are to be disabled
+     * "Will be removed after 2019-12-31. Use getDisabledModules() instead."
      */
+    DEPRECATED("Will be removed after 2019-12-31. Use getDisabledModules() instead.")
     std::map<std::string, std::string> getDisabledStreams();
 
     /**

@@ -128,6 +128,7 @@ public:
     const ModuleState & getState(const std::string &name);
 
     std::map<std::string, std::string> getEnabledStreams();
+    std::vector<std::string> getDisabledModules();
     std::map<std::string, std::string> getDisabledStreams();
     std::vector<std::string> getResetModules();
 
@@ -439,7 +440,7 @@ bool ModulePackageContainer::isChanged()
     if (!getEnabledStreams().empty()) {
         return true;
     }
-    if (!getDisabledStreams().empty()) {
+    if (!getDisabledModules().empty()) {
         return true;
     }
     if (!getResetStreams().empty()) {
@@ -720,14 +721,12 @@ ModulePackageContainer::getReport()
         }
         report += "\n";
     }
-    auto disabled = getDisabledStreams();
+    auto disabled = getDisabledModules();
     if (!disabled.empty()) {
         report += "Module Disabling:\n";
-        for (auto & item: disabled) {
+        for (auto & name: disabled) {
             report += "    ";
-            report += item.first;
-            report += ":";
-            report += item.second;
+            report += name;
             report += "\n";
         }
         report += "\n";
@@ -957,6 +956,11 @@ void ModulePackageContainer::rollback()
 std::map<std::string, std::string> ModulePackageContainer::getEnabledStreams()
 {
     return pImpl->persistor->getEnabledStreams();
+}
+
+std::vector<std::string> ModulePackageContainer::getDisabledModules()
+{
+    return pImpl->persistor->getDisabledModules();
 }
 
 std::map<std::string, std::string> ModulePackageContainer::getDisabledStreams()
@@ -1234,6 +1238,23 @@ ModulePackageContainer::Impl::ModulePersistor::getEnabledStreams()
     }
 
     return enabled;
+}
+
+std::vector<std::string>
+ModulePackageContainer::Impl::ModulePersistor::getDisabledModules()
+{
+    std::vector<std::string> disabled;
+
+    for (const auto & it : configs) {
+        const auto & name = it.first;
+        const auto & newVal = it.second.second.state;
+        const auto & oldVal = fromString(it.second.first.getValue(name, "state"));
+        if (oldVal != ModuleState::DISABLED && newVal == ModuleState::DISABLED) {
+            disabled.emplace_back(name);
+        }
+    }
+
+    return disabled;
 }
 
 std::map<std::string, std::string>
