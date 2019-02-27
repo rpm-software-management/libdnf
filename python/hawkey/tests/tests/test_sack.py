@@ -26,6 +26,7 @@ import sys
 import unittest
 
 from . import base
+import libdnf
 import hawkey
 import hawkey.test
 
@@ -69,7 +70,10 @@ class BasicTest(unittest.TestCase):
 
     def test_failed_load(self):
         sack = hawkey.Sack(cachedir=base.cachedir)
-        repo = hawkey.Repo("name")
+        self._conf = libdnf.conf.ConfigMain()
+        repo_conf = libdnf.conf.ConfigRepo(self._conf)
+        repo_conf.this.disown()  # _repo will be the owner of _config
+        repo = libdnf.repo.Repo("name", repo_conf)
         self.assertRaises(IOError, sack.load_repo, repo)
         sack = hawkey.Sack()
 
