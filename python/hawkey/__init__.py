@@ -52,7 +52,7 @@ __all__ = [
     # functions
     'chksum_name', 'chksum_type', 'split_nevra', 'convert_hawkey_reason',
     # classes
-    'Goal', 'NEVRA', 'NSVCAP', 'Package', 'Query', 'Repo', 'Sack', 'Selector', 'Subject']
+    'Goal', 'NEVRA', 'NSVCAP', 'Package', 'Query', 'Sack', 'Selector', 'Subject']
 
 NEVRA = _hawkey.NEVRA
 Query = _hawkey.Query
@@ -131,7 +131,6 @@ REFERENCE_VENDOR = _hawkey.REFERENCE_VENDOR
 
 Package = _hawkey.Package
 Reldep = _hawkey.Reldep
-Repo = _hawkey.Repo
 Sack = _hawkey.Sack
 
 Exception = _hawkey.Exception

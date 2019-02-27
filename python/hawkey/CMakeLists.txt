@@ -33,7 +33,6 @@ set(hawkeymodule_SRCS
     packagedelta-py.cpp
     query-py.cpp
     reldep-py.cpp
-    repo-py.cpp
     sack-py.cpp
     selector-py.cpp
     subject-py.cpp

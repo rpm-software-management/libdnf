@@ -102,6 +102,12 @@ public:
 struct Repo {
 public:
 
+    enum class Type {
+        AVAILABLE,
+        SYSTEM,
+        COMMANDLINE
+    };
+
     enum class SyncStrategy {
         // use the local cache even if it's expired. download if there's no cache.
         LAZY = 1,
@@ -126,7 +132,9 @@ public:
     * @param id     repo ID to use
     * @param conf   configuration to use
     */
-    Repo(const std::string & id, std::unique_ptr<ConfigRepo> && conf);
+    Repo(const std::string & id, std::unique_ptr<ConfigRepo> && conf, Repo::Type type = Repo::Type::AVAILABLE);
+
+    Repo & operator =(Repo && repo) = delete;
 
     void setCallbacks(std::unique_ptr<RepoCB> && callbacks);
 
@@ -163,7 +171,6 @@ public:
     std::string getModulesFn(); // temporary made public
 #endif
     const std::string & getRevision() const;
-    void initHyRepo(HyRepo hrepo);
     int getAge() const;
 
     /**
@@ -253,9 +260,13 @@ public:
     void setSubstitutions(const std::map<std::string, std::string> & substitutions);
 
     ~Repo();
+
+    void delReference();
+
+    class Impl;
 private:
     friend struct PackageTarget;
-    class Impl;
+    friend Impl * repoGetImpl(Repo * repo);
     std::unique_ptr<Impl> pImpl;
 };
 

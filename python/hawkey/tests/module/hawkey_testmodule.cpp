@@ -23,7 +23,6 @@
 // hawkey
 #include "dnf-sack-private.hpp"
 
-#include "python/hawkey/repo-py.hpp"
 #include "python/hawkey/sack-py.hpp"
 #include "tests/hawkey/testshared.h"
 

@@ -28,6 +28,7 @@ extern "C" {
 
 #include "libdnf/hy-repo.h"
 #include "libdnf/hy-repo-private.hpp"
+#include "libdnf/repo/Repo-private.hpp"
 #include "testshared.h"
 
 HyRepo
@@ -76,8 +77,8 @@ load_repo(Pool *pool, const char *name, const char *path, int installed)
 {
     HyRepo hrepo = hy_repo_create(name);
     Repo *r = repo_create(pool, name);
-    hrepo->libsolv_repo = r;
-    r->appdata = hrepo;
+    libdnf::repoGetImpl(hrepo)->attachLibsolvRepo(r);
+    hy_repo_free(hrepo);
 
     FILE *fp = fopen(path, "r");
 

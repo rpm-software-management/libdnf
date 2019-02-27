@@ -39,9 +39,10 @@
 #define MD_TYPE_OTHER "other"
 
 #include "../log.hpp"
-#include "Repo.hpp"
+#include "Repo-private.hpp"
 #include "../dnf-utils.h"
 #include "../hy-iutil.h"
+#include "../hy-repo-private.hpp"
 #include "../hy-util-private.hpp"
 #include "../hy-types.h"
 #include "libdnf/utils/File.hpp"
@@ -63,6 +64,7 @@
 
 #include <solv/chksum.h>
 #include <solv/repo.h>
+#include <solv/util.h>
 
 #include <cctype>
 #include <fstream>
@@ -87,11 +89,6 @@ namespace std {
 template<>
 struct default_delete<GError> {
     void operator()(GError * ptr) noexcept { g_error_free(ptr); }
-};
-
-template<>
-struct default_delete<LrHandle> {
-    void operator()(LrHandle * ptr) noexcept { lr_handle_free(ptr); }
 };
 
 template<>
@@ -181,103 +178,6 @@ static constexpr struct {
     {"any", LR_AUTH_ANY}
 };
 
-class Key {
-public:
-    Key(gpgme_key_t key, gpgme_subkey_t subkey)
-    {
-        id = subkey->keyid;
-        fingerprint = subkey->fpr;
-        timestamp = subkey->timestamp;
-        userid = key->uids->uid;
-    }
-
-    std::string getId() const { return id; }
-    std::string getUserId() const { return userid; }
-    std::string getFingerprint() const { return fingerprint; }
-    long int getTimestamp() const { return timestamp; }
-
-    std::vector<char> rawKey;
-    std::string url;
-
-private:
-    std::string id;
-    std::string fingerprint;
-    std::string userid;
-    long int timestamp;
-};
-
-class Repo::Impl {
-public:
-    Impl(const std::string & id, std::unique_ptr<ConfigRepo> && conf);
-    ~Impl();
-
-    bool load();
-    bool loadCache(bool throwExcept);
-    void downloadMetadata(const std::string & destdir);
-    bool isInSync();
-    void fetch(const std::string & destdir, std::unique_ptr<LrHandle> && h);
-    std::string getCachedir() const;
-    int getAge() const;
-    void expire();
-    bool isExpired() const;
-    int getExpiresIn() const;
-    void downloadUrl(const char * url, int fd);
-    void setHttpHeaders(const char * headers[]);
-    const char * const * getHttpHeaders() const;
-    std::string getMetadataPath(const std::string &metadataType) const;
-
-    std::unique_ptr<LrHandle> lrHandleInitBase();
-    std::unique_ptr<LrHandle> lrHandleInitLocal();
-    std::unique_ptr<LrHandle> lrHandleInitRemote(const char *destdir, bool mirrorSetup = true);
-
-    std::string id;
-    std::unique_ptr<ConfigRepo> conf;
-
-    char ** mirrors{nullptr};
-    int maxMirrorTries{0}; // try them all
-    // 0 forces expiration on the next call to load(), -1 means undefined value
-    int timestamp;
-    int maxTimestamp{0};
-    std::string repomdFn;
-    std::set<std::string> additionalMetadata;
-    std::string revision;
-    std::vector<std::string> content_tags;
-    std::vector<std::pair<std::string, std::string>> distro_tags;
-    unsigned char checksum[CHKSUM_BYTES];
-    bool useIncludes{false};
-    bool loadMetadataOther;
-    std::map<std::string, std::string> substitutions;
-
-    std::unique_ptr<RepoCB> callbacks;
-    std::string repoFilePath;
-    LrHandle * getCachedHandle();
-
-    SyncStrategy syncStrategy;
-private:
-    std::unique_ptr<LrResult> lrHandlePerform(LrHandle * handle, const std::string & destDirectory,
-        bool setGPGHomeEnv);
-    bool isMetalinkInSync();
-    bool isRepomdInSync();
-    void resetMetadataExpired();
-    std::vector<Key> retrieve(const std::string & url);
-    void importRepoKeys();
-
-    static int progressCB(void * data, double totalToDownload, double downloaded);
-    static void fastestMirrorCB(void * data, LrFastestMirrorStages stage, void *ptr);
-    static int mirrorFailureCB(void * data, const char * msg, const char * url, const char * metadata);
-
-    bool expired;
-    std::unique_ptr<LrHandle> handle;
-    std::map<std::string, std::string> metadataPaths;
-    std::unique_ptr<char*[], std::function<void(char **)>> httpHeaders{nullptr, [](char ** ptr)
-    {
-        for (auto item = ptr; *item; ++item)
-            delete[] *item;
-        delete[] ptr;
-    }};
-    bool endsWith(std::string const &str, std::string const &ending) const;
-};
-
 bool Repo::Impl::endsWith(const std::string &str, const std::string &ending) const {
     if (str.length() >= ending.length())
         return (str.compare(str.length() - ending.length(), ending.length(), ending) == 0);
@@ -285,7 +185,9 @@ bool Repo::Impl::endsWith(const std::string &str, const std::string &ending) con
         return false;
 }
 
-std::string Repo::Impl::getMetadataPath(const std::string &metadataType) const {
+const std::string & Repo::Impl::getMetadataPath(const std::string &metadataType) const {
+//    auto logger(Log::getLogger());
+    static const std::string empty;
     std::string lookupMetadataType = metadataType;
     if (conf->getMasterConfig().zchunk().getValue()) {
         if(!endsWith(metadataType, "_zck"))
@@ -294,7 +196,10 @@ std::string Repo::Impl::getMetadataPath(const std::string &metadataType) const {
     auto it = metadataPaths.find(lookupMetadataType);
     if(it == metadataPaths.end() && lookupMetadataType != metadataType)
         it = metadataPaths.find(metadataType);
-    return (it != metadataPaths.end()) ? it->second : "";
+    auto & ret = (it != metadataPaths.end()) ? it->second : empty;
+//    if (ret.empty())
+//        logger->debug(tfm::format("not found \"%s\" for: %s", metadataType, conf->name().getValue()));
+    return ret;
 }
 
 int Repo::Impl::progressCB(void * data, double totalToDownload, double downloaded)
@@ -403,23 +308,29 @@ static std::string formatUserPassString(const std::string & user, const std::str
         return user + ":" + passwd;
 }
 
-Repo::Impl::Impl(const std::string & id, std::unique_ptr<ConfigRepo> && conf)
+Repo::Impl::Impl(Repo & owner, const std::string & id, std::unique_ptr<ConfigRepo> && conf)
 : id(id), conf(std::move(conf)), timestamp(-1), loadMetadataOther(false)
-, syncStrategy(SyncStrategy::TRY_CACHE), expired(false) {}
+, syncStrategy(SyncStrategy::TRY_CACHE), owner(&owner), expired(false) {}
 
 Repo::Impl::~Impl()
 {
     g_strfreev(mirrors);
+    if (libsolvRepo)
+        libsolvRepo->appdata = nullptr;
 }
 
-Repo::Repo(const std::string & id, std::unique_ptr<ConfigRepo> && conf)
+static int count = 0;
+Repo::Repo(const std::string & id, std::unique_ptr<ConfigRepo> && conf, Repo::Type type)
 {
-    auto idx = verifyId(id);
-    if (idx >= 0) {
-        std::string msg = tfm::format(_("Bad id for repo: %s, byte = %s %d"), id, id[idx], idx);
-        throw std::runtime_error(msg);
+    if (type == Type::AVAILABLE) {
+        auto idx = verifyId(id);
+        if (idx >= 0) {
+            std::string msg = tfm::format(_("Bad id for repo: %s, byte = %s %d"), id, id[idx], idx);
+            throw std::runtime_error(msg);
+        }
     }
-    pImpl.reset(new Impl(id, std::move(conf)));
+    pImpl.reset(new Impl(*this, id, std::move(conf)));
+    pImpl->type = type;
 }
 
 Repo::~Repo() = default;
@@ -1422,6 +1333,24 @@ LrHandle * Repo::Impl::getCachedHandle()
     return handle.get();
 }
 
+void Repo::Impl::attachLibsolvRepo(LibsolvRepo * libsolvRepo)
+{
+    ++nrefs;
+    libsolvRepo->appdata = owner;
+    libsolvRepo->subpriority = -owner->getCost();
+    libsolvRepo->priority = -owner->getPriority();
+    this->libsolvRepo = libsolvRepo;
+}
+
+void Repo::Impl::detachLibsolvRepo()
+{
+    libsolvRepo->appdata = nullptr;
+    if (--nrefs > 0)
+        this->libsolvRepo = nullptr;
+    else
+        delete owner;
+}
+
 void Repo::setMaxMirrorTries(int maxMirrorTries)
 {
     pImpl->maxMirrorTries = maxMirrorTries;
@@ -1450,42 +1379,6 @@ const std::vector<std::pair<std::string, std::string>> & Repo::getDistroTags()
 const std::string & Repo::getRevision() const
 {
     return pImpl->revision;
-}
-
-void Repo::initHyRepo(HyRepo hrepo)
-{
-    auto logger(Log::getLogger());
-    hy_repo_set_string(hrepo, HY_REPO_MD_FN, pImpl->repomdFn.c_str());
-    hy_repo_set_string(hrepo, HY_REPO_PRIMARY_FN, pImpl->getMetadataPath(MD_TYPE_PRIMARY).c_str());
-    auto tmp = pImpl->getMetadataPath(MD_TYPE_FILELISTS);
-    if (tmp.empty())
-        logger->debug(tfm::format(_("not found filelist for: %s"), pImpl->conf->name().getValue()));
-    else
-        hy_repo_set_string(hrepo, HY_REPO_FILELISTS_FN, tmp.c_str());
-    tmp = pImpl->getMetadataPath(MD_TYPE_OTHER);
-    if (tmp.empty())
-        logger->debug(tfm::format(_("not found other for: %s"), pImpl->conf->name().getValue()));
-    else
-        hy_repo_set_string(hrepo, HY_REPO_OTHER_FN, tmp.c_str());
-#ifdef MODULEMD
-    tmp = pImpl->getMetadataPath(MD_TYPE_MODULES);
-    if (tmp.empty())
-        logger->debug(tfm::format(_("not found modules for: %s"), pImpl->conf->name().getValue()));
-    else
-        hy_repo_set_string(hrepo, MODULES_FN, tmp.c_str());
-#endif
-    hy_repo_set_cost(hrepo, pImpl->conf->cost().getValue());
-    hy_repo_set_priority(hrepo, pImpl->conf->priority().getValue());
-    tmp = pImpl->getMetadataPath(MD_TYPE_PRESTODELTA);
-    if (tmp.empty())
-        logger->debug(tfm::format(_("not found deltainfo for: %s"), pImpl->conf->name().getValue()));
-    else
-        hy_repo_set_string(hrepo, HY_REPO_PRESTO_FN, tmp.c_str());
-    tmp = pImpl->getMetadataPath(MD_TYPE_UPDATEINFO);
-    if (tmp.empty())
-        logger->debug(tfm::format(_("not found updateinfo for: %s"), pImpl->conf->name().getValue()));
-    else
-        hy_repo_set_string(hrepo, HY_REPO_UPDATEINFO_FN, tmp.c_str());
 }
 
 std::string Repo::getCachedir() const
@@ -1538,6 +1431,12 @@ std::vector<std::string> Repo::getMirrors() const
     return mirrors;
 }
 
+void Repo::delReference()
+{
+    if (--pImpl->nrefs > 0)
+        return;
+    delete this;
+}
 
 int PackageTargetCB::end(TransferStatus status, const char * msg) { return 0; }
 int PackageTargetCB::progress(double totalToDownload, double downloaded) { return 0; }
@@ -1881,4 +1780,243 @@ void LibrepoLog::removeAllHandlers()
     lrLogDatas.clear();
 }
 
+Repo::Impl * repoGetImpl(Repo * repo)
+{
+    return repo->pImpl.get();
+}
+
+}
+
+// hawkey
+#include "../hy-repo-private.hpp"
+
+void
+repo_internalize_all_trigger(Pool *pool)
+{
+    int i;
+    Repo *repo;
+
+    FOR_REPOS(i, repo)
+        repo_internalize_trigger(repo);
+}
+
+void
+repo_internalize_trigger(Repo * repo)
+{
+    if (repo) {
+        auto hrepo = static_cast<HyRepo>(repo->appdata);
+        auto repoImpl = libdnf::repoGetImpl(hrepo);
+        assert(repoImpl->libsolvRepo == repo);
+        if (!repoImpl->needs_internalizing)
+            return;
+        repoImpl->needs_internalizing = false;
+        repo_internalize(repo);
+    }
+}
+
+void
+repo_update_state(HyRepo repo, enum _hy_repo_repodata which,
+                  enum _hy_repo_state state)
+{
+    auto repoImpl = libdnf::repoGetImpl(repo);
+    assert(state <= _HY_WRITTEN);
+    switch (which) {
+    case _HY_REPODATA_FILENAMES:
+        repoImpl->state_filelists = state;
+        return;
+    case _HY_REPODATA_PRESTO:
+        repoImpl->state_presto = state;
+        return;
+    case _HY_REPODATA_UPDATEINFO:
+        repoImpl->state_updateinfo = state;
+        return;
+    case _HY_REPODATA_OTHER:
+        repoImpl->state_other = state;
+        return;
+    default:
+        assert(0);
+    }
+    return;
+}
+
+Id
+repo_get_repodata(HyRepo repo, enum _hy_repo_repodata which)
+{
+    auto repoImpl = libdnf::repoGetImpl(repo);
+    switch (which) {
+    case _HY_REPODATA_FILENAMES:
+        return repoImpl->filenames_repodata;
+    case _HY_REPODATA_PRESTO:
+        return repoImpl->presto_repodata;
+    case _HY_REPODATA_UPDATEINFO:
+        return repoImpl->updateinfo_repodata;
+    case _HY_REPODATA_OTHER:
+        return repoImpl->other_repodata;
+    default:
+        assert(0);
+        return 0;
+    }
+}
+
+void
+repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata)
+{
+    auto repoImpl = libdnf::repoGetImpl(repo);
+    switch (which) {
+    case _HY_REPODATA_FILENAMES:
+        repoImpl->filenames_repodata = repodata;
+        return;
+    case _HY_REPODATA_PRESTO:
+        repoImpl->presto_repodata = repodata;
+        return;
+    case _HY_REPODATA_UPDATEINFO:
+        repoImpl->updateinfo_repodata = repodata;
+        return;
+    case _HY_REPODATA_OTHER:
+        repoImpl->other_repodata = repodata;
+        return;
+    default:
+        assert(0);
+        return;
+    }
+}
+
+// public functions
+
+static libdnf::ConfigMain cfgMain;
+
+HyRepo
+hy_repo_create(const char *name)
+{
+    assert(name);
+    std::unique_ptr<libdnf::ConfigRepo> cfgRepo(new libdnf::ConfigRepo(cfgMain));
+    auto repo = new libdnf::Repo(name, std::move(cfgRepo), libdnf::Repo::Type::COMMANDLINE);
+    hy_repo_set_string(repo, HY_REPO_NAME, name);
+    return repo;
+}
+
+int
+hy_repo_get_cost(HyRepo repo)
+{
+    return repo->getCost();
+}
+
+int
+hy_repo_get_priority(HyRepo repo)
+{
+    return repo->getPriority();
+}
+
+gboolean
+hy_repo_get_use_includes(HyRepo repo)
+{
+  return libdnf::repoGetImpl(repo)->use_includes;
+}
+
+guint
+hy_repo_get_n_solvables(HyRepo repo)
+{
+  return (guint)libdnf::repoGetImpl(repo)->libsolvRepo->nsolvables;
+}
+
+void
+hy_repo_set_cost(HyRepo repo, int value)
+{
+    auto repoImpl = libdnf::repoGetImpl(repo);
+    repoImpl->conf->cost().set(libdnf::Option::Priority::RUNTIME, value);
+    if (repoImpl->libsolvRepo)
+        repoImpl->libsolvRepo->subpriority = -value;
+}
+
+void
+hy_repo_set_priority(HyRepo repo, int value)
+{
+    auto repoImpl = libdnf::repoGetImpl(repo);
+    repoImpl->conf->priority().set(libdnf::Option::Priority::RUNTIME, value);
+    if (repoImpl->libsolvRepo)
+        repoImpl->libsolvRepo->priority = -value;
+}
+
+void
+hy_repo_set_use_includes(HyRepo repo, gboolean enabled)
+{
+    libdnf::repoGetImpl(repo)->use_includes = enabled;
+}
+
+void
+hy_repo_set_string(HyRepo repo, int which, const char *str_val)
+{
+    auto repoImpl = libdnf::repoGetImpl(repo);
+    switch (which) {
+    case HY_REPO_NAME:
+        repoImpl->id = str_val;
+        repoImpl->conf->name().set(libdnf::Option::Priority::RUNTIME, str_val);
+        break;
+    case HY_REPO_MD_FN:
+        repoImpl->repomdFn = str_val ? str_val : "";
+        break;
+    case HY_REPO_PRIMARY_FN:
+        repoImpl->metadataPaths[MD_TYPE_PRIMARY] = str_val ? str_val : "";
+        break;
+    case HY_REPO_FILELISTS_FN:
+        repoImpl->metadataPaths[MD_TYPE_FILELISTS] = str_val ? str_val : "";
+        break;
+    case HY_REPO_PRESTO_FN:
+        repoImpl->metadataPaths[MD_TYPE_PRESTODELTA] = str_val ? str_val : "";
+        break;
+    case HY_REPO_UPDATEINFO_FN:
+        repoImpl->metadataPaths[MD_TYPE_UPDATEINFO] = str_val ? str_val : "";
+        break;
+    case HY_REPO_OTHER_FN:
+        repoImpl->metadataPaths[MD_TYPE_OTHER] = str_val ? str_val : "";
+        break;
+    case MODULES_FN:
+        repoImpl->metadataPaths[MD_TYPE_MODULES] = str_val ? str_val : "";
+        break;
+    default:
+        assert(0);
+    }
+}
+
+const char *
+hy_repo_get_string(HyRepo repo, int which)
+{
+    auto repoImpl = libdnf::repoGetImpl(repo);
+    const char * ret;
+    switch(which) {
+    case HY_REPO_NAME:
+        return repoImpl->id.c_str();
+    case HY_REPO_MD_FN:
+        ret = repoImpl->repomdFn.c_str();
+        break;
+    case HY_REPO_PRIMARY_FN:
+        ret = repoImpl->getMetadataPath(MD_TYPE_PRIMARY).c_str();
+        break;
+    case HY_REPO_FILELISTS_FN:
+        ret = repoImpl->getMetadataPath(MD_TYPE_FILELISTS).c_str();
+        break;
+    case HY_REPO_PRESTO_FN:
+        ret = repoImpl->getMetadataPath(MD_TYPE_PRESTODELTA).c_str();
+        break;
+    case HY_REPO_UPDATEINFO_FN:
+        ret = repoImpl->getMetadataPath(MD_TYPE_UPDATEINFO).c_str();
+        break;
+    case HY_REPO_OTHER_FN:
+        ret = repoImpl->getMetadataPath(MD_TYPE_OTHER).c_str();
+        break;
+    case MODULES_FN:
+        ret = repoImpl->getMetadataPath(MD_TYPE_MODULES).c_str();
+        break;
+    default:
+        return nullptr;
+    }
+    return ret[0] == '\0' ? nullptr : ret;
+}
+
+void
+hy_repo_free(HyRepo repo)
+{
+    if (--libdnf::repoGetImpl(repo)->nrefs > 0)
+        return;
+    delete repo;
 }

@@ -31,6 +31,7 @@ extern "C" {
 #include "modulemd/ModuleProfile.hpp"
 #include "libdnf/utils/File.hpp"
 #include "libdnf/dnf-sack-private.hpp"
+#include "libdnf/repo/Repo-private.hpp"
 
 namespace libdnf {
 
@@ -81,7 +82,7 @@ ModulePackage::ModulePackage(DnfSack * moduleSack, LibsolvRepo * repo,
     setSovable(pool, solvable, getName(), getStream(), getVersion(), getContext(), getArchCStr());
     createDependencies(solvable);
     HyRepo hyRepo = static_cast<HyRepo>(repo->appdata);
-    hyRepo->needs_internalizing = 1;
+    libdnf::repoGetImpl(hyRepo)->needs_internalizing = 1;
     dnf_sack_set_provides_not_ready(moduleSack);
     dnf_sack_set_considered_to_update(moduleSack);
 }
@@ -375,10 +376,11 @@ ModulePackage::createPlatformSolvable(DnfSack * moduleSack, const std::string & 
 {
     Pool * pool = dnf_sack_get_pool(moduleSack);
     HyRepo hrepo = hy_repo_create(HY_SYSTEM_REPO_NAME);
+    auto repoImpl = libdnf::repoGetImpl(hrepo);
     LibsolvRepo *repo = repo_create(pool, HY_SYSTEM_REPO_NAME);
     repo->appdata = hrepo;
-    hrepo->libsolv_repo = repo;
-    hrepo->needs_internalizing = 1;
+    repoImpl->libsolvRepo = repo;
+    repoImpl->needs_internalizing = 1;
     Id id = repo_add_solvable(repo);
     Solvable *solvable = pool_id2solvable(pool, id);
     std::string name;
@@ -412,7 +414,7 @@ ModulePackage::createPlatformSolvable(DnfSack * moduleSack, const std::string & 
     std::string version = "0";
     std::string context = "00000000";
     setSovable(pool, solvable, name, stream, version, context, "noarch");
-    hrepo->needs_internalizing = 1;
+    repoImpl->needs_internalizing = 1;
     dnf_sack_set_provides_not_ready(moduleSack);
     dnf_sack_set_considered_to_update(moduleSack);
     pool_set_installed(pool, repo);

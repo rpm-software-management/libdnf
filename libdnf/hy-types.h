@@ -26,20 +26,22 @@ namespace libdnf {
     struct Goal;
     struct Nevra;
     struct Query;
+    struct Repo;
     struct Selector;
 }
 typedef struct libdnf::Goal * HyGoal;
 typedef struct libdnf::Nevra * HyNevra;
 typedef struct libdnf::Query * HyQuery;
+typedef struct libdnf::Repo * HyRepo;
 typedef struct libdnf::Selector * HySelector;
 #else
 typedef struct Goal * HyGoal;
 typedef struct Nevra * HyNevra;
 typedef struct Query * HyQuery;
+typedef struct _HyRepo * HyRepo;
 typedef struct Selector * HySelector;
 #endif
 
-typedef struct _HyRepo * HyRepo;
 typedef char * HySubject;
 
 typedef const unsigned char HyChecksum;

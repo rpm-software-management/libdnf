@@ -23,6 +23,7 @@
 
 #include "libdnf/hy-iutil-private.hpp"
 #include "libdnf/hy-repo-private.hpp"
+#include "libdnf/repo/Repo-private.hpp"
 #include "fixtures.h"
 #include "testshared.h"
 #include "test_suites.h"
@@ -43,11 +44,12 @@ START_TEST(test_cost)
 {
     DnfSack *sack = test_globals.sack;
     HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);
+    auto repoImpl = libdnf::repoGetImpl(repo);
     hy_repo_set_cost(repo, 700);
-    fail_unless(repo->libsolv_repo != NULL);
+    fail_unless(repoImpl->libsolvRepo != NULL);
     fail_unless(700 == hy_repo_get_cost(repo));
     int subpriority = -700;
-    fail_unless(repo->libsolv_repo->subpriority == subpriority);
+    fail_unless(repoImpl->libsolvRepo->subpriority == subpriority);
 }
 END_TEST
 

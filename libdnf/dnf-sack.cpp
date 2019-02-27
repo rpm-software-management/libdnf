@@ -78,6 +78,7 @@ extern "C" {
 #include "module/ModulePackage.hpp"
 #include "module/modulemd/ModuleDefaultsContainer.hpp"
 #include "module/modulemd/ModuleMetadata.hpp"
+#include "repo/Repo-private.hpp"
 #include "repo/solvable/DependencyContainer.hpp"
 #include "utils/crypto/sha1.hpp"
 #include "utils/File.hpp"
@@ -132,8 +133,7 @@ dnf_sack_finalize(GObject *object)
         auto hrepo = static_cast<HyRepo>(repo->appdata);
         if (!hrepo)
             continue;
-        hrepo->libsolv_repo = NULL;
-        hy_repo_free(hrepo);
+        libdnf::repoGetImpl(hrepo)->detachLibsolvRepo();
     }
     g_free(priv->cache_dir);
     g_free(priv->arch);
@@ -385,7 +385,7 @@ load_ext(DnfSack *sack, HyRepo hrepo, _hy_repo_repodata which_repodata,
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     int ret = 0;
-    Repo *repo = hrepo->libsolv_repo;
+    Repo *repo = libdnf::repoGetImpl(hrepo)->libsolvRepo;
     const char *name = repo->name;
     const char *fn = hy_repo_get_string(hrepo, which_filename);
     FILE *fp;
@@ -403,8 +403,8 @@ load_ext(DnfSack *sack, HyRepo hrepo, _hy_repo_repodata which_repodata,
 
     char *fn_cache =  dnf_sack_give_cache_fn(sack, name, suffix);
     fp = fopen(fn_cache, "r");
-    assert(hrepo->checksum);
-    if (can_use_repomd_cache(fp, hrepo->checksum)) {
+    assert(libdnf::repoGetImpl(hrepo)->checksum);
+    if (can_use_repomd_cache(fp, libdnf::repoGetImpl(hrepo)->checksum)) {
         int flags = 0;
         /* the updateinfo is not a real extension */
         if (which_repodata != _HY_REPODATA_UPDATEINFO)
@@ -499,9 +499,10 @@ repo_is_one_piece(Repo *repo)
 static gboolean
 write_main(DnfSack *sack, HyRepo hrepo, int switchtosolv, GError **error)
 {
-    Repo *repo = hrepo->libsolv_repo;
+    auto repoImpl = libdnf::repoGetImpl(hrepo);
+    Repo *repo = repoImpl->libsolvRepo;
     const char *name = repo->name;
-    const char *chksum = pool_checksum_str(dnf_sack_get_pool(sack), hrepo->checksum);
+    const char *chksum = pool_checksum_str(dnf_sack_get_pool(sack), repoImpl->checksum);
     char *fn = dnf_sack_give_cache_fn(sack, name, NULL);
     char *tmp_fn_templ = solv_dupjoin(fn, ".XXXXXX", NULL);
     int tmp_fd  = mkstemp(tmp_fn_templ);
@@ -530,7 +531,7 @@ write_main(DnfSack *sack, HyRepo hrepo, int switchtosolv, GError **error)
             goto done;
         }
         rc = repo_write(repo, fp);
-        rc |= checksum_write(hrepo->checksum, fp);
+        rc |= checksum_write(repoImpl->checksum, fp);
         rc |= fclose(fp);
         if (rc) {
             ret = FALSE;
@@ -564,7 +565,7 @@ write_main(DnfSack *sack, HyRepo hrepo, int switchtosolv, GError **error)
     ret = mv(tmp_fn_templ, fn, error);
     if (!ret)
         goto done;
-    hrepo->state_main = _HY_WRITTEN;
+    repoImpl->state_main = _HY_WRITTEN;
 
  done:
     if (!ret && tmp_fd >= 0)
@@ -587,13 +588,14 @@ write_ext_updateinfo_filter(Repo *repo, Repokey *key, void *kfdata)
 static int
 write_ext_updateinfo(HyRepo hrepo, Repodata *data, FILE *fp)
 {
-    Repo *repo = hrepo->libsolv_repo;
+    auto repoImpl = libdnf::repoGetImpl(hrepo);
+    Repo *repo = repoImpl->libsolvRepo;
     int oldstart = repo->start;
-    repo->start = hrepo->main_end;
-    repo->nsolvables -= hrepo->main_nsolvables;
+    repo->start = repoImpl->main_end;
+    repo->nsolvables -= repoImpl->main_nsolvables;
     int res = repo_write_filtered(repo, fp, write_ext_updateinfo_filter, data, 0);
     repo->start = oldstart;
-    repo->nsolvables += hrepo->main_nsolvables;
+    repo->nsolvables += repoImpl->main_nsolvables;
     return res;
 }
 
@@ -601,7 +603,8 @@ static gboolean
 write_ext(DnfSack *sack, HyRepo hrepo, _hy_repo_repodata which_repodata,
           const char *suffix, GError **error)
 {
-    Repo *repo = hrepo->libsolv_repo;
+    auto repoImpl = libdnf::repoGetImpl(hrepo);
+    Repo *repo = repoImpl->libsolvRepo;
     int ret = 0;
     const char *name = repo->name;
 
@@ -628,7 +631,7 @@ write_ext(DnfSack *sack, HyRepo hrepo, _hy_repo_repodata which_repodata,
             ret |= repodata_write(data, fp);
         else
             ret |= write_ext_updateinfo(hrepo, data, fp);
-        ret |= checksum_write(hrepo->checksum, fp);
+        ret |= checksum_write(repoImpl->checksum, fp);
         ret |= fclose(fp);
         if (ret) {
             success = FALSE;
@@ -674,6 +677,7 @@ write_ext(DnfSack *sack, HyRepo hrepo, _hy_repo_repodata which_repodata,
 static gboolean
 load_yum_repo(DnfSack *sack, HyRepo hrepo, GError **error)
 {
+    auto repoImpl = libdnf::repoGetImpl(hrepo);
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     gboolean retval = TRUE;
     Pool *pool = priv->pool;
@@ -703,10 +707,10 @@ load_yum_repo(DnfSack *sack, HyRepo hrepo, GError **error)
         retval = FALSE;
         goto out;
     }
-    checksum_fp(hrepo->checksum, fp_repomd);
+    checksum_fp(repoImpl->checksum, fp_repomd);
 
-    if (can_use_repomd_cache(fp_cache, hrepo->checksum)) {
-        const char *chksum = pool_checksum_str(pool, hrepo->checksum);
+    if (can_use_repomd_cache(fp_cache, repoImpl->checksum)) {
+        const char *chksum = pool_checksum_str(pool, repoImpl->checksum);
         g_debug("using cached %s (0x%s)", name, chksum);
         if (repo_add_solv(repo, fp_cache, 0)) {
             g_set_error (error,
@@ -716,7 +720,7 @@ load_yum_repo(DnfSack *sack, HyRepo hrepo, GError **error)
             retval = FALSE;
             goto out;
         }
-        hrepo->state_main = _HY_LOADED_CACHE;
+        repoImpl->state_main = _HY_LOADED_CACHE;
     } else {
         fp_primary = solv_xfopen(hy_repo_get_string(hrepo, HY_REPO_PRIMARY_FN),
                                  "r");
@@ -732,7 +736,7 @@ load_yum_repo(DnfSack *sack, HyRepo hrepo, GError **error)
             retval = FALSE;
             goto out;
         }
-        hrepo->state_main = _HY_LOADED_FETCH;
+        repoImpl->state_main = _HY_LOADED_FETCH;
     }
 out:
     if (fp_cache)
@@ -744,7 +748,7 @@ out:
     g_free(fn_cache);
 
     if (retval) {
-        repo_finalize_init(hrepo, repo);
+        libdnf::repoGetImpl(hrepo)->attachLibsolvRepo(repo);
         priv->provides_ready = 0;
     } else
         repo_free(repo, 1);
@@ -1126,10 +1130,11 @@ dnf_sack_setup_cmdline_repo(DnfSack *sack)
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     if (!priv->cmdline_repo) {
          HyRepo hrepo = hy_repo_create(HY_CMDLINE_REPO_NAME);
+         auto repoImpl = libdnf::repoGetImpl(hrepo);
          Repo *repo = repo_create(dnf_sack_get_pool(sack), HY_CMDLINE_REPO_NAME);
          repo->appdata = hrepo;
-         hrepo->libsolv_repo = repo;
-         hrepo->needs_internalizing = 1;
+         repoImpl->libsolvRepo = repo;
+         repoImpl->needs_internalizing = 1;
          priv->cmdline_repo = repo;
     }
     return priv->cmdline_repo;
@@ -1153,7 +1158,7 @@ dnf_sack_add_cmdline_package_flags(DnfSack *sack, const char *fn, const int flag
         return NULL;
     }
     auto hrepo = static_cast<HyRepo>(repo->appdata);
-    hrepo->needs_internalizing = 1;
+    libdnf::repoGetImpl(hrepo)->needs_internalizing = 1;
     priv->considered_uptodate = FALSE;   /* triggers recompute_considered later */
     return dnf_package_new(sack, p);
 }
@@ -1682,9 +1687,11 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
         hy_repo_set_string(hrepo, HY_REPO_NAME, HY_SYSTEM_REPO_NAME);
     else
         hrepo = hy_repo_create(HY_SYSTEM_REPO_NAME);
-    hrepo->load_flags = flags;
+    auto repoImpl = libdnf::repoGetImpl(hrepo);
 
-    rc = current_rpmdb_checksum(pool, hrepo->checksum);
+    repoImpl->load_flags = flags;
+
+    rc = current_rpmdb_checksum(pool, repoImpl->checksum);
     if (rc) {
         ret = FALSE;
         g_set_error (error,
@@ -1695,18 +1702,18 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
     }
 
     repo = repo_create(pool, HY_SYSTEM_REPO_NAME);
-    if (can_use_rpmdb_cache(cache_fp, hrepo->checksum)) {
-        const char *chksum = pool_checksum_str(pool, hrepo->checksum);
+    if (can_use_rpmdb_cache(cache_fp, repoImpl->checksum)) {
+        const char *chksum = pool_checksum_str(pool, repoImpl->checksum);
         g_debug("using cached rpmdb (0x%s)", chksum);
         rc = repo_add_solv(repo, cache_fp, 0);
         if (!rc)
-            hrepo->state_main = _HY_LOADED_CACHE;
+            repoImpl->state_main = _HY_LOADED_CACHE;
     } else {
         g_debug("fetching rpmdb");
         int flagsrpm = REPO_REUSE_REPODATA | RPM_ADD_WITH_HDRID | REPO_USE_ROOTDIR;
         rc = repo_add_rpmdb_reffp(repo, cache_fp, flagsrpm);
         if (!rc)
-            hrepo->state_main = _HY_LOADED_FETCH;
+            repoImpl->state_main = _HY_LOADED_FETCH;
     }
     if (rc) {
         repo_free(repo, 1);
@@ -1718,19 +1725,19 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
         goto finish;
     }
 
-    repo_finalize_init(hrepo, repo);
+    libdnf::repoGetImpl(hrepo)->attachLibsolvRepo(repo);
     pool_set_installed(pool, repo);
     priv->provides_ready = 0;
 
-    if (hrepo->state_main == _HY_LOADED_FETCH && build_cache) {
+    if (repoImpl->state_main == _HY_LOADED_FETCH && build_cache) {
         ret = write_main(sack, hrepo, 1, error);
         if (!ret)
             goto finish;
     }
 
-    hrepo->main_nsolvables = repo->nsolvables;
-    hrepo->main_nrepodata = repo->nrepodata;
-    hrepo->main_end = repo->end;
+    repoImpl->main_nsolvables = repo->nsolvables;
+    repoImpl->main_nrepodata = repo->nrepodata;
+    repoImpl->main_end = repo->end;
     priv->considered_uptodate = FALSE;
 
  finish:
@@ -1758,19 +1765,20 @@ gboolean
 dnf_sack_load_repo(DnfSack *sack, HyRepo repo, int flags, GError **error)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
+    auto repoImpl = libdnf::repoGetImpl(repo);
     GError *error_local = NULL;
     const int build_cache = flags & DNF_SACK_LOAD_FLAG_BUILD_CACHE;
     gboolean retval;
     if (!load_yum_repo(sack, repo, error))
         return FALSE;
-    repo->load_flags = flags;
-    if (repo->state_main == _HY_LOADED_FETCH && build_cache) {
+    repoImpl->load_flags = flags;
+    if (repoImpl->state_main == _HY_LOADED_FETCH && build_cache) {
         if (!write_main(sack, repo, 1, error))
             return FALSE;
     }
-    repo->main_nsolvables = repo->libsolv_repo->nsolvables;
-    repo->main_nrepodata = repo->libsolv_repo->nrepodata;
-    repo->main_end = repo->libsolv_repo->end;
+    repoImpl->main_nsolvables = repoImpl->libsolvRepo->nsolvables;
+    repoImpl->main_nrepodata = repoImpl->libsolvRepo->nrepodata;
+    repoImpl->main_end = repoImpl->libsolvRepo->end;
     if (flags & DNF_SACK_LOAD_FLAG_USE_FILELISTS) {
         retval = load_ext(sack, repo, _HY_REPODATA_FILENAMES,
                           HY_EXT_FILENAMES, HY_REPO_FILELISTS_FN,
@@ -1780,14 +1788,14 @@ dnf_sack_load_repo(DnfSack *sack, HyRepo repo, int flags, GError **error)
             if (g_error_matches (error_local,
                                  DNF_ERROR,
                                  DNF_ERROR_NO_CAPABILITY)) {
-                g_debug("no filelists metadata available for %s", repo->name);
+                g_debug("no filelists metadata available for %s", repoImpl->conf->name().getValue().c_str());
                 g_clear_error (&error_local);
             } else {
                 g_propagate_error (error, error_local);
                 return FALSE;
             }
         }
-        if (repo->state_filelists == _HY_LOADED_FETCH && build_cache) {
+        if (repoImpl->state_filelists == _HY_LOADED_FETCH && build_cache) {
             if (!write_ext(sack, repo,
                            _HY_REPODATA_FILENAMES,
                            HY_EXT_FILENAMES, error))
@@ -1803,14 +1811,14 @@ dnf_sack_load_repo(DnfSack *sack, HyRepo repo, int flags, GError **error)
             if (g_error_matches (error_local,
                                  DNF_ERROR,
                                  DNF_ERROR_NO_CAPABILITY)) {
-                g_debug("no other metadata available for %s", repo->name);
+                g_debug("no other metadata available for %s", repoImpl->conf->name().getValue().c_str());
                 g_clear_error (&error_local);
             } else {
                 g_propagate_error (error, error_local);
                 return FALSE;
             }
         }
-        if (repo->state_other == _HY_LOADED_FETCH && build_cache) {
+        if (repoImpl->state_other == _HY_LOADED_FETCH && build_cache) {
             if (!write_ext(sack, repo,
                            _HY_REPODATA_OTHER,
                            HY_EXT_OTHER, error))
@@ -1825,14 +1833,14 @@ dnf_sack_load_repo(DnfSack *sack, HyRepo repo, int flags, GError **error)
             if (g_error_matches (error_local,
                                  DNF_ERROR,
                                  DNF_ERROR_NO_CAPABILITY)) {
-                g_debug("no presto metadata available for %s", repo->name);
+                g_debug("no presto metadata available for %s", repoImpl->conf->name().getValue().c_str());
                 g_clear_error (&error_local);
             } else {
                 g_propagate_error (error, error_local);
                 return FALSE;
             }
         }
-        if (repo->state_presto == _HY_LOADED_FETCH && build_cache)
+        if (repoImpl->state_presto == _HY_LOADED_FETCH && build_cache)
             if (!write_ext(sack, repo, _HY_REPODATA_PRESTO, HY_EXT_PRESTO, error))
                 return FALSE;
     }
@@ -1847,14 +1855,14 @@ dnf_sack_load_repo(DnfSack *sack, HyRepo repo, int flags, GError **error)
             if (g_error_matches (error_local,
                                  DNF_ERROR,
                                  DNF_ERROR_NO_CAPABILITY)) {
-                g_debug("no updateinfo available for %s", repo->name);
+                g_debug("no updateinfo available for %s", repoImpl->conf->name().getValue().c_str());
                 g_clear_error (&error_local);
             } else {
                 g_propagate_error (error, error_local);
                 return FALSE;
             }
         }
-        if (repo->state_updateinfo == _HY_LOADED_FETCH && build_cache)
+        if (repoImpl->state_updateinfo == _HY_LOADED_FETCH && build_cache)
             if (!write_ext(sack, repo, _HY_REPODATA_UPDATEINFO, HY_EXT_UPDATEINFO, error))
                 return FALSE;
     }
@@ -1901,9 +1909,10 @@ rewrite_repos(DnfSack *sack, Queue *addedfileprovides,
         auto hrepo = static_cast<HyRepo>(repo->appdata);
         if (!hrepo)
             continue;
-        if (!(hrepo->load_flags & DNF_SACK_LOAD_FLAG_BUILD_CACHE))
+        auto repoImpl = libdnf::repoGetImpl(hrepo);
+        if (!(repoImpl->load_flags & DNF_SACK_LOAD_FLAG_BUILD_CACHE))
             continue;
-        if (hrepo->main_nrepodata < 2)
+        if (repoImpl->main_nrepodata < 2)
             continue;
         /* now check if the repo already contains all of our file provides */
         Queue *addedq = repo == pool->installed && addedfileprovides_inst ?
@@ -1925,9 +1934,9 @@ rewrite_repos(DnfSack *sack, Queue *addedfileprovides,
         int oldnrepodata = repo->nrepodata;
         int oldnsolvables = repo->nsolvables;
         int oldend = repo->end;
-        repo->nrepodata = hrepo->main_nrepodata;
-        repo->nsolvables = hrepo->main_nsolvables;
-        repo->end = hrepo->main_end;
+        repo->nrepodata = repoImpl->main_nrepodata;
+        repo->nsolvables = repoImpl->main_nsolvables;
+        repo->end = repoImpl->main_end;
         g_debug("rewriting repo: %s", repo->name);
         write_main(sack, hrepo, 0, NULL);
         repo->nrepodata = oldnrepodata;

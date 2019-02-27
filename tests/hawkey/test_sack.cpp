@@ -29,6 +29,7 @@
 
 #include <glib/gstdio.h>
 
+#include <libdnf/repo/Repo-private.hpp>
 #include "libdnf/dnf-types.h"
 #include "libdnf/hy-package-private.hpp"
 #include "libdnf/hy-repo-private.hpp"
@@ -120,10 +121,11 @@ START_TEST(test_repo_written)
     setup_yum_sack(sack, "test_sack_written");
 
     HyRepo repo = hrepo_by_name(sack, "test_sack_written");
+    auto repoImpl = libdnf::repoGetImpl(repo);
     fail_if(repo == NULL);
-    fail_unless(repo->state_main == _HY_WRITTEN);
-    fail_unless(repo->state_filelists == _HY_WRITTEN);
-    fail_unless(repo->state_presto == _HY_WRITTEN);
+    fail_unless(repoImpl->state_main == _HY_WRITTEN);
+    fail_unless(repoImpl->state_filelists == _HY_WRITTEN);
+    fail_unless(repoImpl->state_presto == _HY_WRITTEN);
     fail_if(access(filename, R_OK|W_OK));
 
     g_free(filename);
@@ -196,7 +198,7 @@ START_TEST(test_filelist)
     HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);
     char *fn_solv = dnf_sack_give_cache_fn(sack, YUM_REPO_NAME, HY_EXT_FILENAMES);
 
-    fail_unless(repo->state_filelists == _HY_WRITTEN);
+    fail_unless(libdnf::repoGetImpl(repo)->state_filelists == _HY_WRITTEN);
     fail_if(access(fn_solv, R_OK));
     g_free(fn_solv);
 
@@ -212,7 +214,7 @@ START_TEST(test_filelist_from_cache)
     setup_yum_sack(sack, YUM_REPO_NAME);
 
     HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);
-    fail_unless(repo->state_filelists == _HY_LOADED_CACHE);
+    fail_unless(libdnf::repoGetImpl(repo)->state_filelists == _HY_LOADED_CACHE);
     check_filelist(dnf_sack_get_pool(sack));
     g_object_unref(sack);
 }
@@ -246,7 +248,7 @@ START_TEST(test_presto)
     char *fn_solv = dnf_sack_give_cache_fn(sack, YUM_REPO_NAME, HY_EXT_PRESTO);
 
     fail_if(access(fn_solv, R_OK));
-    fail_unless(repo->state_presto == _HY_WRITTEN);
+    fail_unless(libdnf::repoGetImpl(repo)->state_presto == _HY_WRITTEN);
     g_free(fn_solv);
     check_prestoinfo(dnf_sack_get_pool(sack));
 }
@@ -261,7 +263,7 @@ START_TEST(test_presto_from_cache)
     setup_yum_sack(sack, YUM_REPO_NAME);
 
     HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);
-    fail_unless(repo->state_presto == _HY_LOADED_CACHE);
+    fail_unless(libdnf::repoGetImpl(repo)->state_presto == _HY_LOADED_CACHE);
     check_prestoinfo(dnf_sack_get_pool(sack));
     g_object_unref(sack);
 }

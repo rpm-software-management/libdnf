@@ -2,6 +2,7 @@
 
 #include <utility>
 #include "DependencyContainer.hpp"
+#include "libdnf/repo/Repo-private.hpp"
 
 namespace libdnf {
 
@@ -178,7 +179,7 @@ void Package::addSupplements(std::shared_ptr<Dependency> dependency)
 
 void Package::createSolvable(HyRepo repo)
 {
-    id = repo_add_solvable(repo->libsolv_repo);
+    id = repo_add_solvable(libdnf::repoGetImpl(repo)->libsolvRepo);
 }
 
 void Package::fillSolvableData(const char *name, const char *version,
