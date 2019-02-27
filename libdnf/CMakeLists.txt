@@ -12,7 +12,6 @@ set(LIBDNF_SRCS
     hy-package.cpp
     hy-packageset.cpp
     hy-query.cpp
-    hy-repo.cpp
     dnf-sack.cpp
     hy-selector.cpp
     hy-subject.cpp

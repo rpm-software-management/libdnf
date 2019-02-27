@@ -39,6 +39,7 @@ extern "C" {
 #include "libdnf/conf/ConfigParser.hpp"
 #include "libdnf/conf/OptionStringList.hpp"
 #include "libdnf/goal/Goal.hpp"
+#include "libdnf/repo/Repo-private.hpp"
 #include "libdnf/sack/selector.hpp"
 
 #include "bgettext/bgettext-lib.h"
@@ -177,10 +178,11 @@ ModulePackageContainer::ModulePackageContainer(bool allArch, std::string install
     }
     Pool * pool = dnf_sack_get_pool(pImpl->moduleSack);
     HyRepo hrepo = hy_repo_create("available");
+    auto repoImpl = libdnf::repoGetImpl(hrepo);
     LibsolvRepo *repo = repo_create(pool, "available");
     repo->appdata = hrepo;
-    hrepo->libsolv_repo = repo;
-    hrepo->needs_internalizing = 1;
+    repoImpl->libsolvRepo = repo;
+    repoImpl->needs_internalizing = 1;
     pImpl->installRoot = installRoot;
 }
 

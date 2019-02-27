@@ -1,5 +1,6 @@
 #include "PackageTest.hpp"
 
+#include <libdnf/repo/Repo-private.hpp>
 #include <solv/poolarch.h>
 #include <solv/solver.h>
 #include <solv/selection.h>
@@ -11,7 +12,7 @@ void PackageTest::setUp()
     g_autoptr(GError) error = nullptr;
     sack = dnf_sack_new();
     repo = hy_repo_create("repo");
-    repo_finalize_init(repo, repo_create(dnf_sack_get_pool(sack), "repo"));
+    libdnf::repoGetImpl(repo)->attachLibsolvRepo(repo_create(dnf_sack_get_pool(sack), "repo"));
     dnf_sack_load_repo(sack, repo, 0, &error);
     package = std::unique_ptr<PackageInstantiable>(new PackageInstantiable(sack, repo, "rpm", "1.0", "x86_64"));
 }
@@ -40,7 +41,7 @@ void PackageTest::testArch()
 void PackageTest::testIsInRepo()
 {
     Pool *pool = dnf_sack_get_pool(sack);
-    Repo *repo = this->repo->libsolv_repo;
+    Repo *repo = libdnf::repoGetImpl(this->repo)->libsolvRepo;
 
     Solvable *solvable = pool_id2solvable(pool, package->getId());
 

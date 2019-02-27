@@ -21,55 +21,14 @@
 #ifndef HY_REPO_INTERNAL_H
 #define HY_REPO_INTERNAL_H
 
+#include "repo/Repo-private.hpp"
+
 // libsolv
 #include <solv/pooltypes.h>
 
 // hawkey
 #include "hy-iutil.h"
 #include "hy-repo.h"
-
-namespace libdnf {
-typedef ::Repo LibsolvRepo;
-}
-
-enum _hy_repo_state {
-    _HY_NEW,
-    _HY_LOADED_FETCH,
-    _HY_LOADED_CACHE,
-    _HY_WRITTEN
-};
-
-struct _HyRepo {
-    Repo *libsolv_repo;
-    int cost;
-    int needs_internalizing;
-    int nrefs;
-    int priority;
-    char *name;
-    char *repomd_fn;
-    char *primary_fn;
-    char *filelists_fn;
-    char *presto_fn;
-    char *updateinfo_fn;
-    char *other_fn;
-    char *modules_fn;
-    enum _hy_repo_state state_main;
-    enum _hy_repo_state state_filelists;
-    enum _hy_repo_state state_presto;
-    enum _hy_repo_state state_updateinfo;
-    enum _hy_repo_state state_other;
-    Id filenames_repodata;
-    Id presto_repodata;
-    Id updateinfo_repodata;
-    Id other_repodata;
-    unsigned char checksum[CHKSUM_BYTES];
-    int load_flags;
-    /* the following three elements are needed for repo rewriting */
-    int main_nsolvables;
-    int main_nrepodata;
-    int main_end;
-    gboolean use_includes; 
-};
 
 enum _hy_repo_repodata {
     _HY_REPODATA_FILENAMES,
@@ -78,15 +37,17 @@ enum _hy_repo_repodata {
     _HY_REPODATA_OTHER
 };
 
-HyRepo hy_repo_link(HyRepo repo);
 int hy_repo_transition(HyRepo repo, enum _hy_repo_state new_state);
 
-void repo_finalize_init(HyRepo hrepo, Repo *repo);
 void repo_internalize_all_trigger(Pool *pool);
 void repo_internalize_trigger(Repo *r);
 void repo_update_state(HyRepo repo, enum _hy_repo_repodata which,
                        enum _hy_repo_state state);
 Id repo_get_repodata(HyRepo repo, enum _hy_repo_repodata which);
 void repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata);
+
+namespace libdnf {
+    Repo::Impl * repoGetImpl(Repo * repo);
+}
 
 #endif // HY_REPO_INTERNAL_H

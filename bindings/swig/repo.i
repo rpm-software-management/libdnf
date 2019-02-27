@@ -14,15 +14,7 @@
 %{
     // make SWIG wrap following headers
     #include "libdnf/repo/Repo.hpp"
-    typedef struct {
-        PyObject_HEAD
-        HyRepo repo;
-    } _RepoObject;
 %}
-
-%typemap(in) HyRepo {
-    $1 = ((_RepoObject *)$input)->repo;
-}
 
 %include <exception.i>
 %exception {

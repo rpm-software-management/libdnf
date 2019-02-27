@@ -20,7 +20,9 @@
 
 #include "Python.h"
 
+
 // hawkey
+#include "libdnf/repo/Repo.hpp"
 #include "dnf-types.h"
 #include "hy-packageset.h"
 #include "hy-repo.h"
@@ -34,7 +36,6 @@
 #include "hawkey-pysys.hpp"
 #include "iutil-py.hpp"
 #include "package-py.hpp"
-#include "repo-py.hpp"
 #include "sack-py.hpp"
 
 #include "pycomp.hpp"
@@ -570,6 +571,14 @@ set_modules_enabled_by_pkgset(_SackObject *self, PyObject *args, PyObject *kwds)
     Py_RETURN_NONE;
 }
 
+typedef struct {
+    PyObject_HEAD
+    libdnf::Repo *ptr;
+    void *ty;
+    int own;
+    PyObject *next;
+} RepoSwigPyObject;
+
 static PyObject *
 load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 {
@@ -577,14 +586,27 @@ load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
     const char *kwlist[] = {"repo", "build_cache", "load_filelists", "load_presto",
                       NULL};
 
-    HyRepo crepo = NULL;
+    PyObject * repoPyObj = NULL;
+    libdnf::Repo * crepo = NULL;
     int build_cache = 0, unused_1 = 0, unused_2 = 0;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&iii", (char**) kwlist,
-                                     repo_converter, &crepo,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|Oiii", (char**) kwlist,
+                                     &repoPyObj,
                                      &build_cache, &unused_1, &unused_2))
-
-
         return 0;
+
+    if (repoPyObj) {
+        auto repoSwigPyObj = reinterpret_cast<RepoSwigPyObject *>(PyObject_GetAttrString(repoPyObj, "this"));
+        if (!repoSwigPyObj) {
+            PyErr_SetString(PyExc_SystemError, "Unable to parse repoSwigPyObject");
+            return NULL;
+        }
+
+        crepo = repoSwigPyObj->ptr;
+        if (!crepo) {
+            PyErr_SetString(PyExc_SystemError, "Unable to parse repo swig object");
+            return NULL;
+        }
+    }
 
     int flags = 0;
     if (build_cache)
@@ -602,13 +624,25 @@ load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
     const char *kwlist[] = {"repo", "build_cache", "load_filelists", "load_presto",
                       "load_updateinfo", "load_other", NULL};
 
-    HyRepo crepo = NULL;
+    PyObject * repoPyObj = NULL;
     int build_cache = 0, load_filelists = 0, load_presto = 0, load_updateinfo = 0, load_other = 0;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|iiiii", (char**) kwlist,
-                                     repo_converter, &crepo,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|iiiii", (char**) kwlist,
+                                     &repoPyObj,
                                      &build_cache, &load_filelists,
                                      &load_presto, &load_updateinfo, &load_other))
         return 0;
+
+    auto repoSwigPyObj = reinterpret_cast<RepoSwigPyObject *>(PyObject_GetAttrString(repoPyObj, "this"));
+    if (!repoSwigPyObj) {
+        PyErr_SetString(PyExc_SystemError, "Unable to parse repoSwigPyObject");
+        return NULL;
+    }
+
+    libdnf::Repo * crepo = repoSwigPyObj->ptr;
+    if (!crepo) {
+        PyErr_SetString(PyExc_SystemError, "Unable to parse repo swig object");
+        return NULL;
+    }
 
     int flags = 0;
     gboolean ret = 0;
