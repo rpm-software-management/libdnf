@@ -4,7 +4,7 @@
 <data type="filelists">
   <checksum type="sha256">4d4b903662ace0b08bda1d53f89c333614b7f658172bc9f0c87b0eef276ff5a1</checksum>
   <open-checksum type="sha256">1a131db9fa5d60090afe7481a184966187df593a37e0199fd67d9d8c935d980f</open-checksum>
-  <location xml:base="disagree" href="repodata/4d4b903662ace0b08bda1d53f89c333614b7f658172bc9f0c87b0eef276ff5a1-filelists.xml.gz"/>
+  <location href="repodata/4d4b903662ace0b08bda1d53f89c333614b7f658172bc9f0c87b0eef276ff5a1-filelists.xml.gz"/>
   <timestamp>1404109454</timestamp>
   <size>377</size>
   <open-size>814</open-size>
@@ -12,7 +12,7 @@
 <data type="prestodelta">
   <checksum type="sha256">52d800b3426c540bb88a80d01fb6c8d227ae14edca7446fa0f348a286223fb8b</checksum>
   <open-checksum type="sha256">668513ac58d09eb8febf3672dc6e3bc9a4df5f25738e6ce62440cc6c6095e032</open-checksum>
-  <location xml:base="disagree" href="repodata/52d800b3426c540bb88a80d01fb6c8d227ae14edca7446fa0f348a286223fb8b-prestodelta.xml.gz"/>
+  <location href="repodata/52d800b3426c540bb88a80d01fb6c8d227ae14edca7446fa0f348a286223fb8b-prestodelta.xml.gz"/>
   <timestamp>1404109454</timestamp>
   <size>311</size>
   <open-size>491</open-size>
@@ -20,7 +20,7 @@
 <data type="other">
   <checksum type="sha256">51fb8278682bdb0ea0956720b098dadf637efc01566acb48203c54c90ba86dda</checksum>
   <open-checksum type="sha256">5dc6290ad5d8a2bdef6fcd546b03650f3c1b85d6062a4df01c9f7da8b2947e24</open-checksum>
-  <location xml:base="disagree" href="repodata/51fb8278682bdb0ea0956720b098dadf637efc01566acb48203c54c90ba86dda-other.xml.gz"/>
+  <location href="repodata/51fb8278682bdb0ea0956720b098dadf637efc01566acb48203c54c90ba86dda-other.xml.gz"/>
   <timestamp>1404109454</timestamp>
   <size>294</size>
   <open-size>452</open-size>
@@ -28,7 +28,7 @@
 <data type="primary">
   <checksum type="sha256">f1ab2aa6c0e5881b9365f83a951e6696812ebfaaf56fee310c3f080c8849a1b4</checksum>
   <open-checksum type="sha256">533743dcdacef3afa4581b49a1ce09c196b24872ab3a8ec70f8cd4b2c5cb9b98</open-checksum>
-  <location xml:base="disagree" href="repodata/f1ab2aa6c0e5881b9365f83a951e6696812ebfaaf56fee310c3f080c8849a1b4-primary.xml.gz"/>
+  <location href="repodata/f1ab2aa6c0e5881b9365f83a951e6696812ebfaaf56fee310c3f080c8849a1b4-primary.xml.gz"/>
   <timestamp>1404109454</timestamp>
   <size>869</size>
   <open-size>2253</open-size>

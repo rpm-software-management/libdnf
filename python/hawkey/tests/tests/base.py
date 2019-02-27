@@ -20,6 +20,7 @@
 
 from sys import version_info as python_version
 
+import libdnf
 import hawkey
 import hawkey.test
 import os
@@ -61,8 +62,14 @@ class TestSack(hawkey.test.TestSackMixin, hawkey.Sack):
                              )
 
     def load_repo(self, **kwargs):
-        d = os.path.join(self.repo_dir, hawkey.test.YUM_DIR_SUFFIX)
-        repo = hawkey.test.glob_for_repofiles(self, "messerk", d)
+        d = os.path.join(self.repo_dir, 'yum/')
+        self._conf = libdnf.conf.ConfigMain()
+        repo_conf = libdnf.conf.ConfigRepo(self._conf)
+        self._conf.cachedir().set(libdnf.conf.Option.Priority_REPOCONFIG, self.cache_dir)
+        repo_conf.baseurl().set(libdnf.conf.Option.Priority_REPOCONFIG, 'file://%s' % d)
+        repo_conf.this.disown()  # _repo will be the owner of _config
+        repo = libdnf.repo.Repo("messerk", repo_conf)
+        repo.load()
         super(TestSack, self).load_repo(repo, **kwargs)
 
 def by_name(sack, name):
