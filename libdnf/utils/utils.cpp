@@ -1,11 +1,18 @@
 #include "utils.hpp"
 
+#include <tinyformat/tinyformat.hpp>
+
 #include <algorithm>
 #include <sys/stat.h>
 #include <dirent.h>
 #include <cstring>
 #include <stdexcept>
 
+extern "C" {
+#include <solv/solv_xfopen.h>
+};
+
+#include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
@@ -182,6 +189,48 @@ std::vector<std::string> getDirContent(const std::string &dirPath)
     }
 
     return content;
+}
+
+void decompress(const char * inPath, const char * outPath, mode_t outMode, const char * compressType)
+{
+    auto inFd = open(inPath, O_RDONLY);
+    if (inFd == -1)
+        throw std::runtime_error(tfm::format("open: %s", strerror(errno)));
+    if (!compressType)
+        compressType = inPath;
+    auto inFile = solv_xfopen_fd(compressType, inFd, "r");
+    if (inFile == NULL) {
+        close(inFd);
+        throw std::runtime_error("solv_xfopen_fd: Can't open stream");
+    }
+    auto outFd = open(outPath, O_WRONLY | O_CREAT | O_TRUNC, outMode);
+    if (outFd == -1) {
+        int err = errno;
+        fclose(inFile);
+        throw std::runtime_error(tfm::format("open: %s", strerror(err)));
+    }
+    char buf[4096];
+    while (auto readBytes = fread(buf, 1, sizeof(buf), inFile)) {
+        auto writtenBytes = write(outFd, buf, readBytes);
+        if (writtenBytes == -1) {
+            int err = errno;
+            close(outFd);
+            fclose(inFile);
+            throw std::runtime_error(tfm::format("write: %s", strerror(err)));
+        }
+        if (writtenBytes != static_cast<int>(readBytes)) {
+            close(outFd);
+            fclose(inFile);
+            throw std::runtime_error("write: Problem during writing data");
+        }
+    }
+    if (!feof(inFile)) {
+        close(outFd);
+        fclose(inFile);
+        throw std::runtime_error("fread: Problem during reading data");
+    }
+    close(outFd);
+    fclose(inFile);
 }
 
 }

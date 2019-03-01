@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include <sys/types.h>
+
 namespace libdnf {
 
 /**
@@ -48,6 +50,16 @@ namespace filesystem {
 bool exists (const std::string &name);
 bool isDIR(const std::string& dirPath);
 std::vector<std::string> getDirContent(const std::string &dirPath);
+
+/**
+* @brief Decompress file.
+*
+* @param inPath Path to input (compressed) file
+* @param outPath Path to output (decompressed) file
+* @param outMode Mode of created (output) file
+* @param compressType Type of compression (".bz2", ".gz", ...), nullptr - detect from inPath filename. Defaults to nullptr.
+*/
+void decompress(const char * inPath, const char * outPath, mode_t outMode, const char * compressType = nullptr);
 }
 
 }

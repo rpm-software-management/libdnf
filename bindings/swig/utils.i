@@ -14,6 +14,7 @@
     #include "libdnf/utils/sqlite3/Sqlite3.hpp"
     #include "libdnf/utils/logger.hpp"
     #include "libdnf/log.hpp"
+    #include "libdnf/utils/utils.hpp"
 %}
 
 
@@ -45,3 +46,11 @@ typedef long pid_t;
 %include "libdnf/utils/logger.hpp"
 
 %include "libdnf/log.hpp"
+
+typedef int mode_t;
+
+namespace libdnf { namespace filesystem {
+
+void decompress(const char * inPath, const char * outPath, mode_t outMode, const char * compressType = nullptr);
+
+}}
