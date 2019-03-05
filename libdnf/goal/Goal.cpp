@@ -1137,14 +1137,36 @@ Goal::Impl::allowUninstallAllButProtected(Queue *job, DnfGoalActions flags)
     if (kernel > 0)
         protectedPkgs->set(kernel);
 
-    if (DNF_ALLOW_UNINSTALL & flags)
+    if (DNF_ALLOW_UNINSTALL & flags) {
+        auto considered = dnf_sack_get_considered(sack);
         for (Id id = 1; id < pool->nsolvables; ++id) {
             Solvable *s = pool_id2solvable(pool, id);
             if (pool->installed == s->repo && !protectedPkgs->has(id) &&
-                (!pool->considered || MAPTST(pool->considered, id))) {
+                (!considered || MAPTST(considered, id))) {
                 queue_push2(job, SOLVER_ALLOWUNINSTALL|SOLVER_SOLVABLE, id);
             }
         }
+    }
+}
+
+void
+Goal::Impl::setSolverLock(IdQueue * job)
+{
+    /* apply the excludes */
+    dnf_sack_recompute_considered(sack);
+    dnf_sack_make_provides_ready(sack);
+    auto considered = dnf_sack_get_considered(sack);
+    if (!considered) {
+        return;
+    }
+    std::unique_ptr<PackageSet> lockSet(dnf_sack_get_pkg_solvables(sack));
+    PackageSet excludes(sack, considered);
+    map_invertall(excludes.getMap());
+    excludes /= *lockSet;
+    Id lockId = -1;
+    while ((lockId = excludes.next(lockId)) != -1) {
+        job->pushBack(SOLVER_LOCK|SOLVER_SOLVABLE, lockId);
+    }
 }
 
 std::unique_ptr<IdQueue>
@@ -1157,6 +1179,7 @@ Goal::Impl::constructJob(DnfGoalActions flags)
         for (int i = 0; i < job->size(); i += 2) {
             elements[i] |= SOLVER_FORCEBEST;
     }
+    setSolverLock(job.get());
 
     /* turn off implicit obsoletes for installonly packages */
     for (int i = 0; i < (int) dnf_sack_get_installonly(sack)->count; i++)
@@ -1253,10 +1276,6 @@ Goal::Impl::limitInstallonlyPackages(Solver *solv, Queue *job)
 bool
 Goal::Impl::solve(Queue *job, DnfGoalActions flags)
 {
-    /* apply the excludes */
-    dnf_sack_recompute_considered(sack);
-
-    dnf_sack_make_provides_ready(sack);
     if (trans) {
         transaction_free(trans);
         trans = NULL;

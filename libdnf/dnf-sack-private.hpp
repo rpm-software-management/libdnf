@@ -32,26 +32,10 @@
 
 typedef Id  (*dnf_sack_running_kernel_fn_t) (DnfSack    *sack);
 
-/**
- * @brief Store Map with only pkg_solvables to increase query performance
- *
- * @param sack p_sack:...
- * @param pkg_solvables Map with only all pkg_solvables
- * @param pool_nsolvables Number of pool_nsolvables in pool. It used as checksum.
- */
-void dnf_sack_set_pkg_solvables(DnfSack *sack, Map *pkg_solvables, int pool_nsolvables);
 
 /**
- * @brief Returns number of pool_nsolvables at time of creation of pkg_solvables. It can be used to
- *        verify Map contant
- *
- * @param sack p_sack:...
- * @return int
- */
-int dnf_sack_get_pool_nsolvables(DnfSack *sack);
-
-/**
- * @brief Returns pointer PackageSet with every package solvable in pool
+ * @brief Returns pointer PackageSet with every package solvable in pool. Requires dealocation by
+ * delete or dnf_packageset_free(DnfPackageSet *pset)
  *
  * @param sack p_sack:...
  * @return Map*
@@ -67,6 +51,7 @@ const char * dnf_sack_get_arch              (DnfSack    *sack);
 void         dnf_sack_set_provides_not_ready(DnfSack    *sack);
 void         dnf_sack_set_considered_to_update(DnfSack * sack);
 Queue       *dnf_sack_get_installonly       (DnfSack    *sack);
+Map         *dnf_sack_get_considered        (DnfSack    *sack);
 void         dnf_sack_set_running_kernel_fn (DnfSack    *sack,
                                              dnf_sack_running_kernel_fn_t fn);
 DnfPackage  *dnf_sack_add_cmdline_package_flags   (DnfSack *sack,

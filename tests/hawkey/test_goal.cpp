@@ -830,7 +830,7 @@ START_TEST(test_goal_describe_problem_excludes)
                 "conflicting requests",
                 "package semolina does not exist"
                 };
-    fail_unless(problems.size() >= 2);
+    fail_unless(problems.size() >= 1);
     fail_unless(problems[0] == expected[0]);
 
     hy_goal_free(goal);

@@ -45,6 +45,13 @@ private:
 
     PackageSet listResults(Id type_filter1, Id type_filter2);
     void allowUninstallAllButProtected(Queue *job, DnfGoalActions flags);
+
+    /**
+     * @brief Set package excludes. Packages with SOLVER_LOCK cannot change state
+     * installed/available
+     *
+     */
+    void setSolverLock(IdQueue * job);
     std::unique_ptr<IdQueue> constructJob(DnfGoalActions flags);
     bool solve(Queue *job, DnfGoalActions flags);
     Solver * initSolver();

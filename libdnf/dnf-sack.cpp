@@ -97,6 +97,7 @@ typedef struct
     Map                 *module_excludes;
     Map                 *module_includes;   /* To fast identify enabled modular packages */
     Map                 *pkg_solvables;     /* Map representing only solvable pkgs of query */
+    Map                 *considered;        /* Map originally content of pool->considered */
     int                  pool_nsolvables;   /* Number of nsolvables for creation of pkg_solvables*/
     Pool                *pool;
     Queue                installonly;
@@ -144,8 +145,8 @@ dnf_sack_finalize(GObject *object)
     free_map_fully(priv->repo_excludes);
     free_map_fully(priv->module_excludes);
     free_map_fully(priv->module_includes);
-    free_map_fully(pool->considered);
     free_map_fully(priv->pkg_solvables);
+    free_map_fully(priv->considered);
     pool_free(priv->pool);
     if (priv->moduleContainer) {
         delete priv->moduleContainer;
@@ -278,30 +279,25 @@ dnf_sack_set_running_kernel_fn (DnfSack *sack, dnf_sack_running_kernel_fn_t fn)
     priv->running_kernel_fn = fn;
 }
 
-void
-dnf_sack_set_pkg_solvables(DnfSack *sack, Map *pkg_solvables, int pool_nsolvables)
-{
-    DnfSackPrivate *priv = GET_PRIVATE(sack);
-
-    auto pkg_solvables_tmp = static_cast<Map *>(g_malloc(sizeof(Map)));
-    if (priv->pkg_solvables)
-        free_map_fully(priv->pkg_solvables);
-    map_init_clone(pkg_solvables_tmp, pkg_solvables);
-    priv->pkg_solvables = pkg_solvables_tmp;
-    priv->pool_nsolvables = pool_nsolvables;
-}
-
-int
-dnf_sack_get_pool_nsolvables(DnfSack *sack)
-{
-    DnfSackPrivate *priv = GET_PRIVATE(sack);
-    return priv->pool_nsolvables;
-}
-
 libdnf::PackageSet *
 dnf_sack_get_pkg_solvables(DnfSack *sack)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
+    Pool *pool = priv->pool;
+    Id solvid;
+    if (priv->pool_nsolvables != 0 && priv->pool_nsolvables == pool->nsolvables)
+        return new libdnf::PackageSet(sack, priv->pkg_solvables);
+    else {
+        if (!priv->pkg_solvables) {
+            priv->pkg_solvables = static_cast<Map *>(g_malloc(sizeof(Map)));
+            map_init(priv->pkg_solvables, pool->nsolvables);
+        } else {
+            map_grow(priv->pkg_solvables, pool->nsolvables);
+            map_empty(priv->pkg_solvables);
+        }
+        FOR_PKG_SOLVABLES(solvid)
+            map_set(priv->pkg_solvables, solvid);
+    }
     return new libdnf::PackageSet(sack, priv->pkg_solvables);
 }
 
@@ -336,25 +332,25 @@ dnf_sack_recompute_considered(DnfSack *sack)
     Pool *pool = dnf_sack_get_pool(sack);
     if (priv->considered_uptodate)
         return;
-    if (!pool->considered) {
+    if (!priv->considered) {
         if (!priv->repo_excludes && !priv->module_excludes && !priv->pkg_excludes &&
             !priv->pkg_includes)
             return;
-        pool->considered = static_cast<Map *>(g_malloc0(sizeof(Map)));
-        map_init(pool->considered, pool->nsolvables);
+        priv->considered = static_cast<Map *>(g_malloc0(sizeof(Map)));
+        map_init(priv->considered, pool->nsolvables);
     } else
-        map_grow(pool->considered, pool->nsolvables);
+        map_grow(priv->considered, pool->nsolvables);
 
     // considered = (all - repo_excludes - pkg_excludes) and
     //              (pkg_includes + all_from_repos_not_using_includes)
-    map_setall(pool->considered);
+    map_setall(priv->considered);
     dnf_sack_make_provides_ready(sack);
     if (priv->repo_excludes)
-        map_subtract(pool->considered, priv->repo_excludes);
+        map_subtract(priv->considered, priv->repo_excludes);
     if (priv->pkg_excludes)
-        map_subtract(pool->considered, priv->pkg_excludes);
+        map_subtract(priv->considered, priv->pkg_excludes);
     if (priv->module_excludes)
-        map_subtract(pool->considered, priv->module_excludes);
+        map_subtract(priv->considered, priv->module_excludes);
     if (priv->pkg_includes) {
         Map pkg_includes_tmp;
         map_init_clone(&pkg_includes_tmp, priv->pkg_includes);
@@ -372,7 +368,7 @@ dnf_sack_recompute_considered(DnfSack *sack)
             }
         }
 
-        map_and(pool->considered, &pkg_includes_tmp);
+        map_and(priv->considered, &pkg_includes_tmp);
         map_free(&pkg_includes_tmp);
     }
     priv->considered_uptodate = TRUE;
@@ -1085,6 +1081,23 @@ dnf_sack_get_installonly(DnfSack *sack)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     return &priv->installonly;
+}
+
+/**
+ * dnf_sack_get_considered:
+ * @sack: a #DnfSack instance.
+ *
+ * Gets the considered packages. Considered Map represents IDs that was not previously excluded.
+ *
+ * Returns: a Map
+ *
+ * Since: 0.27.0
+ */
+Map *
+dnf_sack_get_considered(DnfSack * sack)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    return priv->considered;
 }
 
 /**

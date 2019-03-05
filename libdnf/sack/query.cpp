@@ -952,22 +952,11 @@ Query::Impl::filterNevraStrict(int cmpType, const char **matches)
 void
 Query::Impl::initResult()
 {
-    Pool *pool = dnf_sack_get_pool(sack);
-    Id solvid;
-
-    int sack_pool_nsolvables = dnf_sack_get_pool_nsolvables(sack);
-    if (sack_pool_nsolvables != 0 && sack_pool_nsolvables == pool->nsolvables)
-        result.reset(dnf_sack_get_pkg_solvables(sack));
-    else {
-        result.reset(new PackageSet(sack));
-        FOR_PKG_SOLVABLES(solvid)
-            result->set(solvid);
-        dnf_sack_set_pkg_solvables(sack, result->getMap(), pool->nsolvables);
-    }
+    result.reset(dnf_sack_get_pkg_solvables(sack));
     if (!(flags & HY_IGNORE_EXCLUDES)) {
         dnf_sack_recompute_considered(sack);
-        if (pool->considered)
-            map_and(result->getMap(), pool->considered);
+        if (auto considered = dnf_sack_get_considered(sack))
+            map_and(result->getMap(), considered);
     }
 }
 
