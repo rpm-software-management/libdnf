@@ -163,6 +163,8 @@ class ConfigMain::Impl {
 
     Config & owner;
 
+    std::map<std::string, std::string> vars;
+
     OptionNumber<std::int32_t> debuglevel{2, 0, 10};
     OptionNumber<std::int32_t> errorlevel{3, 0, 10};
     OptionPath installroot{"/"};
@@ -473,6 +475,8 @@ ConfigMain::Impl::Impl(Config & owner)
 
 ConfigMain::ConfigMain() { pImpl = std::unique_ptr<Impl>(new Impl(*this)); }
 ConfigMain::~ConfigMain() = default;
+
+std::map<std::string, std::string> & ConfigMain::vars() { return pImpl->vars; }
 
 OptionNumber<std::int32_t> & ConfigMain::debuglevel() { return pImpl->debuglevel; }
 OptionNumber<std::int32_t> & ConfigMain::errorlevel() { return pImpl->errorlevel; }

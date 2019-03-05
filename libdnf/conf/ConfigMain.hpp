@@ -47,6 +47,8 @@ public:
     ConfigMain();
     ~ConfigMain();
 
+    std::map<std::string, std::string> & vars();
+
     OptionNumber<std::int32_t> & debuglevel();
     OptionNumber<std::int32_t> & errorlevel();
     OptionString & installroot();
