@@ -167,12 +167,37 @@ public:
 }
 
 %apply std::string & INOUT { std::string & text }
-%ignore libdnf::ConfigParser::Exception;
-%ignore libdnf::ConfigParser::CantOpenFile;
-%ignore libdnf::ConfigParser::ParsingError;
-%ignore libdnf::ConfigParser::MissingSection;
-%ignore libdnf::ConfigParser::MissingOption;
-%include "libdnf/conf/ConfigParser.hpp"
+namespace libdnf {
+struct ConfigParser {
+public:
+    typedef PreserveOrderMap<std::string, PreserveOrderMap<std::string, std::string>> Container;
+
+    static void substitute(std::string & text,
+        const std::map<std::string, std::string> & substitutions);
+    void setSubstitutions(const std::map<std::string, std::string> & substitutions);
+    const std::map<std::string, std::string> & getSubstitutions() const;
+    void read(const std::string & filePath);
+    void write(const std::string & filePath, bool append) const;
+    void write(const std::string & filePath, bool append, const std::string & section) const;
+    void write(std::ostream & outputStream, const std::string & section) const;
+    void write(std::ostream & outputStream) const;
+    bool addSection(const std::string & section, const std::string & rawLine);
+    bool addSection(const std::string & section);
+    bool hasSection(const std::string & section) const noexcept;
+    bool hasOption(const std::string & section, const std::string & key) const noexcept;
+    void setValue(const std::string & section, const std::string & key, const std::string & value, const std::string & rawItem);
+    void setValue(const std::string & section, const std::string & key, const std::string & value);
+    bool removeSection(const std::string & section);
+    bool removeOption(const std::string & section, const std::string & key);
+    void addCommentLine(const std::string & section, const std::string & comment);
+    const std::string & getValue(const std::string & section, const std::string & key) const;
+    std::string getSubstitutedValue(const std::string & section, const std::string & key) const;
+    const std::string & getHeader() const noexcept;
+    std::string & getHeader() noexcept;
+    const Container & getData() const noexcept;
+    Container & getData() noexcept;
+};
+}
 %clear std::string & text;
 
 %exception __next__() {
