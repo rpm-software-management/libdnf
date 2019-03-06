@@ -21,6 +21,7 @@
 #ifndef _LIBDNF_CONFIG_CONST_HPP
 #define _LIBDNF_CONFIG_CONST_HPP
 
+#include <array>
 #include <string>
 #include <vector>
 
@@ -30,6 +31,8 @@ constexpr const char * PERSISTDIR = "/var/lib/dnf";
 constexpr const char * SYSTEM_CACHEDIR = "/var/cache/dnf";
 
 constexpr const char * CONF_FILENAME = "/etc/dnf/dnf.conf";
+
+const std::array<std::string, 2> VARS_DIRS{"/etc/yum/vars", "/etc/dnf/vars"};
 
 const std::vector<std::string> GROUP_PACKAGE_TYPES{"mandatory", "default", "conditional"};
 const std::vector<std::string> INSTALLONLYPKGS{"kernel", "kernel-PAE",

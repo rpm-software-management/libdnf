@@ -154,6 +154,31 @@ public:
     OptionBool & deltarpm();
     OptionNumber<std::uint32_t> & deltarpm_percentage();
 
+    /**
+    * @brief Adds variables from directory
+    *
+    * Additional variables are added from directory. Each file represents one variable.
+    * The variable name is equal to filename and the value is defined by first line of the file.
+    *
+    * @param dirPath Path to directory.
+    */
+    void addVarsFromDir(const std::string & rootDir, const std::string & dirPath);
+
+    /**
+    * @brief Adds variables from directory
+    *
+    * Additional variables are added from directory. Each file represents one variable.
+    * The variable name is equal to filename and the value is defined by first line of the file.
+    */
+    void addVarsFromDir(const std::string & rootDir);
+
+    /**
+    * @brief Adds variables from environment
+    *
+    * Environmental variables DNF[0-9] and DNF_VAR_[A-Za-z0-9_]+ are used if exists.
+    */
+    void addVarsFromEnv();
+
 private:
     class Impl;
     std::unique_ptr<Impl> pImpl;

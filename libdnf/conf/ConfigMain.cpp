@@ -21,6 +21,7 @@
 #include "ConfigMain.hpp"
 #include "Const.hpp"
 #include "Config-private.hpp"
+#include "utils.hpp"
 
 #include <algorithm>
 #include <array>
@@ -34,9 +35,13 @@
 #include <glob.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "bgettext/bgettext-lib.h"
 #include "tinyformat/tinyformat.hpp"
+
+extern char **environ;
 
 namespace libdnf {
 
@@ -576,5 +581,52 @@ OptionString & ConfigMain::sslclientcert() { return pImpl->sslclientcert; }
 OptionString & ConfigMain::sslclientkey() { return pImpl->sslclientkey; }
 OptionBool & ConfigMain::deltarpm() { return pImpl->deltarpm; }
 OptionNumber<std::uint32_t> & ConfigMain::deltarpm_percentage() { return pImpl->deltarpm_percentage; }
+
+void ConfigMain::addVarsFromDir(const std::string & rootDir, const std::string & dirPath)
+{
+    if (auto dir = opendir(dirPath.c_str())) {
+        while (auto ent = readdir(dir)) {
+            if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0)
+                continue;
+
+            auto fullPath = rootDir + dirPath;
+            if (fullPath.back() != '/')
+                fullPath += "/";
+            fullPath += ent->d_name;
+
+            struct stat buf;
+            lstat(fullPath.c_str(), &buf);
+            if (!S_ISREG(buf.st_mode))
+                continue;
+
+            std::ifstream inStream(fullPath);
+            std::string line;
+            std::getline(inStream, line);
+            pImpl->vars[ent->d_name] = std::move(line);
+        }
+        closedir(dir);
+    }
+}
+
+void ConfigMain::addVarsFromDir(const std::string & rootDir)
+{
+    for (auto & dir : VARS_DIRS)
+        addVarsFromDir(rootDir, dir);
+}
+
+void ConfigMain::addVarsFromEnv()
+{
+    for (const char * const * varPtr = environ; *varPtr; ++varPtr) {
+        auto var = *varPtr;
+        if (auto eqlPtr = strchr(var, '=')) {
+            // DNF[0-9] and DNF_VARS_[A-Za-z0-9_]+
+            auto eqlIdx = eqlPtr - var;
+            if ((eqlIdx == 4 && strncmp("DNF", var, 3) == 0 && isdigit(var[3])) ||
+                (eqlIdx > 8 && strncmp("DNF_VAR_", var, 8) == 0 &&
+                 static_cast<int>(strspn(var + 8, ASCII_LETTERS DIGITS "_")) == eqlIdx - 8))
+                pImpl->vars[std::string(var, eqlIdx)] = eqlPtr + 1;
+        }
+    }
+}
 
 }
