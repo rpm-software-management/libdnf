@@ -584,12 +584,28 @@ OptionNumber<std::uint32_t> & ConfigMain::deltarpm_percentage() { return pImpl->
 
 void ConfigMain::addVarsFromDir(const std::string & rootDir, const std::string & dirPath)
 {
+    addVarsFromDir(pImpl->vars, rootDir + dirPath);
+}
+
+void ConfigMain::addVarsFromDir(const std::string & rootDir)
+{
+    for (auto & dir : VARS_DIRS)
+        addVarsFromDir(pImpl->vars, rootDir + dir);
+}
+
+void ConfigMain::addVarsFromEnv()
+{
+    addVarsFromEnv(pImpl->vars);
+}
+
+void ConfigMain::addVarsFromDir(std::map<std::string, std::string> & varsMap, const std::string & dirPath)
+{
     if (auto dir = opendir(dirPath.c_str())) {
         while (auto ent = readdir(dir)) {
             if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0)
                 continue;
 
-            auto fullPath = rootDir + dirPath;
+            auto fullPath = dirPath;
             if (fullPath.back() != '/')
                 fullPath += "/";
             fullPath += ent->d_name;
@@ -602,19 +618,13 @@ void ConfigMain::addVarsFromDir(const std::string & rootDir, const std::string &
             std::ifstream inStream(fullPath);
             std::string line;
             std::getline(inStream, line);
-            pImpl->vars[ent->d_name] = std::move(line);
+            varsMap[ent->d_name] = std::move(line);
         }
         closedir(dir);
     }
 }
 
-void ConfigMain::addVarsFromDir(const std::string & rootDir)
-{
-    for (auto & dir : VARS_DIRS)
-        addVarsFromDir(rootDir, dir);
-}
-
-void ConfigMain::addVarsFromEnv()
+void ConfigMain::addVarsFromEnv(std::map<std::string, std::string> & varsMap)
 {
     for (const char * const * varPtr = environ; *varPtr; ++varPtr) {
         auto var = *varPtr;
@@ -624,7 +634,7 @@ void ConfigMain::addVarsFromEnv()
             if ((eqlIdx == 4 && strncmp("DNF", var, 3) == 0 && isdigit(var[3])) ||
                 (eqlIdx > 8 && strncmp("DNF_VAR_", var, 8) == 0 &&
                  static_cast<int>(strspn(var + 8, ASCII_LETTERS DIGITS "_")) == eqlIdx - 8))
-                pImpl->vars[std::string(var, eqlIdx)] = eqlPtr + 1;
+                varsMap[std::string(var, eqlIdx)] = eqlPtr + 1;
         }
     }
 }

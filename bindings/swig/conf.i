@@ -98,6 +98,8 @@ public:
 %feature ("flatnested", "0");
 
 %include "libdnf/conf/Config.hpp"
+%ignore libdnf::ConfigMain::addVarsFromDir(std::map<std::string, std::string> & varsMap, const std::string & dirPath);
+%ignore libdnf::ConfigMain::addVarsFromEnv(std::map<std::string, std::string> & varsMap);
 %include "libdnf/conf/ConfigMain.hpp"
 %include "libdnf/conf/ConfigRepo.hpp"
 

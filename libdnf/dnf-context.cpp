@@ -31,9 +31,11 @@
  */
 
 #include "config.h"
+#include "conf/Const.hpp"
+#include "conf/ConfigMain.hpp"
+#include "dnf-context.hpp"
 
 #include <memory>
-#include <string>
 #include <vector>
 #include <gio/gio.h>
 #include <rpm/rpmlib.h>
@@ -149,6 +151,8 @@ typedef struct
     DnfState        *state;        /* used for setup() and run() */
     HyGoal           goal;
     DnfSack         *sack;
+    std::map<std::string, std::string> *vars;
+    bool             varsCached;
     libdnf::Plugins *plugins;
 } DnfContextPrivate;
 
@@ -181,6 +185,7 @@ dnf_context_finalize(GObject *object)
 
     priv->plugins->free();
     delete priv->plugins;
+    delete priv->vars;
 
     g_free(priv->repo_dir);
     g_strfreev(priv->vars_dir);
@@ -228,8 +233,11 @@ static void
 dnf_context_init(DnfContext *context)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
-    gchar *vars_dir[] = {"/etc/dnf/vars", "/etc/yum/vars", NULL};
-    priv->vars_dir = g_strdupv(vars_dir);
+    const char *tmpVarsDir[libdnf::VARS_DIRS.size() + 1];
+    for (size_t i = 0; i < libdnf::VARS_DIRS.size(); ++i)
+        tmpVarsDir[i] = libdnf::VARS_DIRS[i].c_str();
+    tmpVarsDir[libdnf::VARS_DIRS.size()] = NULL;
+    priv->vars_dir = g_strdupv(const_cast<gchar **>(tmpVarsDir));
     priv->install_root = g_strdup("/");
     priv->check_disk_space = TRUE;
     priv->check_transaction = TRUE;
@@ -243,6 +251,7 @@ dnf_context_init(DnfContext *context)
                                                   g_free, g_free);
     priv->user_agent = g_strdup("libdnf/" PACKAGE_VERSION);
 
+    priv->vars = new std::map<std::string, std::string>;
     priv->plugins = new libdnf::Plugins;
     if (!pluginsDir.empty()) {
         priv->plugins->loadPlugins(pluginsDir);
@@ -945,6 +954,7 @@ dnf_context_set_vars_dir(DnfContext *context, const gchar * const *vars_dir)
     DnfContextPrivate *priv = GET_PRIVATE(context);
     g_strfreev(priv->vars_dir);
     priv->vars_dir = g_strdupv(const_cast<gchar **>(vars_dir));
+    priv->varsCached = false;
 }
 
 /**
@@ -2497,4 +2507,29 @@ pluginGetContext(DnfPluginInitData * data)
         return nullptr;
     }
     return (static_cast<PluginHookContextInitData *>(data)->context);
+}
+
+namespace libdnf {
+
+std::map<std::string, std::string> &
+dnf_context_get_vars(DnfContext * context)
+{
+    return *GET_PRIVATE(context)->vars;
+}
+
+bool dnf_context_get_vars_cached(DnfContext * context)
+{
+    return GET_PRIVATE(context)->varsCached;
+}
+
+void dnf_context_load_vars(DnfContext * context)
+{
+    auto priv = GET_PRIVATE(context);
+    priv->vars->clear();
+    ConfigMain::addVarsFromEnv(*priv->vars);
+    for (auto dir = priv->vars_dir; *dir; ++dir)
+        ConfigMain::addVarsFromDir(*priv->vars, std::string(priv->install_root) + *dir);
+    priv->varsCached = true;
+}
+
 }

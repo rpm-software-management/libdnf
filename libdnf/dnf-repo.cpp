@@ -33,6 +33,7 @@
  * See also: #DnfRepo
  */
 
+#include "dnf-context.hpp"
 
 #include <strings.h>
 #include <fcntl.h>
@@ -1166,6 +1167,12 @@ dnf_repo_setup(DnfRepo *repo, GError **error)
         return FALSE;
     priv->urlvars = lr_urlvars_set(priv->urlvars, "releasever", release);
     priv->urlvars = lr_urlvars_set(priv->urlvars, "basearch", basearch);
+
+    if (!libdnf::dnf_context_get_vars_cached(priv->context))
+        libdnf::dnf_context_load_vars(priv->context);
+    for (const auto & item : libdnf::dnf_context_get_vars(priv->context))
+        priv->urlvars = lr_urlvars_set(priv->urlvars, item.first.c_str(), item.second.c_str());
+
     testdatadir = dnf_realpath(TESTDATADIR);
     priv->urlvars = lr_urlvars_set(priv->urlvars, "testdatadir", testdatadir);
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_VARSUB, priv->urlvars))

@@ -179,6 +179,9 @@ public:
     */
     void addVarsFromEnv();
 
+    static void addVarsFromDir(std::map<std::string, std::string> & varsMap, const std::string & dirPath);
+    static void addVarsFromEnv(std::map<std::string, std::string> & varsMap);
+
 private:
     class Impl;
     std::unique_ptr<Impl> pImpl;
