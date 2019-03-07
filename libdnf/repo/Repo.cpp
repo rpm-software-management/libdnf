@@ -246,7 +246,6 @@ public:
     unsigned char checksum[CHKSUM_BYTES];
     bool useIncludes{false};
     bool loadMetadataOther;
-    std::map<std::string, std::string> substitutions;
 
     std::unique_ptr<RepoCB> callbacks;
     std::string repoFilePath;
@@ -516,11 +515,6 @@ void Repo::expire() { pImpl->expire(); }
 bool Repo::isExpired() const { return pImpl->isExpired(); }
 int Repo::getExpiresIn() const { return pImpl->getExpiresIn(); }
 
-void Repo::setSubstitutions(const std::map<std::string, std::string> & substitutions)
-{
-    pImpl->substitutions = substitutions;
-}
-
 void Repo::addMetadataTypeToDownload(const std::string &metadataType)
 {
     pImpl->additionalMetadata.insert(metadataType);
@@ -580,7 +574,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitLocal()
     std::unique_ptr<LrHandle> h(lrHandleInitBase());
 
     LrUrlVars * vars = NULL;
-    for (const auto & item : substitutions)
+    for (const auto & item : conf->getMasterConfig().vars())
         vars = lr_urlvars_set(vars, item.first.c_str(), item.second.c_str());
     handleSetOpt(h.get(), LRO_VARSUB, vars);
     auto cachedir = getCachedir();
@@ -602,7 +596,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bo
     handleSetOpt(h.get(), LRO_HTTPHEADER, httpHeaders.get());
 
     LrUrlVars * vars = NULL;
-    for (const auto & item : substitutions)
+    for (const auto & item : conf->getMasterConfig().vars())
         vars = lr_urlvars_set(vars, item.first.c_str(), item.second.c_str());
     handleSetOpt(h.get(), LRO_VARSUB, vars);
 

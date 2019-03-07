@@ -250,8 +250,6 @@ public:
     const char * const * getHttpHeaders() const;
     std::vector<std::string> getMirrors() const;
 
-    void setSubstitutions(const std::map<std::string, std::string> & substitutions);
-
     ~Repo();
 private:
     friend struct PackageTarget;

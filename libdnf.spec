@@ -1,7 +1,7 @@
 %global libsolv_version 0.6.35-1
 %global libmodulemd_version 1.6.1
 %global librepo_version 1.9.5
-%global dnf_conflict 4.1.0
+%global dnf_conflict 4.2.2
 %global swig_version 3.0.12
 
 %bcond_with valgrind
@@ -31,7 +31,7 @@
     %{nil}
 
 Name:           libdnf
-Version:        0.28.0
+Version:        0.28.1
 Release:        1%{?dist}
 Summary:        Library providing simplified C and Python API to libsolv
 License:        LGPLv2+
