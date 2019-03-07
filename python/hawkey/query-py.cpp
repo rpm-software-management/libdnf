@@ -826,6 +826,8 @@ query_iter(PyObject *self)
 {
     const DnfPackageSet * pset = ((_QueryObject *) self)->query->runSet();
     UniquePtrPyObject list(packageset_to_pylist(pset, ((_QueryObject *) self)->sack));
+    if (!list)
+        return NULL;
     PyObject *iter = PyObject_GetIter(list.get());
     Py_INCREF(iter);
     return iter;
