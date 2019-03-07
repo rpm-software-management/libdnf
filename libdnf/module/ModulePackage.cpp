@@ -78,8 +78,7 @@ ModulePackage::ModulePackage(DnfSack * moduleSack, Repo * repo,
     id = repo_add_solvable(repo);
     Solvable *solvable = pool_id2solvable(pool, id);
 
-    setSovable(pool, solvable, getName(), getStream(), getVersion(), getContext(),
-        metadata.getArchitecture());
+    setSovable(pool, solvable, getName(), getStream(), getVersion(), getContext(), getArchCStr());
     createDependencies(solvable);
     HyRepo hyRepo = static_cast<HyRepo>(repo->appdata);
     hyRepo->needs_internalizing = 1;
