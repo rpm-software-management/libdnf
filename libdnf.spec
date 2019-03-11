@@ -1,5 +1,6 @@
 %global libsolv_version 0.6.35-1
 %global libmodulemd_version 1.6.1
+%global librepo_version 1.9.5
 %global dnf_conflict 4.1.0
 %global swig_version 3.0.12
 
@@ -41,7 +42,7 @@ BuildRequires:  cmake
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
 BuildRequires:  libsolv-devel >= %{libsolv_version}
-BuildRequires:  pkgconfig(librepo)
+BuildRequires:  pkgconfig(librepo) >= %{librepo_version}
 BuildRequires:  pkgconfig(check)
 %if %{with valgrind}
 BuildRequires:  valgrind
@@ -63,6 +64,7 @@ BuildRequires:  gpgme-devel
 
 Requires:       libmodulemd%{?_isa} >= %{libmodulemd_version}
 Requires:       libsolv%{?_isa} >= %{libsolv_version}
+Requires:       librepo%{?_isa} >= %{librepo_version}
 
 %description
 A Library providing simplified C and Python API to libsolv.
