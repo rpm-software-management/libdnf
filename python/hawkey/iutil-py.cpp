@@ -259,10 +259,10 @@ pyseq_to_reldeplist(PyObject *obj, DnfSack *sack, int cmp_type)
 
             if (!hy_is_glob_pattern(reldep_str.getCString())) {
                 if (!reldeplist->addReldep(reldep_str.getCString()))
-                    return NULL;
+                    continue;
             } else {
                 if (!reldeplist->addReldepWithGlob(reldep_str.getCString()))
-                    return NULL;
+                    continue;
             }
 
         } else {
@@ -270,7 +270,7 @@ pyseq_to_reldeplist(PyObject *obj, DnfSack *sack, int cmp_type)
             if (!reldepStr.getCString())
                 return NULL;
             if (!reldeplist->addReldep(reldepStr.getCString()))
-                return NULL;
+                continue;
         }
     }
 

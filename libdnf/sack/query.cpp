@@ -784,7 +784,11 @@ Query::addFilter(int keyname, const DependencyContainer * reldeplist)
     if (!valid_filter_reldep(keyname))
         return DNF_ERROR_BAD_QUERY;
     pImpl->applied = false;
-    pImpl->filters.push_back(Filter(keyname, HY_EQ, reldeplist));
+    if (reldeplist->count()) {
+        pImpl->filters.push_back(Filter(keyname, HY_EQ, reldeplist));
+    } else {
+        pImpl->filters.push_back(Filter(HY_PKG_EMPTY, HY_EQ, 1));
+    }
     return 0;
 }
 int
