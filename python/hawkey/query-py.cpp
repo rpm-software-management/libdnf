@@ -807,7 +807,7 @@ query_get_item(PyObject *self, int index)
 {
     HyQuery query = ((_QueryObject *) self)->query;
     Id id = query->getIndexItem(index);
-    if (!id) {
+    if (id == -1) {
         PyErr_SetString(PyExc_IndexError, "list index out of range");
         return NULL;
     }
