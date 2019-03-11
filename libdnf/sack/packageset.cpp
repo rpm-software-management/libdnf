@@ -87,8 +87,7 @@ PackageSet::operator [](unsigned int index) const
         }
         return id;
     }
-    id = -1;
-    return id;
+    return -1;
 }
 
 PackageSet &
