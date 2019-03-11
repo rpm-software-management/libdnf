@@ -20,6 +20,16 @@
 ######################
 
 ====================
+0.28.0 Release Notes
+====================
+- Exclude module pkgs that have conflict (RhBug:1670496)
+- Fix zchunk configuration flags
+- Enhance config parser to preserve order of data, and keep comments and format
+- [history] Allow using :memory: db to avoid disk writes
+- Improve ARM detection
+- Add support for SHA-384
+
+====================
 0.26.0 Release Notes
 ====================
 - Enhance modular solver to handle enabled and default module streams differently (RhBug:1648839)
