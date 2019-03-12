@@ -117,6 +117,7 @@ private:
     std::string installRoot;
     ModuleDefaultsContainer defaultConteiner;
     std::map<std::string, std::string> moduleDefaults;
+    bool platformAdded{false};
 };
 
 class ModulePackageContainer::Impl::ModulePersistor {
@@ -265,8 +266,10 @@ Id
 ModulePackageContainer::addPlatformPackage(const std::string& osReleasePath,
     const char* platformModule)
 {
-    return ModulePackage::createPlatformSolvable(pImpl->moduleSack, osReleasePath,
+    auto id = ModulePackage::createPlatformSolvable(pImpl->moduleSack, osReleasePath,
         pImpl->installRoot, platformModule);
+    pImpl->platformAdded = true;
+    return id;
 }
 
 void ModulePackageContainer::createConflictsBetweenStreams()
@@ -355,6 +358,11 @@ bool ModulePackageContainer::isDisabled(const std::string &name)
 bool ModulePackageContainer::isDisabled(const ModulePackage * module)
 {
     return isDisabled(module->getName());
+}
+
+bool ModulePackageContainer::isPlatformPresent() const noexcept
+{
+    return pImpl->platformAdded;
 }
 
 std::vector<std::string> ModulePackageContainer::getDefaultProfiles(std::string moduleName,

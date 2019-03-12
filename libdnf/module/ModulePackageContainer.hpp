@@ -172,6 +172,14 @@ public:
 
     bool isDisabled(const std::string &name);
     bool isDisabled(const ModulePackage * module);
+
+    /**
+     * @brief Report whether a platform module was added to ModulePackageContainer.
+     *
+     * @return bool true if the platform module was added
+     */
+    bool isPlatformPresent() const noexcept;
+
     ModuleState getModuleState(const std::string & name);
     std::set<std::string> getInstalledPkgNames();
 
