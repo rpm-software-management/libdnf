@@ -966,6 +966,8 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
             priv->required = FALSE;
         else
             priv->required = TRUE;
+    } else {
+        priv->required = TRUE;
     }
 
     /* cost is optional */
