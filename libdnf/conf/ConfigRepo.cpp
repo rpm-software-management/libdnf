@@ -162,7 +162,7 @@ class ConfigRepo::Impl {
     OptionChild<OptionNumber<std::uint32_t> > deltarpm_percentage{masterConfig.deltarpm_percentage()};
     OptionBinding deltaRpmPercentageBinding{owner, deltarpm_percentage, "deltarpm_percentage"};
 
-    OptionBool skip_if_unavailable{true};
+    OptionBool skip_if_unavailable{false};
     OptionBinding skipIfUnavailableBinding{owner, skip_if_unavailable, "skip_if_unavailable"};
 
     OptionString enabled_metadata{""};
