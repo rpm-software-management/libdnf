@@ -71,7 +71,7 @@ class ConfigRepo::Impl {
     OptionChild<OptionString> sslclientkey{masterConfig.sslclientkey()};
     OptionChild<OptionBool> deltarpm{masterConfig.deltarpm()};
     OptionChild<OptionNumber<std::uint32_t> > deltarpm_percentage{masterConfig.deltarpm_percentage()};
-    OptionBool skip_if_unavailable{true};
+    OptionBool skip_if_unavailable{false};
     OptionString enabled_metadata{""};
     OptionEnum<std::string> failovermethod{"priority", {"priority", "roundrobin"}};
 };

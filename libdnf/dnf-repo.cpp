@@ -138,9 +138,9 @@ dnf_repo_init(DnfRepo *repo)
     priv->repo_result = lr_result_init();
     priv->filenames_md = g_hash_table_new_full(g_str_hash, g_str_equal,
                                                g_free, g_free);
-    priv->required = FALSE;  /* This is the original default which we're
-                              * keeping for compatibility.
-                              */
+    priv->required = TRUE;  /* This is the original default which we're
+                             * keeping for compatibility with YUM.
+                             */
     priv->additionalMetadata = new std::set<std::string>;
 }
 
