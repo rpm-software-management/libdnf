@@ -13,9 +13,11 @@
 
 %{
     // make SWIG wrap following headers
-    #include <iterator>
     #include "libdnf/conf/ConfigRepo.hpp"
     #include "libdnf/conf/ConfigParser.hpp"
+    #include <iterator>
+    #include <memory>
+    #include <sstream>
 %}
 
 %exception {
@@ -200,6 +202,13 @@ public:
 }
 %clear std::string & text;
 
+%extend libdnf::ConfigParser {
+    void readString(const std::string & content) {
+        std::unique_ptr<std::istringstream> istream(new std::istringstream(content));
+        self->read(std::move(istream));
+    }
+}
+
 %exception __next__() {
     try
     {
@@ -289,14 +298,52 @@ public:
 
 %pythoncode %{
 # Partial compatibility with Python ConfigParser
+ConfigParser.readFileName = ConfigParser.read
+def ConfigParser__newRead(self, filenames):
+    parsedFNames = []
+    try:
+        if isinstance(filenames, str) or isinstance(filenames, unicode):
+            filenames = [filenames]
+    except NameError:
+        pass
+    for fname in filenames:
+        try:
+            self.readFileName(fname)
+            parsedFNames.append(fname)
+        except IOError:
+            pass
+        except Exception as e:
+            raise RuntimeError("Parsing file '%s' failed: %s" % (fname, str(e)))
+    return parsedFNames
+ConfigParser.read = ConfigParser__newRead
+del ConfigParser__newRead
+
+def ConfigParser__read_string(self, string, source='<string>'):
+    try:
+        self.readString(string)
+    except Exception as e:
+        raise RuntimeError("Parsing source '%s' failed: %s" % (source, str(e)))
+ConfigParser.read_string = ConfigParser__read_string
+del ConfigParser__read_string
+
+def ConfigParser__add_section(self, section):
+    if not self.addSection(section):
+        raise KeyError("Section '%s' already exists" % section)
+ConfigParser.add_section = ConfigParser__add_section
+del ConfigParser__add_section
+
 ConfigParser.has_section = ConfigParser.hasSection
 ConfigParser.has_option = ConfigParser.hasOption
 
 def ConfigParser__get(self, section, option, raw=False):
-    if raw:
-        return self.getValue(section, option)
-    else:
-        return self.getSubstitutedValue(section, option)
+    try:
+        if raw:
+            return self.getValue(section, option)
+        else:
+            return self.getSubstitutedValue(section, option)
+    except IndexError as e:
+        raise KeyError(str(e))
+
 ConfigParser.get = ConfigParser__get
 del ConfigParser__get
 
@@ -320,9 +367,25 @@ def ConfigParser__getboolean(self, section, option, raw=False):
 ConfigParser.getboolean = ConfigParser__getboolean
 del ConfigParser__getboolean
 
+def ConfigParser__set(self, section, option, value):
+    if not self.hasSection(section):
+        raise KeyError("No section: '%s'" % section)
+    self.setValue(section, option, value)
+ConfigParser.set = ConfigParser__set
+del ConfigParser__set
+
+ConfigParser.remove_section = ConfigParser.removeSection
+
+def ConfigParser__remove_option(self, section, option):
+    if not self.hasSection(section):
+        raise KeyError("No section: '%s'" % section)
+    return self.removeOption(section, option)
+ConfigParser.remove_option = ConfigParser__remove_option
+del ConfigParser__remove_option
+
 def ConfigParser__options(self, section):
     if not self.hasSection(section):
-        raise KeyError('No section: %s' % section)
+        raise KeyError("No section: '%s'" % section)
     sectObj = self.getData()[section]
     return [item for item in sectObj if not item.startswith('#')]
 ConfigParser.options = ConfigParser__options
