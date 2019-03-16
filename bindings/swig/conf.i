@@ -298,14 +298,17 @@ def ConfigParser__get(self, section, option, raw=False):
     else:
         return self.getSubstitutedValue(section, option)
 ConfigParser.get = ConfigParser__get
+del ConfigParser__get
 
 def ConfigParser__getint(self, section, option, raw=False):
     return int(self.get(section, option, raw=raw))
 ConfigParser.getint = ConfigParser__getint
+del ConfigParser__getint
 
 def ConfigParser__getfloat(self, section, option, raw=False):
     return float(self.get(section, option, raw=raw))
 ConfigParser.getfloat = ConfigParser__getfloat
+del ConfigParser__getfloat
 
 ConfigParser._boolean_states = {'1': True, 'yes': True, 'true': True, 'on': True,
                                 '0': False, 'no': False, 'false': False, 'off': False}
@@ -315,6 +318,7 @@ def ConfigParser__getboolean(self, section, option, raw=False):
         raise ValueError('Not a boolean: %s' % v)
     return self._boolean_states[v.lower()]
 ConfigParser.getboolean = ConfigParser__getboolean
+del ConfigParser__getboolean
 
 def ConfigParser__options(self, section):
     if not self.hasSection(section):
@@ -322,10 +326,12 @@ def ConfigParser__options(self, section):
     sectObj = self.getData()[section]
     return [item for item in sectObj if not item.startswith('#')]
 ConfigParser.options = ConfigParser__options
+del ConfigParser__options
 
 def ConfigParser__sections(self):
     return list(self.getData())
 ConfigParser.sections = ConfigParser__sections
+del ConfigParser__sections
 
 # Compatible name aliases
 ConfigMain.exclude = ConfigMain.excludepkgs
