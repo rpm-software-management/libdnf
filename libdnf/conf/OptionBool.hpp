@@ -27,8 +27,8 @@
 
 namespace libdnf {
 
-constexpr const char * defTrueValues[]{"1", "yes", "true", "enabled", nullptr};
-constexpr const char * defFalseValues[]{"0", "no", "false", "disabled", nullptr};
+constexpr const char * defTrueValues[]{"1", "yes", "true", "on", nullptr};
+constexpr const char * defFalseValues[]{"0", "no", "false", "off", nullptr};
 
 class OptionBool : public Option {
 public:
