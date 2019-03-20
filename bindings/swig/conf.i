@@ -357,13 +357,12 @@ def ConfigParser__getfloat(self, section, option, raw=False):
 ConfigParser.getfloat = ConfigParser__getfloat
 del ConfigParser__getfloat
 
-ConfigParser._boolean_states = {'1': True, 'yes': True, 'true': True, 'on': True,
-                                '0': False, 'no': False, 'false': False, 'off': False}
 def ConfigParser__getboolean(self, section, option, raw=False):
     v = self.get(section, option, raw=raw)
-    if v.lower() not in self._boolean_states:
+    try:
+        return OptionBool(False).fromString(v)
+    except RuntimeError:
         raise ValueError('Not a boolean: %s' % v)
-    return self._boolean_states[v.lower()]
 ConfigParser.getboolean = ConfigParser__getboolean
 del ConfigParser__getboolean
 
