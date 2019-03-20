@@ -71,7 +71,7 @@ class ConfigRepo::Impl {
     OptionChild<OptionString> sslclientkey{masterConfig.sslclientkey()};
     OptionChild<OptionBool> deltarpm{masterConfig.deltarpm()};
     OptionChild<OptionNumber<std::uint32_t> > deltarpm_percentage{masterConfig.deltarpm_percentage()};
-    OptionBool skip_if_unavailable{false};
+    OptionChild<OptionBool> skip_if_unavailable{masterConfig.skip_if_unavailable()};
     OptionString enabled_metadata{""};
     OptionEnum<std::string> failovermethod{"priority", {"priority", "roundrobin"}};
 };
@@ -195,7 +195,7 @@ OptionChild<OptionString> & ConfigRepo::sslclientcert() { return pImpl->sslclien
 OptionChild<OptionString> & ConfigRepo::sslclientkey() { return pImpl->sslclientkey; }
 OptionChild<OptionBool> & ConfigRepo::deltarpm() { return pImpl->deltarpm; }
 OptionChild<OptionNumber<std::uint32_t> > & ConfigRepo::deltarpm_percentage() { return pImpl->deltarpm_percentage; }
-OptionBool & ConfigRepo::skip_if_unavailable() { return pImpl->skip_if_unavailable; }
+OptionChild<OptionBool> & ConfigRepo::skip_if_unavailable() { return pImpl->skip_if_unavailable; }
 OptionString & ConfigRepo::enabled_metadata() { return pImpl->enabled_metadata; }
 OptionEnum<std::string> & ConfigRepo::failovermethod() { return pImpl->failovermethod; }
 
