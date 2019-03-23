@@ -34,6 +34,8 @@
  */
 
 
+#include "hy-repo-private.hpp"
+
 #include <strings.h>
 #include <fcntl.h>
 #include <glib/gstdio.h>
@@ -76,7 +78,6 @@ typedef struct
     gint64           timestamp_modified;    /* µs */
     GError          *last_check_error;
     GKeyFile        *keyfile;
-    GHashTable      *filenames_md;          /* md filename (e.g. "primary") -> file path */
     DnfContext      *context;               /* weak reference */
     DnfRepoKind      kind;
     HyRepo           repo;
@@ -109,7 +110,6 @@ dnf_repo_finalize(GObject *object)
     g_free(priv->packages_tmp);
     g_free(priv->keyring);
     g_free(priv->keyring_tmp);
-    g_hash_table_unref(priv->filenames_md);
     g_clear_error(&priv->last_check_error);
     if (priv->repo_result != NULL)
         lr_result_free(priv->repo_result);
@@ -136,8 +136,6 @@ dnf_repo_init(DnfRepo *repo)
     priv->cost = 1000;
     priv->repo_handle = lr_handle_init();
     priv->repo_result = lr_result_init();
-    priv->filenames_md = g_hash_table_new_full(g_str_hash, g_str_equal,
-                                               g_free, g_free);
     priv->required = FALSE;  /* This is the original default which we're
                               * keeping for compatibility.
                               */
@@ -1325,7 +1323,6 @@ dnf_repo_check_internal(DnfRepo *repo,
         download_list.push_back(item.c_str());
     }
     download_list.push_back(NULL);
-    const gchar *tmp;
     gboolean ret;
     LrYumRepo *yum_repo;
     const gchar *urls[] = { "", NULL };
@@ -1425,46 +1422,18 @@ dnf_repo_check_internal(DnfRepo *repo,
         }
     }
 
-    g_hash_table_remove_all(priv->filenames_md);
+    /* create a HyRepo */
+    if (priv->repo)
+        hy_repo_free(priv->repo);
+    priv->repo = hy_repo_create(priv->id);
+    auto repoImpl = libdnf::repoGetImpl(priv->repo);
+
+    repoImpl->repomdFn = yum_repo->repomd;
     for (auto *elem = yum_repo->paths; elem; elem = g_slist_next(elem)) {
         if (elem->data) {
             auto yumrepopath = static_cast<LrYumRepoPath *>(elem->data);
-            g_hash_table_insert(priv->filenames_md, g_strdup(yumrepopath->type),
-                                g_strdup(yumrepopath->path));
+            repoImpl->metadataPaths[yumrepopath->type] = yumrepopath->path;
         }
-    }
-
-    /* create a HyRepo */
-    if (priv->repo != NULL)
-        hy_repo_free(priv->repo);
-    priv->repo = hy_repo_create(priv->id);
-    hy_repo_set_string(priv->repo, HY_REPO_MD_FN, yum_repo->repomd);
-    if (dnf_context_get_zchunk(priv->context)) {
-        tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "primary_zck"));
-        if(!tmp)
-            tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "primary"));
-        hy_repo_set_string(priv->repo, HY_REPO_PRIMARY_FN, tmp);
-        tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "filelists_zck"));
-        if(!tmp)
-            tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "filelists"));
-        hy_repo_set_string(priv->repo, HY_REPO_FILELISTS_FN, tmp);
-        tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "updateinfo_zck"));
-        if(!tmp)
-            tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "updateinfo"));
-        hy_repo_set_string(priv->repo, HY_REPO_UPDATEINFO_FN, tmp);
-        tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "modules_zck"));
-        if(!tmp)
-            tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "modules"));
-        hy_repo_set_string(priv->repo, MODULES_FN, tmp);
-    } else {
-        tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "primary"));
-        hy_repo_set_string(priv->repo, HY_REPO_PRIMARY_FN, tmp);
-        tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "filelists"));
-        hy_repo_set_string(priv->repo, HY_REPO_FILELISTS_FN, tmp);
-        tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "updateinfo"));
-        hy_repo_set_string(priv->repo, HY_REPO_UPDATEINFO_FN, tmp);
-        tmp = static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, "modules"));
-        hy_repo_set_string(priv->repo, MODULES_FN, tmp);
     }
 
     /* ensure we reset the values from the keyfile */
@@ -1521,7 +1490,8 @@ dnf_repo_get_filename_md(DnfRepo *repo, const gchar *md_kind)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     g_return_val_if_fail(md_kind != NULL, NULL);
-    return static_cast<const gchar *>(g_hash_table_lookup(priv->filenames_md, md_kind));
+    auto repoImpl = libdnf::repoGetImpl(priv->repo);
+    return repoImpl->getMetadataPath(md_kind).c_str();
 }
 
 /**
