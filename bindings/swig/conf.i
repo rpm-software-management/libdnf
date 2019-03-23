@@ -366,6 +366,19 @@ def ConfigParser__getboolean(self, section, option, raw=False):
 ConfigParser.getboolean = ConfigParser__getboolean
 del ConfigParser__getboolean
 
+def ConfigParser__items(self, section, raw=False):
+    if not self.hasSection(section):
+        raise KeyError("No section: '%s'" % section)
+    sectObj = self.getData()[section]
+    items = []
+    for key in sectObj:
+        if not key.startswith('#'):
+            value = self.get(section, key, raw=raw)
+            items.append((key, value))
+    return items
+ConfigParser.items = ConfigParser__items
+del ConfigParser__items
+
 def ConfigParser__set(self, section, option, value):
     if not self.hasSection(section):
         raise KeyError("No section: '%s'" % section)
