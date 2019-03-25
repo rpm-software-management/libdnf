@@ -109,6 +109,7 @@ static const struct {
 typedef struct
 {
     gchar            *repo_dir;
+    gchar            **vars_dir;
     gchar            *base_arch;
     gchar            *release_ver;
     gchar            *platform_module;
@@ -182,6 +183,7 @@ dnf_context_finalize(GObject *object)
     delete priv->plugins;
 
     g_free(priv->repo_dir);
+    g_strfreev(priv->vars_dir);
     g_free(priv->base_arch);
     g_free(priv->release_ver);
     g_free(priv->platform_module);
@@ -226,6 +228,8 @@ static void
 dnf_context_init(DnfContext *context)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
+    gchar *vars_dir[] = {"/etc/dnf/vars", "/etc/yum/vars", NULL};
+    priv->vars_dir = g_strdupv(vars_dir);
     priv->install_root = g_strdup("/");
     priv->check_disk_space = TRUE;
     priv->check_transaction = TRUE;
@@ -322,6 +326,23 @@ dnf_context_get_repo_dir(DnfContext *context)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     return priv->repo_dir;
+}
+
+/**
+ * dnf_context_get_vars_dir:
+ * @context: a #DnfContext instance.
+ *
+ * Gets the repo variables directories.
+ *
+ * Returns: the directory, e.g. "/etc/dnf/vars"
+ *
+ * Since: 0.28.1
+ **/
+const gchar * const *
+dnf_context_get_vars_dir(DnfContext *context)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    return priv->vars_dir;
 }
 
 /**
@@ -907,6 +928,23 @@ dnf_context_set_repo_dir(DnfContext *context, const gchar *repo_dir)
     DnfContextPrivate *priv = GET_PRIVATE(context);
     g_free(priv->repo_dir);
     priv->repo_dir = g_strdup(repo_dir);
+}
+
+/**
+ * dnf_context_set_vars_dir:
+ * @context: a #DnfContext instance.
+ * @vars_dir: the vars directories, e.g. ["/etc/dnf/vars"]
+ *
+ * Sets the repo variables directory.
+ *
+ * Since: 0.28.1
+ **/
+void
+dnf_context_set_vars_dir(DnfContext *context, const gchar * const *vars_dir)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    g_strfreev(priv->vars_dir);
+    priv->vars_dir = g_strdupv(const_cast<gchar **>(vars_dir));
 }
 
 /**
