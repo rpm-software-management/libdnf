@@ -109,6 +109,7 @@ DnfContext      *dnf_context_new                        (void);
 
 /* getters */
 const gchar     *dnf_context_get_repo_dir               (DnfContext     *context);
+const gchar * const *dnf_context_get_vars_dir           (DnfContext     *context);
 const gchar     *dnf_context_get_base_arch              (DnfContext     *context);
 const gchar     *dnf_context_get_os_info                (DnfContext     *context);
 const gchar     *dnf_context_get_arch_info              (DnfContext     *context);
@@ -148,6 +149,8 @@ const char *     dnf_context_get_plugins_dir            (DnfContext     *context
 /* setters */
 void             dnf_context_set_repo_dir               (DnfContext     *context,
                                                          const gchar    *repo_dir);
+void             dnf_context_set_vars_dir               (DnfContext     *context,
+                                                         const gchar * const *vars_dir);
 void             dnf_context_set_release_ver            (DnfContext     *context,
                                                          const gchar    *release_ver);
 void             dnf_context_set_platform_module        (DnfContext     *context,

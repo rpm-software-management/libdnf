@@ -62,6 +62,7 @@ public:
     OptionBool & cacheonly();
     OptionBool & keepcache();
     OptionString & logdir();
+    OptionStringList & varsdir();
     OptionStringList & reposdir();
     OptionBool & debug_solver();
     OptionStringList & installonlypkgs();

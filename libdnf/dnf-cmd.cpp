@@ -435,11 +435,14 @@ main(int argc, char *argv[])
     guint retval = 1;
     g_autofree gchar *opt_root = NULL;
     g_autofree gchar *opt_reposdir = NULL;
+    g_auto(GStrv) opt_varsdir = NULL;
     g_autofree gchar *opt_cachedir = NULL;
 
     const GOptionEntry options[] = {
         { "reposdir", 0, 0, G_OPTION_ARG_STRING, &opt_reposdir,
             "Directory for yum repository files", NULL },
+        { "varsdir", 0, 0, G_OPTION_ARG_STRING_ARRAY, &opt_varsdir,
+            "Directory for additional yum repository variables", NULL },
         { "root", 0, 0, G_OPTION_ARG_STRING, &opt_root,
             "Installation root", NULL },
         { "cachedir", 0, 0, G_OPTION_ARG_STRING, &opt_cachedir,
@@ -529,6 +532,8 @@ main(int argc, char *argv[])
     }
 
     dnf_context_set_repo_dir(priv->context, opt_reposdir);
+    if (opt_varsdir != NULL)
+        dnf_context_set_vars_dir(priv->context, opt_varsdir);
 
     dnf_context_set_check_disk_space(priv->context, TRUE);
     dnf_context_set_check_transaction(priv->context, TRUE);

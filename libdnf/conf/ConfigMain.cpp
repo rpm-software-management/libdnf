@@ -178,6 +178,7 @@ class ConfigMain::Impl {
     OptionBool cacheonly{false};
     OptionBool keepcache{false};
     OptionString logdir{"/var/log"};
+    OptionStringList varsdir{std::vector<std::string>{"/etc/dnf/vars", "/etc/yum/vars"}};
     OptionStringList reposdir{{"/etc/yum.repos.d", "/etc/yum/repos.d", "/etc/distro.repos.d"}};
     OptionBool debug_solver{false};
     OptionStringList installonlypkgs{INSTALLONLYPKGS};
@@ -352,6 +353,7 @@ ConfigMain::Impl::Impl(Config & owner)
     owner.optBinds().add("cacheonly", cacheonly);
     owner.optBinds().add("keepcache", keepcache);
     owner.optBinds().add("logdir", logdir);
+    owner.optBinds().add("varsdir", varsdir);
     owner.optBinds().add("reposdir", reposdir);
     owner.optBinds().add("debug_solver", debug_solver);
 
@@ -487,6 +489,7 @@ OptionString & ConfigMain::system_cachedir() { return pImpl->system_cachedir; }
 OptionBool & ConfigMain::cacheonly() { return pImpl->cacheonly; }
 OptionBool & ConfigMain::keepcache() { return pImpl->keepcache; }
 OptionString & ConfigMain::logdir() { return pImpl->logdir; }
+OptionStringList & ConfigMain::varsdir() { return pImpl->varsdir; }
 OptionStringList & ConfigMain::reposdir() { return pImpl->reposdir; }
 OptionBool & ConfigMain::debug_solver() { return pImpl->debug_solver; }
 OptionStringList & ConfigMain::installonlypkgs() { return pImpl->installonlypkgs; }
