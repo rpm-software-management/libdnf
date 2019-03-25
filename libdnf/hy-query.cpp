@@ -315,12 +315,6 @@ hy_filter_duplicated(HyQuery query)
     query->filterDuplicated();
 }
 
-int
-hy_filter_unneeded(HyQuery query, const libdnf::Swdb & swdb, bool debug_solver)
-{
-    return query->filterUnneeded(swdb, debug_solver);
-}
-
 HySelector
 hy_query_to_selector(HyQuery query)
 {
