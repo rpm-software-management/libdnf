@@ -158,6 +158,7 @@ public:
     void filterRecent(const long unsigned int recent_limit);
     void filterDuplicated();
     int filterUnneeded(const Swdb &swdb, bool debug_solver);
+    int filterSafeToRemove(const Swdb &swdb, bool debug_solver);
     void getAdvisoryPkgs(int cmpType,  std::vector<AdvisoryPkg> & advisoryPkgs);
     void filterUserInstalled(const Swdb &swdb);
 private:
