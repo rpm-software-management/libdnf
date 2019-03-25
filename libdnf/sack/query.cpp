@@ -668,6 +668,7 @@ private:
     void filterUpdown(const Filter & f, Map *m);
     void filterUpdownAble(const Filter  &f, Map *m);
     void filterDataiterator(const Filter & f, Map *m);
+    int filterUnneededOrSafeToRemove(const Swdb &swdb, bool debug_solver, bool safeToRemove);
 
     bool isGlob(const std::vector<const char *> &matches) const;
 };
@@ -1728,6 +1729,49 @@ Query::Impl::filterDataiterator(const Filter & f, Map *m)
     }
 }
 
+int
+Query::Impl::filterUnneededOrSafeToRemove(const Swdb &swdb, bool debug_solver, bool safeToRemove)
+{
+    apply();
+    Goal goal(sack);
+    Pool *pool = dnf_sack_get_pool(sack);
+    Query installed(sack);
+    installed.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+    auto userInstalled = installed.getResultPset();
+
+    swdb.filterUserinstalled(*userInstalled);
+    if (safeToRemove) {
+        *userInstalled -= *result;
+    }
+    goal.userInstalled(*userInstalled);
+
+    int ret1 = goal.run(DNF_NONE);
+    if (ret1)
+        return -1;
+
+    if (debug_solver) {
+        g_autoptr(GError) error = NULL;
+        gboolean ret = hy_goal_write_debugdata(&goal, "./debugdata-autoremove", &error);
+        if (!ret) {
+            return -1;
+        }
+    }
+
+    IdQueue que;
+    Solver *solv = goal.pImpl->solv;
+
+    solver_get_unneeded(solv, que.getQueue(), 0);
+    Map resultInternal;
+    map_init(&resultInternal, pool->nsolvables);
+
+    for (int i = 0; i < que.size(); ++i) {
+        MAPSET(&resultInternal, que[i]);
+    }
+    map_and(result->getMap(), &resultInternal);
+    map_free(&resultInternal);
+    return 0;
+}
+
 bool Query::Impl::isGlob(const std::vector<const char *> &matches) const
 {
     for (const char *match : matches) {
@@ -2011,42 +2055,13 @@ Query::filterDuplicated()
 int
 Query::filterUnneeded(const Swdb &swdb, bool debug_solver)
 {
-    apply();
-    DnfSack * sack = pImpl->sack;
-    Goal goal(sack);
-    Pool *pool = dnf_sack_get_pool(sack);
-    Query installed(sack);
-    installed.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-    auto userInstalled = installed.getResultPset();
+    return pImpl->filterUnneededOrSafeToRemove(swdb, debug_solver, false);
+}
 
-    swdb.filterUserinstalled(*userInstalled);
-    goal.userInstalled(*userInstalled);
-
-    int ret1 = goal.run(DNF_NONE);
-    if (ret1)
-        return -1;
-
-    if (debug_solver) {
-        g_autoptr(GError) error = NULL;
-        gboolean ret = hy_goal_write_debugdata(&goal, "./debugdata-autoremove", &error);
-        if (!ret) {
-            return -1;
-        }
-    }
-
-    IdQueue que;
-    Solver *solv = goal.pImpl->solv;
-
-    solver_get_unneeded(solv, que.getQueue(), 0);
-    Map result;
-    map_init(&result, pool->nsolvables);
-
-    for (int i = 0; i < que.size(); ++i) {
-        MAPSET(&result, que[i]);
-    }
-    map_and(getResult(), &result);
-    map_free(&result);
-    return 0;
+int
+Query::filterSafeToRemove(const Swdb &swdb, bool debug_solver)
+{
+    return pImpl->filterUnneededOrSafeToRemove(swdb, debug_solver, true);
 }
 
 void

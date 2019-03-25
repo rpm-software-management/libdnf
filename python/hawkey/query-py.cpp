@@ -721,7 +721,7 @@ filter_userinstalled(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
-filter_unneeded(PyObject *self, PyObject *args, PyObject *kwds)
+filter_unneeded_or_safe_to_remove(PyObject *self, PyObject *args, PyObject *kwds, bool SafeToRemove)
 {
     const char *kwlist[] = {"swdb", "debug_solver", NULL};
     PyObject *pySwdb;
@@ -747,7 +747,12 @@ filter_unneeded(PyObject *self, PyObject *args, PyObject *kwds)
     std::unique_ptr<libdnf::Query> self_query_copy(new libdnf::Query(*((_QueryObject *) self)->query));
     gboolean c_debug_solver = debug_solver != NULL && PyObject_IsTrue(debug_solver);
 
-    int ret = hy_filter_unneeded(self_query_copy.get(), *swdb, c_debug_solver);
+    int ret;
+    if (SafeToRemove) {
+        ret = self_query_copy->filterSafeToRemove(*swdb, c_debug_solver);
+    } else {
+        ret = self_query_copy->filterUnneeded(*swdb, c_debug_solver);
+    }
     if (ret == -1) {
         PyErr_SetString(PyExc_SystemError, "Unable to provide query with unneded filter");
         return NULL;
@@ -756,6 +761,19 @@ filter_unneeded(PyObject *self, PyObject *args, PyObject *kwds)
     PyObject *final_query = queryToPyObject(self_query_copy.release(), ((_QueryObject *) self)->sack,
                                             Py_TYPE(self));
     return final_query;
+}
+
+static PyObject *
+filter_safe_to_remove(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    return filter_unneeded_or_safe_to_remove(self, args, kwds, true);
+}
+
+
+static PyObject *
+filter_unneeded(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    return filter_unneeded_or_safe_to_remove(self, args, kwds, false);
 }
 
 static PyObject *
@@ -1022,8 +1040,8 @@ static struct PyMethodDef query_methods[] = {
     {"_name_dict", (PyCFunction)query_to_name_dict, METH_NOARGS, NULL},
     {"_nevra", (PyCFunction)add_nevra_or_other_filter, METH_VARARGS, NULL},
     {"_recent", (PyCFunction)add_filter_recent, METH_VARARGS, NULL},
-    {"_unneeded", (PyCFunction)filter_unneeded, METH_KEYWORDS|METH_VARARGS,
-     NULL},
+    {"_unneeded", (PyCFunction)filter_unneeded, METH_KEYWORDS|METH_VARARGS, NULL},
+    {"_safe_to_remove", (PyCFunction)filter_safe_to_remove, METH_KEYWORDS|METH_VARARGS, NULL},
     {"__add__", (PyCFunction)q_add, METH_O, NULL},
     {"__contains__", (PyCFunction)q_contains, METH_O,
      NULL},
