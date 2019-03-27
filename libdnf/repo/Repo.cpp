@@ -1724,7 +1724,7 @@ static void librepoLogCB(G_GNUC_UNUSED const gchar *log_domain, GLogLevelFlags l
     }
 }
 
-long LibrepoLog::addHandler(const std::string & filePath)
+long LibrepoLog::addHandler(const std::string & filePath, bool debug)
 {
     static long uid = 0;
 
@@ -1739,7 +1739,14 @@ long LibrepoLog::addHandler(const std::string & filePath)
     data->fd = fd;
 
     // Set handler
-    data->handlerId = g_log_set_handler(LR_LOGDOMAIN, G_LOG_LEVEL_MASK, librepoLogCB, data.get());
+    GLogLevelFlags log_mask = debug ? G_LOG_LEVEL_MASK : static_cast<GLogLevelFlags>(
+        G_LOG_LEVEL_INFO |
+        G_LOG_LEVEL_MESSAGE |
+        G_LOG_LEVEL_WARNING |
+        G_LOG_LEVEL_CRITICAL |
+        G_LOG_LEVEL_ERROR);
+
+    data->handlerId = g_log_set_handler(LR_LOGDOMAIN, log_mask, librepoLogCB, data.get());
     data->used = true;
 
     // Save user data (in a thread safe way)

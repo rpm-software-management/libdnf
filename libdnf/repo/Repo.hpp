@@ -338,7 +338,7 @@ private:
 
 struct LibrepoLog {
 public:
-    static long addHandler(const std::string & filePath);
+    static long addHandler(const std::string & filePath, bool debug = false);
     static void removeHandler(long uid);
     static void removeAllHandlers();
 };
