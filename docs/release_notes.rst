@@ -20,6 +20,14 @@
 ######################
 
 ====================
+0.28.1 Release Notes
+====================
+- Return empty query if incorrect reldep (RhBug:1687135)
+- ConfigParser: Improve compatibility with Python ConfigParser and dnf-plugin-spacewalk (RhBug:1692044)
+- ConfigParser: Unify default set of string represenation of boolean values
+- Fix segfault when interrupting dnf process (RhBug:1610456)
+
+====================
 0.28.0 Release Notes
 ====================
 - Exclude module pkgs that have conflict (RhBug:1670496)
