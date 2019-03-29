@@ -28,27 +28,7 @@ G_BEGIN_DECLS
 // hawkey
 #include "hy-types.h"
 
-enum _hy_repo_param_e {
-    HY_REPO_NAME = 0,
-    HY_REPO_MD_FN = 1,
-    HY_REPO_PRESTO_FN = 2,
-    HY_REPO_PRIMARY_FN = 3,
-    HY_REPO_FILELISTS_FN = 4,
-    HY_REPO_UPDATEINFO_FN = 5,
-    MODULES_FN = 6,
-    HY_REPO_OTHER_FN = 7
-};
-
 HyRepo hy_repo_create(const char *name);
-int hy_repo_get_cost(HyRepo repo);
-int hy_repo_get_priority(HyRepo repo);
-gboolean hy_repo_get_use_includes(HyRepo repo);
-guint hy_repo_get_n_solvables(HyRepo repo);
-void hy_repo_set_cost(HyRepo repo, int value);
-void hy_repo_set_priority(HyRepo repo, int value);
-void hy_repo_set_use_includes(HyRepo repo, gboolean enabled);
-void hy_repo_set_string(HyRepo repo, int which, const char *str_val);
-const char *hy_repo_get_string(HyRepo repo, int which);
 void hy_repo_free(HyRepo repo);
 
 G_END_DECLS
