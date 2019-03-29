@@ -240,7 +240,7 @@ START_TEST(test_goal_install_selector_err)
     hy_selector_free(sltr);
 
     sltr = hy_selector_create(test_globals.sack);
-    fail_unless(hy_selector_set(sltr, HY_REPO_NAME, HY_EQ, HY_SYSTEM_REPO_NAME));
+    fail_unless(hy_selector_set(sltr, HY_PKG, HY_EQ, HY_SYSTEM_REPO_NAME));
     hy_selector_free(sltr);
 
     hy_goal_free(goal);
