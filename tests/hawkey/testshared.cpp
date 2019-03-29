@@ -26,7 +26,6 @@ extern "C" {
 #include <solv/testcase.h>
 }
 
-#include "libdnf/hy-repo.h"
 #include "libdnf/hy-repo-private.hpp"
 #include "libdnf/repo/Repo-private.hpp"
 #include "testshared.h"
@@ -34,7 +33,7 @@ extern "C" {
 HyRepo
 glob_for_repofiles(Pool *pool, const char *repo_name, const char *path)
 {
-    HyRepo repo = hy_repo_create(repo_name);
+    HyRepo repo = libdnf::hy_repo_create(repo_name);
     auto repoImpl = libdnf::repoGetImpl(repo);
     const char *tmpl;
     wordexp_t word_vector;
@@ -76,7 +75,7 @@ glob_for_repofiles(Pool *pool, const char *repo_name, const char *path)
 int
 load_repo(Pool *pool, const char *name, const char *path, int installed)
 {
-    HyRepo hrepo = hy_repo_create(name);
+    HyRepo hrepo = libdnf::hy_repo_create(name);
     Repo *r = repo_create(pool, name);
     libdnf::repoGetImpl(hrepo)->attachLibsolvRepo(r);
     hy_repo_free(hrepo);

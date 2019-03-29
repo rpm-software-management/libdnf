@@ -54,7 +54,6 @@ extern "C" {
 #include <libdnf/hy-package.h>
 #include <libdnf/hy-packageset.h>
 #include <libdnf/hy-query.h>
-#include <libdnf/hy-repo.h>
 #include <libdnf/hy-selector.h>
 #include <libdnf/hy-subject.h>
 #include <libdnf/hy-util.h>

@@ -25,7 +25,6 @@
 #include "libdnf/repo/Repo.hpp"
 #include "dnf-types.h"
 #include "hy-packageset.h"
-#include "hy-repo.h"
 #include "hy-util.h"
 #include "dnf-version.h"
 #include "dnf-sack-private.hpp"

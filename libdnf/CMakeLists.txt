@@ -87,7 +87,6 @@ set(LIBHAWKEY_headers
     hy-package.h
     hy-packageset.h
     hy-query.h
-    hy-repo.h
     hy-selector.h
     hy-subject.h
     hy-types.h

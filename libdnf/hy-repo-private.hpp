@@ -28,7 +28,7 @@
 
 // hawkey
 #include "hy-iutil.h"
-#include "hy-repo.h"
+#include "hy-types.h"
 
 enum _hy_repo_repodata {
     _HY_REPODATA_FILENAMES,
@@ -37,17 +37,20 @@ enum _hy_repo_repodata {
     _HY_REPODATA_OTHER
 };
 
-int hy_repo_transition(HyRepo repo, enum _hy_repo_state new_state);
+namespace libdnf {
+
+HyRepo hy_repo_create(const char *name);
+void hy_repo_free(HyRepo repo);
 
 void repo_internalize_all_trigger(Pool *pool);
-void repo_internalize_trigger(Repo *r);
+void repo_internalize_trigger(LibsolvRepo *r);
 void repo_update_state(HyRepo repo, enum _hy_repo_repodata which,
                        enum _hy_repo_state state);
 Id repo_get_repodata(HyRepo repo, enum _hy_repo_repodata which);
 void repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata);
 
-namespace libdnf {
-    Repo::Impl * repoGetImpl(Repo * repo);
+Repo::Impl * repoGetImpl(Repo * repo);
+
 }
 
 #endif // HY_REPO_INTERNAL_H

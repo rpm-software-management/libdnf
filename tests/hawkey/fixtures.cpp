@@ -24,7 +24,6 @@
 
 
 #include "libdnf/hy-package.h"
-#include "libdnf/hy-repo.h"
 #include "libdnf/hy-iutil.h"
 #include "libdnf/dnf-sack-private.hpp"
 #include "fixtures.h"

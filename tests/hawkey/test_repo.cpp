@@ -30,7 +30,7 @@
 
 START_TEST(test_strings)
 {
-    HyRepo hrepo = hy_repo_create("happy2");
+    HyRepo hrepo = libdnf::hy_repo_create("happy2");
     auto repoImpl = libdnf::repoGetImpl(hrepo);
     ck_assert_str_eq(hrepo->getId().c_str(), "happy2");
     repoImpl->metadataPaths[MD_TYPE_PRESTODELTA] = "tunedtoA";

@@ -30,7 +30,6 @@
 #include "libdnf/hy-package-private.hpp"
 #include "libdnf/hy-packageset.h"
 #include "libdnf/dnf-sack-private.hpp"
-#include "libdnf/hy-repo.h"
 #include "libdnf/hy-query.h"
 #include "libdnf/dnf-sack-private.hpp"
 #include "libdnf/dnf-goal.h"

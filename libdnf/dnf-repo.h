@@ -24,7 +24,6 @@
 
 #include <glib-object.h>
 
-#include "hy-repo.h"
 #include "hy-package.h"
 
 #include "dnf-context.h"

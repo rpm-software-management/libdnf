@@ -1129,7 +1129,7 @@ dnf_sack_setup_cmdline_repo(DnfSack *sack)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     if (!priv->cmdline_repo) {
-         HyRepo hrepo = hy_repo_create(HY_CMDLINE_REPO_NAME);
+         HyRepo hrepo = libdnf::hy_repo_create(HY_CMDLINE_REPO_NAME);
          auto repoImpl = libdnf::repoGetImpl(hrepo);
          Repo *repo = repo_create(dnf_sack_get_pool(sack), HY_CMDLINE_REPO_NAME);
          repo->appdata = hrepo;
@@ -1688,7 +1688,7 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
         repoImpl->id = HY_SYSTEM_REPO_NAME;
         repoImpl->conf->name().set(libdnf::Option::Priority::RUNTIME, HY_SYSTEM_REPO_NAME);
     } else
-        hrepo = hy_repo_create(HY_SYSTEM_REPO_NAME);
+        hrepo = libdnf::hy_repo_create(HY_SYSTEM_REPO_NAME);
     auto repoImpl = libdnf::repoGetImpl(hrepo);
 
     repoImpl->load_flags = flags;
@@ -1964,7 +1964,7 @@ dnf_sack_make_provides_ready(DnfSack *sack)
 
     if (priv->provides_ready)
         return;
-    repo_internalize_all_trigger(priv->pool);
+    libdnf::repo_internalize_all_trigger(priv->pool);
     Queue addedfileprovides;
     Queue addedfileprovides_inst;
     queue_init(&addedfileprovides);

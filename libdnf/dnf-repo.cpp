@@ -1425,7 +1425,7 @@ dnf_repo_check_internal(DnfRepo *repo,
     /* create a HyRepo */
     if (priv->repo)
         hy_repo_free(priv->repo);
-    priv->repo = hy_repo_create(priv->id);
+    priv->repo = libdnf::hy_repo_create(priv->id);
     auto repoImpl = libdnf::repoGetImpl(priv->repo);
 
     repoImpl->repomdFn = yum_repo->repomd;

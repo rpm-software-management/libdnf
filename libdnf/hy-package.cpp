@@ -136,7 +136,7 @@ static guint64
 lookup_num(DnfPackage *pkg, unsigned type)
 {
     Solvable *s = get_solvable(pkg);
-    repo_internalize_trigger(s->repo);
+    libdnf::repo_internalize_trigger(s->repo);
     return solvable_lookup_num(s, type, 0);
 }
 
@@ -317,7 +317,7 @@ const char *
 dnf_package_get_location(DnfPackage *pkg)
 {
     Solvable *s = get_solvable(pkg);
-    repo_internalize_trigger(s->repo);
+    libdnf::repo_internalize_trigger(s->repo);
     return solvable_get_location(s, NULL);
 }
 
@@ -371,7 +371,7 @@ const char *
 dnf_package_get_sourcerpm(DnfPackage *pkg)
 {
     Solvable *s = get_solvable(pkg);
-    repo_internalize_trigger(s->repo);
+    libdnf::repo_internalize_trigger(s->repo);
     return solvable_lookup_sourcepkg(s);
 }
 
@@ -477,7 +477,7 @@ dnf_package_get_chksum(DnfPackage *pkg, int *type)
     Solvable *s = get_solvable(pkg);
     const unsigned char* ret;
 
-    repo_internalize_trigger(s->repo);
+    libdnf::repo_internalize_trigger(s->repo);
     ret = solvable_lookup_bin_checksum(s, SOLVABLE_CHECKSUM, type);
     if (ret)
         *type = checksumt_l2h(*type);
@@ -501,7 +501,7 @@ dnf_package_get_hdr_chksum(DnfPackage *pkg, int *type)
     Solvable *s = get_solvable(pkg);
     const unsigned char *ret;
 
-    repo_internalize_trigger(s->repo);
+    libdnf::repo_internalize_trigger(s->repo);
     ret = solvable_lookup_bin_checksum(s, SOLVABLE_HDRID, type);
     if (ret)
         *type = checksumt_l2h(*type);
@@ -933,7 +933,7 @@ dnf_package_get_files(DnfPackage *pkg)
     Dataiterator di;
     GPtrArray *ret = g_ptr_array_new();
 
-    repo_internalize_trigger(s->repo);
+    libdnf::repo_internalize_trigger(s->repo);
     dataiterator_init(&di, pool, s->repo, priv->id, SOLVABLE_FILELIST, NULL,
                       SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
     while (dataiterator_step(&di)) {

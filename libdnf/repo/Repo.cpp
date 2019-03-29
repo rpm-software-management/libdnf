@@ -1774,7 +1774,6 @@ Repo::Impl * repoGetImpl(Repo * repo)
     return repo->pImpl.get();
 }
 
-}
 
 // hawkey
 #include "../hy-repo-private.hpp"
@@ -1783,14 +1782,14 @@ void
 repo_internalize_all_trigger(Pool *pool)
 {
     int i;
-    Repo *repo;
+    LibsolvRepo *repo;
 
     FOR_REPOS(i, repo)
         repo_internalize_trigger(repo);
 }
 
 void
-repo_internalize_trigger(Repo * repo)
+repo_internalize_trigger(LibsolvRepo * repo)
 {
     if (repo) {
         auto hrepo = static_cast<HyRepo>(repo->appdata);
@@ -1891,4 +1890,6 @@ hy_repo_free(HyRepo repo)
     if (--libdnf::repoGetImpl(repo)->nrefs > 0)
         return;
     delete repo;
+}
+
 }
