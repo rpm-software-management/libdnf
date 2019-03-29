@@ -275,12 +275,12 @@ ModulePackageContainer::add(DnfSack * sack)
 
     FOR_REPOS(id, r) {
         HyRepo hyRepo = static_cast<HyRepo>(r->appdata);
-        auto modules_fn = hy_repo_get_string(hyRepo, MODULES_FN);
-        if (!modules_fn) {
+        auto modules_fn = hyRepo->getMetadataPath(MD_TYPE_MODULES);
+        if (modules_fn.empty()) {
             continue;
         }
         std::string yamlContent = getFileContent(modules_fn);
-        auto repoName = hy_repo_get_string(hyRepo, HY_REPO_NAME);
+        auto repoName = hyRepo->getId();
         add(yamlContent, repoName);
         // update defaults from repo
         try {
