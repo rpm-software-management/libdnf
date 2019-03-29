@@ -102,7 +102,8 @@ START_TEST(test_load_repo_err)
     g_assert(sack != NULL);
     HyRepo repo = hy_repo_create("crabalocker");
     g_assert(repo != NULL);
-    hy_repo_set_string(repo, HY_REPO_MD_FN, "/non/existing");
+    auto repoImpl = libdnf::repoGetImpl(repo);
+    repoImpl->repomdFn = "/non/existing";
     fail_unless(!dnf_sack_load_repo(sack, repo, 0, &error));
     fail_unless(g_error_matches (error, DNF_ERROR, DNF_ERROR_FILE_INVALID));
     hy_repo_free(repo);

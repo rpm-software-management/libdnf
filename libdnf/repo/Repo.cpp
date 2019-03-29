@@ -27,17 +27,6 @@
 
 #define GPG_HOME_ENV "GNUPGHOME"
 
-#define MD_TYPE_PRIMARY "primary"
-#define MD_TYPE_FILELISTS "filelists"
-#define MD_TYPE_PRESTODELTA "prestodelta"
-#define MD_TYPE_GROUP_GZ "group_gz"
-#define MD_TYPE_GROUP "group"
-#define MD_TYPE_UPDATEINFO "updateinfo"
-#define MD_TYPE_MODULES "modules"
-/* "other" in this context is not a generic "any other metadata", but real metadata type named "other"
- * containing changelogs for packages */
-#define MD_TYPE_OTHER "other"
-
 #include "../log.hpp"
 #include "Repo-private.hpp"
 #include "../dnf-utils.h"
@@ -1891,7 +1880,8 @@ hy_repo_create(const char *name)
     assert(name);
     std::unique_ptr<libdnf::ConfigRepo> cfgRepo(new libdnf::ConfigRepo(cfgMain));
     auto repo = new libdnf::Repo(name, std::move(cfgRepo), libdnf::Repo::Type::COMMANDLINE);
-    hy_repo_set_string(repo, HY_REPO_NAME, name);
+    auto repoImpl = libdnf::repoGetImpl(repo);
+    repoImpl->conf->name().set(libdnf::Option::Priority::RUNTIME, name);
     return repo;
 }
 

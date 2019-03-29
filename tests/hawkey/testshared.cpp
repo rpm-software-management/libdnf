@@ -35,33 +35,34 @@ HyRepo
 glob_for_repofiles(Pool *pool, const char *repo_name, const char *path)
 {
     HyRepo repo = hy_repo_create(repo_name);
+    auto repoImpl = libdnf::repoGetImpl(repo);
     const char *tmpl;
     wordexp_t word_vector;
 
     tmpl = pool_tmpjoin(pool, path, "/repomd.xml", NULL);
     if (wordexp(tmpl, &word_vector, 0) || word_vector.we_wordc < 1)
         goto fail;
-    hy_repo_set_string(repo, HY_REPO_MD_FN, word_vector.we_wordv[0]);
+    repoImpl->repomdFn = word_vector.we_wordv[0];
 
     tmpl = pool_tmpjoin(pool, path, "/*primary.xml.gz", NULL);
     if (wordexp(tmpl, &word_vector, WRDE_REUSE) || word_vector.we_wordc < 1)
         goto fail;
-    hy_repo_set_string(repo, HY_REPO_PRIMARY_FN, word_vector.we_wordv[0]);
+    repoImpl->metadataPaths[MD_TYPE_PRIMARY] = word_vector.we_wordv[0];
 
     tmpl = pool_tmpjoin(pool, path, "/*filelists.xml.gz", NULL);
     if (wordexp(tmpl, &word_vector, WRDE_REUSE) || word_vector.we_wordc < 1)
         goto fail;
-    hy_repo_set_string(repo, HY_REPO_FILELISTS_FN, word_vector.we_wordv[0]);
+    repoImpl->metadataPaths[MD_TYPE_FILELISTS] = word_vector.we_wordv[0];
 
     tmpl = pool_tmpjoin(pool, path, "/*prestodelta.xml.gz", NULL);
     if (wordexp(tmpl, &word_vector, WRDE_REUSE) || word_vector.we_wordc < 1)
         goto fail;
-    hy_repo_set_string(repo, HY_REPO_PRESTO_FN, word_vector.we_wordv[0]);
+    repoImpl->metadataPaths[MD_TYPE_PRESTODELTA] = word_vector.we_wordv[0];
 
     tmpl = pool_tmpjoin(pool, path, "/*updateinfo.xml.gz", NULL);
     if (wordexp(tmpl, &word_vector, WRDE_REUSE) || word_vector.we_wordc < 1)
         goto fail;
-    hy_repo_set_string(repo, HY_REPO_UPDATEINFO_FN, word_vector.we_wordv[0]);
+    repoImpl->metadataPaths[MD_TYPE_UPDATEINFO] = word_vector.we_wordv[0];
 
     wordfree(&word_vector);
     return repo;

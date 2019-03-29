@@ -319,7 +319,7 @@ guint
 dnf_repo_get_n_solvables (DnfRepo *repo)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    return hy_repo_get_n_solvables (priv->repo);
+    return libdnf::repoGetImpl(priv->repo)->libsolvRepo->nsolvables;
 }
 
 /**

@@ -364,7 +364,7 @@ dnf_sack_recompute_considered(DnfSack *sack)
         Repo *repo;
         FOR_REPOS(repoid, repo) {
             auto hyrepo = static_cast<HyRepo>(repo->appdata);
-            if (!hy_repo_get_use_includes(hyrepo)) {
+            if (!libdnf::repoGetImpl(hyrepo)->use_includes) {
                 Id solvableid;
                 Solvable *solvable;
                 FOR_REPO_SOLVABLES(repo, solvableid, solvable)
@@ -380,23 +380,24 @@ dnf_sack_recompute_considered(DnfSack *sack)
 
 static gboolean
 load_ext(DnfSack *sack, HyRepo hrepo, _hy_repo_repodata which_repodata,
-         const char *suffix, int which_filename,
+         const char *suffix, const char * which_filename,
          int (*cb)(Repo *, FILE *), GError **error)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     int ret = 0;
-    Repo *repo = libdnf::repoGetImpl(hrepo)->libsolvRepo;
+    auto repoImpl = libdnf::repoGetImpl(hrepo);
+    Repo *repo = repoImpl->libsolvRepo;
     const char *name = repo->name;
-    const char *fn = hy_repo_get_string(hrepo, which_filename);
+    auto & fn = repoImpl->getMetadataPath(which_filename);
     FILE *fp;
     gboolean done = FALSE;
 
     /* nothing set */
-    if (fn == NULL) {
+    if (fn.empty()) {
         g_set_error (error,
                      DNF_ERROR,
                      DNF_ERROR_NO_CAPABILITY,
-                     _("no %1$d string for %2$s"),
+                     _("no %1$s string for %2$s"),
                      which_filename, name);
         return FALSE;
     }
@@ -432,15 +433,15 @@ load_ext(DnfSack *sack, HyRepo hrepo, _hy_repo_repodata which_repodata,
     if (done)
         return TRUE;
 
-    fp = solv_xfopen(fn, "r");
+    fp = solv_xfopen(fn.c_str(), "r");
     if (fp == NULL) {
         g_set_error (error,
                      DNF_ERROR,
                      DNF_ERROR_FILE_INVALID,
-                     _("failed to open: %s"), fn);
+                     _("failed to open: %s"), fn.c_str());
         return FALSE;
     }
-    g_debug("%s: loading: %s", __func__, fn);
+    g_debug("%s: loading: %s", __func__, fn.c_str());
 
     int previous_last = repo->nrepodata - 1;
     ret = cb(repo, fp);
@@ -681,9 +682,9 @@ load_yum_repo(DnfSack *sack, HyRepo hrepo, GError **error)
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     gboolean retval = TRUE;
     Pool *pool = priv->pool;
-    const char *name = hy_repo_get_string(hrepo, HY_REPO_NAME);
+    const char *name = hrepo->getId().c_str();
     Repo *repo = repo_create(pool, name);
-    const char *fn_repomd = hy_repo_get_string(hrepo, HY_REPO_MD_FN);
+    const char *fn_repomd = repoImpl->repomdFn.c_str();
     char *fn_cache = dnf_sack_give_cache_fn(sack, name, NULL);
 
     FILE *fp_primary = NULL;
@@ -722,8 +723,7 @@ load_yum_repo(DnfSack *sack, HyRepo hrepo, GError **error)
         }
         repoImpl->state_main = _HY_LOADED_CACHE;
     } else {
-        fp_primary = solv_xfopen(hy_repo_get_string(hrepo, HY_REPO_PRIMARY_FN),
-                                 "r");
+        fp_primary = solv_xfopen(repoImpl->getMetadataPath(MD_TYPE_PRIMARY).c_str(), "r");
         assert(fp_primary);
 
         g_debug("fetching %s", name);
@@ -1541,9 +1541,9 @@ dnf_sack_set_use_includes(DnfSack *sack, const char *reponame, gboolean enabled)
         HyRepo hyrepo = hrepo_by_name(sack, reponame);
         if (!hyrepo)
             return FALSE;
-        if (hy_repo_get_use_includes(hyrepo) != enabled)
+        if (libdnf::repoGetImpl(hyrepo)->use_includes != enabled)
         {
-            hy_repo_set_use_includes(hyrepo, enabled);
+            libdnf::repoGetImpl(hyrepo)->use_includes = enabled;
             priv->considered_uptodate = FALSE;
         }
     } else {
@@ -1551,9 +1551,9 @@ dnf_sack_set_use_includes(DnfSack *sack, const char *reponame, gboolean enabled)
         Repo *repo;
         FOR_REPOS(repoid, repo) {
             auto hyrepo = static_cast<HyRepo>(pool->repos[repoid]->appdata);
-            if (hy_repo_get_use_includes(hyrepo) != enabled)
+            if (libdnf::repoGetImpl(hyrepo)->use_includes != enabled)
             {
-                hy_repo_set_use_includes(hyrepo, enabled);
+                libdnf::repoGetImpl(hyrepo)->use_includes = enabled;
                 priv->considered_uptodate = FALSE;
             }
         }
@@ -1610,7 +1610,7 @@ dnf_sack_get_use_includes(DnfSack *sack, const char *reponame, gboolean *enabled
     HyRepo hyrepo = hrepo_by_name(sack, reponame);
     if (!hyrepo)
         return FALSE;
-    *enabled = hy_repo_get_use_includes(hyrepo);
+    *enabled = libdnf::repoGetImpl(hyrepo)->use_includes;
     return TRUE;
 }
 
@@ -1683,9 +1683,11 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
     const int build_cache = flags & DNF_SACK_LOAD_FLAG_BUILD_CACHE;
 
     g_free(cache_fn);
-    if (hrepo)
-        hy_repo_set_string(hrepo, HY_REPO_NAME, HY_SYSTEM_REPO_NAME);
-    else
+    if (hrepo) {
+        auto repoImpl = libdnf::repoGetImpl(hrepo);
+        repoImpl->id = HY_SYSTEM_REPO_NAME;
+        repoImpl->conf->name().set(libdnf::Option::Priority::RUNTIME, HY_SYSTEM_REPO_NAME);
+    } else
         hrepo = hy_repo_create(HY_SYSTEM_REPO_NAME);
     auto repoImpl = libdnf::repoGetImpl(hrepo);
 
@@ -1781,7 +1783,7 @@ dnf_sack_load_repo(DnfSack *sack, HyRepo repo, int flags, GError **error)
     repoImpl->main_end = repoImpl->libsolvRepo->end;
     if (flags & DNF_SACK_LOAD_FLAG_USE_FILELISTS) {
         retval = load_ext(sack, repo, _HY_REPODATA_FILENAMES,
-                          HY_EXT_FILENAMES, HY_REPO_FILELISTS_FN,
+                          HY_EXT_FILENAMES, MD_TYPE_FILELISTS,
                           load_filelists_cb, &error_local);
         /* allow missing files */
         if (!retval) {
@@ -1804,7 +1806,7 @@ dnf_sack_load_repo(DnfSack *sack, HyRepo repo, int flags, GError **error)
     }
     if (flags & DNF_SACK_LOAD_FLAG_USE_OTHER) {
         retval = load_ext(sack, repo, _HY_REPODATA_OTHER,
-                          HY_EXT_OTHER, HY_REPO_OTHER_FN,
+                          HY_EXT_OTHER, MD_TYPE_OTHER,
                           load_other_cb, &error_local);
         /* allow missing files */
         if (!retval) {
@@ -1827,7 +1829,7 @@ dnf_sack_load_repo(DnfSack *sack, HyRepo repo, int flags, GError **error)
     }
     if (flags & DNF_SACK_LOAD_FLAG_USE_PRESTO) {
         retval = load_ext(sack, repo, _HY_REPODATA_PRESTO,
-                          HY_EXT_PRESTO, HY_REPO_PRESTO_FN,
+                          HY_EXT_PRESTO, MD_TYPE_PRESTODELTA,
                           load_presto_cb, &error_local);
         if (!retval) {
             if (g_error_matches (error_local,
@@ -1848,7 +1850,7 @@ dnf_sack_load_repo(DnfSack *sack, HyRepo repo, int flags, GError **error)
        extension, but contains a new set of packages */
     if (flags & DNF_SACK_LOAD_FLAG_USE_UPDATEINFO) {
         retval = load_ext(sack, repo, _HY_REPODATA_UPDATEINFO,
-                          HY_EXT_UPDATEINFO, HY_REPO_UPDATEINFO_FN,
+                          HY_EXT_UPDATEINFO, MD_TYPE_UPDATEINFO,
                           load_updateinfo_cb, &error_local);
         /* allow missing files */
         if (!retval) {

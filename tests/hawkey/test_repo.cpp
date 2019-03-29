@@ -31,11 +31,12 @@
 START_TEST(test_strings)
 {
     HyRepo hrepo = hy_repo_create("happy2");
-    ck_assert_str_eq(hy_repo_get_string(hrepo, HY_REPO_NAME), "happy2");
-    hy_repo_set_string(hrepo, HY_REPO_PRESTO_FN, "tunedtoA");
-    ck_assert_str_eq(hy_repo_get_string(hrepo, HY_REPO_PRESTO_FN), "tunedtoA");
-    hy_repo_set_string(hrepo, HY_REPO_PRESTO_FN, "naturalE");
-    ck_assert_str_eq(hy_repo_get_string(hrepo, HY_REPO_PRESTO_FN), "naturalE");
+    auto repoImpl = libdnf::repoGetImpl(hrepo);
+    ck_assert_str_eq(hrepo->getId().c_str(), "happy2");
+    repoImpl->metadataPaths[MD_TYPE_PRESTODELTA] = "tunedtoA";
+    ck_assert_str_eq(repoImpl->getMetadataPath(MD_TYPE_PRESTODELTA).c_str(), "tunedtoA");
+    repoImpl->metadataPaths[MD_TYPE_PRESTODELTA] = "naturalE";
+    ck_assert_str_eq(repoImpl->getMetadataPath(MD_TYPE_PRESTODELTA).c_str(), "naturalE");
     hy_repo_free(hrepo);
 }
 END_TEST
@@ -45,9 +46,11 @@ START_TEST(test_cost)
     DnfSack *sack = test_globals.sack;
     HyRepo repo = hrepo_by_name(sack, YUM_REPO_NAME);
     auto repoImpl = libdnf::repoGetImpl(repo);
-    hy_repo_set_cost(repo, 700);
+    repoImpl->conf->cost().set(libdnf::Option::Priority::RUNTIME, 700);
+    if (repoImpl->libsolvRepo)
+        repoImpl->libsolvRepo->subpriority = -700;
     fail_unless(repoImpl->libsolvRepo != NULL);
-    fail_unless(700 == hy_repo_get_cost(repo));
+    fail_unless(700 == repoImpl->conf->cost().getValue());
     int subpriority = -700;
     fail_unless(repoImpl->libsolvRepo->subpriority == subpriority);
 }

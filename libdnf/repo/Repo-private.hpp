@@ -48,6 +48,17 @@
 #include <string.h>
 #include <time.h>
 
+#define MD_TYPE_PRIMARY "primary"
+#define MD_TYPE_FILELISTS "filelists"
+#define MD_TYPE_PRESTODELTA "prestodelta"
+#define MD_TYPE_GROUP_GZ "group_gz"
+#define MD_TYPE_GROUP "group"
+#define MD_TYPE_UPDATEINFO "updateinfo"
+#define MD_TYPE_MODULES "modules"
+/* "other" in this context is not a generic "any other metadata", but real metadata type named "other"
+ * containing changelogs for packages */
+#define MD_TYPE_OTHER "other"
+
 enum _hy_repo_state {
     _HY_NEW,
     _HY_LOADED_FETCH,
