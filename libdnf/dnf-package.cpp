@@ -113,7 +113,11 @@ dnf_package_get_filename(DnfPackage *pkg)
     /* default cache filename location */
     if (priv->filename == NULL && priv->repo != NULL) {
         if (dnf_repo_is_local(priv->repo)) {
-            priv->filename = g_build_filename(dnf_repo_get_location(priv->repo),
+            const gchar *url_location = dnf_package_get_baseurl(pkg);
+            if (!url_location){
+                url_location = dnf_repo_get_location(priv->repo);
+            }
+            priv->filename = g_build_filename(url_location,
                                               dnf_package_get_location(pkg),
                                               NULL);
         } else {
