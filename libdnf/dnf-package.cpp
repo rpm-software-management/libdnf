@@ -130,6 +130,25 @@ dnf_package_get_filename(DnfPackage *pkg)
         }
     }
 
+    /* remove file:// from filename */
+    if (g_str_has_prefix(priv->filename, "file:///")){
+        gchar *tmp = priv->filename;
+        priv->filename = g_strdup(tmp + 7);
+        g_free(tmp);
+        goto out;
+    }
+
+    /* remove file: from filename */
+    if (strlen(priv->filename) >= 7){
+        if (g_str_has_prefix(priv->filename, "file:/")){
+            if (priv->filename[6] != '/'){
+                gchar *tmp = priv->filename;
+                priv->filename = g_strdup(tmp + 5);
+                g_free(tmp);
+            }
+        }
+    }
+out:
     return priv->filename;
 }
 
