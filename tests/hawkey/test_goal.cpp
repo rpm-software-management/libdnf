@@ -219,10 +219,11 @@ END_TEST
 
 START_TEST(test_goal_install_selector_err)
 {
-    int rc;
-    g_autoptr(GError) error = NULL;
     // Test that using the hy_goal_*_selector() methods returns an error for
     // selectors invalid in this context.
+
+    int rc;
+    g_autoptr(GError) error = NULL;
 
     HySelector sltr;
     HyGoal goal = hy_goal_create(test_globals.sack);
@@ -240,7 +241,7 @@ START_TEST(test_goal_install_selector_err)
     hy_selector_free(sltr);
 
     sltr = hy_selector_create(test_globals.sack);
-    fail_unless(hy_selector_set(sltr, HY_REPO_NAME, HY_EQ, HY_SYSTEM_REPO_NAME));
+    fail_unless(hy_selector_set(sltr, HY_PKG, HY_EQ, HY_SYSTEM_REPO_NAME));
     hy_selector_free(sltr);
 
     hy_goal_free(goal);
