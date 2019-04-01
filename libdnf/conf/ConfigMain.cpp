@@ -165,7 +165,7 @@ class ConfigMain::Impl {
 
     OptionNumber<std::int32_t> debuglevel{2, 0, 10};
     OptionNumber<std::int32_t> errorlevel{3, 0, 10};
-    OptionPath installroot{"/"};
+    OptionPath installroot{"/", false, true};
     OptionPath config_file_path{CONF_FILENAME};
     OptionBool plugins{true};
     OptionStringList pluginpath{std::vector<std::string>{}};
