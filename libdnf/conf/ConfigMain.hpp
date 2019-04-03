@@ -147,6 +147,7 @@ public:
     OptionString & sslclientkey();
     OptionBool & deltarpm();
     OptionNumber<std::uint32_t> & deltarpm_percentage();
+    OptionBool & skip_if_unavailable();
 
 private:
     class Impl;
