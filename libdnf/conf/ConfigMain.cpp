@@ -530,6 +530,9 @@ class ConfigMain::Impl {
 
     OptionNumber<std::uint32_t> deltarpm_percentage{75};
     OptionBinding deltaRpmPercentageBinding{owner, deltarpm_percentage, "deltarpm_percentage"};
+
+    OptionBool skip_if_unavailable{false};
+    OptionBinding skip_if_unavailableBinding{owner, skip_if_unavailable, "skip_if_unavailable"};
 };
 
 ConfigMain::ConfigMain() { pImpl = std::unique_ptr<Impl>(new Impl(*this)); }
@@ -631,5 +634,6 @@ OptionString & ConfigMain::sslclientcert() { return pImpl->sslclientcert; }
 OptionString & ConfigMain::sslclientkey() { return pImpl->sslclientkey; }
 OptionBool & ConfigMain::deltarpm() { return pImpl->deltarpm; }
 OptionNumber<std::uint32_t> & ConfigMain::deltarpm_percentage() { return pImpl->deltarpm_percentage; }
+OptionBool & ConfigMain::skip_if_unavailable() { return pImpl->skip_if_unavailable; }
 
 }
