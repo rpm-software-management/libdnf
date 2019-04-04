@@ -1093,9 +1093,9 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
 
     /* proxy is optional */
     proxy = g_key_file_get_string(priv->keyfile, priv->id, "proxy", NULL);
-    if (proxy == NULL)
-        proxy = g_strdup(dnf_context_get_http_proxy(priv->context));
-    if (!lr_handle_setopt(priv->repo_handle, error, LRO_PROXY, proxy))
+    auto repoProxy = proxy ? (strcasecmp(proxy, "_none_") == 0 ? NULL : proxy)
+        : dnf_context_get_http_proxy(priv->context);
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_PROXY, repoProxy))
         return FALSE;
 
     /* both parts of the proxy auth are optional */
