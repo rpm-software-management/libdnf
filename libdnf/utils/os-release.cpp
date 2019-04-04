@@ -153,9 +153,11 @@ getUserAgent(const std::map<std::string, std::string> & osReleaseData)
     oss << osReleaseData.at("NAME") << " " << osReleaseData.at("VERSION_ID") << "; ";
 
     // variant (if available)
+    std::string variant = "generic";
     if (osReleaseData.find("VARIANT_ID") != osReleaseData.end()) {
-        oss << osReleaseData.at("VARIANT_ID") << "; ";
+        variant = osReleaseData.at("VARIANT_ID");
     }
+    oss << variant << "; ";
 
     // OS canonical name
     oss << getCanonOs();
