@@ -58,16 +58,11 @@
 typedef struct
 {
     DnfRepoEnabled   enabled;
-    gboolean         required;
-    gboolean         gpgcheck_md;
-    gboolean         gpgcheck_pkgs;
     gchar          **gpgkeys;
     gchar          **exclude_packages;
-    guint            cost;
     gboolean         module_hotfixes;
     guint            metadata_expire;       /*seconds*/
     gchar           *filename;      /* /etc/yum.repos.d/updates.repo */
-    gchar           *id;
     gchar           *location;      /* /var/cache/PackageKit/metadata/fedora */
     gchar           *location_tmp;  /* /var/cache/PackageKit/metadata/fedora.tmp */
     gchar           *packages;      /* /var/cache/PackageKit/metadata/fedora/packages */
@@ -80,11 +75,10 @@ typedef struct
     GKeyFile        *keyfile;
     DnfContext      *context;               /* weak reference */
     DnfRepoKind      kind;
-    HyRepo           repo;
+    libdnf::Repo    *repo;
     LrHandle        *repo_handle;
     LrResult        *repo_result;
     LrUrlVars       *urlvars;
-    std::set<std::string> * additionalMetadata;
 } DnfRepoPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfRepo, dnf_repo, G_TYPE_OBJECT)
@@ -99,8 +93,6 @@ dnf_repo_finalize(GObject *object)
     DnfRepo *repo = DNF_REPO(object);
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
 
-    delete priv->additionalMetadata;
-    g_free(priv->id);
     g_free(priv->filename);
     g_strfreev(priv->gpgkeys);
     g_strfreev(priv->exclude_packages);
@@ -133,13 +125,9 @@ static void
 dnf_repo_init(DnfRepo *repo)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    priv->cost = 1000;
+    priv->repo = libdnf::hy_repo_create("<preinit>");
     priv->repo_handle = lr_handle_init();
     priv->repo_result = lr_result_init();
-    priv->required = FALSE;  /* This is the original default which we're
-                              * keeping for compatibility.
-                              */
-    priv->additionalMetadata = new std::set<std::string>;
 }
 
 /**
@@ -166,7 +154,7 @@ const gchar *
 dnf_repo_get_id(DnfRepo *repo)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    return priv->id;
+    return libdnf::repoGetImpl(priv->repo)->id.c_str();
 }
 
 /**
@@ -351,7 +339,7 @@ gboolean
 dnf_repo_get_required(DnfRepo *repo)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    return priv->required;
+    return !priv->repo->getConfig()->skip_if_unavailable().getValue();
 }
 
 /**
@@ -368,7 +356,7 @@ guint
 dnf_repo_get_cost(DnfRepo *repo)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    return priv->cost;
+    return repoGetImpl(priv->repo)->conf->cost().getValue();
 }
 
 /**
@@ -434,7 +422,7 @@ gboolean
 dnf_repo_get_gpgcheck(DnfRepo *repo)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    return priv->gpgcheck_pkgs;
+    return priv->repo->getConfig()->gpgcheck().getValue();
 }
 
 /**
@@ -451,7 +439,7 @@ gboolean
 dnf_repo_get_gpgcheck_md(DnfRepo *repo)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    return priv->gpgcheck_md;
+    return priv->repo->getConfig()->repo_gpgcheck().getValue();
 }
 
 /**
@@ -499,11 +487,12 @@ gboolean
 dnf_repo_is_devel(DnfRepo *repo)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    if (g_str_has_suffix(priv->id, "-debuginfo"))
+    auto id = priv->repo->getId().c_str();
+    if (g_str_has_suffix(id, "-debuginfo"))
         return TRUE;
-    if (g_str_has_suffix(priv->id, "-debug"))
+    if (g_str_has_suffix(id, "-debug"))
         return TRUE;
-    if (g_str_has_suffix(priv->id, "-development"))
+    if (g_str_has_suffix(id, "-development"))
         return TRUE;
     return FALSE;
 }
@@ -541,7 +530,7 @@ gboolean
 dnf_repo_is_source(DnfRepo *repo)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    if (g_str_has_suffix(priv->id, "-source"))
+    if (g_str_has_suffix(priv->repo->getId().c_str(), "-source"))
         return TRUE;
     return FALSE;
 }
@@ -559,8 +548,8 @@ void
 dnf_repo_set_id(DnfRepo *repo, const gchar *id)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    g_free(priv->id);
-    priv->id = g_strdup(id);
+    libdnf::repoGetImpl(priv->repo)->id = id;
+    libdnf::repoGetImpl(priv->repo)->conf->name().set(libdnf::Option::Priority::RUNTIME, id);
 }
 
 /**
@@ -692,8 +681,7 @@ void
 dnf_repo_set_required(DnfRepo *repo, gboolean required)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-
-    priv->required = required;
+    priv->repo->getConfig()->skip_if_unavailable().set(libdnf::Option::Priority::COMMANDLINE, !required);
 }
 
 /**
@@ -709,7 +697,7 @@ void
 dnf_repo_set_cost(DnfRepo *repo, guint cost)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    priv->cost = cost;
+    repoGetImpl(priv->repo)->conf->cost().set(libdnf::Option::Priority::COMMANDLINE, cost);
 }
 
 /**
@@ -757,7 +745,7 @@ void
 dnf_repo_set_gpgcheck(DnfRepo *repo, gboolean gpgcheck_pkgs)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    priv->gpgcheck_pkgs = gpgcheck_pkgs;
+    priv->repo->getConfig()->gpgcheck().set(libdnf::Option::Priority::COMMANDLINE, gpgcheck_pkgs);
 }
 
 /**
@@ -773,7 +761,7 @@ void
 dnf_repo_set_gpgcheck_md(DnfRepo *repo, gboolean gpgcheck_md)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    priv->gpgcheck_md = gpgcheck_md;
+    priv->repo->getConfig()->repo_gpgcheck().set(libdnf::Option::Priority::COMMANDLINE, gpgcheck_md);
 }
 
 /**
@@ -956,31 +944,30 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     g_autofree gchar *usr_pwd_proxy = NULL;
     g_auto(GStrv) baseurls;
 
-    g_debug("setting keyfile data for %s", priv->id);
+    auto id = priv->repo->getId().c_str();
+    g_debug("setting keyfile data for %s", id);
 
     /* skip_if_unavailable is optional */
-    if (g_key_file_has_key(priv->keyfile, priv->id, "skip_if_unavailable", NULL)) {
-        if (dnf_repo_get_boolean(priv->keyfile, priv->id, "skip_if_unavailable", NULL))
-            priv->required = FALSE;
-        else
-            priv->required = TRUE;
+    if (g_key_file_has_key(priv->keyfile, id, "skip_if_unavailable", NULL)) {
+        bool skip = dnf_repo_get_boolean(priv->keyfile, id, "skip_if_unavailable", NULL);
+        priv->repo->getConfig()->skip_if_unavailable().set(libdnf::Option::Priority::COMMANDLINE, skip);
     }
 
     /* cost is optional */
-    cost = g_key_file_get_integer(priv->keyfile, priv->id, "cost", NULL);
+    cost = g_key_file_get_integer(priv->keyfile, id, "cost", NULL);
     if (cost != 0)
         dnf_repo_set_cost(repo, cost);
 
-    module_hotfixes = g_key_file_get_boolean(priv->keyfile, priv->id, "module_hotfixes", NULL);
+    module_hotfixes = g_key_file_get_boolean(priv->keyfile, id, "module_hotfixes", NULL);
     dnf_repo_set_module_hotfixes(repo, module_hotfixes);
 
     /* baseurl is optional; if missing, unset it */
-    baseurls = g_key_file_get_string_list(priv->keyfile, priv->id, "baseurl", NULL, NULL);
+    baseurls = g_key_file_get_string_list(priv->keyfile, id, "baseurl", NULL, NULL);
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_URLS, baseurls))
         return FALSE;
 
     /* metadata_expire is optional, if shown, we parse the string to add the time */
-    metadata_expire_str = g_key_file_get_string(priv->keyfile, priv->id, "metadata_expire", NULL);
+    metadata_expire_str = g_key_file_get_string(priv->keyfile, id, "metadata_expire", NULL);
     if (metadata_expire_str) {
         guint metadata_expire;
         if (!dnf_repo_parse_time_from_str(metadata_expire_str, &metadata_expire, error))
@@ -992,7 +979,7 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     }
 
     /* the "mirrorlist" entry could be either a real mirrorlist, or a metalink entry */
-    mirrorlist = g_key_file_get_string(priv->keyfile, priv->id, "mirrorlist", NULL);
+    mirrorlist = g_key_file_get_string(priv->keyfile, id, "mirrorlist", NULL);
     if (mirrorlist) {
         if (strstr(mirrorlist, "metalink"))
             metalinkurl = static_cast<gchar *>(g_steal_pointer(&mirrorlist));
@@ -1001,9 +988,9 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     }
 
     /* let "metalink" entry override metalink-as-mirrorlist entry */
-    if (g_key_file_has_key(priv->keyfile, priv->id, "metalink", NULL)) {
+    if (g_key_file_has_key(priv->keyfile, id, "metalink", NULL)) {
         g_free(metalinkurl);
-        metalinkurl = g_key_file_get_string(priv->keyfile, priv->id, "metalink", NULL);
+        metalinkurl = g_key_file_get_string(priv->keyfile, id, "metalink", NULL);
     }
 
     /* now set the final values (or unset them) */
@@ -1031,7 +1018,7 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     if (priv->location == NULL) {
         g_autofree gchar *tmp = NULL;
         /* make each repo's cache directory name has releasever and basearch as its suffix */
-        g_autofree gchar *file_name  = g_strjoin("-", priv->id,
+        g_autofree gchar *file_name  = g_strjoin("-", id,
                                                  dnf_context_get_release_ver(priv->context),
                                                  dnf_context_get_base_arch(priv->context), NULL);
 
@@ -1052,7 +1039,7 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
 
     /* gpgkey is optional for gpgcheck=1, but required for repo_gpgcheck=1 */
     g_strfreev(priv->gpgkeys);
-    tmp_strval = g_key_file_get_string(priv->keyfile, priv->id, "gpgkey", NULL);
+    tmp_strval = g_key_file_get_string(priv->keyfile, id, "gpgkey", NULL);
     if (tmp_strval) {
         priv->gpgkeys = g_strsplit_set(tmp_strval, " ,", -1);
         g_free(g_steal_pointer (&tmp_strval));
@@ -1066,12 +1053,16 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
      * repo files as required.  To claim compatibility with yum repository files, I think
      * we need to basically hard code the yum.conf defaults here.
      */
-    if (!g_key_file_has_key(priv->keyfile, priv->id, "gpgcheck", NULL))
-        priv->gpgcheck_pkgs = TRUE;
-    else
-        priv->gpgcheck_pkgs = dnf_repo_get_boolean(priv->keyfile, priv->id, "gpgcheck", NULL);
-    priv->gpgcheck_md = dnf_repo_get_boolean(priv->keyfile, priv->id, "repo_gpgcheck", NULL);
-    if (priv->gpgcheck_md && priv->gpgkeys == NULL) {
+    if (!g_key_file_has_key(priv->keyfile, id, "gpgcheck", NULL))
+        priv->repo->getConfig()->gpgcheck().set(libdnf::Option::Priority::DEFAULT, true);
+    else {
+        auto gpgcheck_pkgs = dnf_repo_get_boolean(priv->keyfile, id, "gpgcheck", NULL);
+        priv->repo->getConfig()->gpgcheck().set(libdnf::Option::Priority::DEFAULT, gpgcheck_pkgs);
+    }
+
+    auto gpgcheck_md = dnf_repo_get_boolean(priv->keyfile, id, "repo_gpgcheck", NULL);
+    priv->repo->getConfig()->repo_gpgcheck().set(libdnf::Option::Priority::COMMANDLINE, gpgcheck_md);
+    if (gpgcheck_md && priv->gpgkeys == NULL) {
         g_set_error_literal(error,
                             DNF_ERROR,
                             DNF_ERROR_FILE_INVALID,
@@ -1080,32 +1071,32 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     }
 
     /* XXX: setopt() expects a long, so we need a long on the stack */
-    if (!lr_handle_setopt(priv->repo_handle, error, LRO_GPGCHECK, (long)priv->gpgcheck_md))
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_GPGCHECK, (long)gpgcheck_md))
         return FALSE;
 
-    tmp_strval = g_key_file_get_string(priv->keyfile, priv->id, "exclude", NULL);
+    tmp_strval = g_key_file_get_string(priv->keyfile, id, "exclude", NULL);
     if (tmp_strval) {
         priv->exclude_packages = g_strsplit_set(tmp_strval, " ,", -1);
         g_free(g_steal_pointer (&tmp_strval));
     }
 
     /* proxy is optional */
-    proxy = g_key_file_get_string(priv->keyfile, priv->id, "proxy", NULL);
+    proxy = g_key_file_get_string(priv->keyfile, id, "proxy", NULL);
     auto repoProxy = proxy ? (strcasecmp(proxy, "_none_") == 0 ? NULL : proxy)
         : dnf_context_get_http_proxy(priv->context);
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_PROXY, repoProxy))
         return FALSE;
 
     /* both parts of the proxy auth are optional */
-    usr = g_key_file_get_string(priv->keyfile, priv->id, "proxy_username", NULL);
-    pwd = g_key_file_get_string(priv->keyfile, priv->id, "proxy_password", NULL);
+    usr = g_key_file_get_string(priv->keyfile, id, "proxy_username", NULL);
+    pwd = g_key_file_get_string(priv->keyfile, id, "proxy_password", NULL);
     usr_pwd_proxy = dnf_repo_get_username_password_string(usr, pwd);
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_PROXYUSERPWD, usr_pwd_proxy))
         return FALSE;
 
     /* both parts of the HTTP auth are optional */
-    usr = g_key_file_get_string(priv->keyfile, priv->id, "username", NULL);
-    pwd = g_key_file_get_string(priv->keyfile, priv->id, "password", NULL);
+    usr = g_key_file_get_string(priv->keyfile, id, "username", NULL);
+    pwd = g_key_file_get_string(priv->keyfile, id, "password", NULL);
     usr_pwd = dnf_repo_get_username_password_string(usr, pwd);
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_USERPWD, usr_pwd))
         return FALSE;
@@ -1171,8 +1162,9 @@ dnf_repo_setup(DnfRepo *repo, GError **error)
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_GNUPGHOMEDIR, priv->keyring))
         return FALSE;
 
-    if (g_key_file_has_key(priv->keyfile, priv->id, "sslverify", NULL))
-        sslverify = dnf_repo_get_boolean(priv->keyfile, priv->id, "sslverify", NULL);
+    auto id = priv->repo->getId().c_str();
+    if (g_key_file_has_key(priv->keyfile, id, "sslverify", NULL))
+        sslverify = dnf_repo_get_boolean(priv->keyfile, id, "sslverify", NULL);
 
     /* XXX: setopt() expects a long, so we need a long on the stack */
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLVERIFYPEER, (long)sslverify))
@@ -1180,19 +1172,19 @@ dnf_repo_setup(DnfRepo *repo, GError **error)
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLVERIFYHOST, (long)sslverify))
         return FALSE;
 
-    sslcacert = g_key_file_get_string(priv->keyfile, priv->id, "sslcacert", NULL);
+    sslcacert = g_key_file_get_string(priv->keyfile, id, "sslcacert", NULL);
     if (sslcacert != NULL) {
         if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLCACERT, sslcacert))
             return FALSE;
     }
 
-    sslclientcert = g_key_file_get_string(priv->keyfile, priv->id, "sslclientcert", NULL);
+    sslclientcert = g_key_file_get_string(priv->keyfile, id, "sslclientcert", NULL);
     if (sslclientcert != NULL) {
         if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLCLIENTCERT, sslclientcert))
             return FALSE;
     }
 
-    sslclientkey = g_key_file_get_string(priv->keyfile, priv->id, "sslclientkey", NULL);
+    sslclientkey = g_key_file_get_string(priv->keyfile, id, "sslclientkey", NULL);
     if (sslclientkey != NULL) {
         if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLCLIENTKEY, sslclientkey))
             return FALSE;
@@ -1207,16 +1199,16 @@ dnf_repo_setup(DnfRepo *repo, GError **error)
 #endif
 
     /* enabled is optional */
-    if (g_key_file_has_key(priv->keyfile, priv->id, "enabled", NULL)) {
-        if (dnf_repo_get_boolean(priv->keyfile, priv->id, "enabled", NULL))
+    if (g_key_file_has_key(priv->keyfile, id, "enabled", NULL)) {
+        if (dnf_repo_get_boolean(priv->keyfile, id, "enabled", NULL))
             enabled |= DNF_REPO_ENABLED_PACKAGES;
     } else {
         enabled |= DNF_REPO_ENABLED_PACKAGES;
     }
 
     /* enabled_metadata is optional */
-    if (g_key_file_has_key(priv->keyfile, priv->id, "enabled_metadata", NULL)) {
-        if (dnf_repo_get_boolean(priv->keyfile, priv->id, "enabled_metadata", NULL))
+    if (g_key_file_has_key(priv->keyfile, id, "enabled_metadata", NULL)) {
+        if (dnf_repo_get_boolean(priv->keyfile, id, "enabled_metadata", NULL))
             enabled |= DNF_REPO_ENABLED_METADATA;
     } else {
         g_autofree gchar *basename = g_path_get_basename(priv->filename);
@@ -1311,6 +1303,7 @@ dnf_repo_check_internal(DnfRepo *repo,
                         GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
+    auto repoImpl = libdnf::repoGetImpl(priv->repo);
 
     std::vector<const char *> download_list = {"primary", "group", "updateinfo", "appstream",
         "appstream-icons", "modules"};
@@ -1319,7 +1312,7 @@ dnf_repo_check_internal(DnfRepo *repo,
      */
     if (dnf_context_get_enable_filelists(priv->context))
         download_list.push_back("filelists");
-    for (const auto & item : *(priv->additionalMetadata)) {
+    for (const auto & item : repoImpl->additionalMetadata) {
         download_list.push_back(item.c_str());
     }
     download_list.push_back(NULL);
@@ -1376,7 +1369,7 @@ dnf_repo_check_internal(DnfRepo *repo,
                     DNF_ERROR,
                     DNF_ERROR_REPO_NOT_AVAILABLE,
                     "repodata %s was not complete: %s",
-                    priv->id, error_local->message);
+                    priv->repo->getId().c_str(), error_local->message);
         return FALSE;
     }
 
@@ -1422,20 +1415,34 @@ dnf_repo_check_internal(DnfRepo *repo,
         }
     }
 
-    /* create a HyRepo */
-    if (priv->repo)
-        hy_repo_free(priv->repo);
-    priv->repo = libdnf::hy_repo_create(priv->id);
-    auto repoImpl = libdnf::repoGetImpl(priv->repo);
+    /* init  */
+    repoImpl->libsolvRepo = nullptr;
+    repoImpl->needs_internalizing = false;
+    repoImpl->nrefs = 1;
+    repoImpl->state_main = _HY_NEW;
+    repoImpl->state_filelists = _HY_NEW;
+    repoImpl->state_presto = _HY_NEW;
+    repoImpl->state_updateinfo = _HY_NEW;
+    repoImpl->state_other = _HY_NEW;
+    repoImpl->filenames_repodata = 0;
+    repoImpl->presto_repodata = 0;
+    repoImpl->updateinfo_repodata = 0;
+    repoImpl->other_repodata = 0;
+    repoImpl->load_flags = 0;
+    /* the following three elements are needed for repo rewriting */
+    repoImpl->main_nsolvables = 0;
+    repoImpl->main_nrepodata = 0;
+    repoImpl->main_end = 0;
+    repoImpl->use_includes = false;
 
     repoImpl->repomdFn = yum_repo->repomd;
+    repoImpl->metadataPaths.clear();
     for (auto *elem = yum_repo->paths; elem; elem = g_slist_next(elem)) {
         if (elem->data) {
             auto yumrepopath = static_cast<LrYumRepoPath *>(elem->data);
             repoImpl->metadataPaths[yumrepopath->type] = yumrepopath->path;
         }
     }
-
     /* ensure we reset the values from the keyfile */
     if (!dnf_repo_set_keyfile_data(repo, error))
         return FALSE;
@@ -1676,7 +1683,7 @@ dnf_repo_update(DnfRepo *repo,
                     DNF_ERROR,
                     DNF_ERROR_INTERNAL_ERROR,
                     "location_tmp not set for %s",
-                    priv->id);
+                    priv->repo->getId().c_str());
         return FALSE;
     }
 
@@ -1719,7 +1726,7 @@ dnf_repo_update(DnfRepo *repo,
     }
 
     if (priv->gpgkeys &&
-        (priv->gpgcheck_md || priv->gpgcheck_pkgs)) {
+        (priv->repo->getConfig()->repo_gpgcheck().getValue() || priv->repo->getConfig()->gpgcheck().getValue())) {
         for (char **iter = priv->gpgkeys; iter && *iter; iter++) {
             const char *gpgkey = *iter;
             g_autofree char *gpgkey_name = g_path_get_basename(gpgkey);
@@ -1744,7 +1751,7 @@ dnf_repo_update(DnfRepo *repo,
         }
     }
 
-    g_debug("Attempting to update %s", priv->id);
+    g_debug("Attempting to update %s", priv->repo->getId().c_str());
     ret = lr_handle_setopt(priv->repo_handle, error,
                            LRO_LOCAL, 0L);
     if (!ret)
@@ -1920,7 +1927,7 @@ dnf_repo_set_data(DnfRepo *repo,
                   GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    g_key_file_set_string(priv->keyfile, priv->id, parameter, value);
+    g_key_file_set_string(priv->keyfile, priv->repo->getId().c_str(), parameter, value);
     return TRUE;
 }
 
@@ -2146,7 +2153,7 @@ dnf_repo_download_packages(DnfRepo *repo,
                     DNF_ERROR,
                     DNF_ERROR_INTERNAL_ERROR,
                     "Refusing to download from local repository \"%s\"",
-                    priv->id);
+                    priv->repo->getId().c_str());
         goto out;
     }
 
@@ -2278,7 +2285,7 @@ void
 dnf_repo_add_metadata_type_to_download(DnfRepo * repo, const gchar * metadataType)
 {
     auto priv = GET_PRIVATE(repo);
-    priv->additionalMetadata->insert(metadataType);
+    libdnf::repoGetImpl(priv->repo)->additionalMetadata.insert(metadataType);
 }
 
 /**
