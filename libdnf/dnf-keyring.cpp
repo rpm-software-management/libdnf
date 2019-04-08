@@ -57,11 +57,13 @@ dnf_keyring_add_public_key(rpmKeyring keyring,
                            GError **error)
 {
     gboolean ret = TRUE;
-    gint rc;
+    int rc;
     gsize len;
     pgpArmor armor;
     pgpDig dig = NULL;
     rpmPubkey pubkey = NULL;
+    rpmPubkey *subkeys = NULL;
+    int nsubkeys = 0;
     uint8_t *pkt = NULL;
     g_autofree gchar *data = NULL;
 
@@ -136,6 +138,20 @@ dnf_keyring_add_public_key(rpmKeyring keyring,
         goto out;
     }
 
+    subkeys = rpmGetSubkeys(pubkey, &nsubkeys);
+    for (int i = 0; i < nsubkeys; i++) {
+        rpmPubkey subkey = subkeys[i];
+        if (rpmKeyringAddKey(keyring, subkey) < 0) {
+            ret = FALSE;
+            g_set_error(error,
+                        DNF_ERROR,
+                        DNF_ERROR_GPG_SIGNATURE_INVALID,
+                        "failed to add subkeys for %s to rpmdb",
+                        filename);
+            goto out;
+        }
+    }
+
     /* success */
     g_debug("added missing public key %s to rpmdb", filename);
     ret = TRUE;
@@ -144,6 +160,12 @@ out:
         free(pkt); /* yes, free() */
     if (pubkey != NULL)
         rpmPubkeyFree(pubkey);
+    if (subkeys != NULL) {
+        for (int i = 0; i < nsubkeys; i++) {
+          rpmPubkeyFree(subkeys[i]);
+        }
+        free(subkeys);
+    }
     if (dig != NULL)
         pgpFreeDig(dig);
     return ret;
