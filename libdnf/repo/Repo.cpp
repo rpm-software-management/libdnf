@@ -469,22 +469,13 @@ bool Repo::checkIn()
 
     long int winPos = 0;  // sliding window position (UNIX timestamp)
     std::string cookieFn = getCachedir() + "/" + CHECK_IN_COOKIE;
-    std::fstream fs;
-
     // load last checked-in window position (if available)
-    fs.open(cookieFn);
-    if (fs.is_open()) {
-        fs >> winPos;
-    } else {
-        fs.clear();
-        fs.open(cookieFn, std::ios::out);
-    }
+    std::ifstream(cookieFn) >> winPos;
 
     // has the window advanced since?
     long int now = time(NULL);
     if ((now - winPos) <= CHECK_IN_WINDOW) {
         // nope, nothing to do
-        fs.close();
         return false;
     }
     // it has, go on
@@ -493,7 +484,6 @@ bool Repo::checkIn()
     auto metalink = pImpl->conf->metalink();
     std::string url;
     if (metalink.empty() || (url = metalink.getValue()).empty()) {
-        fs.close();
         return false;
     }
     if (url.find('?') != url.npos) {
@@ -508,9 +498,7 @@ bool Repo::checkIn()
 
     // store the new window position
     winPos = now - ((now - CHECK_IN_OFFSET) % CHECK_IN_WINDOW);
-    fs.seekg(fs.beg);
-    fs << winPos;
-    fs.close();
+    std::ofstream(cookieFn) << winPos;
 
     return true;
 }
