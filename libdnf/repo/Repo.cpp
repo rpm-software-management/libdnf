@@ -461,14 +461,14 @@ std::string Repo::getMetadataContent(const std::string &metadataType)
     return content;
 }
 
-bool Repo::checkIn()
+bool Repo::Impl::checkIn()
 {
-    if (!pImpl->conf->countme().getValue()) {
+    if (!conf->countme().getValue()) {
         return false;
     }
 
     long int winPos = 0;  // sliding window position (UNIX timestamp)
-    std::string cookieFn = getCachedir() + "/" + CHECK_IN_COOKIE;
+    std::string cookieFn = getPersistdir() + "/" + CHECK_IN_COOKIE;
     // load last checked-in window position (if available)
     std::ifstream(cookieFn) >> winPos;
 
@@ -481,7 +481,7 @@ bool Repo::checkIn()
     // it has, go on
 
     // do a GET request on the metalink URL with the magic parameter appended
-    auto metalink = pImpl->conf->metalink();
+    auto metalink = conf->metalink();
     std::string url;
     if (metalink.empty() || (url = metalink.getValue()).empty()) {
         return false;
@@ -501,6 +501,10 @@ bool Repo::checkIn()
     std::ofstream(cookieFn) << winPos;
 
     return true;
+}
+
+bool Repo::checkIn() {
+    return pImpl->checkIn();
 }
 
 std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()

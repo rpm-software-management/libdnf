@@ -268,17 +268,23 @@ public:
     *
     * This method is intended to be called periodically, such as from a systemd timer.
     *
-    * Regardless of how many times this method is called, only one check-in will be performed
-    * within the current time window specified by CHECK_IN_WINDOW and CHECK_IN_OFFSET.  This is to
-    * improve the metrics by not counting the same system twice throughout a pre-defined time
-    * window.
-    *
-    * The window starts at CHECK_IN_OFFSET and moves to the right (step size = CHECK_IN_WINDOW) as
-    * time progresses so that the current point in time always stays inside of it:
+    * To enable accurate statistics, a sliding time window (CHECK_IN_WINDOW) is defined in which
+    * only one check-in is allowed, regardless of how many times this method is called.  The window
+    * starts at CHECK_IN_OFFSET and moves along the time axis by its lengths, in such a way that
+    * the current point in time stays inside:
     *
     * epoch                         now
     * |---|-----+-----+-----+-----[-|---]---->
     *     CHECK_IN_OFFSET         window
+    *
+    * The last checked-in window is stored in a cookie file in this repo's persistdir (as a
+    * timestamp).
+    *
+    * Note that we position the window relative to a pre-defined point in time (CHECK_IN_OFFSET),
+    * rather than to the very first check-in.  The reason is that the latter is system-specific
+    * information that, given a predictable and sufficiently high cadence at which this method is
+    * called, could be revealed to the server and, in theory, used to track this system over a
+    * number of check-in records by correlating them based on time commonalities.
     *
     * @return bool whether a check-in was performed
     */
