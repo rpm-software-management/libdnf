@@ -270,8 +270,8 @@ public:
     *
     * To enable accurate statistics, a sliding time window (CHECK_IN_WINDOW) is defined in which
     * only one check-in is allowed, regardless of how many times this method is called.  The window
-    * starts at CHECK_IN_OFFSET and moves along the time axis by its lengths, in such a way that
-    * the current point in time stays inside:
+    * starts at CHECK_IN_OFFSET and moves along the time axis (step = CHECK_IN_WINDOW) in such a
+    * way that the current point in time stays inside:
     *
     * epoch                         now
     * |---|-----+-----+-----+-----[-|---]---->
