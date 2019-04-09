@@ -116,6 +116,7 @@ public:
     bool isInSync();
     void fetch(const std::string & destdir, std::unique_ptr<LrHandle> && h);
     std::string getCachedir() const;
+    std::string getPersistdir() const;
     int getAge() const;
     void expire();
     bool isExpired() const;
@@ -205,6 +206,7 @@ private:
         delete[] ptr;
     }};
     bool endsWith(std::string const &str, std::string const &ending) const;
+    std::string getHash() const;
 };
 
 }

@@ -1207,7 +1207,7 @@ bool Repo::Impl::load()
     return true;
 }
 
-std::string Repo::Impl::getCachedir() const
+std::string Repo::Impl::getHash() const
 {
     std::string tmp;
     if (conf->metalink().empty() || (tmp=conf->metalink().getValue()).empty()) {
@@ -1232,10 +1232,25 @@ std::string Repo::Impl::getCachedir() const
     solv_bin2hex(chksum, USE_CHECKSUM_BYTES, chksumCStr);
     solv_chksum_free(chksumObj, nullptr);
 
+    return id + "-" + chksumCStr;
+}
+
+std::string Repo::Impl::getCachedir() const
+{
     auto repodir(conf->basecachedir().getValue());
     if (repodir.back() != '/')
         repodir.push_back('/');
-    return repodir + id + "-" + chksumCStr;
+    return repodir + getHash();
+}
+
+std::string Repo::Impl::getPersistdir() const
+{
+    auto persdir(conf->getMasterConfig().persistdir().getValue());
+    if (persdir.back() != '/')
+        persdir.push_back('/');
+    std::string result = persdir + "repos/" + getHash();
+    g_mkdir_with_parents(result.c_str(), 0755);
+    return result;
 }
 
 int Repo::Impl::getAge() const
