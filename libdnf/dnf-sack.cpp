@@ -2247,7 +2247,8 @@ void readModuleMetadataFromRepo(DnfSack * sack, libdnf::ModulePackageContainer *
         modulePackages->createConflictsBetweenStreams();
         // TODO remove hard-coded path
         try {
-            modulePackages->addPlatformPackage("/etc/os-release", platformModule);
+            std::vector<std::string> paths{"/etc/os-release", "/usr/lib/os-release"};
+            modulePackages->addPlatformPackage(sack, paths, platformModule);
         } catch (const std::exception & except) {
             auto logger(libdnf::Log::getLogger());
             logger->critical("Detection of Platform Module failed: " + std::string(except.what()));

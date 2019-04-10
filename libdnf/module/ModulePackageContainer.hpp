@@ -96,6 +96,8 @@ public:
     void addDefaultsFromDisk();
     void moduleDefaultsResolve();
     Id addPlatformPackage(const std::string &osReleasePath, const char *  platformModule);
+    Id addPlatformPackage(DnfSack * sack,
+        const std::vector<std::string> & osReleasePath, const char * platformModule);
     void createConflictsBetweenStreams();
 
     /**
