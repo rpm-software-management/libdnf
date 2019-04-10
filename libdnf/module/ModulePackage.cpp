@@ -32,6 +32,13 @@ extern "C" {
 #include "libdnf/utils/File.hpp"
 #include "libdnf/dnf-sack-private.hpp"
 #include "libdnf/repo/Repo-private.hpp"
+#include "libdnf/sack/query.hpp"
+#include "libdnf/log.hpp"
+#include "../utils/bgettext/bgettext-lib.h"
+#include "tinyformat/tinyformat.hpp"
+
+#include <memory>
+
 
 namespace libdnf {
 
@@ -66,6 +73,16 @@ static void setSovable(Pool * pool, Solvable *solvable, std::string name,
     depId = pool_str2id(pool, ss.str().c_str(), 1);
     solvable_add_deparray(solvable, SOLVABLE_PROVIDES, depId, -1);
 }
+
+
+static std::pair<std::string, std::string> parsePlatform(const std::string & platform)
+{
+    auto index = platform.find(':');
+    if (index == std::string::npos) {
+        return {};
+    }
+    return make_pair(platform.substr(0,index), platform.substr(index+1));
+    }
 
 ModulePackage::~ModulePackage() = default;
 
@@ -366,14 +383,107 @@ static std::pair<std::string, std::string> getPlatformStream(const std::string &
                 line.substr(colonCharPosition + 1, endPosition - colonCharPosition -1));
         }
     }
-
-    throw std::runtime_error("Missing PLATFORM_ID in " + osReleasePath);
+    return {};
 }
 
 Id
 ModulePackage::createPlatformSolvable(DnfSack * moduleSack, const std::string & osReleasePath,
     const std::string install_root, const char * platformModule)
 {
+    std::vector<std::string> paths;
+    paths.push_back(osReleasePath);
+    return createPlatformSolvable(nullptr, moduleSack, paths, install_root, platformModule);
+}
+
+Id
+ModulePackage::createPlatformSolvable(DnfSack * sack, DnfSack * moduleSack,
+        const std::vector<std::string> & osReleasePaths, const std::string install_root,
+        const char *  platformModule)
+{
+    std::pair<std::string, std::string> parsedPlatform;
+    std::string name;
+    std::string stream;
+    if (platformModule) {
+        parsedPlatform = parsePlatform(platformModule);
+        if (!parsedPlatform.first.empty() && !parsedPlatform.second.empty()) {
+            name = parsedPlatform.first;
+            stream = parsedPlatform.second;
+        } else {
+            throw std::runtime_error(
+                tfm::format(_("Invalid format of Platform module: %s"), platformModule));
+        }
+    } else if (sack) {
+        Query baseQuery(sack);
+        baseQuery.addFilter(HY_PKG_PROVIDES, HY_EQ, "system-release");
+        baseQuery.addFilter(HY_PKG_LATEST, HY_EQ, 1);
+        baseQuery.apply();
+        Query availableQuery(baseQuery);
+        availableQuery.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+        auto platform = availableQuery.getStringsFromProvide("base-module");
+        auto platformSize = platform.size();
+        if (platformSize == 1) {
+            parsedPlatform = parsePlatform(*platform.begin());
+        } else if (platformSize > 1) {
+            auto logger(Log::getLogger());
+            logger->debug(_("Multiple module platforms provided by available packages\n"));
+        }
+        if (!parsedPlatform.first.empty() && !parsedPlatform.second.empty()) {
+            name = parsedPlatform.first;
+            stream = parsedPlatform.second;
+        } else {
+            baseQuery.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+            platform = baseQuery.getStringsFromProvide("base-module");
+            platformSize = platform.size();
+            if (platformSize == 1) {
+                parsedPlatform = parsePlatform(*platform.begin());
+            } else if (platformSize > 1) {
+                auto logger(Log::getLogger());
+                logger->debug(_("Multiple module platforms provided by installed packages\n"));
+            }
+            if (!parsedPlatform.first.empty() && !parsedPlatform.second.empty()) {
+                name = parsedPlatform.first;
+                stream = parsedPlatform.second;
+            }
+        }
+    }
+
+    if (name.empty() || stream.empty()) {
+        for (auto & osReleasePath: osReleasePaths) {
+            std::string path;
+            if (install_root == "/") {
+                path = osReleasePath;
+            } else {
+                if (install_root.back() == '/') {
+                    path = install_root.substr(0, install_root.size() -1);
+                } else {
+                    path = install_root;
+                }
+                path += osReleasePath;
+            }
+            std::pair<std::string, std::string> platform;
+            try {
+                platform = getPlatformStream(path);
+            } catch (const std::exception & except) {
+                auto logger(Log::getLogger());
+                logger->debug(tfm::format(_("Detection of Platform Module in %s failed: %s"),
+                                          osReleasePath, std::string(except.what())));
+            }
+            if (!platform.first.empty() && !platform.second.empty()) {
+                name = platform.first;
+                stream = platform.second;
+                break;
+            } else {
+                auto logger(Log::getLogger());
+                logger->debug(tfm::format(_("Missing PLATFORM_ID in %s"), osReleasePath));
+            }
+        }
+    }
+    if (name.empty() || stream.empty()) {
+        throw std::runtime_error(_("No valid Platform ID detected"));
+    }
+    std::string version = "0";
+    std::string context = "00000000";
+
     Pool * pool = dnf_sack_get_pool(moduleSack);
     HyRepo hrepo = hy_repo_create(HY_SYSTEM_REPO_NAME);
     auto repoImpl = libdnf::repoGetImpl(hrepo);
@@ -383,36 +493,6 @@ ModulePackage::createPlatformSolvable(DnfSack * moduleSack, const std::string & 
     repoImpl->needs_internalizing = 1;
     Id id = repo_add_solvable(repo);
     Solvable *solvable = pool_id2solvable(pool, id);
-    std::string name;
-    std::string stream;
-    std::pair<std::string, std::string> platform;
-    if (!platformModule) {
-        std::string path;
-        if (install_root == "/") {
-            path = osReleasePath;
-        } else {
-            if (install_root.back() == '/') {
-                path = install_root.substr(0, install_root.size() -1);
-            } else {
-                path = install_root;
-            }
-            path += osReleasePath;
-        }
-        platform = getPlatformStream(path);
-        name = platform.first;
-        stream = platform.second;
-    } else {
-        std::string platform = platformModule;
-        auto index = platform.find(':');
-        if (index == std::string::npos) {
-            throw std::runtime_error("Invalid Platform module (missing ':' in value) in "
-                + platform);
-        }
-        name = platform.substr(0,index);
-        stream = platform.substr(index+1);
-    }
-    std::string version = "0";
-    std::string context = "00000000";
     setSovable(pool, solvable, name, stream, version, context, "noarch");
     repoImpl->needs_internalizing = 1;
     dnf_sack_set_provides_not_ready(moduleSack);

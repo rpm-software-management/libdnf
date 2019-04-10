@@ -271,6 +271,15 @@ ModulePackageContainer::addPlatformPackage(const std::string& osReleasePath,
         pImpl->installRoot, platformModule);
 }
 
+Id
+ModulePackageContainer::addPlatformPackage(DnfSack * sack,
+    const std::vector<std::string> & osReleasePath,
+    const char* platformModule)
+{
+    return ModulePackage::createPlatformSolvable(sack, pImpl->moduleSack, osReleasePath,
+        pImpl->installRoot, platformModule);
+}
+
 void ModulePackageContainer::createConflictsBetweenStreams()
 {
     // TODO Use Query for filtering

@@ -49,6 +49,13 @@ extern "C" {
 #include "libdnf/repo/solvable/Dependency.hpp"
 #include "libdnf/repo/solvable/DependencyContainer.hpp"
 
+
+template<>
+struct std::default_delete<DnfPackage> {
+    void operator()(DnfPackage * ptr) noexcept { g_object_unref(ptr); }
+};
+
+
 namespace libdnf {
 
 struct NevraID {
@@ -2111,6 +2118,33 @@ Query::getAdvisoryPkgs(int cmpType, std::vector<AdvisoryPkg> & advisoryPkgs)
             ++low;
         }
     }
+}
+
+std::set<std::string> Query::getStringsFromProvide(const char * patternProvide)
+{
+    DnfSack * sack = getSack();
+    auto queryResult = runSet();
+    Id pkgId = -1;
+    size_t lenPatternProvide = strlen(patternProvide);
+    std::set<std::string> result;
+    while ((pkgId = queryResult->next(pkgId)) != -1) {
+        std::unique_ptr<DnfPackage> pkg(dnf_package_new(sack, pkgId));
+        auto provides = dnf_package_get_provides(pkg.get());
+        auto count = provides->count();
+        for (int index = 0; index < count; ++index) {
+            Dependency provide(sack, provides->getId(index));
+            auto provideName = provide.getName();
+            size_t lenProvide = strlen(provideName);
+            if (lenProvide > lenPatternProvide + 2
+                && strncmp(patternProvide, provideName, lenPatternProvide) == 0
+                && provideName[lenPatternProvide] == '('
+                && provideName[lenProvide - 1] == ')') {
+                result.emplace(
+                    provideName + lenPatternProvide + 1, lenProvide - lenPatternProvide - 2);
+            }
+        }
+    }
+    return result;
 }
 
 void

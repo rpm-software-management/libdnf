@@ -30,6 +30,8 @@
 #include "../dnf-types.h"
 #include "advisorypkg.hpp"
 
+#include <set>
+
 namespace libdnf {
 
 union _Match {
@@ -161,6 +163,16 @@ public:
     int filterSafeToRemove(const Swdb &swdb, bool debug_solver);
     void getAdvisoryPkgs(int cmpType,  std::vector<AdvisoryPkg> & advisoryPkgs);
     void filterUserInstalled(const Swdb &swdb);
+
+    /**
+     * @brief Apply query and return a set of strings representing information in provide that begin
+     * by patternProvide. For pattern "base-platform" and presence of provide
+     * "base-platform(platform:f26)", the function will return "platform:f26" in set.
+     *
+     * @param patternProvide p_patternProvide: No glob allowed!
+     * @return std::set< std::__cxx11::string >
+     */
+    std::set<std::string> getStringsFromProvide(const char * patternProvide);
 private:
     class Impl;
     std::unique_ptr<Impl> pImpl;

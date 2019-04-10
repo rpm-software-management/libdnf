@@ -82,6 +82,9 @@ private:
 
     static Id createPlatformSolvable(DnfSack * moduleSack, const std::string &osReleasePath,
         const std::string install_root, const char *  platformModule);
+    static Id createPlatformSolvable(DnfSack * sack, DnfSack * moduleSack,
+        const std::vector<std::string> & osReleasePaths, const std::string install_root,
+        const char *  platformModule);
     void createDependencies(Solvable *solvable) const;
 
     ModuleMetadata metadata;
