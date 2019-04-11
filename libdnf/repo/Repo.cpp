@@ -43,7 +43,8 @@
 // allows for aligning the window with a specific weekday
 #define CHECK_IN_OFFSET (345600)  // 1970-01-05 00:00:00 UTC (Monday)
 #define CHECK_IN_COOKIE "lastcheckin"
-#define CHECK_IN_PARAM "countme=1"
+#define CHECK_IN_PARAM "countme"
+#define CHECK_IN_CUTOFF (60)  // maximum window index to report
 
 #include "../log.hpp"
 #include "Repo-private.hpp"
@@ -468,9 +469,10 @@ bool Repo::Impl::checkIn()
     }
 
     long int winPos = 0;  // sliding window position (UNIX timestamp)
+    long int winIdx = 0;  // sliding window index
     std::string cookieFn = getPersistdir() + "/" + CHECK_IN_COOKIE;
-    // load last checked-in window position (if available)
-    std::ifstream(cookieFn) >> winPos;
+    // load last checked-in window state (if available)
+    std::ifstream(cookieFn) >> winPos >> winIdx;
 
     // has the window advanced since?
     long int now = time(NULL);
@@ -491,14 +493,19 @@ bool Repo::Impl::checkIn()
     } else {
         url += '?';
     }
-    url += CHECK_IN_PARAM;
+    url += CHECK_IN_PARAM "=";
+    if (winIdx < CHECK_IN_CUTOFF) {
+        url += std::to_string(++winIdx);
+    } else {
+        url += std::to_string(winIdx) + "+";
+    }
     int fd = open("/dev/null", O_RDWR);
     downloadUrl(url.c_str(), fd);
     close(fd);
 
-    // store the new window position
+    // store the new window state
     winPos = now - ((now - CHECK_IN_OFFSET) % CHECK_IN_WINDOW);
-    std::ofstream(cookieFn) << winPos;
+    std::ofstream(cookieFn) << winPos << " " << winIdx;
 
     return true;
 }
