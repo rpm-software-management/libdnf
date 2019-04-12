@@ -468,21 +468,32 @@ bool Repo::Impl::checkIn()
         return false;
     }
 
-    long int winPos = 0;  // sliding window position (UNIX timestamp)
-    long int winIdx = 0;  // sliding window index
-    std::string cookieFn = getPersistdir() + "/" + CHECK_IN_COOKIE;
-    // load last checked-in window state (if available)
-    std::ifstream(cookieFn) >> winPos >> winIdx;
-
-    // has the window advanced since?
+    long int epoch = CHECK_IN_OFFSET;   // first window we checked-in from this system
+    long int idx = 0;                   // window index (since epoch)
+    long int pos = 0;                   // window position on the time axis
     long int now = time(NULL);
-    if ((now - winPos) <= CHECK_IN_WINDOW) {
-        // nope, nothing to do
+    std::string cookieFn = getPersistdir() + "/" + CHECK_IN_COOKIE;
+
+    // load the epoch and last window (if any)
+    std::ifstream(cookieFn) >> epoch >> pos;
+
+    // bail out if the window has not advanced since
+    if ((now - pos) <= CHECK_IN_WINDOW) {
         return false;
     }
-    // it has, go on
+    
+    // compute the new window
+    long int age = now - epoch;
+    pos = now - (age % CHECK_IN_WINDOW);
+    if (epoch > CHECK_IN_OFFSET) {
+        // epoch already started
+        idx = age / CHECK_IN_WINDOW;
+    } else {
+        // start the epoch
+        epoch = pos;
+    }
 
-    // do a GET request on the metalink URL with the magic parameter appended
+    // perform the "ping"
     auto metalink = conf->metalink();
     std::string url;
     if (metalink.empty() || (url = metalink.getValue()).empty()) {
@@ -494,18 +505,17 @@ bool Repo::Impl::checkIn()
         url += '?';
     }
     url += CHECK_IN_PARAM "=";
-    if (winIdx < CHECK_IN_CUTOFF) {
-        url += std::to_string(++winIdx);
+    if (idx <= CHECK_IN_CUTOFF) {
+        url += std::to_string(idx);
     } else {
-        url += std::to_string(winIdx) + "+";
+        url += std::to_string(CHECK_IN_CUTOFF) + "+";
     }
     int fd = open("/dev/null", O_RDWR);
     downloadUrl(url.c_str(), fd);
     close(fd);
 
-    // store the new window state
-    winPos = now - ((now - CHECK_IN_OFFSET) % CHECK_IN_WINDOW);
-    std::ofstream(cookieFn) << winPos << " " << winIdx;
+    // store the new window
+    std::ofstream(cookieFn) << epoch << " " << pos;
 
     return true;
 }

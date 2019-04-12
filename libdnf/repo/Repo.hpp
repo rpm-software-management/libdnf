@@ -262,31 +262,38 @@ public:
     /**
     * @brief Check in with the repository server for statistical purposes.
     *
-    * Reports to the server the existence of this system and its intention to be counted, by
-    * performing an HTTP GET request for the metalink URL (if available) with a special parameter
-    * that says "count me in".
+    * Sends a "ping" to the server indicating that this system is alive and how old it is.
+    *
+    * This is done by performing an HTTP GET request for the metalink URL (if available) with a
+    * special parameter added (see below).
     *
     * This method is intended to be called periodically, such as from a systemd timer.
     *
-    * To enable accurate statistics, a sliding time window (CHECK_IN_WINDOW) is defined in which
-    * only one check-in is allowed, regardless of how many times this method is called.  The window
-    * starts at CHECK_IN_OFFSET and moves along the time axis (step = CHECK_IN_WINDOW) in such a
-    * way that the current point in time stays inside:
+    * To prevent overcount, a sliding time window (CHECK_IN_WINDOW) is defined in which only one
+    * check-in is allowed, regardless of how many times this method is called.  The window starts
+    * at CHECK_IN_OFFSET and moves along the time axis (1 step = CHECK_IN_WINDOW) in such a way
+    * that the current point in time stays inside:
     *
-    * epoch                         now
-    * |---|-----+-----+-----+-----[-|---]---->
+    * UNIX epoch                    now
+    * |                             |
+    * |---*-----|-----|-----|-----[-*---]---> time
+    *     |                       |
     *     CHECK_IN_OFFSET         window
     *
-    * The last checked-in window is stored in a cookie file in this repo's persistdir (as a
-    * timestamp).
-    *
     * Note that we position the window relative to a pre-defined point in time (CHECK_IN_OFFSET),
-    * rather than to the very first check-in.  The reason is that the latter is system-specific
-    * information that, given a predictable and sufficiently high cadence at which this method is
-    * called, could be revealed to the server and, in theory, used to track this system over a
-    * number of check-in records by correlating them based on time commonalities.
+    * rather than to the very first check-in time.  The reason is that the latter is
+    * system-specific information that, given a predictable and sufficiently high cadence at which
+    * this method is called, could be revealed to the server and, in theory, used to track this
+    * system over a number of check-in records by correlating them based on time commonalities.
     *
-    * @return bool whether a check-in was performed
+    * The parameter added to the HTTP request is an integer representing the current window index
+    * (that is, the number of windows elapsed since the very first check-in).  However, for privacy
+    * reasons, values higher than CHECK_IN_CUTOFF are reported as CHECK_IN_CUTOFF+.
+    *
+    * The window position and index are stored in a per-repo cookie file in PERSISTDIR upon a
+    * successful check-in.
+    *
+    * @return bool whether a successful check-in was performed
     */
     bool checkIn();
 
