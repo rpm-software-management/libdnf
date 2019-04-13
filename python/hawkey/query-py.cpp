@@ -340,10 +340,26 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
     switch (keyname) {
     case HY_PKG:
     case HY_PKG_OBSOLETES: {
+        // It could be a sequence of packages or reldep/strings. Lets try packages first.
         auto pset = pyseq_to_packageset(match, query->getSack());
+        if (!pset) {
+            if (auto PyError = PyErr_Occurred()) {
+                // It was not a sequence of packages.
+                if (PyErr_GivenExceptionMatches(PyError, PyExc_TypeError)) {
+                    PyErr_Clear();
+                    auto reldeplist = pyseq_to_reldeplist(match, query->getSack(), cmp_type);
+                    if (reldeplist == NULL)
+                        return 1;
 
-        if (!pset)
+                    int ret = query->addFilter(keyname, reldeplist.get());
+                    if (ret) {
+                        return raise_bad_filter();
+                    }
+                    break;
+                }
+            }
             return 1;
+        }
         int ret = query->addFilter(keyname, cmp_type, pset.get());
         if (ret)
             return raise_bad_filter();
