@@ -350,6 +350,7 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
 
         break;
     }
+    case HY_PKG_CONFLICTS:
     case HY_PKG_PROVIDES:
     case HY_PKG_REQUIRES:
     case HY_PKG_ENHANCES:
