@@ -882,7 +882,34 @@ Query::addFilter(int keyname, int cmp_type, const char **matches)
     if (!valid_filter_str(keyname, cmp_type))
         return DNF_ERROR_BAD_QUERY;
     pImpl->applied = false;
-    pImpl->filters.push_back(Filter(keyname, cmp_type, matches));
+    switch (keyname) {
+        case HY_PKG_CONFLICTS:
+        case HY_PKG_ENHANCES:
+        case HY_PKG_OBSOLETES:
+        case HY_PKG_PROVIDES:
+        case HY_PKG_RECOMMENDS:
+        case HY_PKG_REQUIRES:
+        case HY_PKG_SUGGESTS:
+        case HY_PKG_SUPPLEMENTS: {
+            DnfSack *sack = pImpl->sack;
+            const unsigned nmatches = g_strv_length((gchar**)matches);
+            DependencyContainer reldeplist(sack);
+            if (cmp_type == HY_GLOB) {
+                for (unsigned int i = 0; i < nmatches; ++i) {
+                    reldeplist.addReldepWithGlob(matches[i]);
+                }
+            } else {
+                for (unsigned int i = 0; i < nmatches; ++i) {
+                    reldeplist.addReldep(matches[i]);
+                }
+            }
+            return addFilter(keyname, &reldeplist);
+        }
+        default: {
+            pImpl->filters.push_back(Filter(keyname, cmp_type, matches));
+            return 0;
+        }
+    }
     return 0;
 }
 
