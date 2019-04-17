@@ -228,8 +228,8 @@ static void
 dnf_context_init(DnfContext *context)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
-    gchar *vars_dir[] = {"/etc/dnf/vars", "/etc/yum/vars", NULL};
-    priv->vars_dir = g_strdupv(vars_dir);
+    const gchar *vars_dir[] = {"/etc/dnf/vars", "/etc/yum/vars", NULL};
+    priv->vars_dir = g_strdupv(const_cast<gchar **>(vars_dir));
     priv->install_root = g_strdup("/");
     priv->check_disk_space = TRUE;
     priv->check_transaction = TRUE;
