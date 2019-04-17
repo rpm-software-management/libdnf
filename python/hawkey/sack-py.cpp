@@ -187,6 +187,11 @@ log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *mess
     g_free(msg);
 }
 
+static void
+log_handler_noop(const gchar *, GLogLevelFlags, const gchar *, gpointer)
+{
+}
+
 gboolean
 set_logfile(const gchar *path, FILE *log_out)
 {
@@ -195,7 +200,14 @@ set_logfile(const gchar *path, FILE *log_out)
     if (!log_out)
         return FALSE;
 
-    g_log_set_default_handler(log_handler, log_out);
+    // The default log handler prints messages that weren't handled by any
+    // other logger to stderr/stdout, we do not want that
+    g_log_set_default_handler(log_handler_noop, nullptr);
+
+    // set the handler for the default domain as well as "libdnf"
+    g_log_set_handler(nullptr, G_LOG_LEVEL_MASK, log_handler, log_out);
+    g_log_set_handler("libdnf", G_LOG_LEVEL_MASK, log_handler, log_out);
+
     g_info("=== Started libdnf-%d.%d.%d ===", LIBDNF_MAJOR_VERSION,
             LIBDNF_MINOR_VERSION, LIBDNF_MICRO_VERSION);
     return TRUE;
