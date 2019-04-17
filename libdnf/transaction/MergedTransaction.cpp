@@ -405,6 +405,8 @@ MergedTransaction::mergeItem(ItemPairMap &itemPairMap, TransactionItemBasePtr mT
         case TransactionItemAction::OBSOLETE:
             resolveAltered(previousItemPair, mTransItem);
             break;
+        case TransactionItemAction::REINSTALLED:
+            break;
     }
 }
 
