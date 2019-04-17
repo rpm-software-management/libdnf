@@ -319,7 +319,6 @@ Repo::Impl::~Impl()
         libsolvRepo->appdata = nullptr;
 }
 
-static int count = 0;
 Repo::Repo(const std::string & id, std::unique_ptr<ConfigRepo> && conf, Repo::Type type)
 {
     if (type == Type::AVAILABLE) {
