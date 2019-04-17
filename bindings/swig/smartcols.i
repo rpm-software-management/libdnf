@@ -13,6 +13,8 @@
 #include "libdnf/utils/smartcols/Cell.hpp"
 %}
 
+%rename(_print) print;
+
 %shared_ptr(Column)
 %shared_ptr(Line)
 %shared_ptr(Cell)
