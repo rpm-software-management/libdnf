@@ -193,7 +193,7 @@ log_handler_noop(const gchar *, GLogLevelFlags, const gchar *, gpointer)
 }
 
 gboolean
-set_logfile(const gchar *path, FILE *log_out)
+set_logfile(const gchar *path, FILE *log_out, bool debug)
 {
     log_out = fopen(path, "a");
 
@@ -204,9 +204,16 @@ set_logfile(const gchar *path, FILE *log_out)
     // other logger to stderr/stdout, we do not want that
     g_log_set_default_handler(log_handler_noop, nullptr);
 
+    GLogLevelFlags log_mask = debug ? G_LOG_LEVEL_MASK : static_cast<GLogLevelFlags>(
+        G_LOG_LEVEL_INFO |
+        G_LOG_LEVEL_MESSAGE |
+        G_LOG_LEVEL_WARNING |
+        G_LOG_LEVEL_CRITICAL |
+        G_LOG_LEVEL_ERROR);
+
     // set the handler for the default domain as well as "libdnf"
-    g_log_set_handler(nullptr, G_LOG_LEVEL_MASK, log_handler, log_out);
-    g_log_set_handler("libdnf", G_LOG_LEVEL_MASK, log_handler, log_out);
+    g_log_set_handler(nullptr, log_mask, log_handler, log_out);
+    g_log_set_handler("libdnf", log_mask, log_handler, log_out);
 
     g_info("=== Started libdnf-%d.%d.%d ===", LIBDNF_MAJOR_VERSION,
             LIBDNF_MINOR_VERSION, LIBDNF_MICRO_VERSION);
@@ -226,16 +233,22 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
     PyObject *logfile_py = NULL;
     self->log_out = NULL;
     int make_cache_dir = 0;
+    PyObject *debug_object = nullptr;
     gboolean all_arch = FALSE;
     const char *kwlist[] = {"cachedir", "arch", "rootdir", "pkgcls",
-                      "pkginitval", "make_cache_dir", "logfile", "all_arch",
-                      NULL};
+                      "pkginitval", "make_cache_dir", "logfile", "logdebug",
+                      "all_arch", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OssOOiOi", (char**) kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OssOOiOO!i", (char**) kwlist,
                                      &cachedir_py, &arch, &rootdir,
                                      &custom_class, &custom_val,
-                                     &make_cache_dir, &logfile_py, &all_arch))
+                                     &make_cache_dir, &logfile_py,
+                                     &PyBool_Type, &debug_object,
+                                     &all_arch))
         return -1;
+
+    bool debug = debug_object != nullptr && PyObject_IsTrue(debug_object);
+
     if (cachedir_py != NULL) {
         cachedir = PycompString(cachedir_py);
         if (!cachedir.getCString())
@@ -259,7 +272,7 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
         PycompString logfile(logfile_py);
         if (!logfile.getCString())
             return -1;
-        if (!set_logfile(logfile.getCString(), self->log_out)) {
+        if (!set_logfile(logfile.getCString(), self->log_out, debug)) {
             PyErr_Format(PyExc_IOError, "Failed to open log file: %s", logfile.getCString());
             return -1;
         }
