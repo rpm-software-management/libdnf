@@ -20,6 +20,15 @@
 ######################
 
 ====================
+0.31.0 Release Notes
+====================
+- Installroot now requires absolute path
+- Support "_none_" value for repo option "proxy" (RhBug:1680272)
+- Add support for Module advisories
+- Add support for xml:base attribute from primary.xml (RhBug:1691315)
+- Improve detection of Platform ID (RhBug:1688462)
+
+====================
 0.28.1 Release Notes
 ====================
 - Return empty query if incorrect reldep (RhBug:1687135)
