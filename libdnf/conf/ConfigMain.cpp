@@ -178,6 +178,8 @@ class ConfigMain::Impl {
     OptionBool cacheonly{false};
     OptionBool keepcache{false};
     OptionString logdir{"/var/log"};
+    OptionNumber<std::int32_t> log_size{1024 * 1024, strToBytes};
+    OptionNumber<std::int32_t> log_rotate{4, 0};
     OptionStringList varsdir{std::vector<std::string>{"/etc/dnf/vars", "/etc/yum/vars"}};
     OptionStringList reposdir{{"/etc/yum.repos.d", "/etc/yum/repos.d", "/etc/distro.repos.d"}};
     OptionBool debug_solver{false};
@@ -354,6 +356,8 @@ ConfigMain::Impl::Impl(Config & owner)
     owner.optBinds().add("cacheonly", cacheonly);
     owner.optBinds().add("keepcache", keepcache);
     owner.optBinds().add("logdir", logdir);
+    owner.optBinds().add("log_size", log_size);
+    owner.optBinds().add("log_rotate", log_rotate);
     owner.optBinds().add("varsdir", varsdir);
     owner.optBinds().add("reposdir", reposdir);
     owner.optBinds().add("debug_solver", debug_solver);
@@ -491,6 +495,8 @@ OptionString & ConfigMain::system_cachedir() { return pImpl->system_cachedir; }
 OptionBool & ConfigMain::cacheonly() { return pImpl->cacheonly; }
 OptionBool & ConfigMain::keepcache() { return pImpl->keepcache; }
 OptionString & ConfigMain::logdir() { return pImpl->logdir; }
+OptionNumber<std::int32_t> & ConfigMain::log_size() { return pImpl->log_size; }
+OptionNumber<std::int32_t> & ConfigMain::log_rotate() { return pImpl->log_rotate; }
 OptionStringList & ConfigMain::varsdir() { return pImpl->varsdir; }
 OptionStringList & ConfigMain::reposdir() { return pImpl->reposdir; }
 OptionBool & ConfigMain::debug_solver() { return pImpl->debug_solver; }

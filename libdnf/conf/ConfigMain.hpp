@@ -62,6 +62,8 @@ public:
     OptionBool & cacheonly();
     OptionBool & keepcache();
     OptionString & logdir();
+    OptionNumber<std::int32_t> & log_size();
+    OptionNumber<std::int32_t> & log_rotate();
     OptionStringList & varsdir();
     OptionStringList & reposdir();
     OptionBool & debug_solver();
