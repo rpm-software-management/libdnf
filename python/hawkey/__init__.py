@@ -25,9 +25,13 @@ import collections
 import functools
 import logging
 import operator
+import os
+import shutil
+import tempfile
 import time
 import warnings
 
+import libdnf.repo
 import libdnf.transaction
 
 from . import _hawkey
@@ -333,3 +337,32 @@ class Subject(_hawkey.Subject):
     def _list_or_query_to_selector(sack, list_or_query):
         sltr = Selector(sack)
         return sltr.set(pkg=list_or_query)
+
+
+class Repo(libdnf.repo.Repo):
+    """Compat class. Instances can be passed to Sack.load_repo()"""
+
+    def __init__(self, url, zchunk=False):
+        self.cache_dir = tempfile.mkdtemp(prefix="hawkey_Repo_")
+
+        main_conf = libdnf.conf.ConfigMain()
+        main_conf.cachedir().set(libdnf.conf.Option.Priority_REPOCONFIG, self.cache_dir)
+
+        # load either normal repodata or use zchunk
+        main_conf.zchunk().set(libdnf.conf.Option.Priority_REPOCONFIG, zchunk)
+
+        repo_conf = libdnf.conf.ConfigRepo(main_conf)
+        repo_conf.baseurl().set(libdnf.conf.Option.Priority_REPOCONFIG, url)
+
+        super(Repo, self).__init__("hawkey_Repo", repo_conf)
+
+        # move conf ownership to this object
+        self.main_conf = main_conf
+        main_conf.this.disown()
+        self.repo_conf = repo_conf
+        repo_conf.this.disown()
+
+        self.load()
+
+    def __del__(self):
+        shutil.rmtree(self.cache_dir)
