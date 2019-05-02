@@ -131,7 +131,6 @@ REFERENCE_VENDOR = _hawkey.REFERENCE_VENDOR
 
 Package = _hawkey.Package
 Reldep = _hawkey.Reldep
-Repo = _hawkey.Repo
 Sack = _hawkey.Sack
 
 Exception = _hawkey.Exception
@@ -334,3 +333,13 @@ class Subject(_hawkey.Subject):
     def _list_or_query_to_selector(sack, list_or_query):
         sltr = Selector(sack)
         return sltr.set(pkg=list_or_query)
+
+
+class Repo(_hawkey.Repo):
+
+    def __init__(self, name):
+        warnings.simplefilter('always', DeprecationWarning)
+        msg = "The class hawkey.Repo is deprecated. " \
+              "Please use dnf.repo.Repo instead. The class will be removed on 2019-12-31."
+        warnings.warn(msg, DeprecationWarning)
+        super(Repo, self).__init__(name)

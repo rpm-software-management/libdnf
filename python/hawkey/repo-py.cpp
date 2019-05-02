@@ -42,8 +42,7 @@ typedef struct {
 
 HyRepo repoFromPyObject(PyObject *o)
 {
-    if (!repoObject_Check(o)) {
-        //PyErr_SetString(PyExc_TypeError, "Expected a Repo object.");
+    if (!PyObject_TypeCheck(o, &repo_Type)) {
         return NULL;
     }
     return ((_RepoObject *)o)->repo;
@@ -189,7 +188,7 @@ PyTypeObject repo_Type = {
     0,                                /*tp_getattro*/
     0,                                /*tp_setattro*/
     0,                                /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,                /*tp_flags*/
+    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE, /*tp_flags*/
     "Repo object",                /* tp_doc */
     0,                                /* tp_traverse */
     0,                                /* tp_clear */
