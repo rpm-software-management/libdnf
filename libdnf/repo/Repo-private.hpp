@@ -129,6 +129,7 @@ public:
     // 0 forces expiration on the next call to load(), -1 means undefined value
     int timestamp;
     int maxTimestamp{0};
+    bool preserveRemoteTime{false};
     std::string repomdFn;
     std::set<std::string> additionalMetadata;
     std::string revision;

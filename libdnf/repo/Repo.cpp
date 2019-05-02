@@ -466,6 +466,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
         dlist.push_back(item.c_str());
     }
     dlist.push_back(NULL);
+    handleSetOpt(h.get(), LRO_PRESERVETIME, static_cast<long>(preserveRemoteTime));
     handleSetOpt(h.get(), LRO_REPOTYPE, LR_YUMREPO);
     handleSetOpt(h.get(), LRO_USERAGENT, USER_AGENT);
     handleSetOpt(h.get(), LRO_YUMDLIST, dlist.data());
@@ -1346,6 +1347,16 @@ int Repo::getTimestamp() const
 int Repo::getMaxTimestamp()
 {
     return pImpl->maxTimestamp;
+}
+
+void Repo::setPreserveRemoteTime(bool preserveRemoteTime)
+{
+    pImpl->preserveRemoteTime = preserveRemoteTime;
+}
+
+bool Repo::getPreserveRemoteTime() const
+{
+    return pImpl->preserveRemoteTime;
 }
 
 const std::vector<std::string> & Repo::getContentTags()
