@@ -229,6 +229,20 @@ public:
     void setMaxMirrorTries(int maxMirrorTries);
     int getTimestamp() const;
     int getMaxTimestamp();
+
+    /**
+    * @brief Try to preserve remote side timestamps
+    *
+    * When set to true the underlying librepo is asked to make an attempt to set the timestamps
+    * of the local downloaded files (repository metadata and packages) to match those from
+    * the remote files.
+    * This feature is by default switched off.
+    *
+    * @param preserveRemoteTime true - use remote file timestamp, false - use the current time
+    */
+    void setPreserveRemoteTime(bool preserveRemoteTime);
+    bool getPreserveRemoteTime() const;
+
     const std::vector<std::string> & getContentTags();
     const std::vector<std::pair<std::string, std::string>> & getDistroTags();
 
