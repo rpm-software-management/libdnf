@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2012-2014 Red Hat, Inc.
+# Copyright (C) 2012-2019 Red Hat, Inc.
 #
 # Licensed under the GNU Lesser General Public License Version 2.1
 #
@@ -52,7 +52,7 @@ __all__ = [
     # functions
     'chksum_name', 'chksum_type', 'split_nevra', 'convert_hawkey_reason',
     # classes
-    'Goal', 'NEVRA', 'NSVCAP', 'Package', 'Query', 'Sack', 'Selector', 'Subject']
+    'Goal', 'NEVRA', 'NSVCAP', 'Package', 'Query', 'Repo', 'Sack', 'Selector', 'Subject']
 
 NEVRA = _hawkey.NEVRA
 Query = _hawkey.Query
@@ -131,6 +131,7 @@ REFERENCE_VENDOR = _hawkey.REFERENCE_VENDOR
 
 Package = _hawkey.Package
 Reldep = _hawkey.Reldep
+Repo = _hawkey.Repo
 Sack = _hawkey.Sack
 
 Exception = _hawkey.Exception

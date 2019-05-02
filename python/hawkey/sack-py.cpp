@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 Red Hat, Inc.
+ * Copyright (C) 2012-2019 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -37,6 +37,7 @@
 #include "hawkey-pysys.hpp"
 #include "iutil-py.hpp"
 #include "package-py.hpp"
+#include "repo-py.hpp"
 #include "sack-py.hpp"
 
 #include "pycomp.hpp"
@@ -666,16 +667,23 @@ load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
         return 0;
 
     if (repoPyObj) {
-        auto repoSwigPyObj = reinterpret_cast<RepoSwigPyObject *>(PyObject_GetAttrString(repoPyObj, "this"));
-        if (!repoSwigPyObj) {
-            PyErr_SetString(PyExc_SystemError, "Unable to parse repoSwigPyObject");
-            return NULL;
-        }
 
-        crepo = repoSwigPyObj->ptr;
+        // Is it old deprecated _hawkey.Repo object?
+        crepo = repoFromPyObject(repoPyObj);
+
+        // Or is it swig object?
         if (!crepo) {
-            PyErr_SetString(PyExc_SystemError, "Unable to parse repo swig object");
-            return NULL;
+            auto repoSwigPyObj = reinterpret_cast<RepoSwigPyObject *>(PyObject_GetAttrString(repoPyObj, "this"));
+            if (!repoSwigPyObj) {
+                PyErr_SetString(PyExc_SystemError, "Unable to parse repoSwigPyObject");
+                return NULL;
+            }
+
+            crepo = repoSwigPyObj->ptr;
+            if (!crepo) {
+                PyErr_SetString(PyExc_SystemError, "Unable to parse repo swig object");
+                return NULL;
+            }
         }
     }
 
@@ -703,16 +711,22 @@ load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
                                      &load_presto, &load_updateinfo, &load_other))
         return 0;
 
-    auto repoSwigPyObj = reinterpret_cast<RepoSwigPyObject *>(PyObject_GetAttrString(repoPyObj, "this"));
-    if (!repoSwigPyObj) {
-        PyErr_SetString(PyExc_SystemError, "Unable to parse repoSwigPyObject");
-        return NULL;
-    }
+    // Is it old deprecated _hawkey.Repo object?
+    libdnf::Repo * crepo = repoFromPyObject(repoPyObj);
 
-    libdnf::Repo * crepo = repoSwigPyObj->ptr;
+    // Or is it swig object?
     if (!crepo) {
-        PyErr_SetString(PyExc_SystemError, "Unable to parse repo swig object");
-        return NULL;
+        auto repoSwigPyObj = reinterpret_cast<RepoSwigPyObject *>(PyObject_GetAttrString(repoPyObj, "this"));
+        if (!repoSwigPyObj) {
+            PyErr_SetString(PyExc_SystemError, "Unable to parse repoSwigPyObject");
+            return NULL;
+        }
+
+        crepo = repoSwigPyObj->ptr;
+        if (!crepo) {
+            PyErr_SetString(PyExc_SystemError, "Unable to parse repo swig object");
+            return NULL;
+        }
     }
 
     int flags = 0;

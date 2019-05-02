@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 Red Hat, Inc.
+ * Copyright (C) 2012-2019 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -46,6 +46,7 @@
 #include "packagedelta-py.hpp"
 #include "query-py.hpp"
 #include "reldep-py.hpp"
+#include "repo-py.hpp"
 #include "sack-py.hpp"
 #include "selector-py.hpp"
 #include "subject-py.hpp"
@@ -193,6 +194,11 @@ PYCOMP_MOD_INIT(_hawkey)
         return PYCOMP_MOD_ERROR_VAL;
     Py_INCREF(&selector_Type);
     PyModule_AddObject(m, "Selector", (PyObject *)&selector_Type);
+    /* _hawkey.Repo */
+    if (PyType_Ready(&repo_Type) < 0)
+        return PYCOMP_MOD_ERROR_VAL;
+    Py_INCREF(&repo_Type);
+    PyModule_AddObject(m, "Repo", (PyObject *)&repo_Type);
     /* _hawkey.NEVRA */
     if (PyType_Ready(&nevra_Type) < 0)
         return PYCOMP_MOD_ERROR_VAL;
