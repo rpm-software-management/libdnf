@@ -23,6 +23,7 @@
 // hawkey
 #include "dnf-sack-private.hpp"
 
+#include "python/hawkey/repo-py.hpp"
 #include "python/hawkey/sack-py.hpp"
 #include "tests/hawkey/testshared.h"
 
@@ -53,8 +54,23 @@ py_load_repo(PyObject *unused, PyObject *args)
     Py_RETURN_NONE;
 }
 
+static PyObject *
+py_glob_for_repofiles(PyObject *unused, PyObject *args)
+{
+    const char *repo_name, *path;
+    DnfSack *sack;
+
+    if (!PyArg_ParseTuple(args, "O&ss",
+			  sack_converter, &sack, &repo_name, &path))
+	return NULL;
+    HyRepo repo = glob_for_repofiles(dnf_sack_get_pool(sack), repo_name, path);
+    return repoToPyObject(repo);
+}
+
 static struct PyMethodDef testmodule_methods[] = {
     {"load_repo",		(PyCFunction)py_load_repo,
+     METH_VARARGS, NULL},
+    {"glob_for_repofiles",	(PyCFunction)py_glob_for_repofiles,
      METH_VARARGS, NULL},
     {NULL}				/* sentinel */
 };

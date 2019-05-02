@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2012-2015 Red Hat, Inc.
+# Copyright (C) 2012-2019 Red Hat, Inc.
 #
 # Licensed under the GNU Lesser General Public License Version 2.1
 #
@@ -48,6 +48,14 @@ class TestSackTest(base.TestCase):
         self.assertEqual(len(sack), hawkey.test.EXPECT_YUM_NSOLVABLES +
                          hawkey.test.EXPECT_SYSTEM_NSOLVABLES)
 
+    # Loading test using hawkey.Repo
+    def test_load_yum_hawkey_Repo(self):
+        sack = base.TestSack(repo_dir=self.repo_dir)
+        sack.load_system_repo()
+        sack.load_repo_hawkey_Repo(build_cache=True)
+        self.assertEqual(len(sack), hawkey.test.EXPECT_YUM_NSOLVABLES +
+                         hawkey.test.EXPECT_SYSTEM_NSOLVABLES)
+
     def test_cache_dir(self):
         sack = base.TestSack(repo_dir=self.repo_dir)
         self.assertTrue(sack.cache_dir.startswith("/tmp/pyhawkey"))
@@ -74,6 +82,13 @@ class BasicTest(unittest.TestCase):
         repo_conf = libdnf.conf.ConfigRepo(self._conf)
         repo_conf.this.disown()  # _repo will be the owner of _config
         repo = libdnf.repo.Repo("name", repo_conf)
+        self.assertRaises(IOError, sack.load_repo, repo)
+        sack = hawkey.Sack()
+
+    # Loading test using hawkey.Repo
+    def test_failed_load_hawkey_Repo(self):
+        sack = hawkey.Sack(cachedir=base.cachedir)
+        repo = hawkey.Repo("name")
         self.assertRaises(IOError, sack.load_repo, repo)
         sack = hawkey.Sack()
 

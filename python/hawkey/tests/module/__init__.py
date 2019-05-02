@@ -32,6 +32,8 @@ FIXED_ARCH = _hawkey_test.FIXED_ARCH
 UNITTEST_DIR = _hawkey_test.UNITTEST_DIR
 YUM_DIR_SUFFIX = _hawkey_test.YUM_DIR_SUFFIX
 
+glob_for_repofiles = _hawkey_test.glob_for_repofiles
+
 class TestSackMixin(object):
     def __init__(self, repo_dir):
         self.repo_dir = repo_dir

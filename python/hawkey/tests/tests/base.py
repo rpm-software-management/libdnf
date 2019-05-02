@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2012-2013 Red Hat, Inc.
+# Copyright (C) 2012-2019 Red Hat, Inc.
 #
 # Licensed under the GNU Lesser General Public License Version 2.1
 #
@@ -70,6 +70,12 @@ class TestSack(hawkey.test.TestSackMixin, hawkey.Sack):
         repo_conf.this.disown()  # _repo will be the owner of _config
         repo = libdnf.repo.Repo("messerk", repo_conf)
         repo.load()
+        super(TestSack, self).load_repo(repo, **kwargs)
+
+    # Loading using hawkey.Repo
+    def load_repo_hawkey_Repo(self, **kwargs):
+        d = os.path.join(self.repo_dir, hawkey.test.YUM_DIR_SUFFIX)
+        repo = hawkey.test.glob_for_repofiles(self, "messerk", d)
         super(TestSack, self).load_repo(repo, **kwargs)
 
 def by_name(sack, name):
