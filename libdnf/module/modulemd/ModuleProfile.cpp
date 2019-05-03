@@ -32,7 +32,8 @@ std::string ModuleProfile::getName() const
     if (!profile) {
         return {};
     }
-    return modulemd_profile_peek_name(profile);
+    auto name = modulemd_profile_peek_name(profile);
+    return name ? name : "";
 }
 
 std::string ModuleProfile::getDescription() const
@@ -40,7 +41,8 @@ std::string ModuleProfile::getDescription() const
     if (!profile) {
         return {};
     }
-    return modulemd_profile_peek_description(profile);
+    auto description =  modulemd_profile_peek_description(profile);
+    return description ? description : "";
 }
 
 std::vector<std::string> ModuleProfile::getContent() const
