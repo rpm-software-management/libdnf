@@ -36,15 +36,18 @@ typedef int Id;
 %template(VectorModulePackagePtr) std::vector<libdnf::ModulePackage *>;
 %template(VectorVectorVectorModulePackagePtr) std::vector<std::vector<std::vector<libdnf::ModulePackage *>>>;
 %template(VectorModuleProfile) std::vector<libdnf::ModuleProfile>;
+%template(VectorModuleDependencies) std::vector<ModuleDependencies>;
 
 %include <std_vector_ext.i>
 
 // this must follow std_vector_ext.i include, otherwise it returns garbage instead of list of strings
 %template(MapStringVectorString) std::map<std::string, std::vector<std::string>>;
+%template(VectorMapStringVectorString) std::vector<std::map<std::string, std::vector<std::string>>>;
 
 // make SWIG wrap following headers
 %nodefaultctor libdnf::ModulePackage;
 %nodefaultctor libdnf::ModuleProfile;
+%nodefaultctor libdnf::ModuleDependencies;
 
 %include "libdnf/module/ModulePackage.hpp"
 %ignore libdnf::ModulePackageContainer::Exception;
@@ -54,3 +57,4 @@ typedef int Id;
 %ignore libdnf::ModulePackageContainer::EnableMultipleStreamsException;
 %include "libdnf/module/ModulePackageContainer.hpp"
 %include "libdnf/module/modulemd/ModuleProfile.hpp"
+%include "libdnf/module/modulemd/ModuleDependencies.hpp"

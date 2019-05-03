@@ -34,6 +34,7 @@ namespace libdnf {
 class ModuleDependencies
 {
 public:
+    explicit ModuleDependencies();
     explicit ModuleDependencies(ModulemdDependencies *dependencies);
 
     std::vector<std::map<std::string, std::vector<std::string> > > getRequires() const;
