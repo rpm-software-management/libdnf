@@ -200,8 +200,13 @@ dnf_keyring_add_public_keys(rpmKeyring keyring, GError **error)
         if (filename == NULL)
             break;
         path_tmp = g_build_filename(gpg_dir, filename, NULL);
-        ret = dnf_keyring_add_public_key(keyring, path_tmp, error);
-    } while (ret);
+        GError *localError = NULL;
+        ret = dnf_keyring_add_public_key(keyring, path_tmp, &localError);
+        if (!ret) {
+            g_warning("%s", localError->message);
+            g_error_free(localError);
+        }
+    } while (true);
     return TRUE;
 }
 
