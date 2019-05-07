@@ -35,6 +35,7 @@
 
 #include "../utils/bgettext/bgettext-lib.h"
 #include "../utils/filesystem.hpp"
+#include "../utils/utils.hpp"
 
 #include "RPMItem.hpp"
 #include "Swdb.hpp"
@@ -658,12 +659,11 @@ Transformer::historyPath()
         throw Exception(_("Transformer: can't open history persist dir"));
     }
 
-    // iterate over history directory
+    // iterate over history directory and look for 'history-*.sqlite' files
     while ((dp = readdir(dirp.get())) != nullptr) {
         std::string fileName(dp->d_name);
-
-        // push the possible history DB files into vector
-        if (fileName.find("history") != std::string::npos) {
+        if (libdnf::string::startsWith(fileName, "history-") &&
+            libdnf::string::endsWith(fileName, ".sqlite")) {
             possibleFiles.push_back(fileName);
         }
     }
