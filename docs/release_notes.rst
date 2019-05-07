@@ -20,6 +20,15 @@
 ######################
 
 ====================
+0.33.0 Release Notes
+====================
+- Enhance logging handling
+- Do not log DEBUG messages by default
+- Also add subkeys when adding GPG keys
+- Reintroduce hawkey.Repo (deprecated, for compatibility)
+- [module] Fix swig binding for getModuleDependencies()
+
+====================
 0.31.0 Release Notes
 ====================
 - Installroot now requires absolute path
