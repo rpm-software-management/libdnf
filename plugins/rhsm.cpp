@@ -140,6 +140,10 @@ static bool setupEnrollments(PluginHandle *handle)
         close(fd);
     }
     if (!sameContent) {
+        if (g_mkdir_with_parents(repoDir, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) == -1) {
+            logger->error(std::string(info.name) + ": " + __func__ + ": Error: Can't create directory " + repoDir);
+            return false;
+        }
         GError * error = nullptr;
         if (!g_key_file_save_to_file(repofile, repofname, &error)) {
             logger->error(std::string(info.name) + ": " + __func__ + ": Error: Can't save repo file: " + error->message);

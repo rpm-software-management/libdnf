@@ -1795,6 +1795,9 @@ dnf_context_setup_enrollments(DnfContext *context, GError **error)
     } while (false);
 
     if (!sameContent) {
+        if (g_mkdir_with_parents(priv->repo_dir, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) == -1) {
+            return FALSE;
+        }
         if (!g_key_file_save_to_file(repofile, repofname, error))
             return FALSE;
     }
