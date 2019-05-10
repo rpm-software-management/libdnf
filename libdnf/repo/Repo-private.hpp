@@ -169,7 +169,7 @@ public:
 private:
     Repo * owner;
     std::unique_ptr<LrResult> lrHandlePerform(LrHandle * handle, const std::string & destDirectory,
-        bool setGPGHomeEnv);
+        bool setGPGHomeDir);
     bool isMetalinkInSync();
     bool isRepomdInSync();
     void resetMetadataExpired();
