@@ -25,8 +25,6 @@
 #define RECOGNIZED_CHKSUMS {"sha512", "sha256"}
 #define USER_AGENT "libdnf"
 
-#define GPG_HOME_ENV "GNUPGHOME"
-
 #define MD_TYPE_PRIMARY "primary"
 #define MD_TYPE_FILELISTS "filelists"
 #define MD_TYPE_PRESTODELTA "prestodelta"
@@ -54,7 +52,6 @@
 
 #include <librepo/librepo.h>
 #include <fcntl.h>
-#include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -875,26 +872,12 @@ void Repo::Impl::importRepoKeys()
 }
 
 std::unique_ptr<LrResult> Repo::Impl::lrHandlePerform(LrHandle * handle, const std::string & destDirectory,
-    bool setGPGHomeEnv)
+    bool setGPGHomeDir)
 {
-    bool isOrigGPGHomeEnvSet = false;
-    std::string origGPGHomeEnv;
-    if (setGPGHomeEnv) {
-            const char * orig = getenv(GPG_HOME_ENV);
-            isOrigGPGHomeEnvSet = orig;
-            if (isOrigGPGHomeEnvSet)
-                origGPGHomeEnv = orig;
-            auto pubringdir = getCachedir() + "/pubring";
-            setenv(GPG_HOME_ENV, pubringdir.c_str(), 1);
+    if (setGPGHomeDir) {
+        auto pubringdir = getCachedir() + "/pubring";
+        handleSetOpt(handle, LRO_GNUPGHOMEDIR, pubringdir.c_str());
     }
-    Finalizer gpgHomeEnvRecover([setGPGHomeEnv, isOrigGPGHomeEnvSet, &origGPGHomeEnv](){
-        if (setGPGHomeEnv) {
-            if (isOrigGPGHomeEnvSet)
-                setenv(GPG_HOME_ENV, origGPGHomeEnv.c_str(), 1);
-            else
-                unsetenv(GPG_HOME_ENV);
-        }
-    });
 
     // Start and end is called only if progress callback is set in handle.
     LrProgressCb progressFunc;
