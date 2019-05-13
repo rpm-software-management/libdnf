@@ -854,6 +854,16 @@ void Repo::Impl::importRepoKeys()
             if (confFd != -1)
                 close(confFd);
 
+            // It configures the gpg agent to run in server mode and to wait for stdin commands.
+            // The default gpg agent mode is to create a socket and listen for commands there.
+            confFd = open((gpgDir + "/gpg-agent.conf").c_str(),
+                               O_WRONLY | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            if (confFd != -1) {
+                constexpr const char * agentConfig = "server\n";
+                write(confFd, agentConfig, strlen(agentConfig));
+                close(confFd);
+            }
+
             gpgme_ctx_t ctx;
             gpgme_new(&ctx);
             std::unique_ptr<std::remove_pointer<gpgme_ctx_t>::type> context(ctx);
