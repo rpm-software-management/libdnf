@@ -849,14 +849,10 @@ void Repo::Impl::importRepoKeys()
             struct stat sb;
             if (stat(gpgDir.c_str(), &sb) != 0 || !S_ISDIR(sb.st_mode))
                 mkdir(gpgDir.c_str(), 0777);
-            auto confFd = open((gpgDir + "/gpg.conf").c_str(),
-                               O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-            if (confFd != -1)
-                close(confFd);
 
             // It configures the gpg agent to run in server mode and to wait for stdin commands.
             // The default gpg agent mode is to create a socket and listen for commands there.
-            confFd = open((gpgDir + "/gpg-agent.conf").c_str(),
+            auto confFd = open((gpgDir + "/gpg-agent.conf").c_str(),
                                O_WRONLY | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
             if (confFd != -1) {
                 constexpr const char * agentConfig = "server\n";
