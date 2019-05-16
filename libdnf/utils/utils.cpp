@@ -176,6 +176,44 @@ bool haveFilesSameContent(const char * filePath1, const char * filePath2)
     return ret;
 }
 
+bool updateFile(const char * filePath, const char * newFileContent)
+{
+    static constexpr int BLOCK_SIZE = 4096;
+    bool ret = false;
+    int fd1 = -1;
+    const char * tmpFileContent = newFileContent;
+    auto newFileContentLen = strlen(newFileContent);
+    do {
+        if ((fd1 = open(filePath,  O_RDWR | O_CREAT, 0755)) == -1)
+            break;
+        auto len1 = lseek(fd1, 0, SEEK_END);
+        ret = true;
+        if (len1 == 0) {
+            lseek(fd1, 0, SEEK_SET);
+            auto writtenSize = write(fd1, newFileContent, newFileContentLen);
+            ret = (static_cast<unsigned long>(writtenSize) == newFileContentLen);
+            break;
+        }
+        lseek(fd1, 0, SEEK_SET);
+        char buf1[BLOCK_SIZE];
+        ssize_t readed;
+        do {
+            readed = read(fd1, buf1, BLOCK_SIZE);
+            if (memcmp(buf1, tmpFileContent, readed) != 0) {
+                lseek(fd1, 0, SEEK_SET);
+                auto writtenSize = write(fd1, newFileContent, newFileContentLen);
+                ret = (static_cast<unsigned long>(writtenSize) == newFileContentLen);
+                break;
+            }
+            tmpFileContent = tmpFileContent + BLOCK_SIZE;
+        } while (readed == BLOCK_SIZE);
+    } while (false);
+
+    if (fd1 != -1)
+        close(fd1);
+    return ret;
+}
+
 namespace filesystem {
 
 bool exists(const std::string &name)
