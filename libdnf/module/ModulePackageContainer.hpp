@@ -257,6 +257,8 @@ public:
     std::pair<std::vector<std::vector<std::string>>, ModulePackageContainer::ModuleErrorType> resolveActiveModulePackages(bool debugSolver);
     bool isModuleActive(Id id);
     bool isModuleActive(const ModulePackage * modulePackage);
+    void loadFailSafeData();
+    void updateFailSafeData();
 
 private:
     class Impl;

@@ -49,6 +49,7 @@ bool endsWith(const std::string &source, const std::string &toMatch);
 }
 
 bool haveFilesSameContent(const char * filePath1, const char * filePath2);
+bool updateFile(const char * filePath, const char * newFileContent);
 
 namespace filesystem {
 bool exists (const std::string &name);

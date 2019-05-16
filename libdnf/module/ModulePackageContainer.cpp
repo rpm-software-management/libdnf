@@ -108,6 +108,38 @@ static std::string getFileContent(const std::string &filePath)
     return yamlContent;
 }
 
+/**
+ * @brief Get names in given directory with surfix ".yaml"
+ *
+ * @param dirPath p_dirPath: Directory
+ * @return std::vector< std::string > Sorted vector with all entries in directory that ends ".yaml"
+ */
+static std::vector<std::string> getYamlFilenames(const char * dirPath)
+{
+    struct dirent * ent;
+    std::unique_ptr<DIR> dir(opendir(dirPath));
+    std::vector<std::string> fileNames;
+    if (dir) {
+        DIR * dirPtr = dir.get();
+        while ((ent = readdir(dirPtr)) != NULL) {
+            auto filename = ent->d_name;
+            auto fileNameLen = strlen(filename);
+            if (fileNameLen < 10 || !strcmp(filename + fileNameLen - 5, ".yaml")) {
+                continue;
+            }
+            fileNames.push_back(filename);
+        }
+    }
+    std::sort(fileNames.begin(), fileNames.end());
+    return fileNames;
+}
+
+static bool
+stringStartWith(const std::string & first, const std::string & pattern)
+{
+    return strncmp(first.c_str(), pattern.c_str(), pattern.size()) == 0;
+}
+
 class ModulePackageContainer::Impl {
 public:
     Impl();
@@ -115,7 +147,7 @@ public:
     std::pair<std::vector<std::vector<std::string>>, ModulePackageContainer::ModuleErrorType> moduleSolve(
         const std::vector<ModulePackage *> & modules, bool debugSolver);
     bool insert(const std::string &moduleName, const char *path);
-
+    std::vector<ModulePackage *> getLatestActiveEnabledModules();
 
 private:
     friend struct ModulePackageContainer;
@@ -127,6 +159,7 @@ private:
     std::string installRoot;
     ModuleDefaultsContainer defaultConteiner;
     std::map<std::string, std::string> moduleDefaults;
+    bool isEnabled(const std::string &name, const std::string &stream);
 };
 
 class ModulePackageContainer::Impl::ModulePersistor {
@@ -363,6 +396,18 @@ ModulePackageContainer::requiresModuleEnablement(const PackageSet & packages)
     return output;
 }
 
+
+/**
+ * @brief Is a ModulePackage part of an enabled stream?
+ *
+ * @return bool
+ */
+bool ModulePackageContainer::Impl::isEnabled(const std::string &name, const std::string &stream)
+{
+    return persistor->getState(name) == ModuleState::ENABLED &&
+        persistor->getStream(name) == stream;
+}
+
 /**
  * @brief Is a ModulePackage part of an enabled stream?
  *
@@ -370,13 +415,12 @@ ModulePackageContainer::requiresModuleEnablement(const PackageSet & packages)
  */
 bool ModulePackageContainer::isEnabled(const std::string &name, const std::string &stream)
 {
-    return pImpl->persistor->getState(name) == ModuleState::ENABLED &&
-        pImpl->persistor->getStream(name) == stream;
+    return pImpl->isEnabled(name, stream);
 }
 
 bool ModulePackageContainer::isEnabled(const ModulePackage * module)
 {
-    return isEnabled(module->getName(), module->getStream());
+    return pImpl->isEnabled(module->getName(), module->getStream());
 }
 
 /**
@@ -822,6 +866,21 @@ modulePackageLatestPerRepoSorter(DnfSack * sack, const ModulePackage * first, co
 {
     if (first->getRepoID() != second->getRepoID())
         return first->getRepoID() < second->getRepoID();
+    int cmp = g_strcmp0(first->getNameCStr(), second->getNameCStr());
+    if (cmp != 0)
+        return cmp < 0;
+    cmp = dnf_sack_evr_cmp(sack, first->getStreamCStr(), second->getStreamCStr());
+    if (cmp != 0)
+        return cmp < 0;
+    cmp = g_strcmp0(first->getArchCStr(), second->getArchCStr());
+    if (cmp != 0)
+        return cmp < 0;
+    return first->getVersionNum() > second->getVersionNum();
+}
+
+static bool
+modulePackageLatestSorter(DnfSack * sack, const ModulePackage * first, const ModulePackage * second)
+{
     int cmp = g_strcmp0(first->getNameCStr(), second->getNameCStr());
     if (cmp != 0)
         return cmp < 0;
@@ -1433,6 +1492,162 @@ ModulePackageContainer::Impl::ModulePersistor::getRemovedProfiles()
     }
 
     return profiles;
+}
+
+void ModulePackageContainer::loadFailSafeData()
+{
+    auto persistor = pImpl->persistor->configs;
+    
+    std::map<std::string, std::pair<std::string, bool>> enabledStreams;
+    for (auto & nameConfig: persistor) {
+        if (nameConfig.second.second.state == ModuleState::ENABLED) {
+            auto & stream = nameConfig.second.second.stream;
+            if (!stream.empty()) {
+                enabledStreams.emplace(nameConfig.first, std::make_pair(stream, false));
+            }
+        }
+    }
+    for (auto & modulePair: pImpl->modules) {
+        auto module = modulePair.second.get();
+        auto it = enabledStreams.find(module->getName());
+        if (it != enabledStreams.end() && it->second.first == module->getStream()) {
+            it->second.second = true;
+        }
+    }
+    g_autofree gchar *path = g_build_filename(pImpl->installRoot.c_str(),
+                                              "/tmp/yaml", NULL);
+    auto fileNames = getYamlFilenames(path);
+    auto begin = fileNames.begin();
+    auto end = fileNames.end();
+    for (auto & pair: enabledStreams) {
+        if (!pair.second.second) {
+            // load from disk
+            std::ostringstream ss;
+            ss << pair.first << ":" << pair.second.first << ":";
+            bool loaded = false;
+            auto low = std::lower_bound(begin, end, ss.str(), stringStartWith);
+            for (auto iter = low; iter != end && stringStartWith(*iter, ss.str()); ++iter) {
+                try {
+                    g_autofree gchar * file = g_build_filename(path, iter->c_str(), NULL);
+                    auto yamlContent = getFileContent(file);
+                    add(yamlContent, "Module Fail-Safe");
+                    loaded = true;
+                } catch (const std::exception &) {
+                    auto logger(Log::getLogger());
+                    logger->debug(tfm::format(
+                        _("Unable to load modular Fail-Safe data at '%s'"), ss.str()));
+                }
+
+            }
+            if (!loaded) {
+                auto logger(Log::getLogger());
+                logger->debug(tfm::format(
+                            _("Unable to load modular Fail-Safe data for module '%s:%s'"),
+                                          pair.first, pair.second.first));
+            }
+        }
+    }
+}
+
+std::vector<ModulePackage *> ModulePackageContainer::Impl::getLatestActiveEnabledModules()
+{
+    std::vector<ModulePackage *> activeModules;
+    Id moduleId = -1;
+    while ((moduleId = activatedModules->next(moduleId)) != -1) {
+        auto modulePackage = modules.at(moduleId).get();
+        if (isEnabled(modulePackage->getName(), modulePackage->getStream())) {
+            activeModules.push_back(modulePackage);
+        }
+    }
+    if (activeModules.empty()) {
+        return {};
+    }
+    auto sack = moduleSack;
+    std::sort(activeModules.begin(), activeModules.end(),
+              [sack](const ModulePackage * first, const ModulePackage * second)
+              {return modulePackageLatestSorter(sack, first, second);});
+
+    auto packageFirst = activeModules[0];
+    std::vector<ModulePackage *> latest;
+    auto vectorSize = activeModules.size();
+    latest.push_back(packageFirst);
+    auto name = packageFirst->getNameCStr();
+    auto stream = packageFirst->getStreamCStr();
+    auto arch = packageFirst->getArchCStr();
+
+    for (unsigned int index = 1; index < vectorSize; ++index) {
+        auto & package = activeModules[index];
+        if (g_strcmp0(package->getNameCStr(), name) != 0 ||
+            g_strcmp0(package->getStreamCStr(), stream) != 0 ||
+            g_strcmp0(package->getArchCStr(), arch) != 0) {
+            name = package->getNameCStr();
+            stream = package->getStreamCStr();
+            arch = package->getArchCStr();
+            latest.push_back(package);
+        }
+    }
+    return latest;
+}
+
+void ModulePackageContainer::updateFailSafeData()
+{
+    auto activatedModules = pImpl->activatedModules.get();
+    if (!activatedModules) {
+        return;
+    }
+    std::vector<ModulePackage *> latest = pImpl->getLatestActiveEnabledModules();
+
+    auto fileNames = getYamlFilenames("/tmp/yaml/");
+    Map map;
+    map_init(&map, fileNames.size());
+    auto begin = fileNames.begin();
+    auto end = fileNames.end();
+    g_mkdir_with_parents("/tmp/yaml/", 0755);
+
+    // Update FailSafe data
+    for (auto modulePackage: latest) {
+        std::ostringstream ss;
+        ss << modulePackage->getNameStream();
+        ss << ":" << modulePackage->getArch() << ".yaml";
+        auto low = std::lower_bound(begin, end, ss.str());
+        if (low != end) {
+            MAPSET(&map, low - begin);
+        }
+        g_autofree gchar * file = g_build_filename("/tmp/yaml/", ss.str().c_str(), NULL);
+        if (!updateFile(file, modulePackage->getYaml().c_str())) {
+            auto logger(Log::getLogger());
+            logger->critical(tfm::format(
+                _("Unable to safe a modular Fail Safe data to '%s'"), ss.str()));
+        }
+    }
+
+    // Remove files from not enabled modules
+    for (unsigned int index = 0; index < fileNames.size(); ++index) {
+        if (!MAPTST(&map, index)) {
+            auto fileName = fileNames[index];
+            auto first = fileName.find(":");
+            if (first == std::string::npos || first == 0) {
+                continue;
+            }
+            std::string moduleName = fileName.substr(0, first);
+            auto second = fileName.find(":", ++first);
+            if (second == std::string::npos || first == second) {
+                continue;
+            }
+            std::string moduleStream = fileName.substr(first, second - first);
+
+            if (!isEnabled(moduleName, moduleStream)) {
+                g_autofree gchar * file = g_build_filename(
+                    "/tmp/yaml/", fileNames[index].c_str(), NULL);
+                if (remove(file)) {
+                    auto logger(Log::getLogger());
+                    logger->critical(tfm::format(
+                        _("Unable to remove a modular Fail Safe data in '%s'"), file));
+                }
+            }
+        }
+    }
+    map_free(&map);
 }
 
 }
