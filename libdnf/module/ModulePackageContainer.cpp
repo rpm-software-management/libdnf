@@ -47,6 +47,15 @@ extern "C" {
 #include "modulemd/ModuleDefaultsContainer.hpp"
 #include "modulemd/ModuleProfile.hpp"
 
+namespace std {
+
+template<>
+struct default_delete<DIR> {
+    void operator()(DIR * ptr) noexcept { closedir(ptr); }
+};
+
+}
+
 namespace libdnf {
 
 static constexpr auto EMPTY_STREAM = "";
@@ -184,6 +193,23 @@ ModulePackageContainer::ModulePackageContainer(bool allArch, std::string install
     repoImpl->libsolvRepo = repo;
     repoImpl->needs_internalizing = 1;
     pImpl->installRoot = installRoot;
+    g_autofree gchar *path = g_build_filename(pImpl->installRoot.c_str(),
+                                              "/etc/dnf/modules.d", NULL);
+    std::unique_ptr<DIR> dir(opendir(path));
+    if (dir) {
+        struct dirent * ent;
+        /* Load "*.module" files into module persistor */
+        DIR * dirPtr = dir.get();
+        while ((ent = readdir(dirPtr)) != NULL) {
+            auto filename = ent->d_name;
+            auto fileNameLen = strlen(filename);
+            if (fileNameLen < 8 || strcmp(filename + fileNameLen - 7, ".module")) {
+                continue;
+            }
+            std::string name(filename, fileNameLen - 7);
+            pImpl->persistor->insert(name, path);
+        }
+    }
 }
 
 ModulePackageContainer::~ModulePackageContainer() = default;
