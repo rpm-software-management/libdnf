@@ -2243,6 +2243,7 @@ void readModuleMetadataFromRepo(DnfSack * sack, libdnf::ModulePackageContainer *
     const char * platformModule)
 {
     modulePackages->add(sack);
+    modulePackages->loadFailSafeData();
     if (!modulePackages->empty()) {
         modulePackages->createConflictsBetweenStreams();
         // TODO remove hard-coded path
