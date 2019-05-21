@@ -226,7 +226,7 @@ ModulePackageContainer::ModulePackageContainer(bool allArch, std::string install
     repoImpl->libsolvRepo = repo;
     repoImpl->needs_internalizing = 1;
     pImpl->installRoot = installRoot;
-    g_autofree gchar *path = g_build_filename(pImpl->installRoot.c_str(),
+    g_autofree gchar * path = g_build_filename(pImpl->installRoot.c_str(),
                                               "/etc/dnf/modules.d", NULL);
     std::unique_ptr<DIR> dir(opendir(path));
     if (dir) {
@@ -308,7 +308,7 @@ ModulePackageContainer::add(const std::string &fileContent, const std::string & 
 
     FOR_REPOS(id, r) {
         if (strcmp(r->name, "available") == 0) {
-            g_autofree gchar *path = g_build_filename(pImpl->installRoot.c_str(),
+            g_autofree gchar * path = g_build_filename(pImpl->installRoot.c_str(),
                                                       "/etc/dnf/modules.d", NULL);
             for (auto & data : metadata) {
                 std::unique_ptr<ModulePackage> modulePackage(new ModulePackage(pImpl->moduleSack, r
@@ -1202,7 +1202,7 @@ parseConfig(ConfigParser &parser, const std::string &name, const char *path)
 
     try {
         const auto fname = name + ".module";
-        g_autofree gchar *cfn = g_build_filename(path, fname.c_str(), NULL);
+        g_autofree gchar * cfn = g_build_filename(path, fname.c_str(), NULL);
         parser.read(cfn);
 
         /* FIXME: init empty config or throw error? */
@@ -1295,7 +1295,7 @@ void ModulePackageContainer::Impl::ModulePersistor::reset(const std::string & na
 void ModulePackageContainer::Impl::ModulePersistor::save(
     const std::string &installRoot, const std::string &modulesPath)
 {
-    g_autofree gchar *dirname = g_build_filename(
+    g_autofree gchar * dirname = g_build_filename(
         installRoot.c_str(), modulesPath.c_str(), "/", NULL);
     makeDirPath(std::string(dirname));
 
@@ -1303,7 +1303,7 @@ void ModulePackageContainer::Impl::ModulePersistor::save(
         const auto &name = iter.first;
 
         if (update(name)) {
-            g_autofree gchar *fname = g_build_filename(installRoot.c_str(),
+            g_autofree gchar * fname = g_build_filename(installRoot.c_str(),
                     modulesPath.c_str(), (name + ".module").c_str(), NULL);
             iter.second.first.write(std::string(fname), false);
         }
@@ -1514,8 +1514,8 @@ void ModulePackageContainer::loadFailSafeData()
             it->second.second = true;
         }
     }
-    g_autofree gchar *path = g_build_filename(pImpl->installRoot.c_str(),
-                                              "/tmp/yaml", NULL);
+    g_autofree gchar * path = g_build_filename(pImpl->installRoot.c_str(),
+                                               "/tmp/yaml", NULL);
     auto fileNames = getYamlFilenames(path);
     auto begin = fileNames.begin();
     auto end = fileNames.end();
