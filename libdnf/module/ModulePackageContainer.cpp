@@ -41,6 +41,7 @@ extern "C" {
 #include "libdnf/goal/Goal.hpp"
 #include "libdnf/repo/Repo-private.hpp"
 #include "libdnf/sack/selector.hpp"
+#include "libdnf/conf/Const.hpp"
 
 #include "bgettext/bgettext-lib.h"
 #include "tinyformat/tinyformat.hpp"
@@ -124,7 +125,7 @@ static std::vector<std::string> getYamlFilenames(const char * dirPath)
         while ((ent = readdir(dirPtr)) != NULL) {
             auto filename = ent->d_name;
             auto fileNameLen = strlen(filename);
-            if (fileNameLen < 10 || !strcmp(filename + fileNameLen - 5, ".yaml")) {
+            if (fileNameLen < 10 || strcmp(filename + fileNameLen - 5, ".yaml")) {
                 continue;
             }
             fileNames.push_back(filename);
@@ -135,9 +136,9 @@ static std::vector<std::string> getYamlFilenames(const char * dirPath)
 }
 
 static bool
-stringStartWith(const std::string & first, const std::string & pattern)
+stringStartWithLowerComparator(const std::string & first, const std::string & pattern)
 {
-    return strncmp(first.c_str(), pattern.c_str(), pattern.size()) == 0;
+    return first.compare(0, pattern.size(), pattern) < 0;
 }
 
 class ModulePackageContainer::Impl {
@@ -157,6 +158,7 @@ private:
     DnfSack * moduleSack;
     std::unique_ptr<PackageSet> activatedModules;
     std::string installRoot;
+    std::string persistDir;
     ModuleDefaultsContainer defaultConteiner;
     std::map<std::string, std::string> moduleDefaults;
     bool isEnabled(const std::string &name, const std::string &stream);
@@ -211,13 +213,22 @@ ModulePackageContainer::EnableMultipleStreamsException::EnableMultipleStreamsExc
 : Exception(tfm::format(ENABLE_MULTIPLE_STREAM_EXCEPTION, moduleName)) {}
 
 ModulePackageContainer::ModulePackageContainer(bool allArch, std::string installRoot,
-    const char * arch) : pImpl(new Impl)
+    const char * arch, const char * persistDir) : pImpl(new Impl)
 {
     if (allArch) {
         dnf_sack_set_all_arch(pImpl->moduleSack, TRUE);
     } else {
         dnf_sack_set_arch(pImpl->moduleSack, arch, NULL);
     }
+    if (persistDir) {
+        g_autofree gchar * dir = g_build_filename(persistDir, "modulefailsafe", NULL);
+        pImpl->persistDir = dir;
+    } else {
+        g_autofree gchar * dir = g_build_filename(installRoot.c_str(), PERSISTDIR, "modulefailsafe",
+                                                  NULL);
+        pImpl->persistDir = dir;
+    }
+
     Pool * pool = dnf_sack_get_pool(pImpl->moduleSack);
     HyRepo hrepo = hy_repo_create("available");
     auto repoImpl = libdnf::repoGetImpl(hrepo);
@@ -1514,9 +1525,7 @@ void ModulePackageContainer::loadFailSafeData()
             it->second.second = true;
         }
     }
-    g_autofree gchar * path = g_build_filename(pImpl->installRoot.c_str(),
-                                               "/tmp/yaml", NULL);
-    auto fileNames = getYamlFilenames(path);
+    auto fileNames = getYamlFilenames(pImpl->persistDir.c_str());
     auto begin = fileNames.begin();
     auto end = fileNames.end();
     for (auto & pair: enabledStreams) {
@@ -1525,10 +1534,11 @@ void ModulePackageContainer::loadFailSafeData()
             std::ostringstream ss;
             ss << pair.first << ":" << pair.second.first << ":";
             bool loaded = false;
-            auto low = std::lower_bound(begin, end, ss.str(), stringStartWith);
-            for (auto iter = low; iter != end && stringStartWith(*iter, ss.str()); ++iter) {
+            auto low = std::lower_bound(begin, end, ss.str(), stringStartWithLowerComparator);
+            for (; low != end && string::startsWith((*low), ss.str()); ++low) {
                 try {
-                    g_autofree gchar * file = g_build_filename(path, iter->c_str(), NULL);
+                    g_autofree gchar * file = g_build_filename(pImpl->persistDir.c_str(),
+                                                               low->c_str(), NULL);
                     auto yamlContent = getFileContent(file);
                     add(yamlContent, "Module Fail-Safe");
                     loaded = true;
@@ -1537,7 +1547,6 @@ void ModulePackageContainer::loadFailSafeData()
                     logger->debug(tfm::format(
                         _("Unable to load modular Fail-Safe data at '%s'"), ss.str()));
                 }
-
             }
             if (!loaded) {
                 auto logger(Log::getLogger());
@@ -1597,12 +1606,12 @@ void ModulePackageContainer::updateFailSafeData()
     }
     std::vector<ModulePackage *> latest = pImpl->getLatestActiveEnabledModules();
 
-    auto fileNames = getYamlFilenames("/tmp/yaml/");
+    auto fileNames = getYamlFilenames(pImpl->persistDir.c_str());
     Map map;
     map_init(&map, fileNames.size());
     auto begin = fileNames.begin();
     auto end = fileNames.end();
-    g_mkdir_with_parents("/tmp/yaml/", 0755);
+    g_mkdir_with_parents(pImpl->persistDir.c_str(), 0755);
 
     // Update FailSafe data
     for (auto modulePackage: latest) {
@@ -1610,13 +1619,14 @@ void ModulePackageContainer::updateFailSafeData()
         ss << modulePackage->getNameStream();
         ss << ":" << modulePackage->getArch() << ".yaml";
         auto low = std::lower_bound(begin, end, ss.str());
-        if (low != end) {
+        if (low != end && ss.str() == *low) {
             MAPSET(&map, low - begin);
         }
-        g_autofree gchar * file = g_build_filename("/tmp/yaml/", ss.str().c_str(), NULL);
+        g_autofree gchar * file = g_build_filename(pImpl->persistDir.c_str(), ss.str().c_str(),
+                                                   NULL);
         if (!updateFile(file, modulePackage->getYaml().c_str())) {
             auto logger(Log::getLogger());
-            logger->critical(tfm::format(
+            logger->debug(tfm::format(
                 _("Unable to safe a modular Fail Safe data to '%s'"), ss.str()));
         }
     }
@@ -1638,10 +1648,10 @@ void ModulePackageContainer::updateFailSafeData()
 
             if (!isEnabled(moduleName, moduleStream)) {
                 g_autofree gchar * file = g_build_filename(
-                    "/tmp/yaml/", fileNames[index].c_str(), NULL);
+                    pImpl->persistDir.c_str(), fileNames[index].c_str(), NULL);
                 if (remove(file)) {
                     auto logger(Log::getLogger());
-                    logger->critical(tfm::format(
+                    logger->debug(tfm::format(
                         _("Unable to remove a modular Fail Safe data in '%s'"), file));
                 }
             }
