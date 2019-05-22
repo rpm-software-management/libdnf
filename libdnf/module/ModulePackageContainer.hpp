@@ -78,7 +78,8 @@ public:
         explicit EnableMultipleStreamsException(const std::string & moduleName);
     };
 
-    explicit ModulePackageContainer(bool allArch, std::string installRoot, const char * arch);
+    explicit ModulePackageContainer(bool allArch, std::string installRoot, const char * arch,
+                                    const char * persistDir = nullptr);
     ~ModulePackageContainer();
 
     void add(const std::string & fileContent, const std::string & repoID);
