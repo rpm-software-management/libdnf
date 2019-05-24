@@ -2129,7 +2129,7 @@ std::set<std::string> Query::getStringsFromProvide(const char * patternProvide)
     std::set<std::string> result;
     while ((pkgId = queryResult->next(pkgId)) != -1) {
         std::unique_ptr<DnfPackage> pkg(dnf_package_new(sack, pkgId));
-        auto provides = dnf_package_get_provides(pkg.get());
+        std::unique_ptr<DnfReldepList> provides(dnf_package_get_provides(pkg.get()));
         auto count = provides->count();
         for (int index = 0; index < count; ++index) {
             Dependency provide(sack, provides->getId(index));
