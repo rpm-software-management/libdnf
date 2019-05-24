@@ -105,13 +105,15 @@ dnf_package_get_filename(DnfPackage *pkg)
     DnfPackagePrivate *priv;
 
     priv = dnf_package_get_priv(pkg);
-    if (priv == NULL)
+    if (!priv)
         return NULL;
     if (dnf_package_installed(pkg))
         return NULL;
+    if (!priv->filename && !priv->repo)
+        return NULL;
 
     /* default cache filename location */
-    if (priv->filename == NULL && priv->repo != NULL) {
+    if (!priv->filename) {
         if (dnf_repo_is_local(priv->repo)) {
             const gchar *url_location = dnf_package_get_baseurl(pkg);
             if (!url_location){
