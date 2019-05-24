@@ -95,7 +95,7 @@ private:
 
 class Repo::Impl {
 public:
-    Impl(Repo & owner, const std::string & id, std::unique_ptr<ConfigRepo> && conf);
+    Impl(Repo & owner, const std::string & id, Type type, std::unique_ptr<ConfigRepo> && conf);
     ~Impl();
 
     bool load();
