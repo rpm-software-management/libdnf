@@ -305,8 +305,8 @@ static std::string formatUserPassString(const std::string & user, const std::str
         return user + ":" + passwd;
 }
 
-Repo::Impl::Impl(Repo & owner, const std::string & id, std::unique_ptr<ConfigRepo> && conf)
-: id(id), conf(std::move(conf)), timestamp(-1), loadMetadataOther(false)
+Repo::Impl::Impl(Repo & owner, const std::string & id, Type type, std::unique_ptr<ConfigRepo> && conf)
+: id(id), type(type), conf(std::move(conf)), timestamp(-1), loadMetadataOther(false)
 , syncStrategy(SyncStrategy::TRY_CACHE), owner(&owner), expired(false) {}
 
 Repo::Impl::~Impl()
@@ -325,8 +325,7 @@ Repo::Repo(const std::string & id, std::unique_ptr<ConfigRepo> && conf, Repo::Ty
             throw std::runtime_error(msg);
         }
     }
-    pImpl.reset(new Impl(*this, id, std::move(conf)));
-    pImpl->type = type;
+    pImpl.reset(new Impl(*this, id, type, std::move(conf)));
 }
 
 Repo::~Repo() = default;
