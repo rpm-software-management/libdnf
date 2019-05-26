@@ -166,7 +166,7 @@ bool haveFilesSameContent(const char * filePath1, const char * filePath2)
                 ret = false;
                 break;
             }
-        } while (readed > BLOCK_SIZE);
+        } while (readed == BLOCK_SIZE);
     } while (false);
 
     if (fd1 != -1)
