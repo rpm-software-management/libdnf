@@ -123,18 +123,16 @@ std::string trimPrefix(const std::string &source, const std::string &prefix)
     throw std::runtime_error{"Prefix '" + prefix + "' not found"};
 }
 
-bool startsWith(const std::string &source, const std::string &toMatch)
+bool startsWith(const std::string & source, const std::string & toMatch)
 {
-    return source.find(toMatch) == 0;
+    return source.compare(0, toMatch.size(), toMatch) == 0;
 }
 
-bool endsWith(const std::string &source, const std::string &toMatch)
+bool endsWith(const std::string & source, const std::string & toMatch)
 {
-    auto it = toMatch.begin();
-    return source.size() >= toMatch.size() &&
-           std::all_of(std::next(source.begin(), source.size() - toMatch.size()), source.end(), [&it](const char &c) {
-               return c == *(it++);
-           });
+    auto toMatchSize = toMatch.size();
+    return source.size() >= toMatchSize && source.compare(
+        source.size() - toMatchSize, toMatchSize, toMatch) == 0;
 }
 
 }
