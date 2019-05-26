@@ -1483,6 +1483,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     if (sack) {
         if (auto moduleContainer = dnf_sack_get_module_container(sack)) {
             moduleContainer->save();
+            moduleContainer->updateFailSafeData();
         }
     }
 
