@@ -136,7 +136,7 @@ fill_form(PyObject *o)
 /* object methods */
 
 static bool
-addNevraToPyList(PyObject * pyList, libdnf::Nevra & nevraObj)
+addNevraToPyList(PyObject * pyList, libdnf::Nevra && nevraObj)
 {
     auto cNevra = new libdnf::Nevra(std::move(nevraObj));
     UniquePtrPyObject nevra(nevraToPyObject(cNevra));
@@ -166,7 +166,7 @@ get_nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
     if (forms && forms != Py_None) {
         if (PyInt_Check(forms)) {
             if (nevraObj.parse(self->pattern, static_cast<HyForm>(PyLong_AsLong(forms)))) {
-                if (!addNevraToPyList(list.get(), nevraObj))
+                if (!addNevraToPyList(list.get(), std::move(nevraObj)))
                     return NULL;
             }
             return list.release();
@@ -180,7 +180,7 @@ get_nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
                     break;
                 }
                 if (nevraObj.parse(self->pattern, static_cast<HyForm>(PyLong_AsLong(form)))) {
-                    if (!addNevraToPyList(list.get(), nevraObj))
+                    if (!addNevraToPyList(list.get(), std::move(nevraObj)))
                         return NULL;
                 }
             }
@@ -192,7 +192,7 @@ get_nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
     } else {
         for (std::size_t i = 0; HY_FORMS_MOST_SPEC[i] != _HY_FORM_STOP_; ++i) {
             if (nevraObj.parse(self->pattern, HY_FORMS_MOST_SPEC[i])) {
-                if (!addNevraToPyList(list.get(), nevraObj))
+                if (!addNevraToPyList(list.get(), std::move(nevraObj)))
                     return NULL;
             }
         }
@@ -201,7 +201,7 @@ get_nevra_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
 }
 
 static bool
-addNsvcapToPyList(PyObject * pyList, libdnf::Nsvcap & nevraObj)
+addNsvcapToPyList(PyObject * pyList, libdnf::Nsvcap && nevraObj)
 {
     auto cNsvcap = new libdnf::Nsvcap(std::move(nevraObj));
     UniquePtrPyObject nsvcap(nsvcapToPyObject(cNsvcap));
@@ -231,7 +231,7 @@ nsvcap_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
     if (forms && forms != Py_None) {
         if (PyInt_Check(forms)) {
             if (nsvcapObj.parse(self->pattern, static_cast<HyModuleForm>(PyLong_AsLong(forms)))) {
-                if (!addNsvcapToPyList(list.get(), nsvcapObj))
+                if (!addNsvcapToPyList(list.get(), std::move(nsvcapObj)))
                     return NULL;
             }
             return list.release();
@@ -245,7 +245,7 @@ nsvcap_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
                     break;
                 }
                 if (nsvcapObj.parse(self->pattern, static_cast<HyModuleForm>(PyLong_AsLong(form)))) {
-                    if (!addNsvcapToPyList(list.get(), nsvcapObj))
+                    if (!addNsvcapToPyList(list.get(), std::move(nsvcapObj)))
                         return NULL;
                 }
             }
@@ -257,7 +257,7 @@ nsvcap_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
     } else {
         for (std::size_t i = 0; HY_MODULE_FORMS_MOST_SPEC[i] != _HY_MODULE_FORM_STOP_; ++i) {
             if (nsvcapObj.parse(self->pattern, HY_MODULE_FORMS_MOST_SPEC[i])) {
-                if (!addNsvcapToPyList(list.get(), nsvcapObj))
+                if (!addNsvcapToPyList(list.get(), std::move(nsvcapObj)))
                     return NULL;
             }
         }
