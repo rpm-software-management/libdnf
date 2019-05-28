@@ -28,6 +28,8 @@
 #include "hy-package.h"
 #include "hy-package-private.hpp"
 #include "dnf-reldep.h"
+#include "dnf-types.h"
+#include "libdnf/sack/packageset.hpp"
 
 #include "iutil-py.hpp"
 #include "package-py.hpp"
@@ -347,6 +349,20 @@ get_delta_from_evr(_PackageObject *self, PyObject *evr_str)
 }
 
 static PyObject *
+is_in_active_module(_PackageObject *self, PyObject *unused)
+{
+    DnfSack * csack = sackFromPyObject(self->sack);
+    DnfPackageSet * includes = dnf_sack_get_module_includes(csack);
+    if (!includes) {
+        Py_RETURN_FALSE;
+    }
+    if (includes->has(dnf_package_get_id(self->package))) {
+        Py_RETURN_TRUE;
+    }
+    Py_RETURN_FALSE;
+}
+
+static PyObject *
 get_advisories(_PackageObject *self, PyObject *args)
 {
     int cmp_type;
@@ -368,6 +384,7 @@ static struct PyMethodDef package_methods[] = {
     {"evr_cmp", (PyCFunction)evr_cmp, METH_O, NULL},
     {"get_delta_from_evr", (PyCFunction)get_delta_from_evr, METH_O, NULL},
     {"get_advisories", (PyCFunction)get_advisories, METH_VARARGS, NULL},
+    {"_is_in_active_module", (PyCFunction)is_in_active_module, METH_NOARGS, NULL},
     {NULL}                      /* sentinel */
 };
 
