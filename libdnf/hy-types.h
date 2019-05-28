@@ -50,6 +50,7 @@ typedef int (*hy_solution_callback)(HyGoal goal, void *callback_data);
 
 #define HY_SYSTEM_REPO_NAME "@System"
 #define HY_CMDLINE_REPO_NAME "@commandline"
+#define LIBDNF_MODULE_FAIL_SAFE_REPO_NAME "@modulefailsafe"
 #define HY_EXT_FILENAMES "-filenames"
 #define HY_EXT_UPDATEINFO "-updateinfo"
 #define HY_EXT_PRESTO "-presto"
