@@ -1499,7 +1499,7 @@ DnfPackageSet *
 dnf_sack_get_module_includes(DnfSack *sack)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
-    Map *excl = priv->module_excludes;
+    Map *excl = priv->module_includes;
     return excl ? dnf_packageset_from_bitmap(sack, excl) : NULL;
 }
 
