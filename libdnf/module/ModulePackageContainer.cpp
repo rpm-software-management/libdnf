@@ -33,6 +33,7 @@ extern "C" {
 #include "libdnf/utils/File.hpp"
 #include "libdnf/dnf-sack-private.hpp"
 #include "libdnf/hy-query.h"
+#include "libdnf/hy-types.h"
 #include <functional>
 #include <../sack/query.hpp>
 #include "../log.hpp"
@@ -1540,7 +1541,7 @@ void ModulePackageContainer::loadFailSafeData()
                     g_autofree gchar * file = g_build_filename(pImpl->persistDir.c_str(),
                                                                low->c_str(), NULL);
                     auto yamlContent = getFileContent(file);
-                    add(yamlContent, "Module Fail-Safe");
+                    add(yamlContent, LIBDNF_MODULE_FAIL_SAFE_REPO_NAME);
                     loaded = true;
                 } catch (const std::exception &) {
                     auto logger(Log::getLogger());

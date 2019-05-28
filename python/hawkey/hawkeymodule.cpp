@@ -244,6 +244,7 @@ PYCOMP_MOD_INIT(_hawkey)
 
     PyModule_AddStringConstant(m, "SYSTEM_REPO_NAME", HY_SYSTEM_REPO_NAME);
     PyModule_AddStringConstant(m, "CMDLINE_REPO_NAME", HY_CMDLINE_REPO_NAME);
+    PyModule_AddStringConstant(m, "MODULE_FAIL_SAFE_REPO_NAME", LIBDNF_MODULE_FAIL_SAFE_REPO_NAME);
 
     PyModule_AddIntConstant(m, "PKG", HY_PKG);
     PyModule_AddIntConstant(m, "PKG_ADVISORY", HY_PKG_ADVISORY);
