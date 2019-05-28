@@ -822,7 +822,13 @@ std::vector<Key> Repo::Impl::retrieve(const std::string & url)
         close(fd);
     });
 
-    downloadUrl(url.c_str(), fd);
+    try {
+        downloadUrl(url.c_str(), fd);
+    }
+    catch (const LrExceptionWithSourceUrl & e) {
+        auto msg = tfm::format(_("Failed to retrieve GPG key for repo '%s': %s"), id, e.what());
+        throw std::runtime_error(msg);
+    }
     lseek(fd, SEEK_SET, 0);
     auto keyInfos = rawkey2infos(fd);
     for (auto & key : keyInfos)
