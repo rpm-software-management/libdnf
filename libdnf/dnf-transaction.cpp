@@ -38,7 +38,7 @@
 #include "dnf-goal.h"
 #include "dnf-keyring.h"
 #include "dnf-package.h"
-#include "dnf-rpmts.h"
+#include "dnf-rpmts-private.hpp"
 #include "dnf-sack.h"
 #include "dnf-sack-private.hpp"
 #include "dnf-transaction.h"
@@ -1194,7 +1194,8 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
         filename = dnf_package_get_filename(pkg);
         allow_untrusted = (priv->flags & DNF_TRANSACTION_FLAG_ONLY_TRUSTED) == 0;
         is_update = action == DNF_STATE_ACTION_UPDATE || action == DNF_STATE_ACTION_DOWNGRADE;
-        ret = dnf_rpmts_add_install_filename(priv->ts, filename, allow_untrusted, is_update, error);
+        ret = dnf_rpmts_add_install_filename2(
+            priv->ts, filename, allow_untrusted, is_update, pkg, error);
         if (!ret)
             goto out;
 
