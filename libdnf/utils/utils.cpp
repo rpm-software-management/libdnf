@@ -34,12 +34,8 @@ bool isAdvisoryApplicable(libdnf::Advisory & advisory, DnfSack * sack)
     for (auto & moduleAdvisory: moduleAdvisories) {
         if (const char * name = moduleAdvisory.getName()) {
             if (const char * stream = moduleAdvisory.getStream()) {
-                try {
-                    if (moduleContainer->isEnabled(name, stream)) {
-                        return true;
-                    }
-                } catch (std::out_of_range &) {
-                    continue;
+                if (moduleContainer->isEnabled(name, stream)) {
+                    return true;
                 }
             }
         }
