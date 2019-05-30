@@ -416,8 +416,12 @@ ModulePackageContainer::requiresModuleEnablement(const PackageSet & packages)
  */
 bool ModulePackageContainer::Impl::isEnabled(const std::string &name, const std::string &stream)
 {
-    return persistor->getState(name) == ModuleState::ENABLED &&
-        persistor->getStream(name) == stream;
+    try {
+        return persistor->getState(name) == ModuleState::ENABLED &&
+            persistor->getStream(name) == stream;
+    } catch (NoModuleException &) {
+        return false;
+    }
 }
 
 /**
