@@ -172,42 +172,49 @@ bool haveFilesSameContent(const char * filePath1, const char * filePath2)
     return ret;
 }
 
+static bool
+saveFile(const char * filePath, const char * newFileContent, unsigned long newFileContentLen)
+{
+    int fd = -1;
+    if ((fd = open(filePath,  O_WRONLY | O_CREAT | O_TRUNC, 0644)) == -1)
+        return false;
+    auto writtenSize = write(fd, newFileContent, newFileContentLen);
+    close(fd);
+    return (static_cast<unsigned long>(writtenSize) == newFileContentLen);
+}
+
 bool updateFile(const char * filePath, const char * newFileContent)
 {
     static constexpr int BLOCK_SIZE = 4096;
-    bool ret = false;
-    int fd1 = -1;
+    int fd = -1;
     const char * tmpFileContent = newFileContent;
     auto newFileContentLen = strlen(newFileContent);
-    do {
-        if ((fd1 = open(filePath,  O_RDWR | O_CREAT, 0755)) == -1)
-            break;
-        auto len1 = lseek(fd1, 0, SEEK_END);
-        ret = true;
-        if (len1 == 0) {
-            lseek(fd1, 0, SEEK_SET);
-            auto writtenSize = write(fd1, newFileContent, newFileContentLen);
-            ret = (static_cast<unsigned long>(writtenSize) == newFileContentLen);
-            break;
-        }
-        lseek(fd1, 0, SEEK_SET);
+
+    if ((fd = open(filePath,  O_RDONLY)) == -1)
+        return saveFile(filePath, newFileContent, newFileContentLen);
+    auto len = lseek(fd, 0, SEEK_END);
+    if (len < 0 || (unsigned long)len != newFileContentLen) {
+        close(fd);
+        return saveFile(filePath, newFileContent, newFileContentLen);
+    }
+    // No need to update file when newFileContentLen and len of file == 0
+    if (newFileContentLen > 0) {
+        lseek(fd, 0, SEEK_SET);
         char buf1[BLOCK_SIZE];
         ssize_t readed;
         do {
-            readed = read(fd1, buf1, BLOCK_SIZE);
+            readed = read(fd, buf1, BLOCK_SIZE);
             if (memcmp(buf1, tmpFileContent, readed) != 0) {
-                lseek(fd1, 0, SEEK_SET);
-                auto writtenSize = write(fd1, newFileContent, newFileContentLen);
-                ret = (static_cast<unsigned long>(writtenSize) == newFileContentLen);
-                break;
+                close(fd);
+                return saveFile(filePath, newFileContent, newFileContentLen);
             }
             tmpFileContent = tmpFileContent + BLOCK_SIZE;
         } while (readed == BLOCK_SIZE);
-    } while (false);
+    }
 
-    if (fd1 != -1)
-        close(fd1);
-    return ret;
+    if (fd != -1)
+        close(fd);
+    return true;
 }
 
 namespace filesystem {
