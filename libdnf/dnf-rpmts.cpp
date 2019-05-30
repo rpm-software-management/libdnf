@@ -36,32 +36,64 @@
 #include <rpm/rpmlog.h>
 #include <rpm/rpmdb.h>
 
-#include "dnf-rpmts.h"
+#include "sack/packageset.hpp"
+#include "hy-package-private.hpp"
+#include "dnf-rpmts-private.hpp"
 #include "dnf-types.h"
 #include "dnf-utils.h"
 
 #include "utils/bgettext/bgettext-lib.h"
+#include "dnf-package.h"
 
-/**
- * dnf_rpmts_add_install_filename:
- * @ts: a #rpmts instance.
- * @filename: the package.
- * @allow_untrusted: is we can add untrusted packages.
- * @is_update: if the package is an update.
- * @error: a #GError or %NULL..
- *
- * Add to the transaction a package to be installed.
- *
- * Returns: %TRUE for success, %FALSE otherwise
- *
- * Since: 0.1.0
- **/
+
+static gboolean
+test_fail_safe(Header * hdr, DnfPackage * pkg, GError **error)
+{
+    if (dnf_package_installed(pkg)) {
+        return TRUE;
+    }
+    if (strcmp(dnf_package_get_reponame(pkg), HY_CMDLINE_REPO_NAME) == 0) {
+        return TRUE;
+    }
+    if (auto repo = dnf_package_get_repo(pkg)) {
+        if (dnf_repo_get_module_hotfixes(repo)) {
+            return TRUE;
+        }
+    } else {
+        return TRUE;
+    }
+    rpmtd td = rpmtdNew();
+    if (headerGet(*hdr, RPMTAG_MODULARITYLABEL, td, HEADERGET_MINMEM)) {
+        if (rpmtdGetString(td)) {
+            DnfSack * sack = dnf_package_get_sack(pkg);
+            auto includes = dnf_sack_get_module_includes(sack);
+            if (includes && includes->has(dnf_package_get_id(pkg))) {
+                rpmtdFreeData(td);
+                rpmtdFree(td);
+                return TRUE;
+            } else {
+                g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
+                            _("No available modular metadata for modular package '%s'; "
+                              "cannot be installed on the system"),
+                            dnf_package_get_nevra(pkg));
+                rpmtdFreeData(td);
+                rpmtdFree(td);
+                return FALSE;
+            }
+        }
+    }
+    rpmtdFreeData(td);
+    rpmtdFree(td);
+    return TRUE;
+}
+
 gboolean
-dnf_rpmts_add_install_filename(rpmts ts,
-                               const gchar *filename,
-                               gboolean allow_untrusted,
-                               gboolean is_update,
-                               GError **error)
+dnf_rpmts_add_install_filename2(rpmts ts,
+                                const gchar *filename,
+                                gboolean allow_untrusted,
+                                gboolean is_update,
+                                DnfPackage * pkg,
+                                GError **error)
 {
     gboolean ret = TRUE;
     gint res;
@@ -143,6 +175,12 @@ dnf_rpmts_add_install_filename(rpmts ts,
             goto out;
         }
     }
+    if (pkg) {
+        if (!test_fail_safe(&hdr, pkg, error)) {
+            ret = FALSE;
+            goto out;
+        }
+    }
 
     /* add to the transaction */
     res = rpmtsAddInstallElement(ts, hdr, (fnpyKey) filename, is_update, NULL);
@@ -160,6 +198,31 @@ out:
     headerFree(hdr);
     return ret;
 }
+
+/**
+ * dnf_rpmts_add_install_filename:
+ * @ts: a #rpmts instance.
+ * @filename: the package.
+ * @allow_untrusted: is we can add untrusted packages.
+ * @is_update: if the package is an update.
+ * @error: a #GError or %NULL..
+ *
+ * Add to the transaction a package to be installed.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.1.0
+ **/
+gboolean
+dnf_rpmts_add_install_filename(rpmts ts,
+                               const gchar *filename,
+                               gboolean allow_untrusted,
+                               gboolean is_update,
+                               GError **error)
+{
+    return dnf_rpmts_add_install_filename2(ts, filename, allow_untrusted, is_update, NULL, error);
+}
+
 
 /**
  * dnf_rpmts_look_for_problems:
