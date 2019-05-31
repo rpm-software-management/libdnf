@@ -66,6 +66,16 @@ Requires:       libmodulemd%{?_isa} >= %{libmodulemd_version}
 Requires:       libsolv%{?_isa} >= %{libsolv_version}
 Requires:       librepo%{?_isa} >= %{librepo_version}
 
+%if %{without python2}
+# Obsoleted from here so we can track the fast growing version easily.
+# We intentionally only obsolete and not provide, this is a broken upgrade
+# prevention, not providing the removed functionality.
+Obsoletes:      python2-%{name} < %{version}-%{release}
+Obsoletes:      python2-hawkey < %{version}-%{release}
+Obsoletes:      python2-hawkey-debuginfo < %{version}-%{release}
+Obsoletes:      python2-libdnf-debuginfo < %{version}-%{release}
+%endif
+
 %description
 A Library providing simplified C and Python API to libsolv.
 
