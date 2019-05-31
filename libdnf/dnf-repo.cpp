@@ -1047,21 +1047,17 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
         if (priv->gpgkeys && !*priv->gpgkeys)
             g_strfreev(static_cast<gchar **>(g_steal_pointer(&priv->gpgkeys)));
     }
-    /* Currently, we don't have a global configuration file.  The way this worked in yum
-     * is that the yum package enabled gpgcheck=1 by default in /etc/yum.conf.  Basically,
-     * I don't think many people changed that.  It's just saner to disable it in the individual
-     * repo files as required.  To claim compatibility with yum repository files, I think
-     * we need to basically hard code the yum.conf defaults here.
-     */
-    if (!g_key_file_has_key(priv->keyfile, repoId, "gpgcheck", NULL))
-        priv->repo->getConfig()->gpgcheck().set(libdnf::Option::Priority::DEFAULT, true);
-    else {
+
+    if (g_key_file_has_key(priv->keyfile, repoId, "gpgcheck", NULL)) {
         auto gpgcheck_pkgs = dnf_repo_get_boolean(priv->keyfile, repoId, "gpgcheck", NULL);
         priv->repo->getConfig()->gpgcheck().set(libdnf::Option::Priority::REPOCONFIG, gpgcheck_pkgs);
     }
 
-    auto gpgcheck_md = dnf_repo_get_boolean(priv->keyfile, repoId, "repo_gpgcheck", NULL);
-    priv->repo->getConfig()->repo_gpgcheck().set(libdnf::Option::Priority::REPOCONFIG, gpgcheck_md);
+    if (g_key_file_has_key(priv->keyfile, repoId, "repo_gpgcheck", NULL)) {
+        auto gpgcheck_md = dnf_repo_get_boolean(priv->keyfile, repoId, "repo_gpgcheck", NULL);
+        priv->repo->getConfig()->repo_gpgcheck().set(libdnf::Option::Priority::REPOCONFIG, gpgcheck_md);
+    }
+    auto gpgcheck_md = priv->repo->getConfig()->repo_gpgcheck().getValue();
     if (gpgcheck_md && priv->gpgkeys == NULL) {
         g_set_error_literal(error,
                             DNF_ERROR,

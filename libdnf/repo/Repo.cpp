@@ -1881,6 +1881,9 @@ hy_repo_create(const char *name)
 {
     assert(name);
     if (!cfgMainLoaded.test_and_set()) {
+        // The gpgcheck was enabled by default in context part of libdnf. We stay "compatible".
+        cfgMain.gpgcheck().set(libdnf::Option::Priority::DEFAULT, true);
+
         libdnf::ConfigParser parser;
         const std::string cfgPath{cfgMain.config_file_path().getValue()};
         try {
