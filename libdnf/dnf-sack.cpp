@@ -2122,9 +2122,12 @@ dnf_sack_add_repo(DnfSack *sack,
                               &error_local);
         if (!ret) {
             if (!dnf_repo_get_required(repo) &&
-                g_error_matches(error_local,
-                                DNF_ERROR,
-                                DNF_ERROR_CANNOT_FETCH_SOURCE)) {
+                (g_error_matches(error_local,
+                                 DNF_ERROR,
+                                 DNF_ERROR_CANNOT_FETCH_SOURCE) ||
+                 g_error_matches(error_local,
+                                 DNF_ERROR,
+                                 DNF_ERROR_REPO_NOT_AVAILABLE))) {
                 g_warning("Skipping refresh of %s: %s",
                           dnf_repo_get_id(repo),
                           error_local->message);
