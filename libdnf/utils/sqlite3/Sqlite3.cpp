@@ -30,6 +30,11 @@ SQLite3::open()
             sqlite3_close(db);
             throw LibException(result, "Open failed");
         }
+
+        // the busy timeout must be set before executing *any* statements
+        // because even setting PRAGMAs can fail with "database is locked" error
+        sqlite3_busy_timeout(db, 10000);
+
 #if SQLITE_VERSION_NUMBER >= 3022000
         int enabled = 1;
         sqlite3_file_control(db, "main", SQLITE_FCNTL_PERSIST_WAL, &enabled);
@@ -41,7 +46,6 @@ SQLite3::open()
         // Journal mode WAL in readonly mode is supported from sqlite version 3.22.0
         exec("PRAGMA locking_mode = NORMAL; PRAGMA journal_mode = TRUNCATE; PRAGMA foreign_keys = ON;");
 #endif
-        sqlite3_busy_timeout(db, 10000);
     }
 }
 
