@@ -1624,19 +1624,20 @@ void ModulePackageContainer::updateFailSafeData()
         std::ostringstream ss;
         ss << modulePackage->getNameStream();
         ss << ":" << modulePackage->getArch() << ".yaml";
-        auto low = std::lower_bound(begin, end, ss.str());
-        if (low != end && ss.str() == *low) {
+        auto fileName = ss.str();
+        auto low = std::lower_bound(begin, end, fileName);
+        if (low != end && fileName == *low) {
             MAPSET(&map, low - begin);
         }
         if (modulePackage->getRepoID() == LIBDNF_MODULE_FAIL_SAFE_REPO_NAME) {
             continue;
         }
-        g_autofree gchar * file = g_build_filename(pImpl->persistDir.c_str(), ss.str().c_str(),
-                                                   NULL);
-        if (!updateFile(file, modulePackage->getYaml().c_str())) {
+        g_autofree gchar * filePath = g_build_filename(pImpl->persistDir.c_str(), fileName.c_str(),
+                                                       NULL);
+        if (!updateFile(filePath, modulePackage->getYaml().c_str())) {
             auto logger(Log::getLogger());
             logger->debug(tfm::format(
-                _("Unable to safe a modular Fail Safe data to '%s'"), ss.str()));
+                _("Unable to safe a modular Fail Safe data to '%s'"), filePath));
         }
     }
 
