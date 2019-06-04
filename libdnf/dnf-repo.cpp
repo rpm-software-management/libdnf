@@ -33,6 +33,7 @@
  * See also: #DnfRepo
  */
 
+#include "conf/OptionBool.hpp"
 
 #include "hy-repo-private.hpp"
 
@@ -901,28 +902,19 @@ dnf_repo_get_username_password_string(const gchar *user, const gchar *pass)
 static gboolean
 dnf_repo_get_boolean(GKeyFile *keyfile,
                      const gchar *group_name,
-                     const gchar *key,
-                     GError **error)
+                     const gchar *key)
 {
-    gboolean val;
     g_autofree gchar *str = NULL;
-    g_autoptr(GError) error_local = NULL;
 
-    /* try to parse as boolean */
-    val = g_key_file_get_boolean(keyfile, group_name, key, &error_local);
-    if (error_local == NULL)
-        return val;
-
-    /* if that failed, try matching with "True" and "False" that are often used
-     * in .repo files, but aren't valid keyfile booleans */
-    str = g_key_file_get_string(keyfile, group_name, key, NULL);
-    if (g_strcmp0(str, "True") == 0)
-        return TRUE;
-    if (g_strcmp0(str, "False") == 0)
-        return FALSE;
-
-    g_propagate_error(error, static_cast<GError *>(g_steal_pointer(&error_local)));
-    return FALSE;
+    str = g_key_file_get_value(keyfile, group_name, key, NULL);
+    if (str) {
+        try {
+            return libdnf::OptionBool(false).fromString(str);
+        } catch (const std::exception & ex) {
+            g_warning("Config error in section \"%s\" key \"%s\": %s", group_name, key, ex.what());
+        }
+    }
+    return false;
 }
 
 /* Initialize (or potentially reset) repo & LrHandle from keyfile values. */
@@ -949,7 +941,7 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
 
     /* skip_if_unavailable is optional */
     if (g_key_file_has_key(priv->keyfile, repoId, "skip_if_unavailable", NULL)) {
-        bool skip = dnf_repo_get_boolean(priv->keyfile, repoId, "skip_if_unavailable", NULL);
+        bool skip = dnf_repo_get_boolean(priv->keyfile, repoId, "skip_if_unavailable");
         priv->repo->getConfig()->skip_if_unavailable().set(libdnf::Option::Priority::REPOCONFIG, skip);
     }
 
@@ -1049,12 +1041,12 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     }
 
     if (g_key_file_has_key(priv->keyfile, repoId, "gpgcheck", NULL)) {
-        auto gpgcheck_pkgs = dnf_repo_get_boolean(priv->keyfile, repoId, "gpgcheck", NULL);
+        auto gpgcheck_pkgs = dnf_repo_get_boolean(priv->keyfile, repoId, "gpgcheck");
         priv->repo->getConfig()->gpgcheck().set(libdnf::Option::Priority::REPOCONFIG, gpgcheck_pkgs);
     }
 
     if (g_key_file_has_key(priv->keyfile, repoId, "repo_gpgcheck", NULL)) {
-        auto gpgcheck_md = dnf_repo_get_boolean(priv->keyfile, repoId, "repo_gpgcheck", NULL);
+        auto gpgcheck_md = dnf_repo_get_boolean(priv->keyfile, repoId, "repo_gpgcheck");
         priv->repo->getConfig()->repo_gpgcheck().set(libdnf::Option::Priority::REPOCONFIG, gpgcheck_md);
     }
     auto gpgcheck_md = priv->repo->getConfig()->repo_gpgcheck().getValue();
@@ -1160,7 +1152,7 @@ dnf_repo_setup(DnfRepo *repo, GError **error)
 
     auto repoId = priv->repo->getId().c_str();
     if (g_key_file_has_key(priv->keyfile, repoId, "sslverify", NULL))
-        sslverify = dnf_repo_get_boolean(priv->keyfile, repoId, "sslverify", NULL);
+        sslverify = dnf_repo_get_boolean(priv->keyfile, repoId, "sslverify");
 
     /* XXX: setopt() expects a long, so we need a long on the stack */
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLVERIFYPEER, (long)sslverify))
@@ -1196,7 +1188,7 @@ dnf_repo_setup(DnfRepo *repo, GError **error)
 
     /* enabled is optional */
     if (g_key_file_has_key(priv->keyfile, repoId, "enabled", NULL)) {
-        if (dnf_repo_get_boolean(priv->keyfile, repoId, "enabled", NULL))
+        if (dnf_repo_get_boolean(priv->keyfile, repoId, "enabled"))
             enabled |= DNF_REPO_ENABLED_PACKAGES;
     } else {
         enabled |= DNF_REPO_ENABLED_PACKAGES;
@@ -1204,7 +1196,7 @@ dnf_repo_setup(DnfRepo *repo, GError **error)
 
     /* enabled_metadata is optional */
     if (g_key_file_has_key(priv->keyfile, repoId, "enabled_metadata", NULL)) {
-        if (dnf_repo_get_boolean(priv->keyfile, repoId, "enabled_metadata", NULL))
+        if (dnf_repo_get_boolean(priv->keyfile, repoId, "enabled_metadata"))
             enabled |= DNF_REPO_ENABLED_METADATA;
     } else {
         g_autofree gchar *basename = g_path_get_basename(priv->filename);
