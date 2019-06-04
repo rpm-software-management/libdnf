@@ -1539,18 +1539,19 @@ void ModulePackageContainer::loadFailSafeData()
             std::ostringstream ss;
             ss << pair.first << ":" << pair.second.first << ":";
             bool loaded = false;
-            auto low = std::lower_bound(begin, end, ss.str(), stringStartWithLowerComparator);
-            for (; low != end && string::startsWith((*low), ss.str()); ++low) {
+            auto searchPrefix = ss.str();
+            auto low = std::lower_bound(begin, end, searchPrefix, stringStartWithLowerComparator);
+            for (; low != end && string::startsWith((*low), searchPrefix); ++low) {
+                g_autofree gchar * file = g_build_filename(
+                    pImpl->persistDir.c_str(), low->c_str(), NULL);
                 try {
-                    g_autofree gchar * file = g_build_filename(pImpl->persistDir.c_str(),
-                                                               low->c_str(), NULL);
                     auto yamlContent = getFileContent(file);
                     add(yamlContent, LIBDNF_MODULE_FAIL_SAFE_REPO_NAME);
                     loaded = true;
                 } catch (const std::exception &) {
                     auto logger(Log::getLogger());
                     logger->debug(tfm::format(
-                        _("Unable to load modular Fail-Safe data at '%s'"), ss.str()));
+                        _("Unable to load modular Fail-Safe data at '%s'"), file));
                 }
             }
             if (!loaded) {
