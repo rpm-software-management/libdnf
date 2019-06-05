@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-11 10:34+0100\n"
+"POT-Creation-Date: 2019-06-05 11:00+0200\n"
 "PO-Revision-Date: 2018-11-02 05:26+0000\n"
 "Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
 "Language-Team: Korean\n"
@@ -265,182 +265,157 @@ msgid ""
 "The operation would result in removing the following protected packages: "
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:419
+#: ../libdnf/repo/Repo.cpp:324
 #, c-format
 msgid "Bad id for repo: %s, byte = %s %d"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:443
+#: ../libdnf/repo/Repo.cpp:349
 #, c-format
 msgid "Repository %s has no mirror or baseurl set."
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:452
+#: ../libdnf/repo/Repo.cpp:358
 #, c-format
 msgid "Repository '%s' has unsupported type: 'type=%s', skipping."
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:655
+#: ../libdnf/repo/Repo.cpp:562
 #, c-format
 msgid "Cannot find a valid baseurl for repo: %s"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:691 ../libdnf/repo/Repo.cpp:1617
+#: ../libdnf/repo/Repo.cpp:598 ../libdnf/repo/Repo.cpp:1508
 msgid ""
 "Maximum download speed is lower than minimum. Please change configuration of"
 " minrate or throttle"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:741 ../libdnf/repo/Repo.cpp:763
+#: ../libdnf/repo/Repo.cpp:648 ../libdnf/repo/Repo.cpp:670
 #, c-format
 msgid "%s: gpgme_data_new_from_fd(): %s"
 msgstr "%s: gpgme_data_new_from_fd(): %s"
 
-#: ../libdnf/repo/Repo.cpp:749 ../libdnf/repo/Repo.cpp:771
+#: ../libdnf/repo/Repo.cpp:656 ../libdnf/repo/Repo.cpp:678
 #, c-format
 msgid "%s: gpgme_op_import(): %s"
 msgstr "%s: gpgme_op_import(): %s"
 
-#: ../libdnf/repo/Repo.cpp:794 ../libdnf/repo/Repo.cpp:860
-#: ../libdnf/repo/Repo.cpp:954
+#: ../libdnf/repo/Repo.cpp:701 ../libdnf/repo/Repo.cpp:767
+#: ../libdnf/repo/Repo.cpp:861
 #, c-format
 msgid "%s: gpgme_ctx_set_engine_info(): %s"
 msgstr "%s: gpgme_ctx_set_engine_info(): %s"
 
-#: ../libdnf/repo/Repo.cpp:821 ../libdnf/repo/Repo.cpp:885
+#: ../libdnf/repo/Repo.cpp:728 ../libdnf/repo/Repo.cpp:792
 #, c-format
 msgid "can not list keys: %s"
 msgstr "열쇠를 나열 할 수 없습니다 : %s"
 
-#: ../libdnf/repo/Repo.cpp:929
+#: ../libdnf/repo/Repo.cpp:836
 #, c-format
 msgid "repo %s: 0x%s already imported"
 msgstr "레포 %s: 0x%s 이미 수입"
 
-#: ../libdnf/repo/Repo.cpp:961
+#: ../libdnf/repo/Repo.cpp:868
 #, c-format
 msgid "repo %s: imported key 0x%s."
 msgstr "레포 %s: 가져온 키 0x%s."
 
-#: ../libdnf/repo/Repo.cpp:1114
+#: ../libdnf/repo/Repo.cpp:1007
 #, c-format
 msgid "reviving: repo '%s' skipped, no metalink."
 msgstr "부활 : repo '%s'건너 뛰었습니다."
 
-#: ../libdnf/repo/Repo.cpp:1133
+#: ../libdnf/repo/Repo.cpp:1026
 #, c-format
 msgid "reviving: repo '%s' skipped, no usable hash."
 msgstr "부활 : repo '%s'건너 뛰었습니다. 사용 가능한 해시가 없습니다."
 
-#: ../libdnf/repo/Repo.cpp:1156
+#: ../libdnf/repo/Repo.cpp:1049
 #, c-format
 msgid "reviving: failed for '%s', mismatched %s sum."
 msgstr "되살리기 : 실패한 '%s', 불일치 %s 합집합."
 
-#: ../libdnf/repo/Repo.cpp:1162
+#: ../libdnf/repo/Repo.cpp:1055
 #, c-format
 msgid "reviving: '%s' can be revived - metalink checksums match."
 msgstr "되살아 난다 : '%s'부활 할 수 있습니다 - metalink 체크섬이 일치합니다."
 
-#: ../libdnf/repo/Repo.cpp:1187
+#: ../libdnf/repo/Repo.cpp:1080
 #, c-format
 msgid "reviving: '%s' can be revived - repomd matches."
 msgstr "되살아 난다 : '%s'부활 할 수 있습니다 - repomd가 일치합니다."
 
-#: ../libdnf/repo/Repo.cpp:1189
+#: ../libdnf/repo/Repo.cpp:1082
 #, c-format
 msgid "reviving: failed for '%s', mismatched repomd."
 msgstr "되살리기 : 실패한 '%s', 일치하지 않는 repomd."
 
-#: ../libdnf/repo/Repo.cpp:1207
+#: ../libdnf/repo/Repo.cpp:1100
 #, c-format
 msgid "Cannot create repo destination directory \"%s\": %s"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1213
+#: ../libdnf/repo/Repo.cpp:1106
 #, c-format
 msgid "Cannot create repo temporary directory \"%s\": %s"
 msgstr "임시 저장소 디렉토리를 만들 수 없습니다 \"%s\": %s"
 
-#: ../libdnf/repo/Repo.cpp:1227
+#: ../libdnf/repo/Repo.cpp:1120
 #, c-format
 msgid "Cannot create directory \"%s\": %s"
 msgstr "디렉토리를 만들 수 없습니다 \"%s\": %s"
 
-#: ../libdnf/repo/Repo.cpp:1250
+#: ../libdnf/repo/Repo.cpp:1143
 #, c-format
 msgid "Cannot rename directory \"%s\" to \"%s\": %s"
 msgstr "디렉터리 이름을 바꿀 수 없습니다 \"%s\"~\"%s\": %s"
 
-#: ../libdnf/repo/Repo.cpp:1270
+#: ../libdnf/repo/Repo.cpp:1163
 #, c-format
 msgid "repo: using cache for: %s"
 msgstr "repo : 캐시 사용 : %s"
 
-#: ../libdnf/repo/Repo.cpp:1282
+#: ../libdnf/repo/Repo.cpp:1175
 #, c-format
 msgid "Cache-only enabled but no cache for '%s'"
 msgstr "캐시 만 사용 가능하지만 '%s'"
 
-#: ../libdnf/repo/Repo.cpp:1286
+#: ../libdnf/repo/Repo.cpp:1179
 #, c-format
 msgid "repo: downloading from remote: %s"
 msgstr "repo : 원격에서 다운로드 중 : %s"
 
-#: ../libdnf/repo/Repo.cpp:1292
+#: ../libdnf/repo/Repo.cpp:1185
 #, c-format
 msgid "Cannot download '%s': %s."
 msgstr "다운로드 할 수 없습니다 '%s': %s."
 
-#: ../libdnf/repo/Repo.cpp:1293
+#: ../libdnf/repo/Repo.cpp:1186
 #, c-format
 msgid "Failed to synchronize cache for repo '%s'"
 msgstr "repo의 캐시를 동기화하는 데 실패했습니다.%s'"
 
-#: ../libdnf/repo/Repo.cpp:1319
+#: ../libdnf/repo/Repo.cpp:1212
 msgid "getCachedir(): Computation of SHA256 failed"
 msgstr "getCachedir () : SHA256 계산에 실패했습니다."
 
-#: ../libdnf/repo/Repo.cpp:1462
-#, c-format
-msgid "not found filelist for: %s"
-msgstr "찾을 수없는 파일 목록 : %s"
-
-#: ../libdnf/repo/Repo.cpp:1467
-#, c-format
-msgid "not found other for: %s"
-msgstr ""
-
-#: ../libdnf/repo/Repo.cpp:1473
-#, c-format
-msgid "not found modules for: %s"
-msgstr "모듈을 찾을 수 없습니다 : %s"
-
-#: ../libdnf/repo/Repo.cpp:1481
-#, c-format
-msgid "not found deltainfo for: %s"
-msgstr "deltainfo을 (를) 찾을 수 없습니다 : %s"
-
-#: ../libdnf/repo/Repo.cpp:1486
-#, c-format
-msgid "not found updateinfo for: %s"
-msgstr "찾을 수없는 updateinfo : %s"
-
-#: ../libdnf/repo/Repo.cpp:1707
+#: ../libdnf/repo/Repo.cpp:1598
 msgid "resume cannot be used simultaneously with the byterangestart param"
 msgstr "이력서는 byterangestart 매개 변수와 동시에 사용할 수 없습니다."
 
-#: ../libdnf/repo/Repo.cpp:1718
+#: ../libdnf/repo/Repo.cpp:1609
 #, c-format
 msgid "PackageTarget initialization failed: %s"
 msgstr "PackageTarget 초기화에 실패했습니다 : %s"
 
-#: ../libdnf/repo/Repo.cpp:1835
+#: ../libdnf/repo/Repo.cpp:1726
 #, c-format
 msgid "Cannot open %s: %s"
 msgstr "열 수 없다 %s: %s"
 
-#: ../libdnf/repo/Repo.cpp:1872
+#: ../libdnf/repo/Repo.cpp:1770
 #, c-format
 msgid "Log handler with id %ld doesn't exist"
 msgstr "ID가있는 로그 처리기 %ld 존재하지 않는다."
@@ -576,12 +551,39 @@ msgstr "국가에서 행해진 %1$p 크기가 설정되지 않았습니다. [%2$
 msgid "already at 100%% state [%s]"
 msgstr "이미 100 %% 상태 [%s]"
 
-#: ../libdnf/module/ModulePackageContainer.cpp:56
+#: ../libdnf/module/ModulePackage.cpp:413
+#, c-format
+msgid "Invalid format of Platform module: %s"
+msgstr ""
+
+#: ../libdnf/module/ModulePackage.cpp:428
+msgid "Multiple module platforms provided by available packages\n"
+msgstr ""
+
+#: ../libdnf/module/ModulePackage.cpp:441
+msgid "Multiple module platforms provided by installed packages\n"
+msgstr ""
+
+#: ../libdnf/module/ModulePackage.cpp:468
+#, c-format
+msgid "Detection of Platform Module in %s failed: %s"
+msgstr ""
+
+#: ../libdnf/module/ModulePackage.cpp:477
+#, c-format
+msgid "Missing PLATFORM_ID in %s"
+msgstr ""
+
+#: ../libdnf/module/ModulePackage.cpp:482
+msgid "No valid Platform ID detected"
+msgstr ""
+
+#: ../libdnf/module/ModulePackageContainer.cpp:57
 #, c-format
 msgid "Cannot enable multiple streams for module '%s'"
 msgstr ""
 
-#: ../libdnf/module/ModulePackageContainer.cpp:217
+#: ../libdnf/module/ModulePackageContainer.cpp:219
 #, c-format
 msgid "Conflicting defaults with repo '%s': %s"
 msgstr ""
@@ -683,7 +685,7 @@ msgstr "변환 할 수 없습니다 '%s'~ 바이트"
 msgid "unknown unit '%s'"
 msgstr "알 수없는 단위 '%s'"
 
-#: ../libdnf/conf/ConfigMain.cpp:319
+#: ../libdnf/conf/ConfigMain.cpp:320
 #, c-format
 msgid "percentage '%s' is out of range"
 msgstr "백분율 '%s'범위를 벗어났습니다."
@@ -731,70 +733,70 @@ msgstr "solv를 추가하지 못했습니다."
 msgid "failed to open: %s"
 msgstr "열지 못했습니다 : %s"
 
-#: ../libdnf/dnf-sack.cpp:518
+#: ../libdnf/dnf-sack.cpp:519
 #, c-format
 msgid "cannot create temporary file: %s"
 msgstr "임시 파일을 만들 수 없습니다. %s"
 
-#: ../libdnf/dnf-sack.cpp:528
+#: ../libdnf/dnf-sack.cpp:529
 #, c-format
 msgid "failed opening tmp file: %s"
 msgstr "여는 tmp 파일을 열지 못했습니다. %s"
 
-#: ../libdnf/dnf-sack.cpp:540
+#: ../libdnf/dnf-sack.cpp:541
 #, c-format
 msgid "write_main() failed writing data: %i"
 msgstr "write_main() failed writing data: %i"
 
-#: ../libdnf/dnf-sack.cpp:557
+#: ../libdnf/dnf-sack.cpp:558
 msgid "write_main() failed to re-load written solv file"
 msgstr "write_main ()이 작성된 solv 파일을 다시로드하지 못했습니다."
 
-#: ../libdnf/dnf-sack.cpp:620
+#: ../libdnf/dnf-sack.cpp:623
 #, c-format
 msgid "can not create temporary file %s"
 msgstr "임시 파일을 만들 수 없습니다. %s"
 
-#: ../libdnf/dnf-sack.cpp:638
+#: ../libdnf/dnf-sack.cpp:641
 #, c-format
 msgid "write_ext(%1$d) has failed: %2$d"
 msgstr "write_ext(%1$d) has failed: %2$d"
 
-#: ../libdnf/dnf-sack.cpp:692
+#: ../libdnf/dnf-sack.cpp:696
 msgid "null repo md file"
 msgstr "null repo md 파일"
 
-#: ../libdnf/dnf-sack.cpp:701
+#: ../libdnf/dnf-sack.cpp:705
 #, c-format
 msgid "can not read file %1$s: %2$s"
 msgstr "파일을 읽을 수 없습니다. %1$s: %2$s"
 
-#: ../libdnf/dnf-sack.cpp:715
+#: ../libdnf/dnf-sack.cpp:719
 msgid "repo_add_solv() has failed."
 msgstr "repo_add_solv() has failed."
 
-#: ../libdnf/dnf-sack.cpp:731
+#: ../libdnf/dnf-sack.cpp:735
 msgid "repo_add_repomdxml/rpmmd() has failed."
 msgstr "repo_add_repomdxml/rpmmd() has failed."
 
-#: ../libdnf/dnf-sack.cpp:798
+#: ../libdnf/dnf-sack.cpp:802
 msgid "failed to auto-detect architecture"
 msgstr "아키텍처 자동 검색에 실패했습니다."
 
-#: ../libdnf/dnf-sack.cpp:923
+#: ../libdnf/dnf-sack.cpp:927
 #, c-format
 msgid "failed creating cachedir %s"
 msgstr "캐시 된 생성 실패 %s"
 
-#: ../libdnf/dnf-sack.cpp:1693
+#: ../libdnf/dnf-sack.cpp:1700
 msgid "failed calculating RPMDB checksum"
 msgstr "RPMDB 체크섬 계산 실패"
 
-#: ../libdnf/dnf-sack.cpp:1717
+#: ../libdnf/dnf-sack.cpp:1724
 msgid "failed loading RPMDB"
 msgstr "RPMDB로드 실패"
 
-#: ../libdnf/dnf-sack.cpp:2358
+#: ../libdnf/dnf-sack.cpp:2387
 msgid "No module defaults found"
 msgstr ""
 

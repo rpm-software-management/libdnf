@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-11 10:34+0100\n"
-"PO-Revision-Date: 2019-02-01 10:50+0000\n"
+"POT-Creation-Date: 2019-06-05 11:00+0200\n"
+"PO-Revision-Date: 2019-04-20 11:26+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish (http://www.transifex.com/projects/p/dnf/language/pl/)\n"
 "Language: pl\n"
@@ -280,30 +280,30 @@ msgid ""
 "The operation would result in removing the following protected packages: "
 msgstr "Działanie spowodowałoby usunięcie tych chronionych pakietów: "
 
-#: ../libdnf/repo/Repo.cpp:419
+#: ../libdnf/repo/Repo.cpp:324
 #, c-format
 msgid "Bad id for repo: %s, byte = %s %d"
 msgstr "Błędny identyfikator dla repozytorium: %s, bajt = %s %d"
 
-#: ../libdnf/repo/Repo.cpp:443
+#: ../libdnf/repo/Repo.cpp:349
 #, c-format
 msgid "Repository %s has no mirror or baseurl set."
 msgstr ""
 "Repozytorium %s nie ma ustawionego serwera lustrzanego ani podstawowego "
 "adresu URL."
 
-#: ../libdnf/repo/Repo.cpp:452
+#: ../libdnf/repo/Repo.cpp:358
 #, c-format
 msgid "Repository '%s' has unsupported type: 'type=%s', skipping."
 msgstr "Repozytorium „%s” ma nieobsługiwany typ: „type=%s”, pomijanie."
 
-#: ../libdnf/repo/Repo.cpp:655
+#: ../libdnf/repo/Repo.cpp:562
 #, c-format
 msgid "Cannot find a valid baseurl for repo: %s"
 msgstr ""
 "Nie można odnaleźć prawidłowego podstawowego adresu URL dla repozytorium: %s"
 
-#: ../libdnf/repo/Repo.cpp:691 ../libdnf/repo/Repo.cpp:1617
+#: ../libdnf/repo/Repo.cpp:598 ../libdnf/repo/Repo.cpp:1508
 msgid ""
 "Maximum download speed is lower than minimum. Please change configuration of"
 " minrate or throttle"
@@ -311,160 +311,135 @@ msgstr ""
 "Maksymalna prędkość pobierania jest mniejsza niż minimalna. Proszę zmienić "
 "konfigurację „minrate” lub „throttle”"
 
-#: ../libdnf/repo/Repo.cpp:741 ../libdnf/repo/Repo.cpp:763
+#: ../libdnf/repo/Repo.cpp:648 ../libdnf/repo/Repo.cpp:670
 #, c-format
 msgid "%s: gpgme_data_new_from_fd(): %s"
 msgstr "%s: gpgme_data_new_from_fd(): %s"
 
-#: ../libdnf/repo/Repo.cpp:749 ../libdnf/repo/Repo.cpp:771
+#: ../libdnf/repo/Repo.cpp:656 ../libdnf/repo/Repo.cpp:678
 #, c-format
 msgid "%s: gpgme_op_import(): %s"
 msgstr "%s: gpgme_op_import(): %s"
 
-#: ../libdnf/repo/Repo.cpp:794 ../libdnf/repo/Repo.cpp:860
-#: ../libdnf/repo/Repo.cpp:954
+#: ../libdnf/repo/Repo.cpp:701 ../libdnf/repo/Repo.cpp:767
+#: ../libdnf/repo/Repo.cpp:861
 #, c-format
 msgid "%s: gpgme_ctx_set_engine_info(): %s"
 msgstr "%s: gpgme_ctx_set_engine_info(): %s"
 
-#: ../libdnf/repo/Repo.cpp:821 ../libdnf/repo/Repo.cpp:885
+#: ../libdnf/repo/Repo.cpp:728 ../libdnf/repo/Repo.cpp:792
 #, c-format
 msgid "can not list keys: %s"
 msgstr "nie można wyświetlić listy kluczy: %s"
 
-#: ../libdnf/repo/Repo.cpp:929
+#: ../libdnf/repo/Repo.cpp:836
 #, c-format
 msgid "repo %s: 0x%s already imported"
 msgstr "repozytorium %s: 0x%s jest już zaimportowane"
 
-#: ../libdnf/repo/Repo.cpp:961
+#: ../libdnf/repo/Repo.cpp:868
 #, c-format
 msgid "repo %s: imported key 0x%s."
 msgstr "repozytorium %s: zaimportowano klucz 0x%s."
 
-#: ../libdnf/repo/Repo.cpp:1114
+#: ../libdnf/repo/Repo.cpp:1007
 #, c-format
 msgid "reviving: repo '%s' skipped, no metalink."
 msgstr "odnawianie: pominięto repozytorium „%s”, brak metaodnośnika."
 
-#: ../libdnf/repo/Repo.cpp:1133
+#: ../libdnf/repo/Repo.cpp:1026
 #, c-format
 msgid "reviving: repo '%s' skipped, no usable hash."
 msgstr ""
 "odnawianie: pominięto repozytorium „%s”, brak sumy kontrolnej możliwej do "
 "użycia."
 
-#: ../libdnf/repo/Repo.cpp:1156
+#: ../libdnf/repo/Repo.cpp:1049
 #, c-format
 msgid "reviving: failed for '%s', mismatched %s sum."
 msgstr "odnawianie: niepowodzenie dla „%s”, suma kontrolna %s się nie zgadza."
 
-#: ../libdnf/repo/Repo.cpp:1162
+#: ../libdnf/repo/Repo.cpp:1055
 #, c-format
 msgid "reviving: '%s' can be revived - metalink checksums match."
 msgstr ""
 "odnawianie: można odnowić „%s” — sumy kontrolne metaodnośnika się zgadzają."
 
-#: ../libdnf/repo/Repo.cpp:1187
+#: ../libdnf/repo/Repo.cpp:1080
 #, c-format
 msgid "reviving: '%s' can be revived - repomd matches."
 msgstr "odnawianie: można odnowić „%s” — repomd się zgadza."
 
-#: ../libdnf/repo/Repo.cpp:1189
+#: ../libdnf/repo/Repo.cpp:1082
 #, c-format
 msgid "reviving: failed for '%s', mismatched repomd."
 msgstr "odnawianie: niepowodzenie dla „%s”, repomd się nie zgadza."
 
-#: ../libdnf/repo/Repo.cpp:1207
+#: ../libdnf/repo/Repo.cpp:1100
 #, c-format
 msgid "Cannot create repo destination directory \"%s\": %s"
 msgstr "Nie można utworzyć katalogu docelowego repozytorium „%s”: %s"
 
-#: ../libdnf/repo/Repo.cpp:1213
+#: ../libdnf/repo/Repo.cpp:1106
 #, c-format
 msgid "Cannot create repo temporary directory \"%s\": %s"
 msgstr "Nie można utworzyć katalogu tymczasowego repozytorium „%s”: %s"
 
-#: ../libdnf/repo/Repo.cpp:1227
+#: ../libdnf/repo/Repo.cpp:1120
 #, c-format
 msgid "Cannot create directory \"%s\": %s"
 msgstr "Nie można utworzyć katalogu „%s”: %s"
 
-#: ../libdnf/repo/Repo.cpp:1250
+#: ../libdnf/repo/Repo.cpp:1143
 #, c-format
 msgid "Cannot rename directory \"%s\" to \"%s\": %s"
 msgstr "Nie można zmienić nazwy katalogu „%s” na „%s”: %s"
 
-#: ../libdnf/repo/Repo.cpp:1270
+#: ../libdnf/repo/Repo.cpp:1163
 #, c-format
 msgid "repo: using cache for: %s"
 msgstr "repozytorium: używanie pamięci podręcznej dla: %s"
 
-#: ../libdnf/repo/Repo.cpp:1282
+#: ../libdnf/repo/Repo.cpp:1175
 #, c-format
 msgid "Cache-only enabled but no cache for '%s'"
 msgstr "Włączono tylko pamięć podręczną, ale brak pamięci podręcznej dla „%s”"
 
-#: ../libdnf/repo/Repo.cpp:1286
+#: ../libdnf/repo/Repo.cpp:1179
 #, c-format
 msgid "repo: downloading from remote: %s"
 msgstr "repozytorium: pobieranie z serwera: %s"
 
-#: ../libdnf/repo/Repo.cpp:1292
+#: ../libdnf/repo/Repo.cpp:1185
 #, c-format
 msgid "Cannot download '%s': %s."
 msgstr "Nie można pobrać „%s”: %s."
 
-#: ../libdnf/repo/Repo.cpp:1293
+#: ../libdnf/repo/Repo.cpp:1186
 #, c-format
 msgid "Failed to synchronize cache for repo '%s'"
 msgstr ""
 "Synchronizacja pamięci podręcznej dla repozytorium „%s” się nie powiodła"
 
-#: ../libdnf/repo/Repo.cpp:1319
+#: ../libdnf/repo/Repo.cpp:1212
 msgid "getCachedir(): Computation of SHA256 failed"
 msgstr "getCachedir(): obliczenie sumy SHA256 się nie powiodło"
 
-#: ../libdnf/repo/Repo.cpp:1462
-#, c-format
-msgid "not found filelist for: %s"
-msgstr "nie odnaleziono listy plików dla: %s"
-
-#: ../libdnf/repo/Repo.cpp:1467
-#, c-format
-msgid "not found other for: %s"
-msgstr "nie odnaleziono innych dla: %s"
-
-#: ../libdnf/repo/Repo.cpp:1473
-#, c-format
-msgid "not found modules for: %s"
-msgstr "nie odnaleziono modułów dla: %s"
-
-#: ../libdnf/repo/Repo.cpp:1481
-#, c-format
-msgid "not found deltainfo for: %s"
-msgstr "nie odnaleziono informacji o delcie dla: %s"
-
-#: ../libdnf/repo/Repo.cpp:1486
-#, c-format
-msgid "not found updateinfo for: %s"
-msgstr "nie odnaleziono informacji o aktualizacji dla: %s"
-
-#: ../libdnf/repo/Repo.cpp:1707
+#: ../libdnf/repo/Repo.cpp:1598
 msgid "resume cannot be used simultaneously with the byterangestart param"
 msgstr "nie można używać wznawiania jednocześnie z parametrem byterangestart"
 
-#: ../libdnf/repo/Repo.cpp:1718
+#: ../libdnf/repo/Repo.cpp:1609
 #, c-format
 msgid "PackageTarget initialization failed: %s"
 msgstr "Inicjacja PackageTarget się nie powiodła: %s"
 
-#: ../libdnf/repo/Repo.cpp:1835
+#: ../libdnf/repo/Repo.cpp:1726
 #, c-format
 msgid "Cannot open %s: %s"
 msgstr "Nie można otworzyć %s: %s"
 
-#: ../libdnf/repo/Repo.cpp:1872
+#: ../libdnf/repo/Repo.cpp:1770
 #, c-format
 msgid "Log handler with id %ld doesn't exist"
 msgstr "Program obsługujący dziennik o identyfikatorze %ld nie istnieje"
@@ -606,12 +581,39 @@ msgstr "ukończono na stanie %1$p, który nie ma ustawionego rozmiaru. [%2$s]"
 msgid "already at 100%% state [%s]"
 msgstr "ma już stan 100%% [%s]"
 
-#: ../libdnf/module/ModulePackageContainer.cpp:56
+#: ../libdnf/module/ModulePackage.cpp:413
+#, c-format
+msgid "Invalid format of Platform module: %s"
+msgstr "Nieprawidłowy format modułu platformy: %s"
+
+#: ../libdnf/module/ModulePackage.cpp:428
+msgid "Multiple module platforms provided by available packages\n"
+msgstr "Dostępne pakiety dostarczają wiele platform modułów\n"
+
+#: ../libdnf/module/ModulePackage.cpp:441
+msgid "Multiple module platforms provided by installed packages\n"
+msgstr "Zainstalowane pakiety dostarczają wiele platform modułów\n"
+
+#: ../libdnf/module/ModulePackage.cpp:468
+#, c-format
+msgid "Detection of Platform Module in %s failed: %s"
+msgstr "Wykrycie modułu platformy w %s się nie powiodło: %s"
+
+#: ../libdnf/module/ModulePackage.cpp:477
+#, c-format
+msgid "Missing PLATFORM_ID in %s"
+msgstr "Brak PLATFORM_ID w %s"
+
+#: ../libdnf/module/ModulePackage.cpp:482
+msgid "No valid Platform ID detected"
+msgstr "Nie wykryto prawidłowego identyfikatora platformy"
+
+#: ../libdnf/module/ModulePackageContainer.cpp:57
 #, c-format
 msgid "Cannot enable multiple streams for module '%s'"
 msgstr "Nie można włączyć wielu strumieni dla modułu „%s”"
 
-#: ../libdnf/module/ModulePackageContainer.cpp:217
+#: ../libdnf/module/ModulePackageContainer.cpp:219
 #, c-format
 msgid "Conflicting defaults with repo '%s': %s"
 msgstr "Sprzeczne domyślne z repozytorium „%s”: %s"
@@ -714,7 +716,7 @@ msgstr "nie można przekonwertować „%s” na bajty"
 msgid "unknown unit '%s'"
 msgstr "nieznana jednostka „%s”"
 
-#: ../libdnf/conf/ConfigMain.cpp:319
+#: ../libdnf/conf/ConfigMain.cpp:320
 #, c-format
 msgid "percentage '%s' is out of range"
 msgstr "procent „%s” jest poza zakresem"
@@ -762,72 +764,72 @@ msgstr "dodanie mechanizmu rozwiązywania się nie powiodło"
 msgid "failed to open: %s"
 msgstr "otwarcie się nie powiodło: %s"
 
-#: ../libdnf/dnf-sack.cpp:518
+#: ../libdnf/dnf-sack.cpp:519
 #, c-format
 msgid "cannot create temporary file: %s"
 msgstr "nie można utworzyć pliku tymczasowego: %s"
 
-#: ../libdnf/dnf-sack.cpp:528
+#: ../libdnf/dnf-sack.cpp:529
 #, c-format
 msgid "failed opening tmp file: %s"
 msgstr "otwarcie pliku tymczasowego się nie powiodło: %s"
 
-#: ../libdnf/dnf-sack.cpp:540
+#: ../libdnf/dnf-sack.cpp:541
 #, c-format
 msgid "write_main() failed writing data: %i"
 msgstr "zapisanie danych przez write_main() się nie powiodło: %i"
 
-#: ../libdnf/dnf-sack.cpp:557
+#: ../libdnf/dnf-sack.cpp:558
 msgid "write_main() failed to re-load written solv file"
 msgstr ""
 "ponowne wczytanie zapisanego pliku mechanizmu rozwiązywania przez "
 "write_main() się nie powiodło"
 
-#: ../libdnf/dnf-sack.cpp:620
+#: ../libdnf/dnf-sack.cpp:623
 #, c-format
 msgid "can not create temporary file %s"
 msgstr "nie można utworzyć pliku tymczasowego %s"
 
-#: ../libdnf/dnf-sack.cpp:638
+#: ../libdnf/dnf-sack.cpp:641
 #, c-format
 msgid "write_ext(%1$d) has failed: %2$d"
 msgstr "write_ext(%1$d) się nie powiodło: %2$d"
 
-#: ../libdnf/dnf-sack.cpp:692
+#: ../libdnf/dnf-sack.cpp:696
 msgid "null repo md file"
 msgstr "pusty plik md repozytorium"
 
-#: ../libdnf/dnf-sack.cpp:701
+#: ../libdnf/dnf-sack.cpp:705
 #, c-format
 msgid "can not read file %1$s: %2$s"
 msgstr "nie można odczytać pliku %1$s: %2$s"
 
-#: ../libdnf/dnf-sack.cpp:715
+#: ../libdnf/dnf-sack.cpp:719
 msgid "repo_add_solv() has failed."
 msgstr "repo_add_solv() się nie powiodło."
 
-#: ../libdnf/dnf-sack.cpp:731
+#: ../libdnf/dnf-sack.cpp:735
 msgid "repo_add_repomdxml/rpmmd() has failed."
 msgstr "repo_add_repomdxml/rpmmd() się nie powiodło."
 
-#: ../libdnf/dnf-sack.cpp:798
+#: ../libdnf/dnf-sack.cpp:802
 msgid "failed to auto-detect architecture"
 msgstr "automatyczne wykrycie architektury się nie powiodło"
 
-#: ../libdnf/dnf-sack.cpp:923
+#: ../libdnf/dnf-sack.cpp:927
 #, c-format
 msgid "failed creating cachedir %s"
 msgstr "utworzenie katalogu pamięci podręcznej %s się nie powiodło"
 
-#: ../libdnf/dnf-sack.cpp:1693
+#: ../libdnf/dnf-sack.cpp:1700
 msgid "failed calculating RPMDB checksum"
 msgstr "obliczenie sumy kontrolnej bazy danych RPM się nie powiodło"
 
-#: ../libdnf/dnf-sack.cpp:1717
+#: ../libdnf/dnf-sack.cpp:1724
 msgid "failed loading RPMDB"
 msgstr "wczytanie bazy danych RPM się nie powiodło"
 
-#: ../libdnf/dnf-sack.cpp:2358
+#: ../libdnf/dnf-sack.cpp:2387
 msgid "No module defaults found"
 msgstr "Nie odnaleziono domyślnych modułu"
 

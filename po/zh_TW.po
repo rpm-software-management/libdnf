@@ -1,12 +1,13 @@
 # Ludek Janda <ljanda@redhat.com>, 2018. #zanata
 # Peter Pan <pan93412@gmail.com>, 2018. #zanata
+# Cheng-Chia Tseng <pswo10680@gmail.com>, 2019. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-11 10:34+0100\n"
-"PO-Revision-Date: 2018-11-02 05:25+0000\n"
-"Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
+"POT-Creation-Date: 2019-06-05 11:00+0200\n"
+"PO-Revision-Date: 2019-04-02 05:41+0000\n"
+"Last-Translator: Cheng-Chia Tseng <pswo10680@gmail.com>\n"
 "Language-Team: Chinese (Taiwan)\n"
 "Language: zh_TW\n"
 "MIME-Version: 1.0\n"
@@ -262,182 +263,157 @@ msgid ""
 "The operation would result in removing the following protected packages: "
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:419
+#: ../libdnf/repo/Repo.cpp:324
 #, c-format
 msgid "Bad id for repo: %s, byte = %s %d"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:443
+#: ../libdnf/repo/Repo.cpp:349
 #, c-format
 msgid "Repository %s has no mirror or baseurl set."
-msgstr "軟體庫「%s」沒有設定任何鏡像或 baseurl。"
+msgstr "「%s」軟體庫沒有設定任何鏡像或 baseurl。"
 
-#: ../libdnf/repo/Repo.cpp:452
+#: ../libdnf/repo/Repo.cpp:358
 #, c-format
 msgid "Repository '%s' has unsupported type: 'type=%s', skipping."
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:655
+#: ../libdnf/repo/Repo.cpp:562
 #, c-format
 msgid "Cannot find a valid baseurl for repo: %s"
 msgstr "無法找到軟體庫的有效 baseurl：%s"
 
-#: ../libdnf/repo/Repo.cpp:691 ../libdnf/repo/Repo.cpp:1617
+#: ../libdnf/repo/Repo.cpp:598 ../libdnf/repo/Repo.cpp:1508
 msgid ""
 "Maximum download speed is lower than minimum. Please change configuration of"
 " minrate or throttle"
 msgstr "最大下載速度低於最低下載速度。請調整 minrate 或 throttle 的設定檔"
 
-#: ../libdnf/repo/Repo.cpp:741 ../libdnf/repo/Repo.cpp:763
+#: ../libdnf/repo/Repo.cpp:648 ../libdnf/repo/Repo.cpp:670
 #, c-format
 msgid "%s: gpgme_data_new_from_fd(): %s"
 msgstr "%s: gpgme_data_new_from_fd(): %s"
 
-#: ../libdnf/repo/Repo.cpp:749 ../libdnf/repo/Repo.cpp:771
+#: ../libdnf/repo/Repo.cpp:656 ../libdnf/repo/Repo.cpp:678
 #, c-format
 msgid "%s: gpgme_op_import(): %s"
 msgstr "%s: gpgme_op_import(): %s"
 
-#: ../libdnf/repo/Repo.cpp:794 ../libdnf/repo/Repo.cpp:860
-#: ../libdnf/repo/Repo.cpp:954
+#: ../libdnf/repo/Repo.cpp:701 ../libdnf/repo/Repo.cpp:767
+#: ../libdnf/repo/Repo.cpp:861
 #, c-format
 msgid "%s: gpgme_ctx_set_engine_info(): %s"
 msgstr "%s: gpgme_ctx_set_engine_info(): %s"
 
-#: ../libdnf/repo/Repo.cpp:821 ../libdnf/repo/Repo.cpp:885
+#: ../libdnf/repo/Repo.cpp:728 ../libdnf/repo/Repo.cpp:792
 #, c-format
 msgid "can not list keys: %s"
 msgstr "無法列出鍵： %s"
 
-#: ../libdnf/repo/Repo.cpp:929
+#: ../libdnf/repo/Repo.cpp:836
 #, c-format
 msgid "repo %s: 0x%s already imported"
 msgstr "回購 %s：0x%s 已經導入"
 
-#: ../libdnf/repo/Repo.cpp:961
+#: ../libdnf/repo/Repo.cpp:868
 #, c-format
 msgid "repo %s: imported key 0x%s."
 msgstr "回購 %s：導入的密鑰0x%s。"
 
-#: ../libdnf/repo/Repo.cpp:1114
+#: ../libdnf/repo/Repo.cpp:1007
 #, c-format
 msgid "reviving: repo '%s' skipped, no metalink."
 msgstr "reviving：由於沒有 Metalink，所以跳過軟體庫「%s」"
 
-#: ../libdnf/repo/Repo.cpp:1133
+#: ../libdnf/repo/Repo.cpp:1026
 #, c-format
 msgid "reviving: repo '%s' skipped, no usable hash."
 msgstr "reviving：由於沒有可使用的雜湊值，跳過軟體庫「%s」"
 
-#: ../libdnf/repo/Repo.cpp:1156
+#: ../libdnf/repo/Repo.cpp:1049
 #, c-format
 msgid "reviving: failed for '%s', mismatched %s sum."
 msgstr "reviving：因為 %s 總和不符合，「%s」失敗"
 
-#: ../libdnf/repo/Repo.cpp:1162
+#: ../libdnf/repo/Repo.cpp:1055
 #, c-format
 msgid "reviving: '%s' can be revived - metalink checksums match."
 msgstr "reviving：可以重生（revived）「%s」 - metalink checksum 符合。"
 
-#: ../libdnf/repo/Repo.cpp:1187
+#: ../libdnf/repo/Repo.cpp:1080
 #, c-format
 msgid "reviving: '%s' can be revived - repomd matches."
 msgstr "reviving：可以復活 (revived)「%s」 - repomd 符合。"
 
-#: ../libdnf/repo/Repo.cpp:1189
+#: ../libdnf/repo/Repo.cpp:1082
 #, c-format
 msgid "reviving: failed for '%s', mismatched repomd."
 msgstr "reviving：由於不符合的 repomd，「%s」失敗。"
 
-#: ../libdnf/repo/Repo.cpp:1207
+#: ../libdnf/repo/Repo.cpp:1100
 #, c-format
 msgid "Cannot create repo destination directory \"%s\": %s"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1213
+#: ../libdnf/repo/Repo.cpp:1106
 #, c-format
 msgid "Cannot create repo temporary directory \"%s\": %s"
 msgstr "無法創建repo臨時目錄“%s“： %s"
 
-#: ../libdnf/repo/Repo.cpp:1227
+#: ../libdnf/repo/Repo.cpp:1120
 #, c-format
 msgid "Cannot create directory \"%s\": %s"
 msgstr "無法創建目錄“%s“： %s"
 
-#: ../libdnf/repo/Repo.cpp:1250
+#: ../libdnf/repo/Repo.cpp:1143
 #, c-format
 msgid "Cannot rename directory \"%s\" to \"%s\": %s"
 msgstr "無法重命名目錄“%s“ 至 ”%s“： %s"
 
-#: ../libdnf/repo/Repo.cpp:1270
+#: ../libdnf/repo/Repo.cpp:1163
 #, c-format
 msgid "repo: using cache for: %s"
 msgstr "repo：使用快取為：%s"
 
-#: ../libdnf/repo/Repo.cpp:1282
+#: ../libdnf/repo/Repo.cpp:1175
 #, c-format
 msgid "Cache-only enabled but no cache for '%s'"
 msgstr "已啟用「只快取 (cache-only)」，但是沒有 %s 的快取。"
 
-#: ../libdnf/repo/Repo.cpp:1286
+#: ../libdnf/repo/Repo.cpp:1179
 #, c-format
 msgid "repo: downloading from remote: %s"
 msgstr "repo：從遠程下載： %s"
 
-#: ../libdnf/repo/Repo.cpp:1292
+#: ../libdnf/repo/Repo.cpp:1185
 #, c-format
 msgid "Cannot download '%s': %s."
 msgstr "無法下載「%s」：%s。"
 
-#: ../libdnf/repo/Repo.cpp:1293
+#: ../libdnf/repo/Repo.cpp:1186
 #, c-format
 msgid "Failed to synchronize cache for repo '%s'"
-msgstr "無法為軟體庫「%s」同步快取"
+msgstr "無法為「%s」軟體庫同步快取"
 
-#: ../libdnf/repo/Repo.cpp:1319
+#: ../libdnf/repo/Repo.cpp:1212
 msgid "getCachedir(): Computation of SHA256 failed"
 msgstr "getCachedir（）：SHA256的計算失敗"
 
-#: ../libdnf/repo/Repo.cpp:1462
-#, c-format
-msgid "not found filelist for: %s"
-msgstr "找不到文件列表： %s"
-
-#: ../libdnf/repo/Repo.cpp:1467
-#, c-format
-msgid "not found other for: %s"
-msgstr ""
-
-#: ../libdnf/repo/Repo.cpp:1473
-#, c-format
-msgid "not found modules for: %s"
-msgstr "找不到模塊： %s"
-
-#: ../libdnf/repo/Repo.cpp:1481
-#, c-format
-msgid "not found deltainfo for: %s"
-msgstr "找不到deltainfo： %s"
-
-#: ../libdnf/repo/Repo.cpp:1486
-#, c-format
-msgid "not found updateinfo for: %s"
-msgstr "找不到updateinfo： %s"
-
-#: ../libdnf/repo/Repo.cpp:1707
+#: ../libdnf/repo/Repo.cpp:1598
 msgid "resume cannot be used simultaneously with the byterangestart param"
 msgstr "resume不能與byterangestart param同時使用"
 
-#: ../libdnf/repo/Repo.cpp:1718
+#: ../libdnf/repo/Repo.cpp:1609
 #, c-format
 msgid "PackageTarget initialization failed: %s"
 msgstr "PackageTarget初始化失敗： %s"
 
-#: ../libdnf/repo/Repo.cpp:1835
+#: ../libdnf/repo/Repo.cpp:1726
 #, c-format
 msgid "Cannot open %s: %s"
 msgstr "不能打開 %s： %s"
 
-#: ../libdnf/repo/Repo.cpp:1872
+#: ../libdnf/repo/Repo.cpp:1770
 #, c-format
 msgid "Log handler with id %ld doesn't exist"
 msgstr "帶有id的日誌處理程序 %ld 不存在"
@@ -492,17 +468,17 @@ msgstr "無法設置root"
 #: ../libdnf/dnf-transaction.cpp:1390
 #, c-format
 msgid "Error %i running transaction test"
-msgstr "錯誤 %i 運行事務測試"
+msgstr "錯誤 %i 執行處理事項測試"
 
 #: ../libdnf/dnf-transaction.cpp:1430
 #, c-format
 msgid "Error %i running transaction"
-msgstr "錯誤 %i 運行事務"
+msgstr "錯誤 %i 執行處理事項"
 
 #: ../libdnf/dnf-transaction.cpp:1445
 #, c-format
 msgid "Transaction did not go to writing phase, but returned no error(%i)"
-msgstr "交易沒有進入寫作階段，但沒有返回錯誤（%i）"
+msgstr "處理事項沒有進入寫入階段，但沒有傳回錯誤 (%i)"
 
 #: ../libdnf/dnf-utils.cpp:110
 #, c-format
@@ -573,12 +549,39 @@ msgstr "完成一個州 %1$p 沒有尺寸設定！ [%2$s]"
 msgid "already at 100%% state [%s]"
 msgstr "已經處於100 %%狀態[%s]"
 
-#: ../libdnf/module/ModulePackageContainer.cpp:56
+#: ../libdnf/module/ModulePackage.cpp:413
+#, c-format
+msgid "Invalid format of Platform module: %s"
+msgstr ""
+
+#: ../libdnf/module/ModulePackage.cpp:428
+msgid "Multiple module platforms provided by available packages\n"
+msgstr ""
+
+#: ../libdnf/module/ModulePackage.cpp:441
+msgid "Multiple module platforms provided by installed packages\n"
+msgstr ""
+
+#: ../libdnf/module/ModulePackage.cpp:468
+#, c-format
+msgid "Detection of Platform Module in %s failed: %s"
+msgstr ""
+
+#: ../libdnf/module/ModulePackage.cpp:477
+#, c-format
+msgid "Missing PLATFORM_ID in %s"
+msgstr ""
+
+#: ../libdnf/module/ModulePackage.cpp:482
+msgid "No valid Platform ID detected"
+msgstr ""
+
+#: ../libdnf/module/ModulePackageContainer.cpp:57
 #, c-format
 msgid "Cannot enable multiple streams for module '%s'"
 msgstr ""
 
-#: ../libdnf/module/ModulePackageContainer.cpp:217
+#: ../libdnf/module/ModulePackageContainer.cpp:219
 #, c-format
 msgid "Conflicting defaults with repo '%s': %s"
 msgstr ""
@@ -616,15 +619,15 @@ msgstr "無法添加安裝元素： %1$s [%2$i]"
 #: ../libdnf/dnf-rpmts.cpp:210
 #, c-format
 msgid "Error running transaction: %s"
-msgstr "運行事務時出錯： %s"
+msgstr "執行處理事項時出錯： %s"
 
 #: ../libdnf/dnf-rpmts.cpp:219
 msgid "Error running transaction and no problems were reported!"
-msgstr "運行事務時出錯並且沒有報告任何問題！"
+msgstr "執行處理事項時出錯並且沒有回報任何問題！"
 
 #: ../libdnf/dnf-rpmts.cpp:282
 msgid "Fatal error, run database recovery"
-msgstr "致命錯誤，運行數據庫恢復"
+msgstr "重大錯誤，執行資料庫恢復"
 
 #: ../libdnf/dnf-rpmts.cpp:291
 #, c-format
@@ -680,7 +683,7 @@ msgstr "無法轉換'%s'到字節"
 msgid "unknown unit '%s'"
 msgstr "未知的單位「%s」"
 
-#: ../libdnf/conf/ConfigMain.cpp:319
+#: ../libdnf/conf/ConfigMain.cpp:320
 #, c-format
 msgid "percentage '%s' is out of range"
 msgstr "「%s」百分比超出範圍"
@@ -728,70 +731,70 @@ msgstr "未能添加solv"
 msgid "failed to open: %s"
 msgstr "未能打開： %s"
 
-#: ../libdnf/dnf-sack.cpp:518
+#: ../libdnf/dnf-sack.cpp:519
 #, c-format
 msgid "cannot create temporary file: %s"
 msgstr "無法創建臨時文件： %s"
 
-#: ../libdnf/dnf-sack.cpp:528
+#: ../libdnf/dnf-sack.cpp:529
 #, c-format
 msgid "failed opening tmp file: %s"
 msgstr "打開tmp文件失敗： %s"
 
-#: ../libdnf/dnf-sack.cpp:540
+#: ../libdnf/dnf-sack.cpp:541
 #, c-format
 msgid "write_main() failed writing data: %i"
-msgstr "write_main（）寫入數據失敗： %i"
+msgstr "write_main（）寫入資料失敗： %i"
 
-#: ../libdnf/dnf-sack.cpp:557
+#: ../libdnf/dnf-sack.cpp:558
 msgid "write_main() failed to re-load written solv file"
 msgstr "write_main（）無法重新加載寫入的solv文件"
 
-#: ../libdnf/dnf-sack.cpp:620
+#: ../libdnf/dnf-sack.cpp:623
 #, c-format
 msgid "can not create temporary file %s"
 msgstr "無法創建臨時文件 %s"
 
-#: ../libdnf/dnf-sack.cpp:638
+#: ../libdnf/dnf-sack.cpp:641
 #, c-format
 msgid "write_ext(%1$d) has failed: %2$d"
 msgstr "write_ext（%1$d） 失敗了： %2$d"
 
-#: ../libdnf/dnf-sack.cpp:692
+#: ../libdnf/dnf-sack.cpp:696
 msgid "null repo md file"
 msgstr "null repo md文件"
 
-#: ../libdnf/dnf-sack.cpp:701
+#: ../libdnf/dnf-sack.cpp:705
 #, c-format
 msgid "can not read file %1$s: %2$s"
 msgstr "無法讀取文件 %1$s： %2$s"
 
-#: ../libdnf/dnf-sack.cpp:715
+#: ../libdnf/dnf-sack.cpp:719
 msgid "repo_add_solv() has failed."
 msgstr "repo_add_solv（）失敗了。"
 
-#: ../libdnf/dnf-sack.cpp:731
+#: ../libdnf/dnf-sack.cpp:735
 msgid "repo_add_repomdxml/rpmmd() has failed."
 msgstr "repo_add_repomdxml / rpmmd（）失敗了。"
 
-#: ../libdnf/dnf-sack.cpp:798
+#: ../libdnf/dnf-sack.cpp:802
 msgid "failed to auto-detect architecture"
 msgstr "無法自動檢測架構"
 
-#: ../libdnf/dnf-sack.cpp:923
+#: ../libdnf/dnf-sack.cpp:927
 #, c-format
 msgid "failed creating cachedir %s"
 msgstr "創建cachedir失敗了 %s"
 
-#: ../libdnf/dnf-sack.cpp:1693
+#: ../libdnf/dnf-sack.cpp:1700
 msgid "failed calculating RPMDB checksum"
 msgstr "計算RPMDB校驗和失敗"
 
-#: ../libdnf/dnf-sack.cpp:1717
+#: ../libdnf/dnf-sack.cpp:1724
 msgid "failed loading RPMDB"
 msgstr "加載RPMDB失敗"
 
-#: ../libdnf/dnf-sack.cpp:2358
+#: ../libdnf/dnf-sack.cpp:2387
 msgid "No module defaults found"
 msgstr ""
 
@@ -801,7 +804,7 @@ msgstr "變形金剛：無法打開歷史堅持導演"
 
 #: ../libdnf/transaction/Transformer.cpp:672
 msgid "Couldn't find a history database"
-msgstr "找不到歷史數據庫"
+msgstr "找不到歷史資料庫"
 
 #: ../libdnf/transaction/Swdb.cpp:107
 msgid "In progress"
@@ -811,23 +814,23 @@ msgstr "正在進行中"
 #: ../libdnf/transaction/Swdb.cpp:160 ../libdnf/transaction/Swdb.cpp:177
 #: ../libdnf/transaction/Swdb.cpp:316 ../libdnf/transaction/Swdb.cpp:326
 msgid "Not in progress"
-msgstr "沒有進展"
+msgstr "未在進行中"
 
 #: ../libdnf/transaction/Swdb.cpp:187
 msgid "No transaction in progress"
-msgstr "沒有正在進行的交易"
+msgstr "沒有進行中的處理事項"
 
 #: ../libdnf/transaction/TransactionItem.cpp:147
 msgid "Attempt to insert transaction item into completed transaction"
-msgstr "嘗試將事務項插入已完成的事務中"
+msgstr "嘗試將處理事項插入已完成的處理事項中"
 
 #: ../libdnf/transaction/TransactionItem.cpp:218
 msgid "Attempt to update transaction item in completed transaction"
-msgstr "嘗試更新已完成事務中的事務項"
+msgstr "嘗試更新已完成處理事項中的處理事項"
 
 #: ../libdnf/transaction/private/Transaction.cpp:41
 msgid "Transaction has already began!"
-msgstr "交易已經開始了！"
+msgstr "處理事項已經開始！"
 
 #: ../libdnf/transaction/private/Transaction.cpp:58
 #, c-format
@@ -836,4 +839,4 @@ msgstr "未設置TransactionItem狀態： %s"
 
 #: ../libdnf/transaction/private/Transaction.cpp:239
 msgid "Can't add console output to unsaved transaction"
-msgstr "無法將控制台輸出添加到未保存的事務"
+msgstr "無法將控制台輸出添加到未保存的處理事項"

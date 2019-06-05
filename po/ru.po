@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-11 10:34+0100\n"
+"POT-Creation-Date: 2019-06-05 11:00+0200\n"
 "PO-Revision-Date: 2018-11-02 05:26+0000\n"
 "Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
 "Language-Team: Russian\n"
@@ -262,27 +262,27 @@ msgid ""
 "The operation would result in removing the following protected packages: "
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:419
+#: ../libdnf/repo/Repo.cpp:324
 #, c-format
 msgid "Bad id for repo: %s, byte = %s %d"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:443
+#: ../libdnf/repo/Repo.cpp:349
 #, c-format
 msgid "Repository %s has no mirror or baseurl set."
 msgstr "Для репозитория %s не заданы зеркала или baseurl."
 
-#: ../libdnf/repo/Repo.cpp:452
+#: ../libdnf/repo/Repo.cpp:358
 #, c-format
 msgid "Repository '%s' has unsupported type: 'type=%s', skipping."
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:655
+#: ../libdnf/repo/Repo.cpp:562
 #, c-format
 msgid "Cannot find a valid baseurl for repo: %s"
 msgstr "Не удается найти правильный baseurl для репозитория: %s"
 
-#: ../libdnf/repo/Repo.cpp:691 ../libdnf/repo/Repo.cpp:1617
+#: ../libdnf/repo/Repo.cpp:598 ../libdnf/repo/Repo.cpp:1508
 msgid ""
 "Maximum download speed is lower than minimum. Please change configuration of"
 " minrate or throttle"
@@ -290,163 +290,138 @@ msgstr ""
 "Максимальная скорость загрузки ниже минимальной. Измените настройку minrate "
 "или throttle"
 
-#: ../libdnf/repo/Repo.cpp:741 ../libdnf/repo/Repo.cpp:763
+#: ../libdnf/repo/Repo.cpp:648 ../libdnf/repo/Repo.cpp:670
 #, c-format
 msgid "%s: gpgme_data_new_from_fd(): %s"
 msgstr "%s: gpgme_data_new_from_fd(): %s"
 
-#: ../libdnf/repo/Repo.cpp:749 ../libdnf/repo/Repo.cpp:771
+#: ../libdnf/repo/Repo.cpp:656 ../libdnf/repo/Repo.cpp:678
 #, c-format
 msgid "%s: gpgme_op_import(): %s"
 msgstr "%s: gpgme_op_import(): %s"
 
-#: ../libdnf/repo/Repo.cpp:794 ../libdnf/repo/Repo.cpp:860
-#: ../libdnf/repo/Repo.cpp:954
+#: ../libdnf/repo/Repo.cpp:701 ../libdnf/repo/Repo.cpp:767
+#: ../libdnf/repo/Repo.cpp:861
 #, c-format
 msgid "%s: gpgme_ctx_set_engine_info(): %s"
 msgstr "%s: gpgme_ctx_set_engine_info(): %s"
 
-#: ../libdnf/repo/Repo.cpp:821 ../libdnf/repo/Repo.cpp:885
+#: ../libdnf/repo/Repo.cpp:728 ../libdnf/repo/Repo.cpp:792
 #, c-format
 msgid "can not list keys: %s"
 msgstr "не может перечислить ключи: %s"
 
-#: ../libdnf/repo/Repo.cpp:929
+#: ../libdnf/repo/Repo.cpp:836
 #, c-format
 msgid "repo %s: 0x%s already imported"
 msgstr "Сделки рЕПО %s: 0x%s уже импортировано"
 
-#: ../libdnf/repo/Repo.cpp:961
+#: ../libdnf/repo/Repo.cpp:868
 #, c-format
 msgid "repo %s: imported key 0x%s."
 msgstr "Сделки рЕПО %s: импортированный ключ 0x%s"
 
-#: ../libdnf/repo/Repo.cpp:1114
+#: ../libdnf/repo/Repo.cpp:1007
 #, c-format
 msgid "reviving: repo '%s' skipped, no metalink."
 msgstr "восстановление: репозиторий «%s» игнорируется, нет метассылок."
 
-#: ../libdnf/repo/Repo.cpp:1133
+#: ../libdnf/repo/Repo.cpp:1026
 #, c-format
 msgid "reviving: repo '%s' skipped, no usable hash."
 msgstr ""
 "восстановление: репозиторий «%s» игнорируется, нет пригодного хэш-кода."
 
-#: ../libdnf/repo/Repo.cpp:1156
+#: ../libdnf/repo/Repo.cpp:1049
 #, c-format
 msgid "reviving: failed for '%s', mismatched %s sum."
 msgstr "восстановление: не удалось для «%s», сумма %s не совпадает."
 
-#: ../libdnf/repo/Repo.cpp:1162
+#: ../libdnf/repo/Repo.cpp:1055
 #, c-format
 msgid "reviving: '%s' can be revived - metalink checksums match."
 msgstr ""
 "восстановление: «%s» может быть восстановлен - контрольные суммы метассылок "
 "совпадают."
 
-#: ../libdnf/repo/Repo.cpp:1187
+#: ../libdnf/repo/Repo.cpp:1080
 #, c-format
 msgid "reviving: '%s' can be revived - repomd matches."
 msgstr ""
 "восстановление: «%s» может быть восстановлен - совпадают метаданные "
 "репозитория."
 
-#: ../libdnf/repo/Repo.cpp:1189
+#: ../libdnf/repo/Repo.cpp:1082
 #, c-format
 msgid "reviving: failed for '%s', mismatched repomd."
 msgstr ""
 "восстановление: не удалось для «%s», не совпадают метаданные репозитория."
 
-#: ../libdnf/repo/Repo.cpp:1207
+#: ../libdnf/repo/Repo.cpp:1100
 #, c-format
 msgid "Cannot create repo destination directory \"%s\": %s"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1213
+#: ../libdnf/repo/Repo.cpp:1106
 #, c-format
 msgid "Cannot create repo temporary directory \"%s\": %s"
 msgstr "Невозможно создать временный каталог репо \"%s«: %s"
 
-#: ../libdnf/repo/Repo.cpp:1227
+#: ../libdnf/repo/Repo.cpp:1120
 #, c-format
 msgid "Cannot create directory \"%s\": %s"
 msgstr "Невозможно создать каталог \"%s«: %s"
 
-#: ../libdnf/repo/Repo.cpp:1250
+#: ../libdnf/repo/Repo.cpp:1143
 #, c-format
 msgid "Cannot rename directory \"%s\" to \"%s\": %s"
 msgstr "Невозможно переименовать каталог \"%s\"to\"%s«: %s"
 
-#: ../libdnf/repo/Repo.cpp:1270
+#: ../libdnf/repo/Repo.cpp:1163
 #, c-format
 msgid "repo: using cache for: %s"
 msgstr "репозиторий: используется кэш для: %s"
 
-#: ../libdnf/repo/Repo.cpp:1282
+#: ../libdnf/repo/Repo.cpp:1175
 #, c-format
 msgid "Cache-only enabled but no cache for '%s'"
 msgstr "Использование режима cacheonly включено, но нет кэша для «%s»"
 
-#: ../libdnf/repo/Repo.cpp:1286
+#: ../libdnf/repo/Repo.cpp:1179
 #, c-format
 msgid "repo: downloading from remote: %s"
 msgstr "РЕПО: загрузка с удаленного устройства: %s"
 
-#: ../libdnf/repo/Repo.cpp:1292
+#: ../libdnf/repo/Repo.cpp:1185
 #, c-format
 msgid "Cannot download '%s': %s."
 msgstr "Не удается загрузить «%s»: %s."
 
-#: ../libdnf/repo/Repo.cpp:1293
+#: ../libdnf/repo/Repo.cpp:1186
 #, c-format
 msgid "Failed to synchronize cache for repo '%s'"
 msgstr "Не удается синхронизировать кэш для репозитория «%s»"
 
-#: ../libdnf/repo/Repo.cpp:1319
+#: ../libdnf/repo/Repo.cpp:1212
 msgid "getCachedir(): Computation of SHA256 failed"
 msgstr "getCachedir (): вычисление SHA256 не выполнено"
 
-#: ../libdnf/repo/Repo.cpp:1462
-#, c-format
-msgid "not found filelist for: %s"
-msgstr "не найдено файлов по: %s"
-
-#: ../libdnf/repo/Repo.cpp:1467
-#, c-format
-msgid "not found other for: %s"
-msgstr ""
-
-#: ../libdnf/repo/Repo.cpp:1473
-#, c-format
-msgid "not found modules for: %s"
-msgstr "не найдены модули для: %s"
-
-#: ../libdnf/repo/Repo.cpp:1481
-#, c-format
-msgid "not found deltainfo for: %s"
-msgstr "не найдено deltainfo для: %s"
-
-#: ../libdnf/repo/Repo.cpp:1486
-#, c-format
-msgid "not found updateinfo for: %s"
-msgstr "не найден updateinfo для: %s"
-
-#: ../libdnf/repo/Repo.cpp:1707
+#: ../libdnf/repo/Repo.cpp:1598
 msgid "resume cannot be used simultaneously with the byterangestart param"
 msgstr ""
 "резюме не может использоваться одновременно с параметром byterangestart"
 
-#: ../libdnf/repo/Repo.cpp:1718
+#: ../libdnf/repo/Repo.cpp:1609
 #, c-format
 msgid "PackageTarget initialization failed: %s"
 msgstr "Не удалось инициализировать PackageTarget: %s"
 
-#: ../libdnf/repo/Repo.cpp:1835
+#: ../libdnf/repo/Repo.cpp:1726
 #, c-format
 msgid "Cannot open %s: %s"
 msgstr "Не могу открыть %s: %s"
 
-#: ../libdnf/repo/Repo.cpp:1872
+#: ../libdnf/repo/Repo.cpp:1770
 #, c-format
 msgid "Log handler with id %ld doesn't exist"
 msgstr "Обработчик журнала с идентификатором %ld не существует"
@@ -586,12 +561,39 @@ msgstr "сделано в состоянии %1$p у которого не бы�
 msgid "already at 100%% state [%s]"
 msgstr "уже в состоянии 100 %% [%s]"
 
-#: ../libdnf/module/ModulePackageContainer.cpp:56
+#: ../libdnf/module/ModulePackage.cpp:413
+#, c-format
+msgid "Invalid format of Platform module: %s"
+msgstr ""
+
+#: ../libdnf/module/ModulePackage.cpp:428
+msgid "Multiple module platforms provided by available packages\n"
+msgstr ""
+
+#: ../libdnf/module/ModulePackage.cpp:441
+msgid "Multiple module platforms provided by installed packages\n"
+msgstr ""
+
+#: ../libdnf/module/ModulePackage.cpp:468
+#, c-format
+msgid "Detection of Platform Module in %s failed: %s"
+msgstr ""
+
+#: ../libdnf/module/ModulePackage.cpp:477
+#, c-format
+msgid "Missing PLATFORM_ID in %s"
+msgstr ""
+
+#: ../libdnf/module/ModulePackage.cpp:482
+msgid "No valid Platform ID detected"
+msgstr ""
+
+#: ../libdnf/module/ModulePackageContainer.cpp:57
 #, c-format
 msgid "Cannot enable multiple streams for module '%s'"
 msgstr ""
 
-#: ../libdnf/module/ModulePackageContainer.cpp:217
+#: ../libdnf/module/ModulePackageContainer.cpp:219
 #, c-format
 msgid "Conflicting defaults with repo '%s': %s"
 msgstr ""
@@ -693,7 +695,7 @@ msgstr "не удалось преобразовать '%s'к байтам"
 msgid "unknown unit '%s'"
 msgstr "неизвестная единица «%s»"
 
-#: ../libdnf/conf/ConfigMain.cpp:319
+#: ../libdnf/conf/ConfigMain.cpp:320
 #, c-format
 msgid "percentage '%s' is out of range"
 msgstr "процентная величина «%s» вне диапазона"
@@ -741,70 +743,70 @@ msgstr "не удалось добавить solv"
 msgid "failed to open: %s"
 msgstr "не удалось открыть: %s"
 
-#: ../libdnf/dnf-sack.cpp:518
+#: ../libdnf/dnf-sack.cpp:519
 #, c-format
 msgid "cannot create temporary file: %s"
 msgstr "не может создать временный файл: %s"
 
-#: ../libdnf/dnf-sack.cpp:528
+#: ../libdnf/dnf-sack.cpp:529
 #, c-format
 msgid "failed opening tmp file: %s"
 msgstr "не удалось открыть файл tmp: %s"
 
-#: ../libdnf/dnf-sack.cpp:540
+#: ../libdnf/dnf-sack.cpp:541
 #, c-format
 msgid "write_main() failed writing data: %i"
 msgstr "write_main () не удалось записать данные: %i"
 
-#: ../libdnf/dnf-sack.cpp:557
+#: ../libdnf/dnf-sack.cpp:558
 msgid "write_main() failed to re-load written solv file"
 msgstr "write_main() failed to re-load written solv file"
 
-#: ../libdnf/dnf-sack.cpp:620
+#: ../libdnf/dnf-sack.cpp:623
 #, c-format
 msgid "can not create temporary file %s"
 msgstr "не удается создать временный файл %s"
 
-#: ../libdnf/dnf-sack.cpp:638
+#: ../libdnf/dnf-sack.cpp:641
 #, c-format
 msgid "write_ext(%1$d) has failed: %2$d"
 msgstr "write_ext(%1$d) has failed: %2$d"
 
-#: ../libdnf/dnf-sack.cpp:692
+#: ../libdnf/dnf-sack.cpp:696
 msgid "null repo md file"
 msgstr "null repo md file"
 
-#: ../libdnf/dnf-sack.cpp:701
+#: ../libdnf/dnf-sack.cpp:705
 #, c-format
 msgid "can not read file %1$s: %2$s"
 msgstr "невозможно прочитать файл %1$s: %2$s"
 
-#: ../libdnf/dnf-sack.cpp:715
+#: ../libdnf/dnf-sack.cpp:719
 msgid "repo_add_solv() has failed."
 msgstr "repo_add_solv() has failed."
 
-#: ../libdnf/dnf-sack.cpp:731
+#: ../libdnf/dnf-sack.cpp:735
 msgid "repo_add_repomdxml/rpmmd() has failed."
 msgstr "repo_add_repomdxml/rpmmd() has failed."
 
-#: ../libdnf/dnf-sack.cpp:798
+#: ../libdnf/dnf-sack.cpp:802
 msgid "failed to auto-detect architecture"
 msgstr "не удалось автоматически определить архитектуру"
 
-#: ../libdnf/dnf-sack.cpp:923
+#: ../libdnf/dnf-sack.cpp:927
 #, c-format
 msgid "failed creating cachedir %s"
 msgstr "не удалось создать кешир %s"
 
-#: ../libdnf/dnf-sack.cpp:1693
+#: ../libdnf/dnf-sack.cpp:1700
 msgid "failed calculating RPMDB checksum"
 msgstr "не удалось вычислить контрольную сумму RPMDB"
 
-#: ../libdnf/dnf-sack.cpp:1717
+#: ../libdnf/dnf-sack.cpp:1724
 msgid "failed loading RPMDB"
 msgstr "не удалось загрузить RPMDB"
 
-#: ../libdnf/dnf-sack.cpp:2358
+#: ../libdnf/dnf-sack.cpp:2387
 msgid "No module defaults found"
 msgstr ""
 
