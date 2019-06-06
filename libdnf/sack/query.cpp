@@ -50,11 +50,14 @@ extern "C" {
 #include "libdnf/repo/solvable/DependencyContainer.hpp"
 
 
+namespace std {
+
 template<>
-struct std::default_delete<DnfPackage> {
+struct default_delete<DnfPackage> {
     void operator()(DnfPackage * ptr) noexcept { g_object_unref(ptr); }
 };
 
+}
 
 namespace libdnf {
 
