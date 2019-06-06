@@ -63,28 +63,23 @@ test_fail_safe(Header * hdr, DnfPackage * pkg, GError **error)
         return TRUE;
     }
     rpmtd td = rpmtdNew();
+    gboolean ret = TRUE;
     if (headerGet(*hdr, RPMTAG_MODULARITYLABEL, td, HEADERGET_MINMEM)) {
         if (rpmtdGetString(td)) {
             DnfSack * sack = dnf_package_get_sack(pkg);
             auto includes = dnf_sack_get_module_includes(sack);
-            if (includes && includes->has(dnf_package_get_id(pkg))) {
-                rpmtdFreeData(td);
-                rpmtdFree(td);
-                return TRUE;
-            } else {
+            if (!includes || !includes->has(dnf_package_get_id(pkg))) {
                 g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
                             _("No available modular metadata for modular package '%s'; "
                               "cannot be installed on the system"),
                             dnf_package_get_nevra(pkg));
-                rpmtdFreeData(td);
-                rpmtdFree(td);
-                return FALSE;
+                ret = FALSE;
             }
         }
     }
     rpmtdFreeData(td);
     rpmtdFree(td);
-    return TRUE;
+    return ret;
 }
 
 gboolean
