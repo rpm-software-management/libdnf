@@ -1627,6 +1627,9 @@ void ModulePackageContainer::updateFailSafeData()
         if (low != end && ss.str() == *low) {
             MAPSET(&map, low - begin);
         }
+        if (modulePackage->getRepoID() == LIBDNF_MODULE_FAIL_SAFE_REPO_NAME) {
+            continue;
+        }
         g_autofree gchar * file = g_build_filename(pImpl->persistDir.c_str(), ss.str().c_str(),
                                                    NULL);
         if (!updateFile(file, modulePackage->getYaml().c_str())) {
