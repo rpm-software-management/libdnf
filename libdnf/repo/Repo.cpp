@@ -814,6 +814,30 @@ std::vector<Key> Repo::Impl::retrieve(const std::string & url)
     return keyInfos;
 }
 
+static void killGpgAgent(gpgme_ctx_t context, const std::string & gpgDir)
+{
+    auto logger(Log::getLogger());
+
+    auto gpgErr = gpgme_set_protocol(context, GPGME_PROTOCOL_ASSUAN);
+    if (gpgErr != GPG_ERR_NO_ERROR) {
+        auto msg = tfm::format(_("%s: gpgme_set_protocol(): %s"), __func__, gpgme_strerror(gpgErr));
+        logger->warning(msg);
+        return;
+    }
+    std::string gpgAgentSock = gpgDir + "/S.gpg-agent";
+    gpgErr = gpgme_ctx_set_engine_info(context, GPGME_PROTOCOL_ASSUAN, gpgAgentSock.c_str(), gpgDir.c_str());
+    if (gpgErr != GPG_ERR_NO_ERROR) {
+        auto msg = tfm::format(_("%s: gpgme_ctx_set_engine_info(): %s"), __func__, gpgme_strerror(gpgErr));
+        logger->warning(msg);
+        return;
+    }
+    gpgErr = gpgme_op_assuan_transact_ext(context, "KILLAGENT", NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+    if (gpgErr != GPG_ERR_NO_ERROR) {
+        auto msg = tfm::format(_("%s: gpgme_op_assuan_transact_ext(): %s"), __func__, gpgme_strerror(gpgErr));
+        logger->debug(msg);
+    }
+}
+
 void Repo::Impl::importRepoKeys()
 {
     auto logger(Log::getLogger());
@@ -855,6 +879,13 @@ void Repo::Impl::importRepoKeys()
             }
 
             gpgImportKey(ctx, keyInfo.rawKey);
+
+            // Running gpg-agent kept opened sockets on the system.
+            // It tries to exit gpg-agent. Path to the communication socket is derived from homedir.
+            // The gpg-agent automaticaly removes all its socket before exit.
+            // Newer gpg-agent creates sockets under [/var]/run/user/{pid}/... if directory exists.
+            // In this case gpg-agent will not be exited.
+            killGpgAgent(ctx, gpgDir);
 
             logger->debug(tfm::format(_("repo %s: imported key 0x%s."), id, keyInfo.getId()));
         }
