@@ -861,10 +861,6 @@ void Repo::Impl::importRepoKeys()
             struct stat sb;
             if (stat(gpgDir.c_str(), &sb) != 0 || !S_ISDIR(sb.st_mode))
                 mkdir(gpgDir.c_str(), 0777);
-            auto confFd = open((gpgDir + "/gpg.conf").c_str(),
-                               O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-            if (confFd != -1)
-                close(confFd);
 
             gpgme_ctx_t ctx;
             gpgme_new(&ctx);
