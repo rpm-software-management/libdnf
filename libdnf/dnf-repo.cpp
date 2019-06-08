@@ -61,7 +61,6 @@ typedef struct
     DnfRepoEnabled   enabled;
     gchar          **gpgkeys;
     gchar          **exclude_packages;
-    gboolean         module_hotfixes;
     guint            metadata_expire;       /*seconds*/
     gchar           *filename;      /* /etc/yum.repos.d/updates.repo */
     gchar           *location;      /* /var/cache/PackageKit/metadata/fedora */
@@ -374,7 +373,7 @@ gboolean
 dnf_repo_get_module_hotfixes(DnfRepo *repo)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    return priv->module_hotfixes;
+    return priv->repo->getConfig()->module_hotfixes().getValue();
 }
 
 /**
@@ -714,7 +713,7 @@ void
 dnf_repo_set_module_hotfixes(DnfRepo *repo, gboolean module_hotfixes)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    priv->module_hotfixes = module_hotfixes;
+    priv->repo->getConfig()->module_hotfixes().set(libdnf::Option::Priority::RUNTIME, module_hotfixes);
 }
 
 /**
