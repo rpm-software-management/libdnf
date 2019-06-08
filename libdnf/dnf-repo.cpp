@@ -61,7 +61,6 @@ typedef struct
     DnfRepoEnabled   enabled;
     gchar          **gpgkeys;
     gchar          **exclude_packages;
-    guint            metadata_expire;       /*seconds*/
     gchar           *filename;      /* /etc/yum.repos.d/updates.repo */
     gchar           *location;      /* /var/cache/PackageKit/metadata/fedora */
     gchar           *location_tmp;  /* /var/cache/PackageKit/metadata/fedora.tmp */
@@ -470,9 +469,8 @@ dnf_repo_get_repo(DnfRepo *repo)
 guint
 dnf_repo_get_metadata_expire(DnfRepo *repo)
 {
-	DnfRepoPrivate *priv = GET_PRIVATE(repo);
-	return priv->metadata_expire;
-
+    DnfRepoPrivate *priv = GET_PRIVATE(repo);
+    return priv->repo->getConfig()->metadata_expire().getValue();
 }
 
 /**
@@ -793,7 +791,7 @@ void
 dnf_repo_set_metadata_expire(DnfRepo *repo, guint metadata_expire)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    priv->metadata_expire = metadata_expire;
+    priv->repo->getConfig()->metadata_expire().set(libdnf::Option::Priority::RUNTIME, metadata_expire);
 }
 
 /**
