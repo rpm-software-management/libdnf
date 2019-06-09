@@ -22,6 +22,7 @@
 #include "Const.hpp"
 #include "Config-private.hpp"
 #include "libdnf/utils/os-release.hpp"
+#include "utils.hpp"
 
 #include <algorithm>
 #include <array>
@@ -38,6 +39,8 @@
 
 #include "bgettext/bgettext-lib.h"
 #include "tinyformat/tinyformat.hpp"
+
+extern char **environ;
 
 namespace libdnf {
 
@@ -592,5 +595,45 @@ OptionString & ConfigMain::sslclientkey() { return pImpl->sslclientkey; }
 OptionBool & ConfigMain::deltarpm() { return pImpl->deltarpm; }
 OptionNumber<std::uint32_t> & ConfigMain::deltarpm_percentage() { return pImpl->deltarpm_percentage; }
 OptionBool & ConfigMain::skip_if_unavailable() { return pImpl->skip_if_unavailable; }
+
+static void DIRClose(DIR *d) { closedir(d); }
+
+void ConfigMain::addVarsFromDir(std::map<std::string, std::string> & varsMap, const std::string & dirPath)
+{
+    if (DIR * dir = opendir(dirPath.c_str())) {
+        std::unique_ptr<DIR, decltype(&DIRClose)> dirGuard(dir, &DIRClose);
+        while (auto ent = readdir(dir)) {
+            auto dname = ent->d_name;
+            if (dname[0] == '.' && (dname[1] == '\0' || (dname[1] == '.' && dname[2] == '\0')))
+                continue;
+
+            auto fullPath = dirPath;
+            if (fullPath.back() != '/')
+                fullPath += "/";
+            fullPath += dname;
+            std::ifstream inStream(fullPath);
+            std::string line;
+            std::getline(inStream, line);
+            varsMap[dname] = std::move(line);
+        }
+    }
+}
+
+void ConfigMain::addVarsFromEnv(std::map<std::string, std::string> & varsMap)
+{
+    for (const char * const * varPtr = environ; *varPtr; ++varPtr) {
+        auto var = *varPtr;
+        if (auto eqlPtr = strchr(var, '=')) {
+            auto eqlIdx = eqlPtr - var;
+            // DNF[0-9]
+            if (eqlIdx == 4 && strncmp("DNF", var, 3) == 0 && isdigit(var[3]))
+                varsMap[std::string(var, eqlIdx)] = eqlPtr + 1;
+            // DNF_VAR_[A-Za-z0-9_]+ , DNF_VAR_ prefix is cutted off
+            else if (eqlIdx > 8 && strncmp("DNF_VAR_", var, 8) == 0 &&
+                     static_cast<int>(strspn(var + 8, ASCII_LETTERS DIGITS "_")) == eqlIdx - 8)
+                varsMap[std::string(var + 8, eqlIdx - 8)] = eqlPtr + 1;
+        }
+    }
+}
 
 }
