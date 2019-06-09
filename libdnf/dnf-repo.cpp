@@ -35,6 +35,7 @@
 
 #include "conf/OptionBool.hpp"
 
+#include "dnf-context.hpp"
 #include "hy-repo-private.hpp"
 #include "hy-iutil-private.hpp"
 
@@ -1141,6 +1142,15 @@ dnf_repo_setup(DnfRepo *repo, GError **error)
         return FALSE;
     priv->urlvars = lr_urlvars_set(priv->urlvars, "releasever", release);
     priv->urlvars = lr_urlvars_set(priv->urlvars, "basearch", basearch);
+
+    /* Call libdnf::dnf_context_load_vars(priv->context); only when values not in cache.
+     * But what about if variables on disk change during long running programs (PackageKit daemon)?
+     * if (!libdnf::dnf_context_get_vars_cached(priv->context))
+     */
+    libdnf::dnf_context_load_vars(priv->context);
+    for (const auto & item : libdnf::dnf_context_get_vars(priv->context))
+        priv->urlvars = lr_urlvars_set(priv->urlvars, item.first.c_str(), item.second.c_str());
+
     testdatadir = dnf_realpath(TESTDATADIR);
     priv->urlvars = lr_urlvars_set(priv->urlvars, "testdatadir", testdatadir);
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_VARSUB, priv->urlvars))

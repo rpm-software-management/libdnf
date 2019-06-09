@@ -23,9 +23,20 @@
 
 #include "dnf-context.h"
 
+#include <map>
+#include <string>
+
 inline DnfContextInvalidateFlags operator|(DnfContextInvalidateFlags a, DnfContextInvalidateFlags b)
 {
     return static_cast<DnfContextInvalidateFlags>(static_cast<int>(a) | static_cast<int>(b));
+}
+
+namespace libdnf {
+
+std::map<std::string, std::string> & dnf_context_get_vars(DnfContext * context);
+bool dnf_context_get_vars_cached(DnfContext * context);
+void dnf_context_load_vars(DnfContext * context);
+
 }
 
 #endif /* __DNF_CONTEXT_HPP */
