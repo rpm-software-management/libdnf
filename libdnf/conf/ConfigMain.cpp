@@ -182,8 +182,7 @@ class ConfigMain::Impl {
     OptionString logdir{"/var/log"};
     OptionNumber<std::int32_t> log_size{1024 * 1024, strToBytes};
     OptionNumber<std::int32_t> log_rotate{4, 0};
-    // More important varsdirs must be on the end of vector
-    OptionStringList varsdir{std::vector<std::string>{"/etc/yum/vars", "/etc/dnf/vars"}};
+    OptionStringList varsdir{VARS_DIRS};
     OptionStringList reposdir{{"/etc/yum.repos.d", "/etc/yum/repos.d", "/etc/distro.repos.d"}};
     OptionBool debug_solver{false};
     OptionStringList installonlypkgs{INSTALLONLYPKGS};
