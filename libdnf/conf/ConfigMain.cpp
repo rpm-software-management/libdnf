@@ -22,6 +22,7 @@
 #include "Const.hpp"
 #include "Config-private.hpp"
 #include "libdnf/utils/os-release.hpp"
+#include "utils.hpp"
 
 #include <algorithm>
 #include <array>
@@ -593,5 +594,36 @@ OptionString & ConfigMain::sslclientkey() { return pImpl->sslclientkey; }
 OptionBool & ConfigMain::deltarpm() { return pImpl->deltarpm; }
 OptionNumber<std::uint32_t> & ConfigMain::deltarpm_percentage() { return pImpl->deltarpm_percentage; }
 OptionBool & ConfigMain::skip_if_unavailable() { return pImpl->skip_if_unavailable; }
+
+static void DIRClose(DIR *d) { closedir(d); }
+
+void ConfigMain::addVarsFromDir(std::map<std::string, std::string> & varsMap, const std::string & dirPath)
+{
+    if (DIR * dir = opendir(dirPath.c_str())) {
+        std::unique_ptr<DIR, decltype(&DIRClose)> dirGuard(dir, &DIRClose);
+        while (auto ent = readdir(dir)) {
+            auto dname = ent->d_name;
+            if (dname[0] == '.' && (dname[1] == '\0' || (dname[1] == '.' && dname[2] == '\0')))
+                continue;
+
+            auto fullPath = dirPath;
+            if (fullPath.back() != '/')
+                fullPath += "/";
+            fullPath += dname;
+            std::ifstream inStream(fullPath);
+            if (inStream.fail()) {
+                // log.warning()
+                continue;
+            }
+            std::string line;
+            std::getline(inStream, line);
+            if (inStream.fail()) {
+                // log.warning()
+                continue;
+            }
+            varsMap[dname] = std::move(line);
+        }
+    }
+}
 
 }
