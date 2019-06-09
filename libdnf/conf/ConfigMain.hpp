@@ -157,6 +157,17 @@ public:
     OptionNumber<std::uint32_t> & deltarpm_percentage();
     OptionBool & skip_if_unavailable();
 
+    /**
+    * @brief Adds variables from directory
+    *
+    * Additional variables are added from directory. Each file represents one variable.
+    * The variable name is equal to filename and the value is defined by first line of the file.
+    *
+    * @param varsMap Storage where the variables are added.
+    * @param dirPath Path to directory.
+    */
+    static void addVarsFromDir(std::map<std::string, std::string> & varsMap, const std::string & dirPath);
+
 private:
     class Impl;
     std::unique_ptr<Impl> pImpl;
