@@ -21,6 +21,9 @@
 #ifndef _LIBDNF_CONFIG_CONST_HPP
 #define _LIBDNF_CONFIG_CONST_HPP
 
+#include <string>
+#include <vector>
+
 namespace libdnf {
 
 constexpr const char * PERSISTDIR = "/var/lib/dnf";
