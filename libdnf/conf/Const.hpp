@@ -31,6 +31,9 @@ constexpr const char * SYSTEM_CACHEDIR = "/var/cache/dnf";
 
 constexpr const char * CONF_FILENAME = "/etc/dnf/dnf.conf";
 
+// More important varsdirs must be on the end of vector
+const std::vector<std::string> VARS_DIRS{"/etc/yum/vars", "/etc/dnf/vars"};
+
 const std::vector<std::string> GROUP_PACKAGE_TYPES{"mandatory", "default", "conditional"};
 const std::vector<std::string> INSTALLONLYPKGS{"kernel", "kernel-PAE",
                  "installonlypkg(kernel)",

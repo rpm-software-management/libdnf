@@ -31,6 +31,7 @@
  */
 
 #include "config.h"
+#include "conf/Const.hpp"
 
 #include <memory>
 #include <string>
@@ -240,8 +241,12 @@ static void
 dnf_context_init(DnfContext *context)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
-    const gchar *vars_dir[] = {"/etc/dnf/vars", "/etc/yum/vars", NULL};
-    priv->vars_dir = g_strdupv(const_cast<gchar **>(vars_dir));
+
+    priv->vars_dir = g_new(gchar*, libdnf::VARS_DIRS.size() + 1);
+    for (size_t i = 0; i < libdnf::VARS_DIRS.size(); ++i)
+        priv->vars_dir[i] = g_strdup(libdnf::VARS_DIRS[i].c_str());
+    priv->vars_dir[libdnf::VARS_DIRS.size()] = NULL;
+
     priv->install_root = g_strdup("/");
     priv->check_disk_space = TRUE;
     priv->check_transaction = TRUE;
