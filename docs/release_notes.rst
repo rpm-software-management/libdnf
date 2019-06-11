@@ -20,6 +20,20 @@
 ######################
 
 ====================
+0.35.1 Release Notes
+====================
+- Skip invalid key files in "/etc/pki/rpm-gpg" with warning (RhBug:1644040)
+- Enable timestamp preserving for downloaded data (RhBug:1688537)
+- Set default to skip_if_unavailable=false (RhBug:1679509)
+- Add configuration option skip_if_unavailable (RhBug:1689931)
+- Fix 'database is locked' error (RhBug:1631533)
+- Replace the 'Failed to synchronize cache' message (RhBug:1712055)
+- Fix 'no such table: main.trans_cmdline' error (RhBug:1596540)
+- Add support of modular FailSafe (RhBug:1623128)
+- Add support of DNF main config file in context; used by PackageKit and microdnf (RhBug:1689331)
+- Exit gpg-agent after repokey import (RhBug:1650266)
+
+====================
 0.33.0 Release Notes
 ====================
 - Enhance logging handling
