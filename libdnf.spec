@@ -224,6 +224,8 @@ popd
 %license COPYING
 %doc README.md AUTHORS
 %{_libdir}/%{name}.so.*
+%dir %{_libdir}/libdnf/
+%dir %{_libdir}/libdnf/plugins/
 %{_libdir}/libdnf/plugins/README
 
 %files devel
