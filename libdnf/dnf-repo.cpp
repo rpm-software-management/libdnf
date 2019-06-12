@@ -1312,7 +1312,8 @@ dnf_repo_check_internal(DnfRepo *repo,
     /* has the media repo vanished? */
     if (priv->kind == DNF_REPO_KIND_MEDIA &&
         !g_file_test(priv->location, G_FILE_TEST_EXISTS)) {
-        priv->enabled = DNF_REPO_ENABLED_NONE;
+        if (!dnf_repo_get_required(repo))
+            priv->enabled = DNF_REPO_ENABLED_NONE;
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_REPO_NOT_AVAILABLE,
@@ -1323,7 +1324,8 @@ dnf_repo_check_internal(DnfRepo *repo,
     /* has the local repo vanished? */
     if (priv->kind == DNF_REPO_KIND_LOCAL &&
         !g_file_test(priv->location, G_FILE_TEST_EXISTS)) {
-        priv->enabled = DNF_REPO_ENABLED_NONE;
+        if (!dnf_repo_get_required(repo))
+            priv->enabled = DNF_REPO_ENABLED_NONE;
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_REPO_NOT_AVAILABLE,
