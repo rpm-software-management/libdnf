@@ -1288,7 +1288,6 @@ bool ModulePackageContainer::Impl::ModulePersistor::update(const std::string & n
 
     OptionStringList slist{std::vector<std::string>()};
     auto profiles = slist.toString(getProfiles(name));
-    profiles = profiles.substr(1, profiles.size()-2);
     if (!parser.hasOption(name, "profiles") || parser.getValue(name, "profiles") != profiles) {
         parser.setValue(name, "profiles", std::move(profiles));
         changed = true;
