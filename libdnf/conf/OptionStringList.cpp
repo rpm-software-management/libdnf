@@ -97,7 +97,6 @@ void OptionStringList::set(Priority priority, const std::string & value)
 std::string OptionStringList::toString(const ValueType & value) const
 {
     std::ostringstream oss;
-    oss << "[";
     bool next{false};
     for (auto & val : value) {
         if (next)
@@ -106,7 +105,6 @@ std::string OptionStringList::toString(const ValueType & value) const
             next = true;
         oss << val;
     }
-    oss << "]";
     return oss.str();
 }
 
