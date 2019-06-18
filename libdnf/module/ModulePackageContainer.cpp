@@ -1286,10 +1286,10 @@ bool ModulePackageContainer::Impl::ModulePersistor::update(const std::string & n
         changed = true;
     }
 
-    OptionStringList slist{std::vector<std::string>()};
-    auto profiles = slist.toString(getProfiles(name));
-    if (!parser.hasOption(name, "profiles") || parser.getValue(name, "profiles") != profiles) {
-        parser.setValue(name, "profiles", std::move(profiles));
+    OptionStringList profiles{getProfiles(name)};
+    if (!parser.hasOption(name, "profiles") ||
+        OptionStringList(parser.getValue(name, "profiles")).getValue() != profiles.getValue()) {
+        parser.setValue(name, "profiles", profiles.getValueString());
         changed = true;
     }
 
