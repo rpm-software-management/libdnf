@@ -64,9 +64,7 @@ OptionStringList::ValueType OptionStringList::fromString(const std::string & val
 {
     std::vector<std::string> tmp;
     auto start = value.find_first_not_of(" ");
-    if (start == value.npos)
-        return tmp;
-    while (start < value.length()) {
+    while (start != value.npos && start < value.length()) {
         auto end = value.find_first_of(" ,\n", start);
         if (end == value.npos) {
             tmp.push_back(value.substr(start));
@@ -74,8 +72,12 @@ OptionStringList::ValueType OptionStringList::fromString(const std::string & val
         }
         tmp.push_back(value.substr(start, end - start));
         start = value.find_first_not_of(" ", end + 1);
-        if (start == value.npos && value[end] == ',')
-            tmp.push_back("");
+        if (start != value.npos && value[start] == ',' && value[end] == ' ') {
+            end = start;
+            start = value.find_first_not_of(" ", start + 1);
+        }
+        if (start != value.npos && value[start] == '\n' && (value[end] == ' ' || value[end] == ','))
+            start = value.find_first_not_of(" ", start + 1);
     }
     return tmp;
 }
