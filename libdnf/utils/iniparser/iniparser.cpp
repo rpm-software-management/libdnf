@@ -81,6 +81,9 @@ IniParser::IniParser(std::unique_ptr<std::istream> && inputStream)
 }
 
 void IniParser::trimValue() noexcept {
+    auto end = value.find_last_not_of(DELIMITER);
+    if (end != value.npos)
+        value.resize(end + 1);
     if (value.length() > 1 &&
         value.front() == value.back() &&
         (value.front() == '\"' || value.front() == '\'')) {
