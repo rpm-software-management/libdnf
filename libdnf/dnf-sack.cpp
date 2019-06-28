@@ -356,6 +356,7 @@ dnf_sack_recompute_considered(DnfSack *sack)
     if (priv->module_excludes)
         map_subtract(pool->considered, priv->module_excludes);
     if (priv->pkg_includes) {
+        map_grow(priv->pkg_includes, pool->nsolvables);
         Map pkg_includes_tmp;
         map_init_clone(&pkg_includes_tmp, priv->pkg_includes);
 
