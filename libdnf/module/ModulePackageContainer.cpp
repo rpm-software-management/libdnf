@@ -1637,7 +1637,7 @@ void ModulePackageContainer::updateFailSafeData()
         if (!updateFile(filePath, modulePackage->getYaml().c_str())) {
             auto logger(Log::getLogger());
             logger->debug(tfm::format(
-                _("Unable to safe a modular Fail Safe data to '%s'"), filePath));
+                _("Unable to save a modular Fail Safe data to '%s'"), filePath));
         }
     }
 
