@@ -1345,9 +1345,8 @@ void Repo::Impl::attachLibsolvRepo(LibsolvRepo * libsolvRepo)
 void Repo::Impl::detachLibsolvRepo()
 {
     libsolvRepo->appdata = nullptr;
-    if (--nrefs > 0)
-        this->libsolvRepo = nullptr;
-    else
+    this->libsolvRepo = nullptr;
+    if (--nrefs <= 0)
         delete owner;
 }
 
