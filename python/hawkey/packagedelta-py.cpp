@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 // hawkey
@@ -92,7 +93,7 @@ get_chksum(_PackageDeltaObject *self, void *closure)
 #if PY_MAJOR_VERSION < 3
     res = Py_BuildValue("is#", type, cs, checksum_length);
 #else
-    res = Py_BuildValue("iy#", type, cs, checksum_length);
+    res = Py_BuildValue("iy#", type, cs, (Py_ssize_t)checksum_length);
 #endif
 
     return res;
