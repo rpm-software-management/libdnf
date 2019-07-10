@@ -1977,9 +1977,6 @@ Query::Impl::apply()
             case HY_PKG_EMPTY:
                 /* used to set query empty by keeping Map m empty */
                 break;
-            case HY_PKG_CONFLICTS:
-                filterRcoReldep(f, &m);
-                break;
             case HY_PKG_NAME:
                 filterName(f, &m);
                 break;
@@ -2019,12 +2016,12 @@ Query::Impl::apply()
                 assert(f.getMatchType() == _HY_RELDEP);
                 filterProvidesReldep(f, &m);
                 break;
+            case HY_PKG_CONFLICTS:
             case HY_PKG_ENHANCES:
             case HY_PKG_RECOMMENDS:
             case HY_PKG_REQUIRES:
             case HY_PKG_SUGGESTS:
             case HY_PKG_SUPPLEMENTS:
-                assert(f.getMatchType() == _HY_RELDEP);
                 filterRcoReldep(f, &m);
                 break;
             case HY_PKG_REPONAME:
