@@ -280,7 +280,7 @@ valid_filter_num(int keyname, int cmp_type)
 static bool
 valid_filter_pkg(int keyname, int cmp_type)
 {
-    if (!match_type_pkg(keyname))
+    if (!match_type_pkg(keyname) && !match_type_reldep(keyname))
         return false;
     return cmp_type == HY_EQ || cmp_type == HY_NEQ;
 }
@@ -683,6 +683,7 @@ private:
     void filterNevraStrict(int cmpType, const char **matches);
     void initResult();
     void filterPkg(const Filter & f, Map *m);
+    void filterDepSolvable(const Filter & f, Map * m);
     void filterRcoReldep(const Filter & f, Map *m);
     void filterName(const Filter & f, Map *m);
     void filterEpoch(const Filter & f, Map *m);
@@ -1056,6 +1057,30 @@ Query::Impl::filterPkg(const Filter & f, Map *m)
 
     map_free(m);
     map_init_clone(m, dnf_packageset_get_map(f.getMatches()[0].pset));
+}
+
+void
+Query::Impl::filterDepSolvable(const Filter & f, Map * m)
+{
+    assert(f.getMatchType() == _HY_PKG);
+    assert(f.getMatches().size() == 1);
+
+    dnf_sack_make_provides_ready(sack);
+    Pool * pool = dnf_sack_get_pool(sack);
+    Id rco_key = reldep_keyname2id(f.getKeyname());
+
+    IdQueue out;
+
+    const auto filter_pset = f.getMatches()[0].pset;
+    Id id = -1;
+    while ((id = filter_pset->next(id)) != -1) {
+        out.clear();
+        pool_whatmatchessolvable(pool, rco_key, id, out.getQueue(), -1);
+
+        for (int j = 0; j < out.size(); ++j) {
+            MAPSET(m, out[j]);
+        }
+    }
 }
 
 void
@@ -2041,7 +2066,11 @@ Query::Impl::apply()
             case HY_PKG_REQUIRES:
             case HY_PKG_SUGGESTS:
             case HY_PKG_SUPPLEMENTS:
-                filterRcoReldep(f, &m);
+                if (f.getMatchType() == _HY_RELDEP)
+                    filterRcoReldep(f, &m);
+                else {
+                    filterDepSolvable(f, &m);
+                }
                 break;
             case HY_PKG_REPONAME:
                 filterReponame(f, &m);
