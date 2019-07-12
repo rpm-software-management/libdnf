@@ -275,8 +275,6 @@ public:
 
     ~Repo();
 
-    void delReference();
-
     class Impl;
 private:
     friend struct PackageTarget;
