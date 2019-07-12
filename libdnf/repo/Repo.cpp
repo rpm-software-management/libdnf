@@ -60,7 +60,6 @@
 #include <iostream>
 #include <list>
 #include <map>
-#include <mutex>
 #include <set>
 #include <sstream>
 #include <type_traits>
@@ -1335,8 +1334,10 @@ LrHandle * Repo::Impl::getCachedHandle()
 
 void Repo::Impl::attachLibsolvRepo(LibsolvRepo * libsolvRepo)
 {
+    std::lock_guard<std::mutex> guard(attachLibsolvMutex);
+    assert(!this->libsolvRepo);
     ++nrefs;
-    libsolvRepo->appdata = owner;
+    libsolvRepo->appdata = owner; // The libsolvRepo references back to us.
     libsolvRepo->subpriority = -owner->getCost();
     libsolvRepo->priority = -owner->getPriority();
     this->libsolvRepo = libsolvRepo;
@@ -1344,11 +1345,23 @@ void Repo::Impl::attachLibsolvRepo(LibsolvRepo * libsolvRepo)
 
 void Repo::Impl::detachLibsolvRepo()
 {
-    libsolvRepo->appdata = nullptr;
-    if (--nrefs > 0)
-        this->libsolvRepo = nullptr;
-    else
+    attachLibsolvMutex.lock();
+    if (!libsolvRepo) {
+        // Nothing to do, libsolvRepo is not attached.
+        attachLibsolvMutex.unlock();
+        return;
+    }
+
+    libsolvRepo->appdata = nullptr; // Removes reference to this object from libsolvRepo.
+    this->libsolvRepo = nullptr;
+
+    if (--nrefs <= 0) {
+        // There is no reference to this object, we are going to destroy it.
+        // Mutex is part of this object, we must unlock it before destroying.
+        attachLibsolvMutex.unlock();
         delete owner;
+    } else
+        attachLibsolvMutex.unlock();
 }
 
 void Repo::setMaxMirrorTries(int maxMirrorTries)
@@ -2057,7 +2070,12 @@ hy_repo_get_string(HyRepo repo, int which)
 void
 hy_repo_free(HyRepo repo)
 {
-    if (--libdnf::repoGetImpl(repo)->nrefs > 0)
-        return;
+    auto repoImpl = libdnf::repoGetImpl(repo);
+    {
+        std::lock_guard<std::mutex> guard(repoImpl->attachLibsolvMutex);
+        if (--repoImpl->nrefs > 0)
+            return; // There is still a reference to this object. Don't destroy it.
+    }
+    assert(!repoImpl->libsolvRepo);
     delete repo;
 }
