@@ -1403,9 +1403,9 @@ dnf_repo_check_internal(DnfRepo *repo,
     }
 
     /* init  */
-    repoImpl->libsolvRepo = nullptr;
+    if (repoImpl->libsolvRepo)
+        repoImpl->detachLibsolvRepo();
     repoImpl->needs_internalizing = false;
-    repoImpl->nrefs = 1;
     repoImpl->state_main = _HY_NEW;
     repoImpl->state_filelists = _HY_NEW;
     repoImpl->state_presto = _HY_NEW;
