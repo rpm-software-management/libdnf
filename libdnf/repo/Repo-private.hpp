@@ -43,6 +43,7 @@
 
 #include <cctype>
 #include <map>
+#include <mutex>
 #include <set>
 
 #include <string.h>
@@ -176,6 +177,10 @@ public:
     int main_nsolvables{0};
     int main_nrepodata{0};
     int main_end{0};
+
+    // Lock attachLibsolvRepo(), detachLibsolvRepo() and hy_repo_free() to ensure atomic behavior
+    // in threaded environment such as PackageKit.
+    std::mutex attachLibsolvMutex;
 
 private:
     Repo * owner;
