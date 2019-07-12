@@ -1826,15 +1826,19 @@ repo_internalize_all_trigger(Pool *pool)
 void
 repo_internalize_trigger(Repo * repo)
 {
-    if (repo) {
-        auto hrepo = static_cast<HyRepo>(repo->appdata);
+    if (!repo)
+        return;
+
+    if (auto hrepo = static_cast<HyRepo>(repo->appdata)) {
+        // HyRepo is attached. The hint needs_internalizing will be used.
         auto repoImpl = libdnf::repoGetImpl(hrepo);
         assert(repoImpl->libsolvRepo == repo);
         if (!repoImpl->needs_internalizing)
             return;
         repoImpl->needs_internalizing = false;
-        repo_internalize(repo);
     }
+
+    repo_internalize(repo);
 }
 
 void
