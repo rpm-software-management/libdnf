@@ -1441,13 +1441,6 @@ std::vector<std::string> Repo::getMirrors() const
     return mirrors;
 }
 
-void Repo::delReference()
-{
-    if (--pImpl->nrefs > 0)
-        return;
-    delete this;
-}
-
 int PackageTargetCB::end(TransferStatus status, const char * msg) { return 0; }
 int PackageTargetCB::progress(double totalToDownload, double downloaded) { return 0; }
 int PackageTargetCB::mirrorFailure(const char *msg, const char *url) { return 0; }
