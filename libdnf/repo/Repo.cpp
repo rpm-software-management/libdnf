@@ -1335,8 +1335,14 @@ LrHandle * Repo::Impl::getCachedHandle()
 void Repo::Impl::attachLibsolvRepo(LibsolvRepo * libsolvRepo)
 {
     std::lock_guard<std::mutex> guard(attachLibsolvMutex);
-    assert(!this->libsolvRepo);
-    ++nrefs;
+
+    if (this->libsolvRepo)
+        // A libsolvRepo was attached to this object before. Remove it's reference to this object.
+        this->libsolvRepo->appdata = nullptr;
+    else
+        // The libsolvRepo will reference this object. Increase reference counter.
+        ++nrefs;
+
     libsolvRepo->appdata = owner; // The libsolvRepo references back to us.
     libsolvRepo->subpriority = -owner->getCost();
     libsolvRepo->priority = -owner->getPriority();
