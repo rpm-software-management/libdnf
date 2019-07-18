@@ -13,12 +13,6 @@
 %bcond_without python3
 %endif
 
-%if 0%{?rhel}
-    %global rpm_version 4.14.2
-%else
-    %global rpm_version 4.14.2.1-4
-%endif
-
 %if 0%{?rhel} > 7 || 0%{?fedora} > 29
 # Disable python2 build by default
 %bcond_with python2
@@ -61,7 +55,7 @@ BuildRequires:  valgrind
 %endif
 BuildRequires:  pkgconfig(gio-unix-2.0) >= 2.46.0
 BuildRequires:  pkgconfig(gtk-doc)
-BuildRequires:  rpm-devel >= %{rpm_version}
+BuildRequires:  rpm-devel >= 4.11.0
 %if %{with rhsm}
 BuildRequires:  pkgconfig(librhsm) >= 0.0.3
 %endif
