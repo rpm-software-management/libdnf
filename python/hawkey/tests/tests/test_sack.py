@@ -22,7 +22,9 @@ from __future__ import absolute_import
 
 import copy
 import os
+import shutil
 import sys
+import tempfile
 import unittest
 
 from . import base
@@ -61,6 +63,13 @@ class TestSackTest(base.TestCase):
         self.assertTrue(sack.cache_dir.startswith("/tmp/pyhawkey"))
 
 class BasicTest(unittest.TestCase):
+    def setUp(self):
+        self.temp_dir = tempfile.mkdtemp(prefix="libdnf_test_")
+        self.cache_dir = os.path.join(self.temp_dir, "cache")
+
+    def tearDown(self):
+        shutil.rmtree(self.temp_dir)
+
     def test_creation(self):
         hawkey.Sack(arch="noarch")
         hawkey.Sack(arch="x86_64")
@@ -70,7 +79,7 @@ class BasicTest(unittest.TestCase):
         self.assertRaises(NotImplementedError, copy.deepcopy, sack)
 
     def test_creation_dir(self):
-        sack = hawkey.Sack()
+        sack = hawkey.Sack(cachedir=self.cache_dir)
         self.assertFalse(os.access(sack.cache_dir, os.F_OK))
         sack = hawkey.Sack(make_cache_dir=True)
         self.assertTrue(os.access(sack.cache_dir, os.F_OK))
