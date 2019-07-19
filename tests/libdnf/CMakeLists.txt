@@ -15,6 +15,8 @@ target_link_libraries(test_libdnf_main
 )
 
 add_test(test_libdnf_main test_libdnf_main)
+set_property(TEST test_libdnf_main PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/libdnf")
+
 if(NOT DISABLE_VALGRIND AND VALGRIND_PROGRAM)
     add_test(test_libdnf_valgrind ${VALGRIND_PROGRAM} --error-exitcode=1 --leak-check=full
         --suppressions=${CMAKE_SOURCE_DIR}/tests/glib.supp
@@ -23,4 +25,5 @@ if(NOT DISABLE_VALGRIND AND VALGRIND_PROGRAM)
         --suppressions=${CMAKE_SOURCE_DIR}/tests/librepo.supp
         ${CMAKE_CURRENT_BINARY_DIR}/test_libdnf_main
     )
+    set_property(TEST test_libdnf_valgrind PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/libdnf")
 endif()
