@@ -45,6 +45,11 @@
 #include "utils/bgettext/bgettext-lib.h"
 #include "dnf-package.h"
 
+// older RPM doesn't have RPMTAG_MODULARITYLABEL defined
+#ifndef RPMTAG_MODULARITYLABEL
+#define RPMTAG_MODULARITYLABEL 5096
+#endif
+
 
 static gboolean
 test_fail_safe(Header * hdr, DnfPackage * pkg, GError **error)
