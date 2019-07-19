@@ -213,14 +213,6 @@ popd
 %endif
 
 %check
-if [ "$(id -u)" == "0" ] ; then
-        cat <<ERROR 1>&2
-Package tests cannot be run under superuser account.
-Please build the package as non-root user.
-ERROR
-        exit 1
-fi
-
 %if %{with python2}
 pushd build-py2
   make ARGS="-V" test
