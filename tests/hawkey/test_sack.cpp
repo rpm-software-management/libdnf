@@ -42,8 +42,6 @@
 
 START_TEST(test_environment)
 {
-    /* currently only regular user is supported in unit tests */
-    fail_if(geteuid() == 0);
     /* check the tmpdir was created */
     fail_if(access(test_globals.tmpdir, W_OK));
 }
