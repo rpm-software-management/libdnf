@@ -1471,7 +1471,7 @@ dnf_context_setup_sack_with_flags(DnfContext               *context,
     if (!skip_rpmdb && have_existing_install(context)) {
         if (!dnf_sack_load_system_repo(priv->sack,
                                        nullptr,
-                                       DNF_SACK_LOAD_FLAG_BUILD_CACHE,
+                                       DNF_SACK_LOAD_FLAG_NONE,
                                        error))
             return FALSE;
     }
