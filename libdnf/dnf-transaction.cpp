@@ -1412,7 +1412,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     } else {
         // if sack is not available, create a custom instance
         rpmdb_version_sack = dnf_sack_new();
-        dnf_sack_load_system_repo(rpmdb_version_sack, nullptr, DNF_SACK_LOAD_FLAG_BUILD_CACHE, nullptr);
+        dnf_sack_load_system_repo(rpmdb_version_sack, nullptr, DNF_SACK_LOAD_FLAG_NONE, nullptr);
         rpmdb_begin = dnf_sack_get_rpmdb_version(rpmdb_version_sack);
         g_object_unref(rpmdb_version_sack);
     }
@@ -1457,7 +1457,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     // finalize swdb transaction
     // always load a new sack with rpmdb state after the transaction
     rpmdb_version_sack = dnf_sack_new();
-    dnf_sack_load_system_repo(rpmdb_version_sack, nullptr, DNF_SACK_LOAD_FLAG_BUILD_CACHE, nullptr);
+    dnf_sack_load_system_repo(rpmdb_version_sack, nullptr, DNF_SACK_LOAD_FLAG_NONE, nullptr);
     rpmdb_end = dnf_sack_get_rpmdb_version(rpmdb_version_sack);
     g_object_unref(rpmdb_version_sack);
 
