@@ -28,6 +28,8 @@ class MergedTransactionTest : public CppUnit::TestCase {
     CPPUNIT_TEST(test_downgrade);
     CPPUNIT_TEST(test_install_downgrade);
 
+    CPPUNIT_TEST(test_multilib_identity);
+
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -56,6 +58,7 @@ public:
     void test_downgrade();
     void test_install_downgrade();
 
+    void test_multilib_identity();
 private:
     std::shared_ptr< SQLite3 > conn;
 };
