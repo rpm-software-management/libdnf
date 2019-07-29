@@ -737,6 +737,65 @@ MergedTransactionTest::test_install_downgrade()
     CPPUNIT_ASSERT_EQUAL(TransactionItemReason::USER, item->getReason());
 }
 
+void
+MergedTransactionTest::test_multilib_identity()
+{
+    auto trans = std::make_shared< libdnf::swdb_private::Transaction >(conn);
+    trans->addItem(
+        nevraToRPMItem(conn, "gtk3-3.24.8-1.fc30.i686"),
+        "repo2",
+        TransactionItemAction::DOWNGRADE,
+        TransactionItemReason::USER
+    );
+    trans->addItem(
+        nevraToRPMItem(conn, "gtk3-3.24.10-1.fc31.i686"),
+        "repo2",
+        TransactionItemAction::DOWNGRADED,
+        TransactionItemReason::USER
+    );
+    trans->addItem(
+        nevraToRPMItem(conn, "gtk3-3.24.8-1.fc30.x86_64"),
+        "repo2",
+        TransactionItemAction::DOWNGRADE,
+        TransactionItemReason::USER
+    );
+    trans->addItem(
+        nevraToRPMItem(conn, "gtk3-3.24.10-1.fc31.x86_64"),
+        "repo2",
+        TransactionItemAction::DOWNGRADED,
+        TransactionItemReason::USER
+    );
+
+    MergedTransaction merged(trans);
+
+    auto items = merged.getItems();
+    CPPUNIT_ASSERT_EQUAL(4, (int)items.size());
+
+    auto item0 = items.at(0);
+    CPPUNIT_ASSERT_EQUAL(std::string("gtk3-3.24.10-1.fc31.i686"), item0->getItem()->toStr());
+    CPPUNIT_ASSERT_EQUAL(std::string("repo2"), item0->getRepoid());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemAction::DOWNGRADED, item0->getAction());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemReason::USER, item0->getReason());
+
+    auto item1 = items.at(1);
+    CPPUNIT_ASSERT_EQUAL(std::string("gtk3-3.24.8-1.fc30.i686"), item1->getItem()->toStr());
+    CPPUNIT_ASSERT_EQUAL(std::string("repo2"), item1->getRepoid());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemAction::DOWNGRADE, item1->getAction());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemReason::USER, item1->getReason());
+
+    auto item2 = items.at(2);
+    CPPUNIT_ASSERT_EQUAL(std::string("gtk3-3.24.10-1.fc31.x86_64"), item2->getItem()->toStr());
+    CPPUNIT_ASSERT_EQUAL(std::string("repo2"), item2->getRepoid());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemAction::DOWNGRADED, item2->getAction());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemReason::USER, item2->getReason());
+
+    auto item3 = items.at(3);
+    CPPUNIT_ASSERT_EQUAL(std::string("gtk3-3.24.8-1.fc30.x86_64"), item3->getItem()->toStr());
+    CPPUNIT_ASSERT_EQUAL(std::string("repo2"), item3->getRepoid());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemAction::DOWNGRADE, item3->getAction());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemReason::USER, item3->getReason());
+}
+
 /*
     def test_add_obsoleted_removed(self):
         """Test add with an obsoleted NEVRA which was removed before."""

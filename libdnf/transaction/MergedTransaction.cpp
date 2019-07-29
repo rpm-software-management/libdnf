@@ -217,7 +217,7 @@ getItemIdentifier(ItemPtr item)
     std::string name;
     if (itemType == ItemType::RPM) {
         auto rpm = std::dynamic_pointer_cast< RPMItem >(item);
-        name = rpm->getName();
+        name = rpm->getName() + "." + rpm->getArch();
     } else if (itemType == ItemType::GROUP) {
         auto group = std::dynamic_pointer_cast< CompsGroupItem >(item);
         name = group->getGroupId();
