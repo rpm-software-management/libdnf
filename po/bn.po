@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-05 11:00+0200\n"
+"POT-Creation-Date: 2019-07-30 11:16+0200\n"
 "PO-Revision-Date: 2015-03-23 02:51+0000\n"
 "Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
 "Language-Team: Bengali\n"
@@ -265,157 +265,167 @@ msgid ""
 "The operation would result in removing the following protected packages: "
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:324
+#: ../libdnf/repo/Repo.cpp:315
 #, c-format
 msgid "Bad id for repo: %s, byte = %s %d"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:349
+#: ../libdnf/repo/Repo.cpp:340
 #, c-format
 msgid "Repository %s has no mirror or baseurl set."
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:358
+#: ../libdnf/repo/Repo.cpp:349
 #, c-format
 msgid "Repository '%s' has unsupported type: 'type=%s', skipping."
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:562
+#: ../libdnf/repo/Repo.cpp:553
 #, c-format
 msgid "Cannot find a valid baseurl for repo: %s"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:598 ../libdnf/repo/Repo.cpp:1508
+#: ../libdnf/repo/Repo.cpp:589 ../libdnf/repo/Repo.cpp:1526
 msgid ""
 "Maximum download speed is lower than minimum. Please change configuration of"
 " minrate or throttle"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:648 ../libdnf/repo/Repo.cpp:670
+#: ../libdnf/repo/Repo.cpp:639 ../libdnf/repo/Repo.cpp:661
 #, c-format
 msgid "%s: gpgme_data_new_from_fd(): %s"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:656 ../libdnf/repo/Repo.cpp:678
+#: ../libdnf/repo/Repo.cpp:647 ../libdnf/repo/Repo.cpp:669
 #, c-format
 msgid "%s: gpgme_op_import(): %s"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:701 ../libdnf/repo/Repo.cpp:767
-#: ../libdnf/repo/Repo.cpp:861
+#: ../libdnf/repo/Repo.cpp:692 ../libdnf/repo/Repo.cpp:758
+#: ../libdnf/repo/Repo.cpp:830 ../libdnf/repo/Repo.cpp:872
 #, c-format
 msgid "%s: gpgme_ctx_set_engine_info(): %s"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:728 ../libdnf/repo/Repo.cpp:792
+#: ../libdnf/repo/Repo.cpp:719 ../libdnf/repo/Repo.cpp:783
 #, c-format
 msgid "can not list keys: %s"
 msgstr ""
 
+#: ../libdnf/repo/Repo.cpp:823
+#, c-format
+msgid "%s: gpgme_set_protocol(): %s"
+msgstr ""
+
 #: ../libdnf/repo/Repo.cpp:836
+#, c-format
+msgid "%s: gpgme_op_assuan_transact_ext(): %s"
+msgstr ""
+
+#: ../libdnf/repo/Repo.cpp:851
 #, c-format
 msgid "repo %s: 0x%s already imported"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:868
+#: ../libdnf/repo/Repo.cpp:886
 #, c-format
 msgid "repo %s: imported key 0x%s."
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1007
+#: ../libdnf/repo/Repo.cpp:1025
 #, c-format
 msgid "reviving: repo '%s' skipped, no metalink."
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1026
+#: ../libdnf/repo/Repo.cpp:1044
 #, c-format
 msgid "reviving: repo '%s' skipped, no usable hash."
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1049
+#: ../libdnf/repo/Repo.cpp:1067
 #, c-format
 msgid "reviving: failed for '%s', mismatched %s sum."
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1055
+#: ../libdnf/repo/Repo.cpp:1073
 #, c-format
 msgid "reviving: '%s' can be revived - metalink checksums match."
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1080
+#: ../libdnf/repo/Repo.cpp:1098
 #, c-format
 msgid "reviving: '%s' can be revived - repomd matches."
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1082
+#: ../libdnf/repo/Repo.cpp:1100
 #, c-format
 msgid "reviving: failed for '%s', mismatched repomd."
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1100
+#: ../libdnf/repo/Repo.cpp:1118
 #, c-format
 msgid "Cannot create repo destination directory \"%s\": %s"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1106
+#: ../libdnf/repo/Repo.cpp:1124
 #, c-format
 msgid "Cannot create repo temporary directory \"%s\": %s"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1120
+#: ../libdnf/repo/Repo.cpp:1138
 #, c-format
 msgid "Cannot create directory \"%s\": %s"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1143
+#: ../libdnf/repo/Repo.cpp:1161
 #, c-format
 msgid "Cannot rename directory \"%s\" to \"%s\": %s"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1163
+#: ../libdnf/repo/Repo.cpp:1181
 #, c-format
 msgid "repo: using cache for: %s"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1175
+#: ../libdnf/repo/Repo.cpp:1193
 #, c-format
 msgid "Cache-only enabled but no cache for '%s'"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1179
+#: ../libdnf/repo/Repo.cpp:1197
 #, c-format
 msgid "repo: downloading from remote: %s"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1185
+#: ../libdnf/repo/Repo.cpp:1203
 #, c-format
 msgid "Cannot download '%s': %s."
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1186
+#: ../libdnf/repo/Repo.cpp:1204
 #, c-format
-msgid "Failed to synchronize cache for repo '%s'"
+msgid "Failed to download metadata for repo '%s'"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1212
+#: ../libdnf/repo/Repo.cpp:1230
 msgid "getCachedir(): Computation of SHA256 failed"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1598
+#: ../libdnf/repo/Repo.cpp:1616
 msgid "resume cannot be used simultaneously with the byterangestart param"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1609
+#: ../libdnf/repo/Repo.cpp:1627
 #, c-format
 msgid "PackageTarget initialization failed: %s"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1726
+#: ../libdnf/repo/Repo.cpp:1744
 #, c-format
 msgid "Cannot open %s: %s"
 msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1770
+#: ../libdnf/repo/Repo.cpp:1788
 #, c-format
 msgid "Log handler with id %ld doesn't exist"
 msgstr ""
@@ -467,17 +477,17 @@ msgstr ""
 msgid "failed to set root"
 msgstr ""
 
-#: ../libdnf/dnf-transaction.cpp:1390
+#: ../libdnf/dnf-transaction.cpp:1391
 #, c-format
 msgid "Error %i running transaction test"
 msgstr ""
 
-#: ../libdnf/dnf-transaction.cpp:1430
+#: ../libdnf/dnf-transaction.cpp:1431
 #, c-format
 msgid "Error %i running transaction"
 msgstr ""
 
-#: ../libdnf/dnf-transaction.cpp:1445
+#: ../libdnf/dnf-transaction.cpp:1446
 #, c-format
 msgid "Transaction did not go to writing phase, but returned no error(%i)"
 msgstr ""
@@ -578,65 +588,92 @@ msgstr ""
 msgid "No valid Platform ID detected"
 msgstr ""
 
-#: ../libdnf/module/ModulePackageContainer.cpp:57
+#: ../libdnf/module/ModulePackageContainer.cpp:68
 #, c-format
 msgid "Cannot enable multiple streams for module '%s'"
 msgstr ""
 
-#: ../libdnf/module/ModulePackageContainer.cpp:219
+#: ../libdnf/module/ModulePackageContainer.cpp:290
 #, c-format
 msgid "Conflicting defaults with repo '%s': %s"
 msgstr ""
 
-#: ../libdnf/dnf-rpmts.cpp:88 ../libdnf/dnf-rpmts.cpp:133
+#: ../libdnf/module/ModulePackageContainer.cpp:1554
+#, c-format
+msgid "Unable to load modular Fail-Safe data at '%s'"
+msgstr ""
+
+#: ../libdnf/module/ModulePackageContainer.cpp:1560
+#, c-format
+msgid "Unable to load modular Fail-Safe data for module '%s:%s'"
+msgstr ""
+
+#: ../libdnf/module/ModulePackageContainer.cpp:1640
+#, c-format
+msgid "Unable to save a modular Fail Safe data to '%s'"
+msgstr ""
+
+#: ../libdnf/module/ModulePackageContainer.cpp:1665
+#, c-format
+msgid "Unable to remove a modular Fail Safe data in '%s'"
+msgstr ""
+
+#: ../libdnf/dnf-rpmts.cpp:73
+#, c-format
+msgid ""
+"No available modular metadata for modular package '%s'; cannot be installed "
+"on the system"
+msgstr ""
+
+#: ../libdnf/dnf-rpmts.cpp:115 ../libdnf/dnf-rpmts.cpp:160
 #, c-format
 msgid "signature does not verify for %s"
 msgstr ""
 
-#: ../libdnf/dnf-rpmts.cpp:96 ../libdnf/dnf-rpmts.cpp:141
+#: ../libdnf/dnf-rpmts.cpp:123 ../libdnf/dnf-rpmts.cpp:168
 #, c-format
 msgid "failed to open(generic error): %s"
 msgstr ""
 
-#: ../libdnf/dnf-rpmts.cpp:109
+#: ../libdnf/dnf-rpmts.cpp:136
 #, c-format
 msgid "failed to verify key for %s"
 msgstr ""
 
-#: ../libdnf/dnf-rpmts.cpp:117
+#: ../libdnf/dnf-rpmts.cpp:144
 #, c-format
 msgid "public key unavailable for %s"
 msgstr ""
 
-#: ../libdnf/dnf-rpmts.cpp:125
+#: ../libdnf/dnf-rpmts.cpp:152
 #, c-format
 msgid "signature not found for %s"
 msgstr ""
 
-#: ../libdnf/dnf-rpmts.cpp:154
+#: ../libdnf/dnf-rpmts.cpp:187
 #, c-format
 msgid "failed to add install element: %1$s [%2$i]"
 msgstr ""
 
-#: ../libdnf/dnf-rpmts.cpp:210
+#: ../libdnf/dnf-rpmts.cpp:268
 #, c-format
 msgid "Error running transaction: %s"
 msgstr ""
 
-#: ../libdnf/dnf-rpmts.cpp:219
+#: ../libdnf/dnf-rpmts.cpp:277
 msgid "Error running transaction and no problems were reported!"
 msgstr ""
 
-#: ../libdnf/dnf-rpmts.cpp:282
+#: ../libdnf/dnf-rpmts.cpp:340
 msgid "Fatal error, run database recovery"
 msgstr ""
 
-#: ../libdnf/dnf-rpmts.cpp:291
+#: ../libdnf/dnf-rpmts.cpp:349
 #, c-format
 msgid "failed to find package %s"
 msgstr ""
 
-#: ../libdnf/dnf-rpmts.cpp:337
+#: ../libdnf/dnf-rpmts.cpp:395
 #, c-format
 msgid "could not add erase element %1$s(%2$i)"
 msgstr ""
@@ -685,7 +722,7 @@ msgstr ""
 msgid "unknown unit '%s'"
 msgstr ""
 
-#: ../libdnf/conf/ConfigMain.cpp:320
+#: ../libdnf/conf/ConfigMain.cpp:322
 #, c-format
 msgid "percentage '%s' is out of range"
 msgstr ""
@@ -719,59 +756,59 @@ msgstr ""
 msgid "could not convert '%s' to seconds"
 msgstr ""
 
-#: ../libdnf/dnf-sack.cpp:399
+#: ../libdnf/dnf-sack.cpp:400
 #, c-format
-msgid "no %1$d string for %2$s"
+msgid "no %1$s string for %2$s"
 msgstr ""
 
-#: ../libdnf/dnf-sack.cpp:422
+#: ../libdnf/dnf-sack.cpp:423
 msgid "failed to add solv"
 msgstr ""
 
-#: ../libdnf/dnf-sack.cpp:440
+#: ../libdnf/dnf-sack.cpp:441
 #, c-format
 msgid "failed to open: %s"
 msgstr ""
 
-#: ../libdnf/dnf-sack.cpp:519
+#: ../libdnf/dnf-sack.cpp:520
 #, c-format
 msgid "cannot create temporary file: %s"
 msgstr ""
 
-#: ../libdnf/dnf-sack.cpp:529
+#: ../libdnf/dnf-sack.cpp:530
 #, c-format
 msgid "failed opening tmp file: %s"
 msgstr ""
 
-#: ../libdnf/dnf-sack.cpp:541
+#: ../libdnf/dnf-sack.cpp:542
 #, c-format
 msgid "write_main() failed writing data: %i"
 msgstr ""
 
-#: ../libdnf/dnf-sack.cpp:558
+#: ../libdnf/dnf-sack.cpp:559
 msgid "write_main() failed to re-load written solv file"
 msgstr ""
 
-#: ../libdnf/dnf-sack.cpp:623
+#: ../libdnf/dnf-sack.cpp:624
 #, c-format
 msgid "can not create temporary file %s"
 msgstr ""
 
-#: ../libdnf/dnf-sack.cpp:641
+#: ../libdnf/dnf-sack.cpp:642
 #, c-format
 msgid "write_ext(%1$d) has failed: %2$d"
 msgstr ""
 
-#: ../libdnf/dnf-sack.cpp:696
+#: ../libdnf/dnf-sack.cpp:697
 msgid "null repo md file"
 msgstr ""
 
-#: ../libdnf/dnf-sack.cpp:705
+#: ../libdnf/dnf-sack.cpp:706
 #, c-format
 msgid "can not read file %1$s: %2$s"
 msgstr ""
 
-#: ../libdnf/dnf-sack.cpp:719
+#: ../libdnf/dnf-sack.cpp:720
 msgid "repo_add_solv() has failed."
 msgstr ""
 
@@ -788,19 +825,19 @@ msgstr ""
 msgid "failed creating cachedir %s"
 msgstr ""
 
-#: ../libdnf/dnf-sack.cpp:1700
+#: ../libdnf/dnf-sack.cpp:1702
 msgid "failed calculating RPMDB checksum"
 msgstr ""
 
-#: ../libdnf/dnf-sack.cpp:1724
+#: ../libdnf/dnf-sack.cpp:1726
 msgid "failed loading RPMDB"
 msgstr ""
 
-#: ../libdnf/dnf-sack.cpp:2387
+#: ../libdnf/dnf-sack.cpp:2393
 msgid "No module defaults found"
 msgstr ""
 
-#: ../libdnf/transaction/Transformer.cpp:658
+#: ../libdnf/transaction/Transformer.cpp:659
 msgid "Transformer: can't open history persist dir"
 msgstr ""
 
