@@ -62,6 +62,13 @@ See the [hawkey documentation page](http://hawkey.readthedocs.org).
 
 Information internal to the hawkey development is maintained on a [github wiki](https://github.com/rpm-software-management/dnf/wiki#wiki-Contact).
 
+Plugins
+=======
+
+Example plugins can be found in the [plugins](https://github.com/rpm-software-management/libdnf/tree/master/plugins) directory together with a template which can be used as a starting point to build your own plugin.
+Some additional information on plugins is at [libdnf/plugin](https://github.com/rpm-software-management/libdnf/tree/master/libdnf/plugin).
+
+
 Useful links
 ============
 
