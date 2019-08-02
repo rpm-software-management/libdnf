@@ -84,7 +84,14 @@ START_TEST(test_list_arches)
 
     /* noarch, x86_64, athlon, i686, i586, i486, i386 */
     fail_unless(g_strv_length((gchar**)arches), 7);
-    ck_assert_str_eq(arches[3], "i686");
+
+    if (strcmp(arches[2], "athlon") == 0) {
+        // Fedora, Mageia
+        ck_assert_str_eq(arches[3], "i686");
+    } else {
+        // openSUSE - "athlon" is not available
+        ck_assert_str_eq(arches[3], "i586");
+    }
 
     g_free(arches);
     g_object_unref(sack);

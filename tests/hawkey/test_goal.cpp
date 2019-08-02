@@ -452,6 +452,7 @@ assert_list_names(GPtrArray *plist, ...)
 START_TEST(test_goal_upgrade_all)
 {
     HyGoal goal = hy_goal_create(test_globals.sack);
+    auto pool = dnf_sack_get_pool(test_globals.sack);
     hy_goal_upgrade_all(goal);
     fail_if(hy_goal_run_flags(goal, DNF_NONE));
 
@@ -463,8 +464,16 @@ START_TEST(test_goal_upgrade_all)
     g_ptr_array_unref(plist);
 
     plist = hy_goal_list_upgrades(goal, NULL);
-    assert_list_names<&dnf_package_get_name>(plist, "dog", "flying", "fool", "pilchard", "pilchard",
-                      NULL);
+    int implicitobsoleteusescolors = pool_get_flag(pool, POOL_FLAG_IMPLICITOBSOLETEUSESCOLORS);
+    if (implicitobsoleteusescolors) {
+        // Fedora, Mageia
+        assert_list_names<&dnf_package_get_name>(
+            plist, "dog", "flying", "fool", "pilchard", "pilchard", NULL);
+    } else {
+        // openSUSE
+        assert_list_names<&dnf_package_get_name>(
+            plist, "dog", "flying", "fool", NULL);
+    }
 
     // see all obsoletes of fool:
     auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 1));
@@ -747,6 +756,7 @@ START_TEST(test_goal_installonly_upgrade_all)
 {
     const char *installonly[] = {"fool", NULL};
     DnfSack *sack = test_globals.sack;
+    auto pool = dnf_sack_get_pool(test_globals.sack);
     HyGoal goal = hy_goal_create(sack);
 
     dnf_sack_set_installonly(sack, installonly);
@@ -761,7 +771,15 @@ START_TEST(test_goal_installonly_upgrade_all)
     plist = hy_goal_list_installs(goal, NULL);
     assert_list_names<&dnf_package_get_name>(plist, "fool", NULL);
     g_ptr_array_unref(plist);
-    assert_iueo(goal, 1, 4, 1, 0);
+
+    int implicitobsoleteusescolors = pool_get_flag(pool, POOL_FLAG_IMPLICITOBSOLETEUSESCOLORS);
+    if (implicitobsoleteusescolors) {
+        // Fedora, Mageia
+        assert_iueo(goal, 1, 4, 1, 0);
+    } else {
+        // openSUSE
+        assert_iueo(goal, 1, 2, 1, 0);
+    }
 
     hy_goal_free(goal);
 }
@@ -789,11 +807,19 @@ END_TEST
 START_TEST(test_goal_upgrade_disabled_repo)
 {
     DnfSack *sack = test_globals.sack;
+    auto pool = dnf_sack_get_pool(test_globals.sack);
     HyGoal goal = hy_goal_create(sack);
 
     hy_goal_upgrade_all(goal);
     hy_goal_run_flags(goal, DNF_NONE);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal, NULL)) == 5);
+    int implicitobsoleteusescolors = pool_get_flag(pool, POOL_FLAG_IMPLICITOBSOLETEUSESCOLORS);
+    if (implicitobsoleteusescolors) {
+        // Fedora, Mageia
+        fail_unless(size_and_free(hy_goal_list_upgrades(goal, NULL)) == 5);
+    } else {
+        // openSUSE
+        fail_unless(size_and_free(hy_goal_list_upgrades(goal, NULL)) == 3);
+    }
     hy_goal_free(goal);
 
     dnf_sack_repo_enabled(sack, "updates", 0);
@@ -883,14 +909,25 @@ END_TEST
 START_TEST(test_goal_distupgrade_all_keep_arch)
 {
     HyGoal goal = hy_goal_create(test_globals.sack);
+    auto pool = dnf_sack_get_pool(test_globals.sack);
     fail_if(hy_goal_distupgrade_all(goal));
     fail_if(hy_goal_run_flags(goal, DNF_NONE));
 
-    assert_iueo(goal, 0, 5, 0, 1);
     GPtrArray *plist = hy_goal_list_upgrades(goal, NULL);
+
+    int implicitobsoleteusescolors = pool_get_flag(pool, POOL_FLAG_IMPLICITOBSOLETEUSESCOLORS);
     // gun pkg is not upgraded to latest version of different arch
-    assert_list_names<&dnf_package_get_nevra>(plist, "dog-1-2.x86_64", "fool-1-5.noarch",
-        "flying-3.1-0.x86_64", "pilchard-1.2.4-1.x86_64", "pilchard-1.2.4-1.i686", NULL);
+    if (implicitobsoleteusescolors) {
+        // Fedora, Mageia
+        assert_iueo(goal, 0, 5, 0, 1);
+        assert_list_names<&dnf_package_get_nevra>(plist, "dog-1-2.x86_64", "fool-1-5.noarch",
+            "flying-3.1-0.x86_64", "pilchard-1.2.4-1.x86_64", "pilchard-1.2.4-1.i686", NULL);
+    } else {
+        // openSUSE
+        assert_iueo(goal, 0, 4, 0, 1);
+        assert_list_names<&dnf_package_get_nevra>(plist, "dog-1-2.x86_64", "fool-1-5.noarch",
+            "flying-3.1-0.x86_64", "pilchard-1.2.4-2.x86_64", NULL);
+    }
     g_ptr_array_unref(plist);
 
     plist = hy_goal_list_obsoleted(goal, NULL);
