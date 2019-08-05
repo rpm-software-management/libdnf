@@ -21,9 +21,11 @@
 #include "os-release.hpp"
 #include "File.hpp"
 #include "utils.hpp"
+#include "libdnf/dnf-context.h"
 
 #include <algorithm>
 #include <map>
+#include <rpm/rpmlib.h>
 #include <string>
 #include <vector>
 
@@ -66,6 +68,25 @@ std::map<std::string, std::string> getOsReleaseData(const std::vector<std::strin
         result.insert({key, value});
     }
     return result;
+}
+
+static void initLibRpm()
+{
+    static bool libRpmInitiated{false};
+    if (libRpmInitiated) return;
+    if (rpmReadConfigFiles(NULL, NULL) != 0) {
+        throw std::runtime_error("failed to read rpm config files\n");
+    }
+    libRpmInitiated = true;
+}
+
+static std::string getBaseArch()
+{
+    const char *value;
+    initLibRpm();
+    rpmGetArchInfo(&value, NULL);
+    value = find_base_arch(value);
+    return value ? std::string(value) : "";
 }
 
 }
