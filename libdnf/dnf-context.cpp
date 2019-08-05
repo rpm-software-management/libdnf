@@ -106,6 +106,18 @@ static const struct {
     { NULL,         { NULL } }
 };
 
+const gchar *
+find_base_arch(const char *native) {
+    for (int i = 0; arch_map[i].base != NULL; i++) {
+        for (int j = 0; arch_map[i].native[j] != NULL; j++) {
+            if (g_strcmp0(arch_map[i].native[j], native) == 0) {
+                return arch_map[i].base;
+            }
+        }
+    }
+    return NULL;
+}
+
 typedef struct
 {
     gchar            *repo_dir;
@@ -359,7 +371,6 @@ const gchar *
 dnf_context_get_base_arch(DnfContext *context)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
-    int i, j;
     const char *value;
 
     if (priv->base_arch)
@@ -370,16 +381,7 @@ dnf_context_get_base_arch(DnfContext *context)
     priv->os_info = g_strdup(value);
     rpmGetArchInfo(&value, NULL);
     priv->arch_info = g_strdup(value);
-
-    /* find the base architecture */
-    for (i = 0; arch_map[i].base != NULL && priv->base_arch == NULL; i++) {
-        for (j = 0; arch_map[i].native[j] != NULL; j++) {
-            if (g_strcmp0(arch_map[i].native[j], value) == 0) {
-                priv->base_arch = g_strdup(arch_map[i].base);
-                break;
-            }
-        }
-    }
+    priv->base_arch = g_strdup(find_base_arch(value));
 
     return priv->base_arch;
 }

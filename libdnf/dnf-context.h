@@ -107,6 +107,9 @@ gboolean         dnf_context_globals_init               (GError **error);
 
 DnfContext      *dnf_context_new                        (void);
 
+/* utils */
+const gchar     *find_base_arch                         (const char *native);
+
 /* getters */
 const gchar     *dnf_context_get_repo_dir               (DnfContext     *context);
 const gchar * const *dnf_context_get_vars_dir           (DnfContext     *context);
