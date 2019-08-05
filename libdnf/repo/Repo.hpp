@@ -183,6 +183,16 @@ public:
     void addMetadataTypeToDownload(const std::string &metadataType);
 
     /**
+    * @brief Stop asking for this additional repository metadata type
+    *
+    * given metadata_type is no longer downloaded by default
+    * when this repository is downloaded.
+    *
+    * @param metadataType metadata type (filelists, other, productid...)
+    */
+    void removeMetadataTypeFromDownload(const std::string &metadataType);
+
+    /**
     * @brief Return path to the particular downloaded repository metadata in cache
     *
     * @param metadataType metadata type (filelists, other, productid...)

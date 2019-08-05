@@ -437,6 +437,11 @@ void Repo::addMetadataTypeToDownload(const std::string &metadataType)
     pImpl->additionalMetadata.insert(metadataType);
 }
 
+void Repo::removeMetadataTypeFromDownload(const std::string &metadataType)
+{
+    pImpl->additionalMetadata.erase(metadataType);
+}
+
 std::string Repo::getMetadataPath(const std::string &metadataType)
 {
     return pImpl->getMetadataPath(metadataType);
