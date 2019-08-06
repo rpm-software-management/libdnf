@@ -20,6 +20,18 @@
 ######################
 
 ====================
+0.35.2 Release Notes
+====================
+
+- Make libdnf own its plugin directory (RhBug:1714265)
+- Don't disable nonexistent but required repositories (RhBug:1689331)
+- Set priority of dnf.conf.d drop-ins
+- Fix toString() to not insert [] (RhBug:1584442)
+- Ignore trailing blank lines in config (RhBug:1722493)
+- Fix handling large number of filenames on input (RhBug:1690915)
+- Fix attaching/detaching of libsolvRepo (RhBug:1727343,1727424)
+
+====================
 0.35.1 Release Notes
 ====================
 - Skip invalid key files in "/etc/pki/rpm-gpg" with warning (RhBug:1644040)
