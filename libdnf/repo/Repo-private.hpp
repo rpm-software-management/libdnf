@@ -149,6 +149,7 @@ public:
     std::string revision;
     std::vector<std::string> content_tags;
     std::vector<std::pair<std::string, std::string>> distro_tags;
+    std::vector<std::pair<std::string, std::string>> metadata_locations;
     unsigned char checksum[CHKSUM_BYTES];
     bool useIncludes{false};
     bool loadMetadataOther;
