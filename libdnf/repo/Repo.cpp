@@ -1025,6 +1025,15 @@ bool Repo::Impl::loadCache(bool throwExcept)
                 distro_tags.emplace_back(distroTag->cpeid, distroTag->tag);
         }
     }
+
+    metadata_locations.clear();
+    for (auto elem = yum_repomd->records; elem; elem = g_slist_next(elem)) {
+        if (elem->data) {
+            auto rec = static_cast<LrYumRepoMdRecord *>(elem->data);
+            metadata_locations.emplace_back(rec->type, rec->location_href);
+        }
+    }
+
     if (auto cRevision = yum_repomd->revision) {
         revision = cRevision;
     }
@@ -1549,6 +1558,11 @@ const std::vector<std::string> & Repo::getContentTags()
 const std::vector<std::pair<std::string, std::string>> & Repo::getDistroTags()
 {
     return pImpl->distro_tags;
+}
+
+const std::vector<std::pair<std::string, std::string>> Repo::getMetadataLocations() const
+{
+    return pImpl->metadata_locations;
 }
 
 const std::string & Repo::getRevision() const

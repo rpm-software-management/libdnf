@@ -256,6 +256,15 @@ public:
     const std::vector<std::string> & getContentTags();
     const std::vector<std::pair<std::string, std::string>> & getDistroTags();
 
+    /**
+    * @brief Get list of relative locations of metadata files inside the repo
+    *
+    * e.g. [('primary', 'repodata/primary.xml.gz'), ('filelists', 'repodata/filelists.xml.gz')...]
+    *
+    * @return vector of (metadata_type, location) string pairs
+    */
+    const std::vector<std::pair<std::string, std::string>> getMetadataLocations() const;
+
     std::string getCachedir() const;
     void setRepoFilePath(const std::string & path);
     const std::string & getRepoFilePath() const noexcept;
