@@ -118,7 +118,8 @@ hy_detect_arch(char **arch)
             modifier++;
         if (getauxval(AT_HWCAP) & HWCAP_ARM_VFP)
             *modifier++ = 'h';
-        if (getauxval(AT_HWCAP2) & HWCAP2_AES)
+        // arm version >= 8 can have crypto extension
+        if ((atoi(un.machine+4) >= 8) && (getauxval(AT_HWCAP2) & HWCAP2_AES))
             *modifier++ = 'c';
         if (getauxval(AT_HWCAP) & HWCAP_ARM_NEON)
             *modifier++ = 'n';
