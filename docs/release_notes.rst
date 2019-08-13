@@ -20,6 +20,15 @@
 ######################
 
 ====================
+0.35.3 Release Notes
+====================
+
+- Detect armv7 with crypto extension only on arm version >= 8
+- A new standardized User-Agent field consisting of the libdnf and OS version
+  (including the variant) (RhBug:1156007)
+- Add basic countme support (RhBug:1647454)
+
+====================
 0.35.2 Release Notes
 ====================
 
