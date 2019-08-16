@@ -340,3 +340,11 @@ TransactionItemReasonTest::testCompareReasons()
     CPPUNIT_ASSERT(TransactionItemReason::GROUP < TransactionItemReason::USER);
     CPPUNIT_ASSERT(TransactionItemReason::GROUP <= TransactionItemReason::USER);
 }
+
+void
+TransactionItemReasonTest::testTransactionItemReasonCompare()
+{
+    CPPUNIT_ASSERT_EQUAL(-1, TransactionItemReasonCompare(TransactionItemReason::GROUP, TransactionItemReason::USER));
+    CPPUNIT_ASSERT_EQUAL(0, TransactionItemReasonCompare(TransactionItemReason::USER, TransactionItemReason::USER));
+    CPPUNIT_ASSERT_EQUAL(1, TransactionItemReasonCompare(TransactionItemReason::USER, TransactionItemReason::GROUP));
+}
