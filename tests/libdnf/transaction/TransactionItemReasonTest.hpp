@@ -16,6 +16,7 @@ class TransactionItemReasonTest : public CppUnit::TestCase {
     CPPUNIT_TEST(test_TwoTransactions_TwoTransactionItems);
     CPPUNIT_TEST(testRemovedPackage);
     CPPUNIT_TEST(testCompareReasons);
+    CPPUNIT_TEST(testTransactionItemReasonCompare);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -30,6 +31,7 @@ public:
     void test_TwoTransactions_TwoTransactionItems();
     void testRemovedPackage();
     void testCompareReasons();
+    void testTransactionItemReasonCompare();
 
 private:
     std::shared_ptr< SQLite3 > conn;

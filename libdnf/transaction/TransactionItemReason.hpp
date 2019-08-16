@@ -88,6 +88,20 @@ inline bool operator>=(TransactionItemReason lhs, TransactionItemReason rhs) {
     return lhs > rhs;
 }
 
+
+inline int
+TransactionItemReasonCompare(TransactionItemReason lhs, TransactionItemReason rhs)
+{
+    if (lhs < rhs) {
+        return -1;
+    } else if (lhs > rhs) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+
 } // namespace libdnf
 
 #endif // LIBDNF_TRANSACTION_TRANSACTIONITEMREASON_HPP
