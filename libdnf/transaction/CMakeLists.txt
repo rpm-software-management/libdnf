@@ -7,6 +7,7 @@ set(TRANSACTION_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/Transaction.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MergedTransaction.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TransactionItem.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/TransactionItemReason.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Transformer.cpp
 )
 
