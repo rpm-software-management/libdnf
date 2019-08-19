@@ -21,6 +21,10 @@
 #ifndef LIBDNF_TRANSACTION_TRANSACTIONITEMREASON_HPP
 #define LIBDNF_TRANSACTION_TRANSACTIONITEMREASON_HPP
 
+
+#include <string>
+
+
 namespace libdnf {
 
 enum class TransactionItemReason : int {
@@ -31,6 +35,11 @@ enum class TransactionItemReason : int {
     WEAK_DEPENDENCY = 4,
     GROUP = 5
 };
+
+
+const std::string &
+TransactionItemReasonToString(TransactionItemReason reason);
+
 
 inline bool operator<(TransactionItemReason lhs, TransactionItemReason rhs)
 {
