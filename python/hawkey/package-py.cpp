@@ -353,7 +353,7 @@ static PyObject *
 is_in_active_module(_PackageObject *self, PyObject *unused)
 {
     DnfSack * csack = sackFromPyObject(self->sack);
-    DnfPackageSet * includes = dnf_sack_get_module_includes(csack);
+    std::unique_ptr<DnfPackageSet> includes(dnf_sack_get_module_includes(csack));
     if (!includes) {
         Py_RETURN_FALSE;
     }
