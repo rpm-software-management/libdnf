@@ -1616,7 +1616,13 @@ void ModulePackageContainer::updateFailSafeData()
     map_init(&map, fileNames.size());
     auto begin = fileNames.begin();
     auto end = fileNames.end();
-    g_mkdir_with_parents(pImpl->persistDir.c_str(), 0755);
+    if (g_mkdir_with_parents(pImpl->persistDir.c_str(), 0755) == -1) {
+        const char * errTxt = strerror(errno);
+        auto logger(Log::getLogger());
+        logger->debug(tfm::format(
+            _("Unable to create directory \"%s\" for modular Fail Safe data: %s"),
+            pImpl->persistDir.c_str(), errTxt));
+    }
 
     // Update FailSafe data
     for (auto modulePackage: latest) {
