@@ -164,6 +164,12 @@ public:
     * @return bool
     */
     bool empty();
+    /**
+     * @brief Applies all filters and keep only installed packages that have no available package
+     * with a same name and architecture.
+     * Excluded available packages are handled like other available packages. Modular excludes are
+     * applied.
+     */
     void filterExtras();
     void filterRecent(const long unsigned int recent_limit);
     void filterDuplicated();
