@@ -213,7 +213,9 @@ bool updateFile(const char * filePath, const char * newFileContent)
         ssize_t readed;
         do {
             readed = read(fd, buf1, BLOCK_SIZE);
-            if (memcmp(buf1, tmpFileContent, readed) != 0) {
+            if (readed < 0 && errno == EINTR)
+                continue;
+            if (readed < 0 || memcmp(buf1, tmpFileContent, readed) != 0) {
                 close(fd);
                 return saveFile(filePath, newFileContent, newFileContentLen);
             }
