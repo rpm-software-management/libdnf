@@ -141,6 +141,15 @@ nevraCompareLowerSolvable(const NevraID &first, const Solvable &s)
 }
 
 static bool
+NameArchSolvableComparator(const Solvable * first, const Solvable * second)
+{
+    if (first->name != second->name)
+        return first->name < second->name;
+    return first->arch < second->arch;
+}
+
+
+static bool
 match_type_num(int keyname) {
     switch (keyname) {
         case HY_PKG_EMPTY:
@@ -1995,47 +2004,46 @@ Query::empty()
 void
 Query::filterExtras()
 {
-    Pool *pool = dnf_sack_get_pool(pImpl->sack);
-    bool matched;
-    Solvable *s_installed, *s_available;
-
     apply();
+
+    Pool * pool = dnf_sack_get_pool(pImpl->sack);
 
     auto resultMap = pImpl->result->getMap();
     Query query_installed(*this);
     query_installed.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-    Query query_available(*this);
-    query_available.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
-
     query_installed.apply();
-    query_available.apply();
     MAPZERO(resultMap);
+    if (query_installed.size() == 0) {
+        return;
+    }
+
+    // create query with available packages without non-modular excludes. As a extras should be
+    // considered anso packages in non-active modules
+    Query query_available(pImpl->sack, Query::ExcludeFlags::IGNORE_REGULAR_EXCLUDES);
+    query_available.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    query_available.apply();
+
+    auto resultAvailable = query_available.pImpl->result.get();
+    Id id_available = -1;
+
+    // make vector of available solvables
+    std::vector<Solvable *> namesArch;
+    namesArch.reserve(resultAvailable->size());
+    while ((id_available = resultAvailable->next(id_available)) != -1) {
+        namesArch.push_back(pool_id2solvable(pool, id_available));
+    }
+    std::sort(namesArch.begin(), namesArch.end(), NameArchSolvableComparator);
     Id id_installed = -1;
     auto resultInstalled = query_installed.pImpl->result.get();
-    auto resultAvailable = query_available.pImpl->result.get();
 
-    while (true) {
-        id_installed = resultInstalled->next(id_installed);
-        if (id_installed == -1)
-            break;
-
-        s_installed = pool_id2solvable(pool, id_installed);
-        matched = false;
-        Id id_available = -1;
-        while (true) {
-            id_available = resultAvailable->next(id_available);
-            if (id_available == -1)
-                break;
-
-            s_available = pool_id2solvable(pool, id_available);
-            if ((s_installed->name == s_available->name) && (s_installed->evr == s_available->evr)
-                && (s_installed->arch == s_available->arch)) {
-                matched = true;
-                break;
-            }
-        }
-        if (!matched)
+    while ((id_installed = resultInstalled->next(id_installed)) != -1) {
+        Solvable * s_installed = pool_id2solvable(pool, id_installed);
+        auto low = std::lower_bound(namesArch.begin(), namesArch.end(), s_installed,
+                                    NameArchSolvableComparator);
+        if (low == namesArch.end() || (*low)->name != s_installed->name ||
+            (*low)->arch != s_installed->arch) {
             MAPSET(resultMap, id_installed);
+        }
     }
 }
 
