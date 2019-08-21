@@ -352,11 +352,16 @@ class TestQueryUpdates(base.TestCase):
         q = hawkey.Query(self.sack).filter(name="penny")
         o = hawkey.Query(self.sack)
         self.assertRaises(hawkey.QueryException, o.filter, obsoletes__gt=q)
-        self.assertRaises(hawkey.ValueException, o.filter, requires=q)
 
         o = hawkey.Query(self.sack).filter(obsoletes=q)
         self.assertLength(o, 1)
         self.assertEqual(str(o[0]), "fool-1-5.noarch")
+
+    def test_requires_with_package_list(self):
+        q = hawkey.Query(self.sack).filter(name="fool")
+        o = hawkey.Query(self.sack).filter(requires=q)
+        self.assertLength(o, 1)
+        self.assertEqual(str(o[0]), "walrus-2-6.noarch")
 
     def test_subquery_evaluated(self):
         q = hawkey.Query(self.sack).filter(name="penny")
