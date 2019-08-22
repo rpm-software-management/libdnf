@@ -58,7 +58,7 @@ public:
     };
 
     ModuleDefaultsContainer();
-    ~ModuleDefaultsContainer() = default;
+    ~ModuleDefaultsContainer();
 
     void fromString(const std::string &content, int priority);
     std::vector<std::string> getDefaultProfiles(std::string & name, std::string & stream);
@@ -73,7 +73,7 @@ private:
     template<typename T>
     void checkAndThrowException(GError *error);
 
-    std::shared_ptr<ModulemdPrioritizer> prioritizer;
+    ModulemdPrioritizer * prioritizer;
     std::map<std::string, std::unique_ptr<ModulemdDefaults>> defaults;
     void reportFailures(const GPtrArray *failures) const;
 };
