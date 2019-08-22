@@ -747,7 +747,6 @@ ModulePackageContainer::getModuleState(const std::string& name)
 
 std::set<std::string> ModulePackageContainer::getInstalledPkgNames()
 {
-    std::map<std::string, std::vector<std::shared_ptr<ModulePackage>>> moduleMap;
     auto moduleNames = pImpl->persistor->getAllModuleNames();
     std::set<std::string> pkgNames;
     for (auto & moduleName: moduleNames) {
