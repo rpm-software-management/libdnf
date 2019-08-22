@@ -321,41 +321,33 @@ dnf_sack_last_solvable(DnfSack *sack)
     return dnf_sack_get_pool(sack)->nsolvables - 1;
 }
 
-/**
- * dnf_sack_recompute_considered:
- * @sack: a #DnfSack instance.
- *
- * DOES SOMETHING.
- *
- * Since: 0.7.0
- */
 void
-dnf_sack_recompute_considered(DnfSack *sack)
+dnf_sack_recompute_considered_map(DnfSack * sack, Map ** considered, libdnf::Query::ExcludeFlags flags)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     Pool *pool = dnf_sack_get_pool(sack);
-    if (priv->considered_uptodate)
-        return;
-    if (!pool->considered) {
-        if (!priv->repo_excludes && !priv->module_excludes && !priv->pkg_excludes &&
-            !priv->pkg_includes)
+    if (!*considered) {
+        if ((flags & libdnf::Query::ExcludeFlags::IGNORE_REGULAR_EXCLUDES ||
+            (!priv->repo_excludes && !priv->pkg_excludes && !priv->pkg_includes))
+            && (flags & libdnf::Query::ExcludeFlags::IGNORE_MODULAR_EXCLUDES || !priv->module_excludes)) {
             return;
-        pool->considered = static_cast<Map *>(g_malloc0(sizeof(Map)));
-        map_init(pool->considered, pool->nsolvables);
+        }
+        *considered = static_cast<Map *>(g_malloc0(sizeof(Map)));
+        map_init(*considered, pool->nsolvables);
     } else
-        map_grow(pool->considered, pool->nsolvables);
+        map_grow(*considered, pool->nsolvables);
 
     // considered = (all - repo_excludes - pkg_excludes) and
     //              (pkg_includes + all_from_repos_not_using_includes)
-    map_setall(pool->considered);
+    map_setall(*considered);
     dnf_sack_make_provides_ready(sack);
-    if (priv->repo_excludes)
-        map_subtract(pool->considered, priv->repo_excludes);
-    if (priv->pkg_excludes)
-        map_subtract(pool->considered, priv->pkg_excludes);
-    if (priv->module_excludes)
-        map_subtract(pool->considered, priv->module_excludes);
-    if (priv->pkg_includes) {
+    if (!(flags & libdnf::Query::ExcludeFlags::IGNORE_REGULAR_EXCLUDES) && priv->repo_excludes)
+        map_subtract(*considered, priv->repo_excludes);
+    if (!(flags & libdnf::Query::ExcludeFlags::IGNORE_REGULAR_EXCLUDES) && priv->pkg_excludes)
+        map_subtract(*considered, priv->pkg_excludes);
+    if (!(flags & libdnf::Query::ExcludeFlags::IGNORE_MODULAR_EXCLUDES) && priv->module_excludes)
+        map_subtract(*considered, priv->module_excludes);
+    if (!(flags & libdnf::Query::ExcludeFlags::IGNORE_REGULAR_EXCLUDES) && priv->pkg_includes) {
         map_grow(priv->pkg_includes, pool->nsolvables);
         Map pkg_includes_tmp;
         map_init_clone(&pkg_includes_tmp, priv->pkg_includes);
@@ -373,9 +365,28 @@ dnf_sack_recompute_considered(DnfSack *sack)
             }
         }
 
-        map_and(pool->considered, &pkg_includes_tmp);
+        map_and(*considered, &pkg_includes_tmp);
         map_free(&pkg_includes_tmp);
     }
+}
+
+/**
+ * dnf_sack_recompute_considered:
+ * @sack: a #DnfSack instance.
+ *
+ * DOES SOMETHING.
+ *
+ * Since: 0.7.0
+ */
+void
+dnf_sack_recompute_considered(DnfSack *sack)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    Pool *pool = dnf_sack_get_pool(sack);
+    if (priv->considered_uptodate)
+        return;
+    dnf_sack_recompute_considered_map(
+        sack, &pool->considered, libdnf::Query::ExcludeFlags::APPLY_EXCLUDES);
     priv->considered_uptodate = TRUE;
 }
 
@@ -2411,7 +2422,7 @@ std::string dnf_sack_get_rpmdb_version(DnfSack *sack) {
     std::vector<std::string> checksums;
 
     // iterate all @System repo RPMs (rpmdb records)
-    libdnf::Query query{sack, HY_IGNORE_EXCLUDES};
+    libdnf::Query query{sack, libdnf::Query::ExcludeFlags::IGNORE_EXCLUDES};
     query.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
 
     auto pset = query.getResultPset();

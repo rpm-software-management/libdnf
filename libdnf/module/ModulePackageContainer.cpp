@@ -656,7 +656,7 @@ ModulePackageContainer::query(std::string subject)
 {
     // Alternatively a search using module provides could be performed
     std::vector<ModulePackage *> result;
-    Query query(pImpl->moduleSack, HY_IGNORE_EXCLUDES);
+    Query query(pImpl->moduleSack, Query::ExcludeFlags::IGNORE_EXCLUDES);
     // platform modules are installed and not in modules std::Map.
     query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     std::ostringstream ss;
@@ -676,7 +676,7 @@ ModulePackageContainer::query(std::string name, std::string stream, std::string 
 {
     // Alternatively a search using module provides could be performed
     std::vector<ModulePackage *> result;
-    Query query(pImpl->moduleSack, HY_IGNORE_EXCLUDES);
+    Query query(pImpl->moduleSack, Query::ExcludeFlags::IGNORE_EXCLUDES);
     // platform modules are installed and not in modules std::Map.
     query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     std::ostringstream ss;

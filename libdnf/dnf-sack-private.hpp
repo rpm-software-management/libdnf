@@ -26,7 +26,9 @@
 #include <vector>
 
 #include "dnf-sack.h"
+#include "hy-query.h"
 #include "sack/packageset.hpp"
+#include "sack/query.hpp"
 #include "module/ModulePackage.hpp"
 #include "module/ModulePackageContainer.hpp"
 
@@ -62,6 +64,7 @@ libdnf::ModulePackageContainer * dnf_sack_set_module_container(
 libdnf::ModulePackageContainer * dnf_sack_get_module_container(DnfSack *sack);
 void         dnf_sack_make_provides_ready   (DnfSack    *sack);
 Id           dnf_sack_running_kernel        (DnfSack    *sack);
+void         dnf_sack_recompute_considered_map  (DnfSack * sack, Map ** considered, libdnf::Query::ExcludeFlags flags);
 void         dnf_sack_recompute_considered  (DnfSack    *sack);
 Id           dnf_sack_last_solvable         (DnfSack    *sack);
 const char * dnf_sack_get_arch              (DnfSack    *sack);

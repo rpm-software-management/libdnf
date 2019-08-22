@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2018 Red Hat, Inc.
+ * Copyright (C) 2012-2019 Red Hat, Inc.
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *

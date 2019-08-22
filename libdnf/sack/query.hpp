@@ -24,6 +24,7 @@
 #include <memory>
 #include <vector>
 #include "../hy-types.h"
+#include "../hy-query.h"
 #include "../repo/solvable/Dependency.hpp"
 #include "../repo/solvable/DependencyContainer.hpp"
 #include "../transaction/Swdb.hpp"
@@ -68,9 +69,16 @@ private:
 */
 struct Query {
 public:
+    enum class ExcludeFlags {
+    APPLY_EXCLUDES = 0,
+    IGNORE_MODULAR_EXCLUDES = 1 << 0,
+    IGNORE_REGULAR_EXCLUDES = 1 << 1,
+    IGNORE_EXCLUDES = IGNORE_MODULAR_EXCLUDES | IGNORE_REGULAR_EXCLUDES
+    };
+
     Query(const Query & query_src);
     Query(Query && query_src) = delete;
-    Query(DnfSack* sack, int flags = 0);
+    Query(DnfSack* sack, ExcludeFlags flags = ExcludeFlags::APPLY_EXCLUDES);
     ~Query();
     Query & operator=(const Query& query_src);
     Query & operator=(Query && src_query) = delete;
@@ -177,6 +185,16 @@ private:
     class Impl;
     std::unique_ptr<Impl> pImpl;
 };
+
+inline Query::ExcludeFlags operator|(Query::ExcludeFlags a, Query::ExcludeFlags b)
+{
+    return static_cast<Query::ExcludeFlags>(static_cast<int>(a) | static_cast<int>(b));
+}
+
+inline bool operator&(Query::ExcludeFlags a, Query::ExcludeFlags b)
+{
+    return (static_cast<int>(a) & static_cast<int>(b)) == static_cast<int>(b);
+}
 
 }
 
