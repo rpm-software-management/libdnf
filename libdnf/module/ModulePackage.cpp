@@ -321,7 +321,7 @@ ModulePackage::getProfiles(const std::string &name) const
 /**
  * @brief Return list of ModuleProfiles.
  *
- * @return std::vector<std::shared_ptr<ModuleProfile>>
+ * @return std::vector<ModuleProfile>
  */
 std::vector<ModuleProfile> ModulePackage::getProfiles() const
 {
@@ -331,7 +331,7 @@ std::vector<ModuleProfile> ModulePackage::getProfiles() const
 /**
  * @brief Return list of ModuleDependencies.
  *
- * @return std::vector<std::shared_ptr<ModuleDependencies>>
+ * @return std::vector<ModuleDependencies>
  */
 std::vector<ModuleDependencies> ModulePackage::getModuleDependencies() const
 {

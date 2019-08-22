@@ -31,8 +31,6 @@
 #include <vector>
 #include <set>
 
-//class ModulePackageContainer;
-//typedef std::shared_ptr<ModulePackageContainer> ModulePackageContainerPtr;
 namespace libdnf {
 
 struct ModulePackageContainer
@@ -249,7 +247,7 @@ public:
     * @brief Requiers subject in format <name>, <name>:<stream>, or <name>:<stream>:<version>
     *
     * @param subject p_subject:...
-    * @return std::vector< std::shared_ptr< ModulePackage > >
+    * @return std::vector<ModulePackage *>
     */
     std::vector<ModulePackage *> query(std::string subject);
     std::vector<ModulePackage *> query(std::string name, std::string stream,
