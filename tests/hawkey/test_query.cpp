@@ -28,7 +28,6 @@
 #include "libdnf/hy-query-private.hpp"
 #include "libdnf/hy-package.h"
 #include "libdnf/hy-packageset.h"
-#include "libdnf/dnf-enums.hpp"
 #include "libdnf/dnf-reldep.h"
 #include "libdnf/dnf-reldep-list.h"
 #include "libdnf/dnf-sack-private.hpp"
