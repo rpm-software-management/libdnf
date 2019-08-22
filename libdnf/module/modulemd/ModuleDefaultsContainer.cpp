@@ -28,8 +28,11 @@
 namespace libdnf {
 
 ModuleDefaultsContainer::ModuleDefaultsContainer()
+: prioritizer(modulemd_prioritizer_new()) {}
+
+ModuleDefaultsContainer::~ModuleDefaultsContainer()
 {
-    prioritizer = std::shared_ptr<ModulemdPrioritizer>(modulemd_prioritizer_new(), g_object_unref);
+    g_object_unref(prioritizer);
 }
 
 void ModuleDefaultsContainer::fromString(const std::string &content, int priority)
@@ -86,14 +89,14 @@ void ModuleDefaultsContainer::saveDefaults(GPtrArray *data, int priority)
     }
 
     GError *error = nullptr;
-    modulemd_prioritizer_add(prioritizer.get(), data, priority, &error);
+    modulemd_prioritizer_add(prioritizer, data, priority, &error);
     checkAndThrowException<ConflictException>(error);
 }
 
 void ModuleDefaultsContainer::resolve()
 {
     GError *error = nullptr;
-    g_autoptr(GPtrArray) data = modulemd_prioritizer_resolve(prioritizer.get(), &error);
+    g_autoptr(GPtrArray) data = modulemd_prioritizer_resolve(prioritizer, &error);
     checkAndThrowException<ResolveException>(error);
 
     for (unsigned int i = 0; i < data->len; i++) {
