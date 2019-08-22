@@ -639,12 +639,12 @@ const std::vector< _Match >& Filter::getMatches() const noexcept { return pImpl-
 class Query::Impl {
 private:
     friend struct Query;
-    Impl(DnfSack* sack, int flags = 0);
+    Impl(DnfSack* sack, Query::ExcludeFlags flags = Query::ExcludeFlags::APPLY_EXCLUDES);
     Impl(const Query::Impl & src_query);
     Impl & operator= (const Impl & src);
     bool applied{0};
     DnfSack *sack;
-    int flags;
+    Query::ExcludeFlags flags;
     std::unique_ptr<PackageSet> result;
     std::vector<Filter> filters;
     void apply();
@@ -685,7 +685,7 @@ private:
     bool isGlob(const std::vector<const char *> &matches) const;
 };
 
-Query::Impl::Impl(DnfSack* sack, int flags)
+Query::Impl::Impl(DnfSack* sack, Query::ExcludeFlags flags)
 : sack(sack), flags(flags) {}
 
 Query::Impl::Impl(const Query::Impl & src)
@@ -714,9 +714,8 @@ Query::Impl::operator=(const Query::Impl & src)
     return *this;
 }
 
-
 Query::Query(const Query & query_src) : pImpl(new Impl(*query_src.pImpl)) {}
-Query::Query(DnfSack *sack, int flags) : pImpl(new Impl(sack, flags)) {}
+Query::Query(DnfSack *sack, Query::ExcludeFlags flags) : pImpl(new Impl(sack, flags)) {}
 Query::~Query() = default;
 
 Query & Query::operator=(const Query & query_src) { *pImpl = *query_src.pImpl; return *this; }
@@ -998,7 +997,6 @@ Query::Impl::initResult()
 {
     Pool *pool = dnf_sack_get_pool(sack);
     Id solvid;
-
     int sack_pool_nsolvables = dnf_sack_get_pool_nsolvables(sack);
     if (sack_pool_nsolvables != 0 && sack_pool_nsolvables == pool->nsolvables)
         result.reset(dnf_sack_get_pkg_solvables(sack));
@@ -1008,10 +1006,17 @@ Query::Impl::initResult()
             result->set(solvid);
         dnf_sack_set_pkg_solvables(sack, result->getMap(), pool->nsolvables);
     }
-    if (!(flags & HY_IGNORE_EXCLUDES)) {
+    if (flags == Query::ExcludeFlags::APPLY_EXCLUDES) {
         dnf_sack_recompute_considered(sack);
         if (pool->considered)
             map_and(result->getMap(), pool->considered);
+    } else {
+        Map * considered = nullptr;
+        dnf_sack_recompute_considered_map(sack, &considered, flags);
+        if (considered) {
+            map_and(result->getMap(), considered);
+            free_map_fully(considered);
+        }
     }
 }
 

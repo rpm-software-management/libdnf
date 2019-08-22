@@ -33,6 +33,7 @@
 #include "hy-types.h"
 #include "hy-util.h"
 #include "dnf-version.h"
+#include "libdnf/sack/query.hpp"
 
 // pyhawkey
 #include "advisory-py.hpp"
@@ -283,7 +284,14 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "PKG_URL", HY_PKG_URL);
     PyModule_AddIntConstant(m, "PKG_VERSION", HY_PKG_VERSION);
 
-    PyModule_AddIntConstant(m, "IGNORE_EXCLUDES", HY_IGNORE_EXCLUDES);
+    PyModule_AddIntConstant(m, "APPLY_EXCLUDES", static_cast<int>(
+        libdnf::Query::ExcludeFlags::APPLY_EXCLUDES));
+    PyModule_AddIntConstant(m, "IGNORE_MODULAR_EXCLUDES", static_cast<int>(
+        libdnf::Query::ExcludeFlags::IGNORE_MODULAR_EXCLUDES));
+    PyModule_AddIntConstant(m, "IGNORE_REGULAR_EXCLUDES", static_cast<int>(
+        libdnf::Query::ExcludeFlags::IGNORE_REGULAR_EXCLUDES));
+    PyModule_AddIntConstant(m, "IGNORE_EXCLUDES", static_cast<int>(
+        libdnf::Query::ExcludeFlags::IGNORE_EXCLUDES));
 
     PyModule_AddIntConstant(m, "ERASE", DNF_ERASE);
     PyModule_AddIntConstant(m, "DISTUPGRADE", DNF_DISTUPGRADE);

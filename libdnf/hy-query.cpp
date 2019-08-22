@@ -51,7 +51,11 @@ hy_query_create(DnfSack *sack)
 HyQuery
 hy_query_create_flags(DnfSack *sack, int flags)
 {
-    return new libdnf::Query(sack, flags);
+    libdnf::Query::ExcludeFlags newFlags = libdnf::Query::ExcludeFlags::APPLY_EXCLUDES;
+    if (flags & HY_IGNORE_EXCLUDES) {
+        newFlags = libdnf::Query::ExcludeFlags::IGNORE_EXCLUDES;
+    }
+    return new libdnf::Query(sack, newFlags);
 }
 
 HyQuery

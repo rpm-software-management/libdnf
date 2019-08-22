@@ -231,7 +231,7 @@ query_init(_QueryObject * self, PyObject *args, PyObject *kwds)
         DnfSack *csack = sackFromPyObject(sack);
         assert(csack);
         self->sack = sack;
-        self->query = new libdnf::Query(csack, flags);
+        self->query = new libdnf::Query(csack, static_cast<libdnf::Query::ExcludeFlags>(flags));
     } else {
         const char *msg = "Expected a _hawkey.Sack or a _hawkey.Query object.";
         PyErr_SetString(PyExc_TypeError, msg);
