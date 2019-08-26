@@ -66,7 +66,7 @@ BuildRequires:  rpm-devel >= %{rpm_version}
 BuildRequires:  pkgconfig(librhsm) >= 0.0.3
 %endif
 %if %{with zchunk}
-BuildRequires:  zchunk-devel >= 0.9.11
+BuildRequires:  pkgconfig(zck) >= 0.9.11
 %endif
 BuildRequires:  pkgconfig(sqlite3)
 BuildRequires:  pkgconfig(json-c)
