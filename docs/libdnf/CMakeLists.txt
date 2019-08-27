@@ -17,6 +17,7 @@ if(WITH_GTKDOC)
             --output-format=xml
             --module=libdnf
             --source-dir=${CMAKE_SOURCE_DIR}/libdnf
+            DEPENDS doc-scan
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         )
 
@@ -24,6 +25,7 @@ if(WITH_GTKDOC)
             COMMAND ${GTKDOC_MKHTML_EXE}
             libdnf
             ${CMAKE_SOURCE_DIR}/docs/libdnf/libdnf-docs.sgml
+            DEPENDS doc-mkdb
             WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/html"
         )
         add_custom_target(doc-gtk DEPENDS doc-scan doc-mkdb doc-mkhtml)
