@@ -211,11 +211,19 @@ pushd build-py2
 popd
 %endif # with python2
 %if %{with python3}
-# Run just the Python tests, not all of them, since
-# we have coverage of the core from the first build
+# If we didn't run the general tests yet, do it now.
+%if %{without python2}
+pushd build-py3
+  make ARGS="-V" test
+popd
+%else
+# Otherwise, run just the Python tests, not all of
+# them, since we have coverage of the core from the
+# first build
 pushd build-py3/python/hawkey/tests
   make ARGS="-V" test
 popd
+%endif
 %endif
 
 %install
