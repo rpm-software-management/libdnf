@@ -25,9 +25,10 @@ namespace libdnf {
 
 bool
 Solution::getBestSolution(const char * subject, DnfSack* sack, HyForm * forms, bool icase,
-    bool with_nevra, bool with_provides, bool with_filenames, bool with_src)
+    bool with_nevra, bool with_provides, bool with_filenames, bool with_src,
+    Query::ExcludeFlags exclude_flags)
 {
-    query.reset(new Query(sack));
+    query.reset(new Query(sack, exclude_flags));
     nevra.reset();
 
     if (!with_src) {
