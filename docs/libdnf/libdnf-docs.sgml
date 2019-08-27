@@ -35,7 +35,7 @@
     </partintro>
     <xi:include href="xml/dnf-context.xml"/>
     <xi:include href="xml/dnf-lock.xml"/>
-    <xi:include href="xml/dnf-repos.xml"/>
+    <xi:include href="xml/dnf-repo-loader.xml"/>
     <xi:include href="xml/dnf-repo.xml"/>
     <xi:include href="xml/dnf-state.xml"/>
     <xi:include href="xml/dnf-transaction.xml"/>
