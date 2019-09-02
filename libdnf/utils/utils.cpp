@@ -273,19 +273,19 @@ void decompress(const char * inPath, const char * outPath, mode_t outMode, const
 {
     auto inFd = open(inPath, O_RDONLY);
     if (inFd == -1)
-        throw std::runtime_error(tfm::format("open: %s", strerror(errno)));
+        throw std::runtime_error(tfm::format("Error opening %s: %s", inPath, strerror(errno)));
     if (!compressType)
         compressType = inPath;
     auto inFile = solv_xfopen_fd(compressType, inFd, "r");
     if (inFile == NULL) {
         close(inFd);
-        throw std::runtime_error("solv_xfopen_fd: Can't open stream");
+        throw std::runtime_error(tfm::format("solv_xfopen_fd: Can't open stream for %s", inPath));
     }
     auto outFd = open(outPath, O_WRONLY | O_CREAT | O_TRUNC, outMode);
     if (outFd == -1) {
         int err = errno;
         fclose(inFile);
-        throw std::runtime_error(tfm::format("open: %s", strerror(err)));
+        throw std::runtime_error(tfm::format("Error opening %s: %s", outPath, strerror(err)));
     }
     char buf[4096];
     while (auto readBytes = fread(buf, 1, sizeof(buf), inFile)) {
@@ -294,18 +294,18 @@ void decompress(const char * inPath, const char * outPath, mode_t outMode, const
             int err = errno;
             close(outFd);
             fclose(inFile);
-            throw std::runtime_error(tfm::format("write: %s", strerror(err)));
+            throw std::runtime_error(tfm::format("Error writing to %s: %s", outPath, strerror(err)));
         }
         if (writtenBytes != static_cast<int>(readBytes)) {
             close(outFd);
             fclose(inFile);
-            throw std::runtime_error("write: Problem during writing data");
+            throw std::runtime_error(tfm::format("Unknown error while writing to %s", outPath));
         }
     }
     if (!feof(inFile)) {
         close(outFd);
         fclose(inFile);
-        throw std::runtime_error("fread: Problem during reading data");
+        throw std::runtime_error(tfm::format("Unknown error while reading %s", inPath));
     }
     close(outFd);
     fclose(inFile);
