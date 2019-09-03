@@ -41,6 +41,7 @@ char *abspath(const char *path);
 int is_readable_rpm(const char *fn);
 int mkcachedir(char *path);
 gboolean mv(const char *old_path, const char *new_path, GError **error);
+gboolean dnf_move_recursive(const gchar *src_dir, const gchar *dst_dir, GError **error);
 char *this_username(void);
 
 /* misc utils */
