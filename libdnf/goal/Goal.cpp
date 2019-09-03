@@ -767,7 +767,7 @@ void
 Goal::upgrade(HySelector sltr)
 {
     pImpl->actions = static_cast<DnfGoalActions>(pImpl->actions | DNF_UPGRADE);
-    sltrToJob(sltr, &pImpl->staging, SOLVER_UPDATE);
+    sltrToJob(sltr, &pImpl->staging, SOLVER_UPDATE|SOLVER_TARGETED);
 }
 
 void

@@ -86,8 +86,10 @@ public:
     /**
     * @brief If selector ill formed, it rises std::runtime_error()
     *
-    * @param sltr p_sltr: It should contain only upgrades with obsoletes otherwise it can try to
-    * reinstall installonly packages.
+    * @param sltr p_sltr: It contains upgrade-to packages and obsoletes. The presence of installed
+    * packages prevents reinstalling packages with the same NEVRA but changed contant. To honor repo
+    * priority all relevant packages must be present. To upgrade package foo from priority repo, all
+    * installed and available packages of the foo must be in selector plus obsoletes of foo.
     */
     void upgrade(HySelector sltr);
     void userInstalled(DnfPackage *pkg);
