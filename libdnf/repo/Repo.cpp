@@ -1274,8 +1274,7 @@ bool Repo::Impl::load()
         timestamp = -1;
         loadCache(true);
     } catch (const LrExceptionWithSourceUrl & e) {
-        logger->debug(tfm::format(_("Cannot download '%s': %s."), e.getSourceUrl(), e.what()));
-        auto msg = tfm::format(_("Failed to download metadata for repo '%s'"), id);
+        auto msg = tfm::format(_("Failed to download metadata for repo '%s': %s"), id, e.what());
         throw std::runtime_error(msg);
     }
     expired = false;
