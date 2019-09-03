@@ -20,12 +20,14 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <dirent.h>
 #include <fcntl.h>
 #include <linux/limits.h>
 #include <pwd.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
@@ -41,9 +43,6 @@ extern "C" {
 #include <solv/pool_parserpmrichdep.h>
 }
 
-// glib
-#include <glib.h>
-
 // hawkey
 #include "dnf-advisory-private.hpp"
 #include "dnf-types.h"
@@ -57,6 +56,12 @@ extern "C" {
 
 #include "utils/bgettext/bgettext-lib.h"
 #include "sack/packageset.hpp"
+
+// glib
+#include <glib.h>
+#include <gio/gio.h>
+
+#include <string>
 
 #define BUF_BLOCK 4096
 #define CHKSUM_TYPE REPOKEY_TYPE_SHA256
@@ -324,6 +329,90 @@ mv(const char* old_path, const char* new_path, GError** error)
                     _("Failed setting perms on %1$s: %2$s"),
                     new_path, strerror(errno));
         return FALSE;
+    }
+    return TRUE;
+}
+
+static gboolean
+copyFile(const std::string & srcPath, const std::string & dstPath, GError ** error)
+{
+    g_autoptr(GFile) src = g_file_new_for_path(srcPath.c_str());
+    g_autoptr(GFile) dest = g_file_new_for_path(dstPath.c_str());
+    return g_file_copy(src, dest,
+        static_cast<GFileCopyFlags>(G_FILE_COPY_NOFOLLOW_SYMLINKS | G_FILE_COPY_ALL_METADATA)
+        , NULL, NULL, NULL, error);
+}
+
+static gboolean
+copyRecursive(const std::string & srcPath, const std::string & dstPath, GError ** error)
+{
+    struct stat info;
+    if (!stat(srcPath.c_str(), &info)) {
+        if (S_ISDIR(info.st_mode)) {
+            if (mkdir(dstPath.c_str(), info.st_mode) == -1) {
+                auto err = errno;
+                g_set_error(error,
+                    DNF_ERROR,
+                    DNF_ERROR_INTERNAL_ERROR,
+                    _("cannot create directory %1$s: %2$s"),
+                    dstPath.c_str(), strerror(err));
+                return FALSE;
+            }
+            if (auto fd = opendir(srcPath.c_str())) {
+                int ret = TRUE;
+                while (auto dent = readdir(fd)) {
+                    auto name = dent->d_name;
+                    if (name[0] == '.' && (name[1] == '\0' || (name[1] == '.' && name[2] == '\0')))
+                        continue;
+                    std::string srcItem = srcPath + "/" + name;
+                    std::string dstItem = dstPath + "/" + name;
+                    ret = copyRecursive(srcItem, dstItem, error);
+                    if (!ret)
+                        break;
+                }
+                closedir(fd);
+                return ret;
+            } else {
+                auto err = errno;
+                g_set_error(error,
+                    DNF_ERROR,
+                    DNF_ERROR_INTERNAL_ERROR,
+                    _("cannot open directory %1$s: %2$s"),
+                    srcPath.c_str(), strerror(err));
+                return FALSE;
+            }
+        } else {
+            return copyFile(srcPath, dstPath, error);
+        }
+    } else {
+        auto err = errno;
+        g_set_error(error,
+            DNF_ERROR,
+            DNF_ERROR_INTERNAL_ERROR,
+            _("cannot stat path %1$s: %2$s"),
+            srcPath.c_str(), strerror(err));
+        return FALSE;
+    }
+}
+
+/**
+ * dnf_move_recursive:
+ * @src_dir: A source directory path
+ * @dst_dir: A destination directory path
+ * @error: A #GError, or %NULL
+ *
+ * Moves a directory and its contents. Native move is preferred,
+ * if not supported copy and delete fallback is used.
+ *
+ * Returns: %TRUE on successful move, %FALSE otherwise
+ **/
+gboolean
+dnf_move_recursive(const char * srcDir, const char * dstDir, GError ** error)
+{
+    if (rename(srcDir, dstDir) == -1) {
+        if (!copyRecursive(srcDir, dstDir, error))
+            return FALSE;
+        return dnf_remove_recursive(srcDir, error);
     }
     return TRUE;
 }
