@@ -31,6 +31,7 @@
 #include "../hy-iutil.h"
 #include "../hy-repo-private.hpp"
 #include "../hy-util-private.hpp"
+#include "../hy-iutil-private.hpp"
 #include "../hy-types.h"
 #include "libdnf/conf/ConfigParser.hpp"
 #include "libdnf/utils/File.hpp"
@@ -1155,10 +1156,13 @@ void Repo::Impl::fetch(const std::string & destdir, std::unique_ptr<LrHandle> &&
                 }
             }
             auto tempElement = tmpdir + "/" + elName;
-            if (rename(tempElement.c_str(), targetElement.c_str()) == -1) {
-                const char * errTxt = strerror(errno);
-                throw std::runtime_error(tfm::format(
-                    _("Cannot rename directory \"%s\" to \"%s\": %s"), tempElement, targetElement, errTxt));
+            GError * error = NULL;
+            if (!dnf_move_recursive(tempElement.c_str(), targetElement.c_str(), &error)) {
+                std::string errTxt = tfm::format(
+                    _("Cannot rename directory \"%s\" to \"%s\": %s"),
+                    tempElement, targetElement, error->message);
+                g_error_free(error);
+                throw std::runtime_error(errTxt);
             }
         }
     }

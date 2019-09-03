@@ -36,6 +36,7 @@
 #include "conf/OptionBool.hpp"
 
 #include "hy-repo-private.hpp"
+#include "hy-iutil-private.hpp"
 
 #include <strings.h>
 #include <fcntl.h>
@@ -1826,14 +1827,13 @@ dnf_repo_update(DnfRepo *repo,
 
     /* move the packages directory from the old cache to the new cache */
     if (g_file_test(priv->packages, G_FILE_TEST_EXISTS)) {
-        rc = g_rename(priv->packages, priv->packages_tmp);
-        if (rc != 0) {
-            ret = FALSE;
+        ret = dnf_move_recursive(priv->packages, priv->packages_tmp, &error_local);
+        if (!ret) {
             g_set_error(error,
                         DNF_ERROR,
                         DNF_ERROR_CANNOT_FETCH_SOURCE,
-                        "cannot move %s to %s",
-                        priv->packages, priv->packages_tmp);
+                        "cannot move %s to %s: %s",
+                        priv->packages, priv->packages_tmp, error_local->message);
             goto out;
         }
     }
@@ -1844,14 +1844,13 @@ dnf_repo_update(DnfRepo *repo,
         goto out;
 
     /* rename .tmp actual name */
-    rc = g_rename(priv->location_tmp, priv->location);
-    if (rc != 0) {
-        ret = FALSE;
+    ret = dnf_move_recursive(priv->location_tmp, priv->location, &error_local);
+    if (!ret) {
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_CANNOT_FETCH_SOURCE,
-                    "cannot move %s to %s",
-                    priv->location_tmp, priv->location);
+                    "cannot move %s to %s: %s",
+                    priv->location_tmp, priv->location, error_local->message);
         goto out;
     }
     ret = lr_handle_setopt(priv->repo_handle, error,
