@@ -341,32 +341,34 @@ dnf_sack_recompute_considered_map(DnfSack * sack, Map ** considered, libdnf::Que
     //              (pkg_includes + all_from_repos_not_using_includes)
     map_setall(*considered);
     dnf_sack_make_provides_ready(sack);
-    if (!(flags & libdnf::Query::ExcludeFlags::IGNORE_REGULAR_EXCLUDES) && priv->repo_excludes)
-        map_subtract(*considered, priv->repo_excludes);
-    if (!(flags & libdnf::Query::ExcludeFlags::IGNORE_REGULAR_EXCLUDES) && priv->pkg_excludes)
-        map_subtract(*considered, priv->pkg_excludes);
     if (!(flags & libdnf::Query::ExcludeFlags::IGNORE_MODULAR_EXCLUDES) && priv->module_excludes)
         map_subtract(*considered, priv->module_excludes);
-    if (!(flags & libdnf::Query::ExcludeFlags::IGNORE_REGULAR_EXCLUDES) && priv->pkg_includes) {
-        map_grow(priv->pkg_includes, pool->nsolvables);
-        Map pkg_includes_tmp;
-        map_init_clone(&pkg_includes_tmp, priv->pkg_includes);
+    if (!(flags & libdnf::Query::ExcludeFlags::IGNORE_REGULAR_EXCLUDES)) {
+        if (priv->repo_excludes)
+            map_subtract(*considered, priv->repo_excludes);
+        if (priv->pkg_excludes)
+            map_subtract(*considered, priv->pkg_excludes);
+        if (priv->pkg_includes) {
+            map_grow(priv->pkg_includes, pool->nsolvables);
+            Map pkg_includes_tmp;
+            map_init_clone(&pkg_includes_tmp, priv->pkg_includes);
 
-        // Add all solvables from repositories which do not use "includes"
-        Id repoid;
-        Repo *repo;
-        FOR_REPOS(repoid, repo) {
-            auto hyrepo = static_cast<HyRepo>(repo->appdata);
-            if (!hyrepo->getUseIncludes()) {
-                Id solvableid;
-                Solvable *solvable;
-                FOR_REPO_SOLVABLES(repo, solvableid, solvable)
-                    MAPSET(&pkg_includes_tmp, solvableid);
+            // Add all solvables from repositories which do not use "includes"
+            Id repoid;
+            Repo *repo;
+            FOR_REPOS(repoid, repo) {
+                auto hyrepo = static_cast<HyRepo>(repo->appdata);
+                if (!hyrepo->getUseIncludes()) {
+                    Id solvableid;
+                    Solvable *solvable;
+                    FOR_REPO_SOLVABLES(repo, solvableid, solvable)
+                        MAPSET(&pkg_includes_tmp, solvableid);
+                }
             }
-        }
 
-        map_and(*considered, &pkg_includes_tmp);
-        map_free(&pkg_includes_tmp);
+            map_and(*considered, &pkg_includes_tmp);
+            map_free(&pkg_includes_tmp);
+        }
     }
 }
 
