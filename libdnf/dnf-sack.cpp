@@ -309,7 +309,7 @@ dnf_sack_get_pkg_solvables(DnfSack *sack)
  * dnf_sack_last_solvable: (skip)
  * @sack: a #DnfSack instance.
  *
- * DOES SOMETHING.
+ * Returns an ID of last solvable in sack
  *
  * Returns: an #Id
  *
@@ -378,7 +378,7 @@ dnf_sack_recompute_considered_map(DnfSack * sack, Map ** considered, libdnf::Que
  * dnf_sack_recompute_considered:
  * @sack: a #DnfSack instance.
  *
- * DOES SOMETHING.
+ * Recompute considered packages for libsolv and queries.
  *
  * Since: 0.7.0
  */
@@ -1040,7 +1040,7 @@ dnf_sack_give_cache_fn(DnfSack *sack, const char *reponame, const char *ext)
  * dnf_sack_list_arches:
  * @sack: a #DnfSack instance.
  *
- * DOES SOMETHING.
+ * Creates list of architectures
  *
  * Returns: a list of architectures
  *
@@ -1636,7 +1636,7 @@ dnf_sack_get_use_includes(DnfSack *sack, const char *reponame, gboolean *enabled
  * @reponame: a repo name.
  * @enabled: the enabled state.
  *
- * DOES SOMETHING.
+ * Enable repository
  *
  * Returns: %TRUE for success
  *
