@@ -327,9 +327,10 @@ dnf_sack_recompute_considered_map(DnfSack * sack, Map ** considered, libdnf::Que
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     Pool *pool = dnf_sack_get_pool(sack);
     if (!*considered) {
-        if ((flags & libdnf::Query::ExcludeFlags::IGNORE_REGULAR_EXCLUDES ||
+        if ((static_cast<bool>(flags & libdnf::Query::ExcludeFlags::IGNORE_REGULAR_EXCLUDES) ||
             (!priv->repo_excludes && !priv->pkg_excludes && !priv->pkg_includes))
-            && (flags & libdnf::Query::ExcludeFlags::IGNORE_MODULAR_EXCLUDES || !priv->module_excludes)) {
+            && (static_cast<bool>(flags & libdnf::Query::ExcludeFlags::IGNORE_MODULAR_EXCLUDES)
+            || !priv->module_excludes)) {
             return;
         }
         *considered = static_cast<Map *>(g_malloc0(sizeof(Map)));
@@ -341,9 +342,10 @@ dnf_sack_recompute_considered_map(DnfSack * sack, Map ** considered, libdnf::Que
     //              (pkg_includes + all_from_repos_not_using_includes)
     map_setall(*considered);
     dnf_sack_make_provides_ready(sack);
-    if (!(flags & libdnf::Query::ExcludeFlags::IGNORE_MODULAR_EXCLUDES) && priv->module_excludes)
+    if (!static_cast<bool>(flags & libdnf::Query::ExcludeFlags::IGNORE_MODULAR_EXCLUDES)
+        && priv->module_excludes)
         map_subtract(*considered, priv->module_excludes);
-    if (!(flags & libdnf::Query::ExcludeFlags::IGNORE_REGULAR_EXCLUDES)) {
+    if (!static_cast<bool>(flags & libdnf::Query::ExcludeFlags::IGNORE_REGULAR_EXCLUDES)) {
         if (priv->repo_excludes)
             map_subtract(*considered, priv->repo_excludes);
         if (priv->pkg_excludes)

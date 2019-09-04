@@ -197,9 +197,9 @@ inline Query::ExcludeFlags operator|(Query::ExcludeFlags a, Query::ExcludeFlags 
     return static_cast<Query::ExcludeFlags>(static_cast<int>(a) | static_cast<int>(b));
 }
 
-inline bool operator&(Query::ExcludeFlags a, Query::ExcludeFlags b)
+inline Query::ExcludeFlags operator&(Query::ExcludeFlags a, Query::ExcludeFlags b)
 {
-    return (static_cast<int>(a) & static_cast<int>(b)) == static_cast<int>(b);
+    return static_cast<Query::ExcludeFlags>(static_cast<int>(a) & static_cast<int>(b));
 }
 
 }
