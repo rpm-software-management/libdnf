@@ -333,6 +333,24 @@ mv(const char* old_path, const char* new_path, GError** error)
     return TRUE;
 }
 
+/**
+ * dnf_remove_recursive_v2:
+ * @directory: A directory path
+ * @error: A #GError, or %NULL
+ *
+ * Removes a file or a directory and its contents.
+ *
+ * Returns: %FALSE if an error was set
+ **/
+gboolean
+dnf_remove_recursive_v2(const gchar *path, GError **error)
+{
+    if (g_file_test(path, G_FILE_TEST_IS_DIR))
+        return dnf_remove_recursive(path, error);
+    else
+        return dnf_ensure_file_unlinked(path, error);
+}
+
 gboolean
 dnf_copy_file(const std::string & srcPath, const std::string & dstPath, GError ** error)
 {
