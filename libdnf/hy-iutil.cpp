@@ -419,7 +419,7 @@ dnf_copy_recursive(const std::string & srcPath, const std::string & dstPath, GEr
  * @dst_dir: A destination directory path
  * @error: A #GError, or %NULL
  *
- * Moves a directory and its contents. Native move is preferred,
+ * Moves a file or a directory and its contents. Native move is preferred,
  * if not supported copy and delete fallback is used.
  *
  * Returns: %TRUE on successful move, %FALSE otherwise
@@ -430,7 +430,7 @@ dnf_move_recursive(const char * srcDir, const char * dstDir, GError ** error)
     if (rename(srcDir, dstDir) == -1) {
         if (!dnf_copy_recursive(srcDir, dstDir, error))
             return FALSE;
-        return dnf_remove_recursive(srcDir, error);
+        return dnf_remove_recursive_v2(srcDir, error);
     }
     return TRUE;
 }
