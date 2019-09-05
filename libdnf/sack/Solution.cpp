@@ -35,7 +35,6 @@ Solution::getBestSolution(const char * subject, DnfSack* sack, HyForm * forms, b
     }
 
     Query baseQuery(*query);
-    baseQuery.apply();
 
     if (with_nevra) {
         Nevra nevraObj;
