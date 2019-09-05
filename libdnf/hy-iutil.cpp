@@ -333,18 +333,18 @@ mv(const char* old_path, const char* new_path, GError** error)
     return TRUE;
 }
 
-static gboolean
-copyFile(const std::string & srcPath, const std::string & dstPath, GError ** error)
+gboolean
+dnf_copy_file(const std::string & srcPath, const std::string & dstPath, GError ** error)
 {
     g_autoptr(GFile) src = g_file_new_for_path(srcPath.c_str());
     g_autoptr(GFile) dest = g_file_new_for_path(dstPath.c_str());
     return g_file_copy(src, dest,
-        static_cast<GFileCopyFlags>(G_FILE_COPY_NOFOLLOW_SYMLINKS | G_FILE_COPY_ALL_METADATA)
-        , NULL, NULL, NULL, error);
+        static_cast<GFileCopyFlags>(G_FILE_COPY_NOFOLLOW_SYMLINKS | G_FILE_COPY_ALL_METADATA),
+        NULL, NULL, NULL, error);
 }
 
-static gboolean
-copyRecursive(const std::string & srcPath, const std::string & dstPath, GError ** error)
+gboolean
+dnf_copy_recursive(const std::string & srcPath, const std::string & dstPath, GError ** error)
 {
     struct stat info;
     if (!stat(srcPath.c_str(), &info)) {
@@ -359,14 +359,14 @@ copyRecursive(const std::string & srcPath, const std::string & dstPath, GError *
                 return FALSE;
             }
             if (auto fd = opendir(srcPath.c_str())) {
-                int ret = TRUE;
+                gboolean ret = TRUE;
                 while (auto dent = readdir(fd)) {
                     auto name = dent->d_name;
                     if (name[0] == '.' && (name[1] == '\0' || (name[1] == '.' && name[2] == '\0')))
                         continue;
                     std::string srcItem = srcPath + "/" + name;
                     std::string dstItem = dstPath + "/" + name;
-                    ret = copyRecursive(srcItem, dstItem, error);
+                    ret = dnf_copy_recursive(srcItem, dstItem, error);
                     if (!ret)
                         break;
                 }
@@ -382,7 +382,7 @@ copyRecursive(const std::string & srcPath, const std::string & dstPath, GError *
                 return FALSE;
             }
         } else {
-            return copyFile(srcPath, dstPath, error);
+            return dnf_copy_file(srcPath, dstPath, error);
         }
     } else {
         auto err = errno;
@@ -410,7 +410,7 @@ gboolean
 dnf_move_recursive(const char * srcDir, const char * dstDir, GError ** error)
 {
     if (rename(srcDir, dstDir) == -1) {
-        if (!copyRecursive(srcDir, dstDir, error))
+        if (!dnf_copy_recursive(srcDir, dstDir, error))
             return FALSE;
         return dnf_remove_recursive(srcDir, error);
     }
