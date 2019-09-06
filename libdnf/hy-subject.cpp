@@ -83,8 +83,8 @@ hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, Hy
     libdnf::Solution solution;
     solution.getBestSolution(subject, sack, forms, icase, with_nevra, with_provides, with_filenames,
         with_src);
-    *out_nevra = solution.releaseNevra();
-    return solution.releaseQuery();
+    *out_nevra = solution.nevra.release();
+    return solution.query.release();
 }
 
 
