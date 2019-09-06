@@ -22,6 +22,8 @@
 
 #include <vector>
 
+#include "sack/Solution.hpp"
+
 // hawkey
 #include "hy-iutil.h"
 #include "nevra.hpp"
@@ -267,7 +269,7 @@ nsvcap_possibilities(_SubjectObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
-get_best_parser(_SubjectObject *self, PyObject *args, PyObject *kwds, HyNevra *nevra)
+get_solution(_SubjectObject *self, PyObject *args, PyObject *kwds, HyNevra *nevra)
 {
     PyObject *sack;
     DnfSack *csack;
@@ -296,18 +298,21 @@ get_best_parser(_SubjectObject *self, PyObject *args, PyObject *kwds, HyNevra *n
     gboolean c_with_filenames = with_filenames == NULL || PyObject_IsTrue(with_filenames);
     gboolean c_with_src = with_src == NULL || PyObject_IsTrue(with_src);
     csack = sackFromPyObject(sack);
-    HyQuery query = hy_subject_get_best_solution(self->pattern, csack,
-        cforms.empty() ? NULL : cforms.data(), nevra, self->icase, c_with_nevra,
-        c_with_provides, c_with_filenames, c_with_src);
 
-    return queryToPyObject(query, sack, &query_Type);
+    libdnf::Solution solution;
+    solution.getBestSolution(self->pattern, csack, cforms.empty() ? NULL : cforms.data(),
+        self->icase, c_with_nevra, c_with_provides, c_with_filenames, c_with_src);
+
+    *nevra = solution.nevra.release();
+
+    return queryToPyObject(solution.query.release(), sack, &query_Type);
 }
 
 static PyObject *
 get_best_query(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
     HyNevra nevra{nullptr};
-    PyObject *py_query = get_best_parser(self, args, kwds, &nevra);
+    PyObject *py_query = get_solution(self, args, kwds, &nevra);
     delete nevra;
     return py_query;
 }
@@ -346,7 +351,7 @@ get_best_solution(_SubjectObject *self, PyObject *args, PyObject *kwds)
 {
     HyNevra nevra{nullptr};
 
-    UniquePtrPyObject q(get_best_parser(self, args, kwds, &nevra));
+    UniquePtrPyObject q(get_solution(self, args, kwds, &nevra));
     if (!q)
         return NULL;
     PyObject *ret_dict = PyDict_New();
