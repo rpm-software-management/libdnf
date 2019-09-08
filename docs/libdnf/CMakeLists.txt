@@ -33,7 +33,7 @@ if(WITH_GTKDOC)
         message(FATAL_ERROR "gtk-doc not found")
     endif()
 
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/html DESTINATION share/gtk-doc/html/libdnf)
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/html/ DESTINATION share/gtk-doc/html/libdnf)
 endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
