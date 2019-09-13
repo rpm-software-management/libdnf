@@ -646,6 +646,8 @@ int Filter::getMatchType() const noexcept { return pImpl->matchType; }
 const std::vector< _Match >& Filter::getMatches() const noexcept { return pImpl->matches; }
 
 class Query::Impl {
+public:
+    ~Impl();
 private:
     friend struct Query;
     Impl(DnfSack* sack, Query::ExcludeFlags flags = Query::ExcludeFlags::APPLY_EXCLUDES);
@@ -657,6 +659,7 @@ private:
     std::unique_ptr<PackageSet> result;
     std::vector<Filter> filters;
     void apply();
+    Map *considered_cached = nullptr;
 
     /**
     * @brief It accepts strings of whole NEVRA and apply them to the query. It requires full
@@ -693,6 +696,12 @@ private:
 
     bool isGlob(const std::vector<const char *> &matches) const;
 };
+
+Query::Impl::~Impl()
+{
+    if (considered_cached)
+        free_map_fully(considered_cached);
+}
 
 Query::Impl::Impl(DnfSack* sack, Query::ExcludeFlags flags)
 : sack(sack), flags(flags) {}
@@ -1020,11 +1029,9 @@ Query::Impl::initResult()
         if (pool->considered)
             map_and(result->getMap(), pool->considered);
     } else {
-        Map * considered = nullptr;
-        dnf_sack_recompute_considered_map(sack, &considered, flags);
-        if (considered) {
-            map_and(result->getMap(), considered);
-            free_map_fully(considered);
+        dnf_sack_recompute_considered_map(sack, &considered_cached, flags);
+        if (considered_cached) {
+            map_and(result->getMap(), considered_cached);
         }
     }
 }
@@ -1744,6 +1751,13 @@ Query::Impl::filterUpdownAble(const Filter  &f, Map *m)
             continue;
 
         FOR_PKG_SOLVABLES(p) {
+            if (flags == Query::ExcludeFlags::APPLY_EXCLUDES) {
+                if (pool->considered && !map_tst(pool->considered, p))
+                    continue;
+            } else {
+                if (considered_cached && !map_tst(considered_cached, p))
+                    continue;
+            }
             s = pool_id2solvable(pool, p);
             if (s->repo == pool->installed)
                 continue;
