@@ -2331,18 +2331,23 @@ setModuleExcludes(DnfSack *sack, const char ** hotfixRepos,
     libdnf::Query includeQuery{sack};
     libdnf::Query excludeQuery{keepPackages};
     libdnf::Query excludeProvidesQuery{keepPackages};
+    libdnf::Query excludeNamesQuery(keepPackages);
     includeQuery.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, includeNEVRAsCString.data());
 
     excludeQuery.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, excludeNEVRAsCString.data());
     excludeQuery.queryDifference(includeQuery);
 
-    // Exclude packages by their Provides. This also excludes packages by name, because packages
-    // also provide their %name = %version-%release.
+    // Exclude packages by their Provides
     excludeProvidesQuery.addFilter(HY_PKG_PROVIDES, &nameDependencies);
     excludeProvidesQuery.queryDifference(includeQuery);
 
+    // Requred to filtrate out source packages and packages with incompatible architectures
+    excludeNamesQuery.addFilter(HY_PKG_NAME, HY_EQ, namesCString.data());
+    excludeNamesQuery.queryDifference(includeQuery);
+
     dnf_sack_set_module_excludes(sack, excludeQuery.getResultPset());
     dnf_sack_add_module_excludes(sack, excludeProvidesQuery.getResultPset());
+    dnf_sack_add_module_excludes(sack, excludeNamesQuery.getResultPset());
     dnf_sack_set_module_includes(sack, includeQuery.getResultPset());
 }
 
