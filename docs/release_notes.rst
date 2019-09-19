@@ -20,6 +20,55 @@
 ######################
 
 ====================
+0.35.5 Release Notes
+====================
+
+- TransactionItemReasonToString() converting enum to string.
+- Fix memory leaks
+- Log when unable to create modular Fail Safe data directory
+- Handle errors during read in updateFile()
+- Do not use shared_ptr for modulemd prioritizer (RhBug:1636803)
+- Remove unused variable
+- Adjust comments
+- Do not create @System.solv files (RhBug:1707995)
+- [tests] Fix: disable fatal warnings during test case runs
+- [docs] Fix: rename dnf-repos to dnf-repo-loader
+- [docs] Fix: gtk-doc target order
+- Explicitly enable zchunk so LRO_SUPPORTS_CACHEDIR works
+- Update spec file
+- WITH_ZCHUNK defaults to ON
+- Use pkgconfig(zck) rather than zchunk-devel
+- Mark job goal.upgrade with sltr as targeted
+- Added dnf_move_recursive()
+- Use copy+delete fallback if moving of directory failed (RhBug:1700341)
+- Apply modules excludes in query separately
+- Use (name, arch) instead of NEVRA in Query::filterExtras()
+- Remove unneeded code
+- Recompute considered in different order
+- Refactor operator&
+- Add comments for functions in dnf-sack.cpp
+- [transaction] Handle merging multilib packages correctly.
+- Expose dnf_copy_file and dnf_copy_recursive in private hpp
+- Add dnf_remove_recursive_v2() that support unlink of file
+- Fix: dnf_move_recursive() for file in fallback mode
+- Repo download: use full error description into the exception text
+- [docs] libdnf: build reproducibly
+- [docs] libdnf: drop "html" topdir during installation.
+- utils/decompress: add filename to error messages
+- Store file descriptor of the logger file (RhBug:1594016)
+- Apply targeted upgrade only for selector with packages
+- [tests] Fix: always run test cases
+- Filter "upgradable" takes excludes into account
+- Apply modular filtering by package name (RhBug:1702729)
+
+Bugs fixed in 0.35.5:
+
+* :rhbug:`1707995`
+* :rhbug:`1636803`
+* :rhbug:`1728637`
+* :rhbug:`1594016`
+
+====================
 0.35.3 Release Notes
 ====================
 
