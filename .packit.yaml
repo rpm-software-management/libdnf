@@ -10,4 +10,4 @@ jobs:
     - fedora-30-x86_64
     - fedora-29-x86_64
     - mageia-cauldron-x86_64
-    - opensuse-tumbleweed-x86_64
+#    - opensuse-tumbleweed-x86_64
