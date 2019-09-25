@@ -32,6 +32,9 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <glib/gstdio.h>
+#include <librepo/url_substitution.h>
+
+#include <map>
 
 #include "dnf-types.h"
 #include "dnf-utils.h"
@@ -272,4 +275,53 @@ dnf_get_file_contents_allow_noent(const gchar            *path,
         *out_length = length;
 
     return TRUE;
+}
+
+/**
+ * dnf_get_fs_var_substitutions:
+ * @context: a #DnfContext instance.
+ *
+ * Reads any variable substitutions from "etc/dnf/vars"
+ * We may have vars defined at the dnf runtime or in the install root.
+ * Vars within the installroot take precedence, but there might not
+ * be anything within the installroot yet.
+ *
+ * Returns: std::map<std::string, std::string> suitable for use with
+ *          ConfigParser::substitute
+ *
+ * Since: X.X.X
+ **/
+std::map<std::string, std::string>
+dnf_get_fs_var_substitutions(DnfContext *context)
+{
+    std::map<std::string, std::string> substitutions;
+    g_autoptr(GDir) dir = NULL;
+    GError *error = NULL;
+
+    source_root = g_build_filename(dnf_context_get_source_root(context, "etc/dnf/vars", NULL));
+
+    dir = g_dir_open (source_root, 0, error);
+    while ((file = g_dir_read_name(dir)) != NULL) {
+        g_autofree gchar *path_tmp = NULL;
+        g_autofree gchar *contents = NULL;
+        path_tmp = g_build_filename(source_root, file, NULL);
+
+        if (dnf_get_file_contents_allow_noent(path_tmp, contents, NULL, error)){
+            lr_urlvars_set(substitutions, file, contents);
+        }
+    }
+
+    install_root = g_build_filename(dnf_context_get_install_root(context, "etc/dnf/vars", NULL));
+    dir = g_dir_open (install_root, 0, error);
+    while ((file = g_dir_read_name(dir)) != NULL) {
+        g_autofree gchar *path_tmp = NULL;
+        g_autofree gchar *contents = NULL;
+        path_tmp = g_build_filename(install_root, file, NULL);
+
+        if (dnf_get_file_contents_allow_noent(path_tmp, contents, NULL, error)){
+            lr_urlvars_set(substitutions, file, contents);
+        }
+    }
+
+    return substitutions;
 }
