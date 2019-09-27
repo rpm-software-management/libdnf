@@ -2531,6 +2531,11 @@ dnf_context_load_vars(DnfContext * context)
 {
     auto priv = GET_PRIVATE(context);
     priv->vars->clear();
+    if (priv->source_root && strcmp(priv->source_root, priv->install_root) != 0)
+    {
+        for (auto dir = priv->vars_dir; *dir; ++dir)
+            ConfigMain::addVarsFromDir(*priv->vars, std::string(priv->source_root) + *dir);
+    }
     for (auto dir = priv->vars_dir; *dir; ++dir)
         ConfigMain::addVarsFromDir(*priv->vars, std::string(priv->install_root) + *dir);
     ConfigMain::addVarsFromEnv(*priv->vars);
