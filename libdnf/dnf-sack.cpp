@@ -739,7 +739,18 @@ load_yum_repo(DnfSack *sack, HyRepo hrepo, GError **error)
         }
         repoImpl->state_main = _HY_LOADED_CACHE;
     } else {
-        fp_primary = solv_xfopen(hrepo->getMetadataPath(MD_TYPE_PRIMARY).c_str(), "r");
+        auto primary = hrepo->getMetadataPath(MD_TYPE_PRIMARY);
+        if (primary.empty()) {
+            // It could happen when repomd file has no "primary" data or they are in unsupported
+            // format like zchunk
+            g_set_error (error,
+                         DNF_ERROR,
+                         DNF_ERROR_INTERNAL_ERROR,
+                         _("loading of MD_TYPE_PRIMARY has failed."));
+            retval = FALSE;
+            goto out;
+        }
+        fp_primary = solv_xfopen(primary.c_str(), "r");
         assert(fp_primary);
 
         g_debug("fetching %s", name);
