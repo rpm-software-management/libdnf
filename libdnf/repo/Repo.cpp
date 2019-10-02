@@ -514,7 +514,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitLocal()
     return h;
 }
 
-std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bool mirrorSetup, bool countme)
+std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bool mirrorSetup)
 {
     std::unique_ptr<LrHandle> h(lrHandleInitBase());
     handleSetOpt(h.get(), LRO_HTTPHEADER, httpHeaders.get());
@@ -534,10 +534,8 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bo
 
     enum class Source {NONE, METALINK, MIRRORLIST} source{Source::NONE};
     std::string tmp;
-    if (!conf->metalink().empty() && !(tmp=conf->metalink().getValue()).empty()) {
+    if (!conf->metalink().empty() && !(tmp=conf->metalink().getValue()).empty())
         source = Source::METALINK;
-        if (countme) addCountmeFlag(tmp);
-    }
     else if (!conf->mirrorlist().empty() && !(tmp=conf->mirrorlist().getValue()).empty())
         source = Source::MIRRORLIST;
     if (source != Source::NONE) {
@@ -928,6 +926,8 @@ std::unique_ptr<LrResult> Repo::Impl::lrHandlePerform(LrHandle * handle, const s
     LrProgressCb progressFunc;
     handleGetInfo(handle, LRI_PROGRESSCB, &progressFunc);
 
+    addCountmeFlag(handle);
+
     std::unique_ptr<LrResult> result;
     bool ret;
     bool badGPG = false;
@@ -1032,7 +1032,7 @@ bool Repo::Impl::loadCache(bool throwExcept)
     return true;
 }
 
-void Repo::Impl::addCountmeFlag(std::string & url) {
+void Repo::Impl::addCountmeFlag(LrHandle *handle) {
     /*
      * The countme flag will be added once (and only once) in every position of
      * a sliding time window (COUNTME_WINDOW) that starts at COUNTME_OFFSET and
@@ -1053,6 +1053,23 @@ void Repo::Impl::addCountmeFlag(std::string & url) {
      *   - Provide proof for this function being epsilon-differentially private
      *   - Increment countme flag (hint: Basic RAPPOR)
      */
+
+    // Bail out if not counting
+    if (!conf->countme().getValue())
+        return;
+
+    // Bail out if not a remote handle
+    bool local;
+    handleGetInfo(handle, LRI_LOCAL, &local);
+    if (local)
+        return;
+
+    // Bail out if no metalink or mirrorlist is defined
+    auto & metalink = conf->metalink();
+    auto & mirrorlist = conf->mirrorlist();
+    if ((metalink.empty()   || metalink.getValue().empty()) &&
+        (mirrorlist.empty() || mirrorlist.getValue().empty()))
+        return;
 
     // Load the cookie
     std::string fname = getPersistdir() + "/" + COUNTME_COOKIE;
@@ -1076,8 +1093,7 @@ void Repo::Impl::addCountmeFlag(std::string & url) {
     budget--;
     if (!budget) {
         // Budget exhausted, counting!
-        url.find('?') != url.npos ? url += '&' : url += '?';
-        url += "countme=1";
+        handleSetOpt(handle, LRO_ONETIMEFLAG, "countme=1");
         // Compute the position of this window
         win = now - (delta % COUNTME_WINDOW);
         if (!epoch) epoch = win;
@@ -1100,8 +1116,7 @@ bool Repo::Impl::isMetalinkInSync()
         dnf_remove_recursive(tmpdir, NULL);
     });
 
-    bool countme = conf->countme().getValue();
-    std::unique_ptr<LrHandle> h(lrHandleInitRemote(tmpdir, true, countme));
+    std::unique_ptr<LrHandle> h(lrHandleInitRemote(tmpdir));
 
     handleSetOpt(h.get(), LRO_FETCHMIRRORS, 1L);
     auto r = lrHandlePerform(h.get(), tmpdir, false);
