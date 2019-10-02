@@ -168,6 +168,16 @@ public:
     */
     static void addVarsFromDir(std::map<std::string, std::string> & varsMap, const std::string & dirPath);
 
+    /**
+    * @brief Adds variables from environment
+    *
+    * Environment variables DNF[0-9] and DNF_VAR_[A-Za-z0-9_]+ are used if exists.
+    * DNF_VAR_ prefix is cut off.
+    *
+    * @param varsMap Storage where the variables are added.
+    */
+    static void addVarsFromEnv(std::map<std::string, std::string> & varsMap);
+
 private:
     class Impl;
     std::unique_ptr<Impl> pImpl;

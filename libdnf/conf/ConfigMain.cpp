@@ -40,6 +40,8 @@
 #include "bgettext/bgettext-lib.h"
 #include "tinyformat/tinyformat.hpp"
 
+extern char **environ;
+
 namespace libdnf {
 
 /**
@@ -621,6 +623,23 @@ void ConfigMain::addVarsFromDir(std::map<std::string, std::string> & varsMap, co
                 continue;
             }
             varsMap[dname] = std::move(line);
+        }
+    }
+}
+
+void ConfigMain::addVarsFromEnv(std::map<std::string, std::string> & varsMap)
+{
+    for (const char * const * varPtr = environ; *varPtr; ++varPtr) {
+        auto var = *varPtr;
+        if (auto eqlPtr = strchr(var, '=')) {
+            auto eqlIdx = eqlPtr - var;
+            // DNF[0-9]
+            if (eqlIdx == 4 && strncmp("DNF", var, 3) == 0 && isdigit(var[3]))
+                varsMap[std::string(var, eqlIdx)] = eqlPtr + 1;
+            // DNF_VAR_[A-Za-z0-9_]+ , DNF_VAR_ prefix is cut off
+            else if (eqlIdx > 8 && strncmp("DNF_VAR_", var, 8) == 0 &&
+                     static_cast<int>(strspn(var + 8, ASCII_LETTERS DIGITS "_")) == eqlIdx - 8)
+                varsMap[std::string(var + 8, eqlIdx - 8)] = eqlPtr + 1;
         }
     }
 }
