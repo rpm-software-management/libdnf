@@ -990,6 +990,18 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_METALINKURL, metalinkurl))
         return FALSE;
 
+    /* needed in order for addCountmeFlag() to use the same persistdir as DNF
+     * would */
+    if (metalinkurl)
+        priv->repo->getConfig()->metalink().set(libdnf::Option::Priority::REPOCONFIG, metalinkurl);
+    if (mirrorlisturl)
+        priv->repo->getConfig()->mirrorlist().set(libdnf::Option::Priority::REPOCONFIG, mirrorlisturl);
+
+    if (g_key_file_has_key(priv->keyfile, repoId, "countme", NULL)) {
+        bool countme = dnf_repo_get_boolean(priv->keyfile, repoId, "countme");
+        priv->repo->getConfig()->countme().set(libdnf::Option::Priority::REPOCONFIG, countme);
+    }
+
     /* file:// */
     if (baseurls != NULL && baseurls[0] != NULL &&
         mirrorlisturl == NULL && metalinkurl == NULL) {
@@ -1691,6 +1703,9 @@ dnf_repo_update(DnfRepo *repo,
     /* ensure we set the values from the keyfile */
     if (!dnf_repo_set_keyfile_data(repo, error))
         return FALSE;
+
+    /* countme support */
+    libdnf::repoGetImpl(priv->repo)->addCountmeFlag(priv->repo_handle);
 
     /* take lock */
     ret = dnf_state_take_lock(state,
