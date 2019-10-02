@@ -2533,6 +2533,7 @@ dnf_context_load_vars(DnfContext * context)
     priv->vars->clear();
     for (auto dir = priv->vars_dir; *dir; ++dir)
         ConfigMain::addVarsFromDir(*priv->vars, std::string(priv->install_root) + *dir);
+    ConfigMain::addVarsFromEnv(*priv->vars);
     priv->varsCached = true;
 }
 
