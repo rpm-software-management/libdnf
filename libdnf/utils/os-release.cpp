@@ -37,9 +37,9 @@ namespace libdnf {
 // User-Agent string (to avoid reporting rare systems or platforms that could
 // be tracked)
 std::map<std::string, std::vector<std::string>> distros = {
-    // taken from the fedora-release.spec file
-    { "Fedora", { "cinnamon", "cloud", "container", "coreos", "iot", "kde",
-                  "matecompiz", "server", "silverblue", "snappy", "soas",
+    // taken from the {fedora,generic}-release.spec files
+    { "Fedora", { "cinnamon", "cloud", "container", "coreos", "generic", "iot",
+                  "kde", "matecompiz", "server", "silverblue", "snappy", "soas",
                   "workstation", "xfce" } },
 };
 std::array<const std::string, 1> canons = { "Linux" };
