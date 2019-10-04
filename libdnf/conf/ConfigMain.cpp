@@ -276,10 +276,7 @@ class ConfigMain::Impl {
     OptionBool ignorearch{false};
     OptionString module_platform_id{nullptr};
 
-    OptionString user_agent{getUserAgent(
-        // paths are sorted by precedence (see os-release(5) for details)
-        getOsReleaseData({"/etc/os-release", "/usr/lib/os-release"})
-    )};
+    OptionString user_agent{getUserAgent(getOsReleaseData())};
     OptionBool countme{false};
 
     // Repo main config

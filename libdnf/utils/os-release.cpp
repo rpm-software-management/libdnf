@@ -33,6 +33,8 @@
 
 namespace libdnf {
 
+// sorted by precedence (see os-release(5) for details)
+std::array<const std::string, 2> paths = {"/etc/os-release", "/usr/lib/os-release"};
 // whitelists used for sanity-checking the os-release data when constructing a
 // User-Agent string (to avoid reporting rare systems or platforms that could
 // be tracked)
@@ -44,7 +46,7 @@ std::map<std::string, std::vector<std::string>> distros = {
 };
 std::array<const std::string, 1> canons = { "Linux" };
 
-std::map<std::string, std::string> getOsReleaseData(const std::vector<std::string> & paths)
+std::map<std::string, std::string> getOsReleaseData()
 {
     std::map<std::string, std::string> result;
 
