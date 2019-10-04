@@ -30,11 +30,14 @@ namespace libdnf {
 /**
  * @brief Parse the os-release file and return its contents in a map.
  *
- * @param  paths a vector of os-release file locations to try (in the given order)
- * @return       a map containing os-release data
+ * The file /etc/os-release takes precedence over /usr/lib/os-release which
+ * acts as a fallback should the former not exist (see os-release(5) for
+ * details).
+ *
+ * @return a map containing os-release data
  */
 std::map<std::string, std::string>
-getOsReleaseData(const std::vector<std::string> & paths);
+getOsReleaseData();
 
 /**
  * @brief Construct and return the User-Agent string for libdnf to send in HTTP
