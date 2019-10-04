@@ -115,29 +115,37 @@ static std::string getCanonOs()
 std::string getUserAgent(const std::map<std::string, std::string> & osReleaseData)
 {
     std::ostringstream oss;
-    std::string distro = osReleaseData.at("NAME");
-    std::string canon = getCanonOs();
-    std::string arch = getBaseArch();
 
-    // basic libdnf version string
+    // start with the basic libdnf version string
     oss << USER_AGENT;
 
-    // consult our whitelists
-    if (distros.find(distro) == distros.end()
-        || std::find(canons.begin(), canons.end(), canon) == canons.end()
-        || arch.empty())
+    // mandatory OS data (bail out if missing or unknown)
+    if (!osReleaseData.count("NAME") || !osReleaseData.count("VERSION_ID"))
+        return oss.str();
+    std::string name = osReleaseData.at("NAME");
+    std::string version = osReleaseData.at("VERSION_ID");
+    if (!distros.count(name))
         return oss.str();
 
-    // append OS data
-    oss << " (" << distro << " " << osReleaseData.at("VERSION_ID") << "; ";
+    // mandatory platform data from RPM (bail out if missing or unknown)
+    std::string canon = getCanonOs();
+    std::string arch = getBaseArch();
+    if (canon.empty() || arch.empty()
+        || std::find(canons.begin(), canons.end(), canon) == canons.end())
+        return oss.str();
+
+    // optional OS data (use fallback values if missing or unknown)
     std::string variant = "generic";
-    if (osReleaseData.find("VARIANT_ID") != osReleaseData.end()) {
+    auto list = distros[name];
+    if (osReleaseData.count("VARIANT_ID")) {
         std::string value = osReleaseData.at("VARIANT_ID");
-        auto list = distros.at(distro);
         if (std::find(list.begin(), list.end(), value) != list.end())
             variant = value;
     }
-    oss << variant << "; " << canon << "." << arch << ")";
+
+    // good to go!
+    oss << " (" << name << " " << version << "; " << variant << "; "
+        << canon << "." << arch << ")";
 
     return oss.str();
 }
