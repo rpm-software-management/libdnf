@@ -54,6 +54,7 @@
 #include <solv/repo.h>
 #include <solv/util.h>
 
+#include <array>
 #include <atomic>
 #include <cctype>
 #include <cerrno>
@@ -88,6 +89,10 @@ const int COUNTME_BUDGET = 4;  // metadata_expire defaults to 2 days
 const std::string COUNTME_COOKIE = "countme";
 // cookie file format version
 const int COUNTME_VERSION = 0;
+// longevity buckets that we report in the flag
+// example: {A, B, C} defines 4 buckets [0, A), [A, B), [B, C), [C, infinity)
+// where each letter represents a window step (starting from 0)
+const std::array<const int, 3> COUNTME_BUCKETS = { {2, 5, 25} };
 
 namespace std {
 
@@ -1050,10 +1055,6 @@ void Repo::Impl::addCountmeFlag(LrHandle *handle) {
      * This is to align the time window with an absolute point in time rather
      * than the last counting event (which could facilitate tracking across
      * multiple such events).
-     *
-     * Possible TODO:
-     *   - Provide proof for this function being epsilon-differentially private
-     *   - Increment countme flag (hint: Basic RAPPOR)
      */
 
     // Bail out if not counting or not running as root (since the persistdir is
@@ -1096,10 +1097,24 @@ void Repo::Impl::addCountmeFlag(LrHandle *handle) {
     budget--;
     if (!budget) {
         // Budget exhausted, counting!
-        handleSetOpt(handle, LRO_ONETIMEFLAG, "countme=1");
+
         // Compute the position of this window
         win = now - (delta % COUNTME_WINDOW);
         if (!epoch) epoch = win;
+        // Window step (0 at epoch)
+        int step = (win - epoch) / COUNTME_WINDOW;
+
+        // Compute the bucket we are in
+        unsigned int i;
+        for (i = 0; i < COUNTME_BUCKETS.size(); ++i)
+            if (step < COUNTME_BUCKETS[i])
+                break;
+        int bucket = i + 1;  // Buckets are indexed from 1
+
+        // Set the flag
+        std::string flag = "countme=" + std::to_string(bucket);
+        handleSetOpt(handle, LRO_ONETIMEFLAG, flag.c_str());
+
         // Request a new budget
         budget = -1;
     }
