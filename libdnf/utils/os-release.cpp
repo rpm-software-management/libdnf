@@ -150,4 +150,13 @@ std::string getUserAgent(const std::map<std::string, std::string> & osReleaseDat
     return oss.str();
 }
 
+std::string getUserAgent()
+{
+    std::map<std::string, std::string> osdata;
+    try {
+        osdata = getOsReleaseData();
+    } catch (...) {}
+    return getUserAgent(osdata);
+}
+
 }
