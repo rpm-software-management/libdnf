@@ -24,20 +24,6 @@
 #define MIRRORLIST_FILENAME  "mirrorlist"
 #define RECOGNIZED_CHKSUMS {"sha512", "sha256"}
 
-// COUNTME MACROS
-// width of the sliding time window (in seconds)
-#define COUNTME_WINDOW (7*24*60*60)  // 1 week
-// starting point of the sliding time window relative to the UNIX epoch
-// allows for aligning the window with a specific weekday
-#define COUNTME_OFFSET (345600)  // Monday (1970-01-05 00:00:00 UTC)
-// estimated number of metalink requests sent over the window
-// used to generate the probability distribution of counting events
-#define COUNTME_BUDGET (4)  // metadata_expire defaults to 2 days
-// cookie file name
-#define COUNTME_COOKIE "countme"
-// cookie file format version
-#define COUNTME_VERSION (0)
-
 #include "../log.hpp"
 #include "Repo-private.hpp"
 #include "../dnf-utils.h"
@@ -86,6 +72,22 @@
 #include <time.h>
 
 #include <glib.h>
+
+//
+// COUNTME CONSTANTS
+//
+// width of the sliding time window (in seconds)
+const int COUNTME_WINDOW = 7*24*60*60;  // 1 week
+// starting point of the sliding time window relative to the UNIX epoch
+// allows for aligning the window with a specific weekday
+const int COUNTME_OFFSET = 345600;  // Monday (1970-01-05 00:00:00 UTC)
+// estimated number of metalink requests sent over the window
+// used to generate the probability distribution of counting events
+const int COUNTME_BUDGET = 4;  // metadata_expire defaults to 2 days
+// cookie file name
+const std::string COUNTME_COOKIE = "countme";
+// cookie file format version
+const int COUNTME_VERSION = 0;
 
 namespace std {
 
