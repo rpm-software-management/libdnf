@@ -55,10 +55,13 @@ getOsReleaseData();
  * Note that the OS part (enclosed in parentheses) will only be included for
  * whitelisted values.
  *
- * @param  osReleaseData a map containing os-release data
+ * @param  osReleaseData a map containing os-release data (will be loaded from
+ *                       disk if not specified)
  * @return               a User-Agent string
  */
 std::string
 getUserAgent(const std::map<std::string, std::string> & osReleaseData);
+std::string
+getUserAgent();
 
 }

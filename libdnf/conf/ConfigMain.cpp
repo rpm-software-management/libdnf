@@ -276,7 +276,7 @@ class ConfigMain::Impl {
     OptionBool ignorearch{false};
     OptionString module_platform_id{nullptr};
 
-    OptionString user_agent{getUserAgent(getOsReleaseData())};
+    OptionString user_agent{getUserAgent()};
     OptionBool countme{false};
 
     // Repo main config
