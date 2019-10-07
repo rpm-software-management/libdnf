@@ -52,6 +52,22 @@ typedef struct {
     PyObject *custom_package_class;
     PyObject *custom_package_val;
     PyObject * ModulePackageContainerPy;
+
+    // g_log handler IDs
+    // Multiple sacks can be created during a run of an application and each
+    // sack opens a log file and registers two g_log handlers. To avoid dangling
+    // handlers with invalid FILE pointers (we close them when destroying the
+    // sack), we need to keep track of the handlers so that we can also remove
+    // them.
+    //
+    // g_log is clever about adding log handlers. It does store all handlers
+    // registered for a given domain, but only the one that was registered last
+    // is used. If you remove the last registered one, the next in line will be
+    // used. That means stacking sacks is ok, the handler from the last
+    // undeleted sack will be the one that is used.
+    guint default_log_handler_id;
+    guint libdnf_log_handler_id;
+
     FILE *log_out;
 } _SackObject;
 
@@ -131,8 +147,13 @@ sack_dealloc(_SackObject *o)
         }
         g_object_unref(o->sack);
     }
-    if (o->log_out)
+
+    if (o->log_out) {
+        g_log_remove_handler(nullptr, o->default_log_handler_id);
+        g_log_remove_handler("libdnf", o->libdnf_log_handler_id);
         fclose(o->log_out);
+    }
+
     Py_TYPE(o)->tp_free(o);
 }
 
@@ -194,11 +215,11 @@ log_handler_noop(const gchar *, GLogLevelFlags, const gchar *, gpointer)
 }
 
 static gboolean
-set_logfile(const gchar *path, FILE ** log_out, bool debug)
+sack_set_logfile(_SackObject *self, const gchar *path, bool debug)
 {
-    *log_out = fopen(path, "a");
+    self->log_out = fopen(path, "a");
 
-    if (!(*log_out))
+    if (!self->log_out)
         return FALSE;
 
     // The default log handler prints messages that weren't handled by any
@@ -213,8 +234,8 @@ set_logfile(const gchar *path, FILE ** log_out, bool debug)
         G_LOG_LEVEL_ERROR);
 
     // set the handler for the default domain as well as "libdnf"
-    g_log_set_handler(nullptr, log_mask, log_handler, *log_out);
-    g_log_set_handler("libdnf", log_mask, log_handler, *log_out);
+    self->default_log_handler_id = g_log_set_handler(nullptr, log_mask, log_handler, self->log_out);
+    self->libdnf_log_handler_id = g_log_set_handler("libdnf", log_mask, log_handler, self->log_out);
 
     g_info("=== Started libdnf-%d.%d.%d ===", LIBDNF_MAJOR_VERSION,
             LIBDNF_MINOR_VERSION, LIBDNF_MICRO_VERSION);
@@ -273,7 +294,7 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
         PycompString logfile(logfile_py);
         if (!logfile.getCString())
             return -1;
-        if (!set_logfile(logfile.getCString(), &self->log_out, debug)) {
+        if (!sack_set_logfile(self, logfile.getCString(), debug)) {
             PyErr_Format(PyExc_IOError, "Failed to open log file: %s", logfile.getCString());
             return -1;
         }
