@@ -31,6 +31,7 @@ option(WITH_GTKDOC "Enables libdnf GTK-Doc HTML documentation" ON)
 option(WITH_HTML "Enables hawkey HTML generation" ON)
 option(WITH_MAN "Enables hawkey man page generation" ON)
 option(WITH_ZCHUNK "Build with zchunk support" ON)
+option(WITH_TESTS "Build tests" ON)
 option(ENABLE_RHSM_SUPPORT "Build with Red Hat Subscription Manager support?" OFF)
 option(ENABLE_SOLV_URPMREORDER "Build with support for URPM-like solution reordering?" OFF)
 
@@ -46,21 +47,24 @@ endif()
 
 # build dependencies
 find_package(Gpgme REQUIRED)
-find_package(LibSolv 0.6.30 REQUIRED COMPONENTS ext)
+pkg_check_modules(LibSolv REQUIRED libsolv REQUIRED)
+pkg_check_modules(LibSolvExt REQUIRED libsolvext REQUIRED)
 find_package(OpenSSL REQUIRED)
 
 
 # build dependencies via pkg-config
-pkg_check_modules(CHECK REQUIRED check)
+if(WITH_TESTS)
+    pkg_check_modules(CHECK REQUIRED check)
+endif()
 pkg_check_modules(GLIB REQUIRED gio-unix-2.0>=2.46.0)
 include_directories(${GLIB_INCLUDE_DIRS})
 pkg_check_modules(JSONC REQUIRED json-c)
 include_directories(${JSONC_INCLUDE_DIRS})
-pkg_check_modules(LIBMODULEMD REQUIRED modulemd)
+pkg_check_modules(LIBMODULEMD REQUIRED modulemd<2)
 pkg_check_modules(REPO REQUIRED librepo)
 include_directories(${REPO_INCLUDE_DIRS})
 link_directories(${REPO_LIBRARY_DIRS})
-pkg_check_modules(RPM REQUIRED rpm>=4.11.0)
+pkg_check_modules(RPM REQUIRED rpm>=4.15.0)
 pkg_check_modules(SMARTCOLS REQUIRED smartcols)
 pkg_check_modules(SQLite3 REQUIRED sqlite3)
 
@@ -149,6 +153,7 @@ add_subdirectory(libdnf)
 if(WITH_BINDINGS)
     # add_subdirectory(bindings/perl)
     add_subdirectory(bindings/python)
+    add_subdirectory(python/hawkey)
 endif()
 
 
@@ -162,10 +167,77 @@ if(WITH_BINDINGS)
     add_subdirectory(docs/hawkey)
 endif()
 
-
-# build tests
-enable_testing()
-add_subdirectory(tests)
-if(WITH_BINDINGS)
-    add_subdirectory(python/hawkey)
+if(WITH_TESTS)
+    # build tests
+    enable_testing()
+    add_subdirectory(tests)
 endif()
+
+
+
+set(CPACK_PACKAGE_NAME libdnf)
+set(CPACK_PACKAGE_VERSION_MAJOR "${LIBDNF_MAJOR_VERSION}")
+set(CPACK_PACKAGE_VERSION_MINOR "${LIBDNF_MINOR_VERSION}")
+set(CPACK_PACKAGE_VERSION_PATCH "${LIBDNF_PATCH_VERSION}")
+set(CPACK_PACKAGE_VENDOR "Red Hat")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Software management library.")
+set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/CPack.libdnf.description.txt")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/rpm-software-management/libdnf")
+set(CPACK_PACKAGE_CONTACT "https://github.com/rpm-software-management/librepo")
+set(CPACK_PACKAGE_CHECKSUM "SHA512")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING")
+set(CPACK_GENERATOR "DEB")
+
+message(STATUS "GLIB_VERSION ${GLIB_VERSION}")
+string(REPLACE "." ";" GLIB2_VERSION_PARSED "${GLIB_VERSION}")
+list(GET GLIB2_VERSION_PARSED 0 GLIB_VERSION_MAJOR)
+list(GET GLIB2_VERSION_PARSED 1 GLIB_VERSION_MINOR)
+
+string(REPLACE "." ";" GPGME_VERSION_PARSED "${GPGME_VERSION}")
+list(GET GPGME_VERSION_PARSED 0 GPGME_VERSION_MAJOR)
+
+string(REPLACE "." ";" LIBCRYPTO_VERSION_PARSED "${OPENSSL_VERSION}")
+list(GET LIBCRYPTO_VERSION_PARSED 0 LIBCRYPTO_VERSION_MAJOR)
+list(GET LIBCRYPTO_VERSION_PARSED 1 LIBCRYPTO_VERSION_MINOR)
+
+string(REPLACE "." ";" LibSolv_VERSION_PARSED "${LibSolv_VERSION}")
+list(GET LibSolv_VERSION_PARSED 0 LibSolv_VERSION_MAJOR)
+list(GET LibSolv_VERSION_PARSED 1 LibSolv_VERSION_MINOR)
+
+string(REPLACE "." ";" LibSolvExt_VERSION_PARSED "${LibSolvExt_VERSION}")
+list(GET LibSolvExt_VERSION_PARSED 0 LibSolvExt_VERSION_MAJOR)
+list(GET LibSolvExt_VERSION_PARSED 1 LibSolvExt_VERSION_MINOR)
+
+string(REPLACE "." ";" SQLite3_VERSION_PARSED "${SQLite3_VERSION}")
+list(GET SQLite3_VERSION_PARSED 0 SQLite3_VERSION_MAJOR)
+
+string(REPLACE "." ";" LIBMODULEMD_VERSION_PARSED "${LIBMODULEMD_VERSION}")
+list(GET LIBMODULEMD_VERSION_PARSED 0 LIBMODULEMD_VERSION_MAJOR)
+
+
+string(REPLACE "." ";" SMARTCOLS_VERSION_PARSED "${SMARTCOLS_VERSION}")
+list(GET SMARTCOLS_VERSION_PARSED 0 SMARTCOLS_VERSION_MAJOR)
+list(GET SMARTCOLS_VERSION_PARSED 1 SMARTCOLS_VERSION_MINOR)
+
+
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libglib${GLIB_VERSION_MAJOR}.0-0 (>=${GLIB_VERSION}~);libgpgme${GPGME_VERSION_MAJOR}1 (>=${GPGME_VERSION}~);libssl${LIBCRYPTO_VERSION_MAJOR}.${LIBCRYPTO_VERSION_MINOR} (>=${OPENSSL_VERSION}~);libjson-c4 (>=${JSONC_VERSION}~);librpm8 (>=${RPM_VERSION}~);librepo (>=${REPO_VERSION});libsolv${LibSolv_VERSION_MAJOR} (>=${LibSolv_VERSION}~);libsolvext${LibSolvExt_VERSION_MAJOR} (>=${LibSolvExt_VERSION}~);libsqlite${SQLite3_VERSION_MAJOR}-0 (>=${SQLite3_VERSION}~);libmodulemd${LIBMODULEMD_VERSION_MAJOR} (>=${LIBMODULEMD_VERSION}~);libsmartcols1 (>=${SMARTCOLS_VERSION_MAJOR}.${SMARTCOLS_VERSION_MINOR}~)")
+
+if(ENABLE_RHSM_SUPPORT)
+	list(APPEND CPACK_DEBIAN_PACKAGE_DEPENDS "librhsm (>=${RHSM_VERSION}~)")
+endif()
+
+if(WITH_ZCHUNK)
+	list(APPEND CPACK_DEBIAN_PACKAGE_DEPENDS "libzchunk (>=${ZCHUNKLIB_VERSION}~)")
+endif()
+
+if(WITH_BINDINGS)
+	if(PYTHON_DESIRED)
+		list(APPEND CPACK_DEBIAN_PACKAGE_DEPENDS "libpython${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR} (>=${PYTHON_VERSION_STRING}~);python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR} (>=${PYTHON_VERSION_STRING}~)")
+	endif()
+endif()
+
+list(JOIN CPACK_DEBIAN_PACKAGE_DEPENDS ", " CPACK_DEBIAN_PACKAGE_DEPENDS)
+
+set(CPACK_DEBIAN_PACKAGE_PROVIDES "libdnf, libdnf-dev, libdnf, python${PYTHON_VERSION_MAJOR}-libdnf")
+
+include(CPack)
