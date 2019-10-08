@@ -1054,8 +1054,9 @@ void Repo::Impl::addCountmeFlag(LrHandle *handle) {
      *   - Increment countme flag (hint: Basic RAPPOR)
      */
 
-    // Bail out if not counting
-    if (!conf->countme().getValue())
+    // Bail out if not counting or not running as root (since the persistdir is
+    // only root-writable)
+    if (!conf->countme().getValue() || getuid() != 0)
         return;
 
     // Bail out if not a remote handle
