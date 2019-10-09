@@ -10,6 +10,9 @@
 #include <utility>
 #include <iostream>
 
+#include <cerrno>
+#include <system_error>
+
 extern "C" {
 #   include <solv/solv_xfopen.h>
 };
@@ -41,7 +44,7 @@ void File::open(const char *mode)
 {
     file = fopen(filePath.c_str(), mode);
     if (!file) {
-        throw OpenException(filePath);
+        throw OpenException(filePath, std::system_category().message(errno));
     }
 }
 

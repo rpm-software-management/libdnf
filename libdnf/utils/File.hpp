@@ -17,7 +17,9 @@ public:
 
     struct OpenException : IOException
     {
-        explicit OpenException(const std::string &filePath) : IOException("Cannot open file: " + filePath) {}
+        explicit OpenException(const std::string &filePath) : IOException("Cannot open file \"" + filePath + "\".") {}
+        explicit OpenException(const std::string &filePath, const std::string &detail) :
+            IOException("Cannot open file \"" + filePath + "\". " + detail) {}
     };
 
     struct CloseException : IOException
