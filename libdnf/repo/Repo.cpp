@@ -70,6 +70,7 @@
 
 #include <atomic>
 #include <cctype>
+#include <cerrno>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -77,9 +78,9 @@
 #include <map>
 #include <set>
 #include <sstream>
+#include <system_error>
 #include <type_traits>
 
-#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -816,9 +817,8 @@ std::vector<Key> Repo::Impl::retrieve(const std::string & url)
     char tmpKeyFile[] = "/tmp/repokey.XXXXXX";
     auto fd = mkstemp(tmpKeyFile);
     if (fd == -1) {
-        char buf[1024];
-        (void)strerror_r(errno, buf, sizeof(buf));
-        auto msg = tfm::format("%s: mkstemp(): %s", __func__, buf);
+        auto msg = tfm::format("Error creating temporary file \"%s\": %s",
+            tmpKeyFile, std::system_category().message(errno));
         logger->debug(msg);
         throw LrException(LRE_GPGERROR, msg);
     }
