@@ -187,7 +187,7 @@ private:
     Repo * owner;
     std::unique_ptr<LrResult> lrHandlePerform(LrHandle * handle, const std::string & destDirectory,
         bool setGPGHomeDir);
-    void embedCountmeFlag(std::string & url);
+    void addCountmeFlag(std::string & url);
     bool isMetalinkInSync();
     bool isRepomdInSync();
     void resetMetadataExpired();

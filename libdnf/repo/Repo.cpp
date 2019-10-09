@@ -536,7 +536,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bo
     std::string tmp;
     if (!conf->metalink().empty() && !(tmp=conf->metalink().getValue()).empty()) {
         source = Source::METALINK;
-        if (countme) embedCountmeFlag(tmp);
+        if (countme) addCountmeFlag(tmp);
     }
     else if (!conf->mirrorlist().empty() && !(tmp=conf->mirrorlist().getValue()).empty())
         source = Source::MIRRORLIST;
@@ -1032,12 +1032,12 @@ bool Repo::Impl::loadCache(bool throwExcept)
     return true;
 }
 
-void Repo::Impl::embedCountmeFlag(std::string & url) {
+void Repo::Impl::addCountmeFlag(std::string & url) {
     /*
-     * The countme flag will be embedded once (and only once) in every position
-     * of a sliding time window (COUNTME_WINDOW) that starts at COUNTME_OFFSET
-     * and moves along the time axis, by one length at a time, in such a way
-     * that the current point in time always stays within:
+     * The countme flag will be added once (and only once) in every position of
+     * a sliding time window (COUNTME_WINDOW) that starts at COUNTME_OFFSET and
+     * moves along the time axis, by one length at a time, in such a way that
+     * the current point in time always stays within:
      *
      * UNIX epoch                    now
      * |                             |
@@ -1071,7 +1071,7 @@ void Repo::Impl::embedCountmeFlag(std::string & url) {
     // requests in this window (where N = COUNTME_BUDGET), by defining a random
     // "budget" of ordinary requests that we first have to spend.  This ensures
     // that no particular request is special and thus no privacy loss is
-    // incurred by embedding the flag within N requests.
+    // incurred by adding the flag within N requests.
     if (budget < 0) budget = numeric::random(1, COUNTME_BUDGET);
     budget--;
     if (!budget) {
