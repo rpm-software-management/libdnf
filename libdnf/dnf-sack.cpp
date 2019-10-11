@@ -183,6 +183,7 @@ dnf_sack_init(DnfSack *sack)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     priv->pool = pool_create();
+    pool_set_flag(priv->pool, POOL_FLAG_WHATPROVIDESWITHDISABLED, 1);
     priv->running_kernel_id = -1;
     priv->running_kernel_fn = running_kernel;
     priv->considered_uptodate = TRUE;
