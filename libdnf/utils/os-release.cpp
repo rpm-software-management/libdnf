@@ -116,7 +116,7 @@ std::string getUserAgent(const std::map<std::string, std::string> & osReleaseDat
 {
     std::ostringstream oss;
 
-    // start with the basic libdnf version string
+    // start with the basic libdnf string
     oss << USER_AGENT;
 
     // mandatory OS data (bail out if missing or unknown)
