@@ -23,7 +23,7 @@
 #include <vector>
 #include "libdnf/dnf-version.h"
 
-#define USER_AGENT "libdnf/" LIBDNF_VERSION
+#define USER_AGENT "libdnf"
 
 namespace libdnf {
 
