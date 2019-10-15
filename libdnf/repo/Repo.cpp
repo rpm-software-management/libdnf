@@ -1090,21 +1090,24 @@ void Repo::Impl::addCountmeFlag(LrHandle *handle) {
     // Bail out if the window has not advanced since
     time_t now = time(NULL);
     time_t delta = now - win;
-    if (delta < COUNTME_WINDOW) return;
+    if (delta < COUNTME_WINDOW)
+        return;
 
     // Evenly distribute the probability of the counting event over the first N
     // requests in this window (where N = COUNTME_BUDGET), by defining a random
     // "budget" of ordinary requests that we first have to spend.  This ensures
     // that no particular request is special and thus no privacy loss is
     // incurred by adding the flag within N requests.
-    if (budget < 0) budget = numeric::random(1, COUNTME_BUDGET);
+    if (budget < 0)
+        budget = numeric::random(1, COUNTME_BUDGET);
     budget--;
     if (!budget) {
         // Budget exhausted, counting!
 
         // Compute the position of this window
         win = now - (delta % COUNTME_WINDOW);
-        if (!epoch) epoch = win;
+        if (!epoch)
+            epoch = win;
         // Window step (0 at epoch)
         int step = (win - epoch) / COUNTME_WINDOW;
 
