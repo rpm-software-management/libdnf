@@ -629,6 +629,9 @@ void ConfigMain::addVarsFromDir(std::map<std::string, std::string> & varsMap, co
 
 void ConfigMain::addVarsFromEnv(std::map<std::string, std::string> & varsMap)
 {
+    if (!environ)
+        return;
+
     for (const char * const * varPtr = environ; *varPtr; ++varPtr) {
         auto var = *varPtr;
         if (auto eqlPtr = strchr(var, '=')) {
