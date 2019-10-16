@@ -36,19 +36,12 @@
 
 #include <memory>
 
-/* ARM specific HWCAP defines may be missing on non-ARM devices,
- * AT_HWCAP2 is missing on old glibc (<2.18) */
-#ifndef AT_HWCAP2
-#define AT_HWCAP2	26
-#endif
+/* ARM specific HWCAP defines may be missing on non-ARM devices */
 #ifndef HWCAP_ARM_VFP
 #define HWCAP_ARM_VFP	(1<<6)
 #endif
 #ifndef HWCAP_ARM_NEON
 #define HWCAP_ARM_NEON	(1<<12)
-#endif
-#ifndef HWCAP2_AES
-#define HWCAP2_AES	(1<<0)
 #endif
 
 const char *
@@ -111,16 +104,16 @@ hy_detect_arch(char **arch)
     if (!strncmp(un.machine, "armv", 4)) {
         /* un.machine is armvXE, where X is version number and E is
          * endianness (b or l); we need to add modifiers such as
-         * h (hardfloat), n (neon), c (crypto extensions) */
+         * h (hardfloat), n (neon). Neon is a requirement of armv8 so
+         * as far as rpm is concerned armv8l is the equivilent of armv7hnl
+         * (or 7hnb) so we don't explicitly add 'n' for 8+ as it's expected. */
         char endian = un.machine[strlen(un.machine)-1];
         char *modifier = un.machine + 5;
         while(isdigit(*modifier)) /* keep armv7, armv8, armv9, armv10, armv100, ... */
             modifier++;
         if (getauxval(AT_HWCAP) & HWCAP_ARM_VFP)
             *modifier++ = 'h';
-        if (getauxval(AT_HWCAP2) & HWCAP2_AES)
-            *modifier++ = 'c';
-        if (getauxval(AT_HWCAP) & HWCAP_ARM_NEON)
+        if ((atoi(un.machine+4) == 7) && (getauxval(AT_HWCAP) & HWCAP_ARM_NEON))
             *modifier++ = 'n';
         *modifier++ = endian;
         *modifier = 0;
