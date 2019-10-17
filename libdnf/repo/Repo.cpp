@@ -1112,12 +1112,11 @@ void Repo::Impl::addCountmeFlag(LrHandle *handle) {
         int step = (win - epoch) / COUNTME_WINDOW;
 
         // Compute the bucket we are in
-        int bucket = 0;
-        unsigned int i = 0;
+        unsigned int i;
         for (i = 0; i < COUNTME_BUCKETS.size(); ++i)
             if (step < COUNTME_BUCKETS[i])
                 break;
-        bucket = i + 1;  // Buckets are indexed from 1
+        int bucket = i + 1;  // Buckets are indexed from 1
 
         // Set the flag
         std::string flag = "countme=" + std::to_string(bucket);
