@@ -22,6 +22,8 @@
 #include "File.hpp"
 #include "utils.hpp"
 #include "libdnf/dnf-context.h"
+#include "libdnf/log.hpp"
+#include "tinyformat/tinyformat.hpp"
 
 #include <algorithm>
 #include <array>
@@ -115,24 +117,32 @@ static std::string getCanonOs()
 std::string getUserAgent(const std::map<std::string, std::string> & osReleaseData)
 {
     std::ostringstream oss;
+    auto logger(Log::getLogger());
+    std::string msg = "os-release: falling back to basic User-Agent";
 
     // start with the basic libdnf string
     oss << USER_AGENT;
 
     // mandatory OS data (bail out if missing or unknown)
-    if (!osReleaseData.count("NAME") || !osReleaseData.count("VERSION_ID"))
+    if (!osReleaseData.count("NAME") || !osReleaseData.count("VERSION_ID")) {
+        logger->debug(tfm::format("%s: missing NAME or VERSION_ID", msg));
         return oss.str();
+    }
     std::string name = osReleaseData.at("NAME");
     std::string version = osReleaseData.at("VERSION_ID");
-    if (!distros.count(name))
+    if (!distros.count(name)) {
+        logger->debug(tfm::format("%s: distro %s not whitelisted", msg, name));
         return oss.str();
+    }
 
     // mandatory platform data from RPM (bail out if missing or unknown)
     std::string canon = getCanonOs();
     std::string arch = getBaseArch();
     if (canon.empty() || arch.empty()
-        || std::find(canons.begin(), canons.end(), canon) == canons.end())
+        || std::find(canons.begin(), canons.end(), canon) == canons.end()) {
+        logger->debug(tfm::format("%s: could not detect canonical OS or basearch", msg));
         return oss.str();
+    }
 
     // optional OS data (use fallback values if missing or unknown)
     std::string variant = "generic";
@@ -147,7 +157,9 @@ std::string getUserAgent(const std::map<std::string, std::string> & osReleaseDat
     oss << " (" << name << " " << version << "; " << variant << "; "
         << canon << "." << arch << ")";
 
-    return oss.str();
+    std::string result = oss.str();
+    logger->debug(tfm::format("os-release: User-Agent constructed: %s", result));
+    return result;
 }
 
 std::string getUserAgent()
@@ -155,7 +167,9 @@ std::string getUserAgent()
     std::map<std::string, std::string> osdata;
     try {
         osdata = getOsReleaseData();
-    } catch (...) {}
+    } catch (std::exception & ex) {
+        Log::getLogger()->debug(ex.what());
+    }
     return getUserAgent(osdata);
 }
 
