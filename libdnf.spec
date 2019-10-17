@@ -1,6 +1,6 @@
 %global libsolv_version 0.7.4-1
 %global libmodulemd_version 1.6.1
-%global librepo_version 1.10.0
+%global librepo_version 1.11.0
 %global dnf_conflict 4.2.11
 %global swig_version 3.0.12
 
