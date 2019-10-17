@@ -1055,10 +1055,6 @@ void Repo::Impl::addCountmeFlag(LrHandle *handle) {
      * This is to align the time window with an absolute point in time rather
      * than the last counting event (which could facilitate tracking across
      * multiple such events).
-     *
-     * Possible TODO:
-     *   - Provide proof for this function being epsilon-differentially private
-     *   - Increment countme flag (hint: Basic RAPPOR)
      */
 
     // Bail out if not counting or not running as root (since the persistdir is
