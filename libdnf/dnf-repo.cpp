@@ -1357,7 +1357,9 @@ dnf_repo_check_internal(DnfRepo *repo,
         return FALSE;
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_YUMDLIST, download_list.data()))
         return FALSE;
-    if (!lr_handle_setopt(priv->repo_handle, error, LRO_MIRRORLIST, NULL))
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_MIRRORLISTURL, NULL))
+        return FALSE;
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_METALINKURL, NULL))
         return FALSE;
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_GNUPGHOMEDIR, priv->keyring))
         return FALSE;
