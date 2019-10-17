@@ -1067,7 +1067,7 @@ void Repo::Impl::addCountmeFlag(LrHandle *handle) {
         return;
 
     // Bail out if not a remote handle
-    bool local;
+    long local;
     handleGetInfo(handle, LRI_LOCAL, &local);
     if (local)
         return;
