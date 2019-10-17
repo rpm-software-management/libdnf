@@ -1056,6 +1056,7 @@ void Repo::Impl::addCountmeFlag(LrHandle *handle) {
      * than the last counting event (which could facilitate tracking across
      * multiple such events).
      */
+    auto logger(Log::getLogger());
 
     // Bail out if not counting or not running as root (since the persistdir is
     // only root-writable)
@@ -1086,8 +1087,10 @@ void Repo::Impl::addCountmeFlag(LrHandle *handle) {
     // Bail out if the window has not advanced since
     time_t now = time(NULL);
     time_t delta = now - win;
-    if (delta < COUNTME_WINDOW)
+    if (delta < COUNTME_WINDOW) {
+        logger->debug(tfm::format("countme: no event for %s: window already counted", id));
         return;
+    }
 
     // Evenly distribute the probability of the counting event over the first N
     // requests in this window (where N = COUNTME_BUDGET), by defining a random
@@ -1117,9 +1120,12 @@ void Repo::Impl::addCountmeFlag(LrHandle *handle) {
         // Set the flag
         std::string flag = "countme=" + std::to_string(bucket);
         handleSetOpt(handle, LRO_ONETIMEFLAG, flag.c_str());
+        logger->debug(tfm::format("countme: event triggered for %s: bucket %i", id, bucket));
 
         // Request a new budget
         budget = -1;
+    } else {
+        logger->debug(tfm::format("countme: no event for %s: budget to spend: %i", id, budget));
     }
 
     // Save the cookie
