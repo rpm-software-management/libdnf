@@ -21,7 +21,6 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "libdnf/dnf-version.h"
 
 #define USER_AGENT "libdnf"
 
@@ -45,12 +44,11 @@ getOsReleaseData();
  *
  * The format returned is as follows:
  *
- *   libdnf/VERSION (NAME VERSION_ID; VARIANT_ID; OS[.BASEARCH])
+ *   libdnf (NAME VERSION_ID; VARIANT_ID; OS.BASEARCH)
  *
- * where VERSION is the libdnf version, NAME, VERSION_ID and VARIANT_ID are OS
- * identifiers read from the passed os-release data and OS and BASEARCH (if
- * found) are the canonical OS name and base architecture, respectively,
- * detected using RPM.
+ * where NAME, VERSION_ID and VARIANT_ID are OS identifiers read from the
+ * passed os-release data, and OS and BASEARCH (if found) are the canonical OS
+ * name and base architecture, respectively, detected using RPM.
  *
  * Note that the OS part (enclosed in parentheses) will only be included for
  * whitelisted values.
