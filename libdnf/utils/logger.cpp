@@ -20,6 +20,8 @@
 
 #include <logger.hpp>
 
+#include <stdexcept>
+
 namespace libdnf {
 
 constexpr const char * Logger::levelCStr[];
@@ -27,6 +29,44 @@ constexpr const char * Logger::levelCStr[];
 void Logger::write(int source, Level level, const std::string & message)
 {
     write(source, time(NULL), getpid(), level, message);
+}
+
+MemoryBufferLogger::MemoryBufferLogger(std::size_t maxItemsToKeep, std::size_t reserve)
+:maxItems(maxItemsToKeep), firstItemIdx(0)
+{
+    if (reserve > 0)
+        items.reserve(reserve < maxItemsToKeep ? reserve : maxItemsToKeep);
+}
+
+void MemoryBufferLogger::write(int source, time_t time, pid_t pid, libdnf::Logger::Level level, const std::string & message)
+{
+    std::lock_guard<std::mutex> guard(itemsMutex);
+    if (items.size() < maxItems) {
+        items.push_back({source, time, pid, level, message});
+    } else {
+        items[firstItemIdx] = {source, time, pid, level, message};
+        if (++firstItemIdx >= maxItems)
+            firstItemIdx = 0;
+    }
+}
+
+MemoryBufferLogger::Item MemoryBufferLogger::getItem(std::size_t itemIdx) const
+{
+    if (itemIdx >= items.size() || itemIdx >= maxItems)
+        throw std::out_of_range("MemoryBufferLogger");
+
+    std::lock_guard<std::mutex> guard(itemsMutex);
+    auto idx = itemIdx + firstItemIdx;
+    if (idx >= maxItems)
+        idx -= maxItems;
+    return items[idx];
+}
+
+void MemoryBufferLogger::clear()
+{
+    std::lock_guard<std::mutex> guard(itemsMutex);
+    firstItemIdx = 0;
+    items.clear();
 }
 
 }

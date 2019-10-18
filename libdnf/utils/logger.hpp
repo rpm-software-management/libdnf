@@ -21,7 +21,9 @@
 #ifndef _LOGGER_HPP_
 #define _LOGGER_HPP_
 
+#include <mutex>
 #include <string>
+#include <vector>
 
 #include <sys/types.h>
 #include <time.h>
@@ -66,6 +68,34 @@ public:
     void write(int, Level, const std::string &) override {}
     void write(int, time_t, pid_t, Level, const std::string &) override {}
 };
+
+class MemoryBufferLogger : public Logger {
+public:
+    struct Item {
+        int source;
+        time_t time;
+        pid_t pid;
+        Level level;
+        std::string message;
+    };
+
+    MemoryBufferLogger(std::size_t maxItemsToKeep, std::size_t reserve = 0);
+    void write(int source, time_t time, pid_t pid, Level level, const std::string & message) override;
+    std::size_t getItemsCount() const;
+    Item getItem(std::size_t itemIdx) const;
+    void clear();
+
+protected:
+    mutable std::mutex itemsMutex;
+    std::size_t maxItems; // rotation, oldest messages are replaced
+    std::size_t firstItemIdx;
+    std::vector<Item> items;
+};
+
+inline std::size_t MemoryBufferLogger::getItemsCount() const
+{
+    return items.size();
+}
 
 }
 
