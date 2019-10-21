@@ -306,8 +306,11 @@ get_solution(_SubjectObject *self, PyObject *args, PyObject *kwds, HyNevra *nevr
         static_cast<libdnf::Query::ExcludeFlags>(PyLong_AsLong(exclude_flags_obj));
 
     libdnf::Solution solution;
-    solution.getBestSolution(self->pattern, csack, cforms.empty() ? NULL : cforms.data(),
-        self->icase, c_with_nevra, c_with_provides, c_with_filenames, c_with_src, exclude_flags);
+    libdnf::Query query(csack, exclude_flags);
+    if (!c_with_src)
+        query.addFilter(HY_PKG_ARCH, HY_NEQ, "src");
+    solution.getBestSolution(self->pattern, cforms.empty() ? NULL : cforms.data(),
+        self->icase, c_with_nevra, c_with_provides, c_with_filenames, query);
 
     *nevra = solution.nevra.release();
 
