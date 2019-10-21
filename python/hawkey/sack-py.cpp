@@ -658,9 +658,7 @@ set_modules_enabled_by_pkgset(_SackObject *self, PyObject *args, PyObject *kwds)
         PyObject_GetAttrString(pyModuleContainer, "this"));
     auto moduleContainer = swigContainer->ptr;
     auto modules = moduleContainer->requiresModuleEnablement(*pset.get());
-    for (auto module: modules) {
-        moduleContainer->enable(module->getName(), module->getStream());
-    }
+    moduleContainer->enableDependencyTree(modules);
     Py_RETURN_NONE;
 }
 
