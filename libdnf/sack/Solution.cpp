@@ -24,17 +24,13 @@
 namespace libdnf {
 
 bool
-Solution::getBestSolution(const char * subject, DnfSack* sack, HyForm * forms, bool icase,
-    bool with_nevra, bool with_provides, bool with_filenames, bool with_src,
-    Query::ExcludeFlags exclude_flags)
+Solution::getBestSolution(const char * subject, HyForm * forms, bool icase, bool with_nevra,
+    bool with_provides, bool with_filenames, const Query & initQuery)
 {
-    query.reset(new Query(sack, exclude_flags));
+    query.reset(new Query(initQuery));
     nevra.reset();
 
-    if (!with_src) {
-        query->addFilter(HY_PKG_ARCH, HY_NEQ, "src");
-    }
-
+    query->apply();
     Query baseQuery(*query);
 
     if (with_nevra) {
@@ -42,12 +38,12 @@ Solution::getBestSolution(const char * subject, DnfSack* sack, HyForm * forms, b
         const HyForm * tryForms = !forms ? HY_FORMS_MOST_SPEC : forms;
         for (std::size_t i = 0; tryForms[i] != _HY_FORM_STOP_; ++i) {
             if (nevraObj.parse(subject, tryForms[i])) {
-                query->queryUnion(baseQuery);
                 query->addFilter(&nevraObj, icase);
                 if (!query->empty()) {
                     nevra.reset(new Nevra(std::move(nevraObj)));
                     return true;
                 }
+                query->queryUnion(baseQuery);
             }
         }
         if (!forms) {
