@@ -1721,17 +1721,11 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
     repoImpl->load_flags = flags;
 
     rc = current_rpmdb_checksum(pool, repoImpl->checksum);
-    if (rc) {
-        ret = FALSE;
-        g_set_error (error,
-                     DNF_ERROR,
-                     DNF_ERROR_FILE_INVALID,
-                     _("failed calculating RPMDB checksum"));
-        goto finish;
-    }
+    if (rc)
+	g_warning(_("failed calculating RPMDB checksum"));
 
     repo = repo_create(pool, HY_SYSTEM_REPO_NAME);
-    if (can_use_rpmdb_cache(cache_fp, repoImpl->checksum)) {
+    if (rc == 0 && can_use_rpmdb_cache(cache_fp, repoImpl->checksum)) {
         const char *chksum = pool_checksum_str(pool, repoImpl->checksum);
         g_debug("using cached rpmdb (0x%s)", chksum);
         rc = repo_add_solv(repo, cache_fp, 0);
