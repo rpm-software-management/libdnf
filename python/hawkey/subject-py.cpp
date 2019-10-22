@@ -279,12 +279,13 @@ get_solution(_SubjectObject *self, PyObject *args, PyObject *kwds, HyNevra *nevr
     PyObject *with_filenames = NULL;
     PyObject *with_src = NULL;
     PyObject *exclude_flags_obj = NULL;
+    PyObject *init_query = NULL;
     const char *kwlist[] = {"sack", "with_nevra", "with_provides", "with_filenames", "forms",
-        "with_src", "exclude_flags", NULL};
+        "with_src", "exclude_flags", "query", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O!O!O!OO!O", (char**) kwlist, &sack_Type, &sack,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O!O!O!OO!OO!", (char**) kwlist, &sack_Type, &sack,
         &PyBool_Type, &with_nevra, &PyBool_Type, &with_provides,
-        &PyBool_Type, &with_filenames, &forms, &PyBool_Type, &with_src, &exclude_flags_obj)) {
+        &PyBool_Type, &with_filenames, &forms, &PyBool_Type, &with_src, &exclude_flags_obj, &query_Type, &init_query)) {
         return NULL;
     }
     std::vector<HyForm> cforms;
@@ -299,13 +300,22 @@ get_solution(_SubjectObject *self, PyObject *args, PyObject *kwds, HyNevra *nevr
     gboolean c_with_filenames = with_filenames == NULL || PyObject_IsTrue(with_filenames);
     gboolean c_with_src = with_src == NULL || PyObject_IsTrue(with_src);
     csack = sackFromPyObject(sack);
+    auto c_init_query = init_query ? queryFromPyObject(init_query) : NULL;
 
-    libdnf::Query::ExcludeFlags exclude_flags =
-        exclude_flags_obj == NULL || exclude_flags_obj == Py_None ?
-        libdnf::Query::ExcludeFlags::APPLY_EXCLUDES :
-        static_cast<libdnf::Query::ExcludeFlags>(PyLong_AsLong(exclude_flags_obj));
+    std::unique_ptr<libdnf::Query> query;
+    if (!exclude_flags_obj || exclude_flags_obj == Py_None) {
+        if (c_init_query) {
+            query.reset(new libdnf::Query(*c_init_query));
+        } else {
+            query.reset(new libdnf::Query(csack, libdnf::Query::ExcludeFlags::APPLY_EXCLUDES));
+        }
+    } else {
+        query.reset(new libdnf::Query(csack, static_cast<libdnf::Query::ExcludeFlags>(PyLong_AsLong(exclude_flags_obj))));
+        if (c_init_query) {
+            query->queryUnion(*c_init_query);
+        }
+    }
 
-    std::unique_ptr<libdnf::Query> query(new libdnf::Query(csack, exclude_flags));
     if (!c_with_src)
         query->addFilter(HY_PKG_ARCH, HY_NEQ, "src");
     auto ret = query->filterSubject(self->pattern, cforms.empty() ? NULL : cforms.data(),
