@@ -2211,6 +2211,54 @@ Query::filterUserInstalled(const Swdb &swdb)
     swdb.filterUserinstalled(*getResultPset());
 }
 
+std::pair<bool, std::unique_ptr<Nevra>>
+Query::filterSubject(const char * subject, HyForm * forms, bool icase, bool with_nevra,
+    bool with_provides, bool with_filenames)
+{
+    apply();
+    Query origQuery(*this);
+
+    if (with_nevra) {
+        Nevra nevraObj;
+        const HyForm * tryForms = !forms ? HY_FORMS_MOST_SPEC : forms;
+        for (std::size_t i = 0; tryForms[i] != _HY_FORM_STOP_; ++i) {
+            if (nevraObj.parse(subject, tryForms[i])) {
+                addFilter(&nevraObj, icase);
+                if (!empty()) {
+                    return {true, std::unique_ptr<Nevra>(new Nevra(std::move(nevraObj)))};
+                }
+                queryUnion(origQuery);
+            }
+        }
+        if (!forms) {
+            queryUnion(origQuery);
+            addFilter(HY_PKG_NEVRA, HY_GLOB, subject);
+            if (!empty()) {
+                return {true, std::unique_ptr<Nevra>()};
+            }
+        }
+    }
+
+    if (with_provides) {
+        queryUnion(origQuery);
+        addFilter(HY_PKG_PROVIDES, HY_GLOB, subject);
+        if (!empty()) {
+            return {true, std::unique_ptr<Nevra>()};
+        }
+    }
+
+    if (with_filenames && hy_is_file_pattern(subject)) {
+        queryUnion(origQuery);
+        addFilter(HY_PKG_FILE, HY_GLOB, subject);
+        if (!empty()) {
+            return {true, std::unique_ptr<Nevra>()};
+        }
+    }
+
+    addFilter(HY_PKG_EMPTY, HY_EQ, 1);
+    return {false, std::unique_ptr<Nevra>()};
+}
+
 void
 hy_query_to_name_ordered_queue(HyQuery query, IdQueue * samename)
 {

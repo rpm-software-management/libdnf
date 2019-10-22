@@ -22,7 +22,7 @@
 
 #include <vector>
 
-#include "sack/Solution.hpp"
+#include "sack/query.hpp"
 
 // hawkey
 #include "hy-iutil.h"
@@ -305,16 +305,15 @@ get_solution(_SubjectObject *self, PyObject *args, PyObject *kwds, HyNevra *nevr
         libdnf::Query::ExcludeFlags::APPLY_EXCLUDES :
         static_cast<libdnf::Query::ExcludeFlags>(PyLong_AsLong(exclude_flags_obj));
 
-    libdnf::Solution solution;
-    libdnf::Query query(csack, exclude_flags);
+    std::unique_ptr<libdnf::Query> query(new libdnf::Query(csack, exclude_flags));
     if (!c_with_src)
-        query.addFilter(HY_PKG_ARCH, HY_NEQ, "src");
-    solution.getBestSolution(self->pattern, cforms.empty() ? NULL : cforms.data(),
-        self->icase, c_with_nevra, c_with_provides, c_with_filenames, query);
+        query->addFilter(HY_PKG_ARCH, HY_NEQ, "src");
+    auto ret = query->filterSubject(self->pattern, cforms.empty() ? NULL : cforms.data(),
+        self->icase, c_with_nevra, c_with_provides, c_with_filenames);
 
-    *nevra = solution.nevra.release();
+    *nevra = ret.second.release();
 
-    return queryToPyObject(solution.query.release(), sack, &query_Type);
+    return queryToPyObject(query.release(), sack, &query_Type);
 }
 
 static PyObject *
