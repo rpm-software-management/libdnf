@@ -1703,7 +1703,7 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
     Pool *pool = dnf_sack_get_pool(sack);
     char *cache_fn = dnf_sack_give_cache_fn(sack, HY_SYSTEM_REPO_NAME, NULL);
     FILE *cache_fp = fopen(cache_fn, "r");
-    int rc;
+    int rc = 1;
     gboolean ret = TRUE;
     HyRepo hrepo = a_hrepo;
     Repo *repo;
@@ -1719,10 +1719,13 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
     auto repoImpl = libdnf::repoGetImpl(hrepo);
 
     repoImpl->load_flags = flags;
-
-    rc = current_rpmdb_checksum(pool, repoImpl->checksum);
-    if (rc)
-	g_warning(_("failed calculating RPMDB checksum"));
+    // no need to calculate anything when libsolv cache is absent
+    if (cache_fp) {
+        rc = current_rpmdb_checksum(pool, repoImpl->checksum);
+        if (rc) {
+            g_warning(_("failed calculating RPMDB checksum"));
+        }
+    }
 
     repo = repo_create(pool, HY_SYSTEM_REPO_NAME);
     if (rc == 0 && can_use_rpmdb_cache(cache_fp, repoImpl->checksum)) {
