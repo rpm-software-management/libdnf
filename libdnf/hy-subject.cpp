@@ -31,8 +31,8 @@
 #include "hy-query-private.hpp"
 #include "hy-selector.h"
 #include "hy-util-private.hpp"
+#include "sack/query.hpp"
 #include "sack/packageset.hpp"
-#include "sack/Solution.hpp"
 
 // most specific to least
 const HyForm HY_FORMS_MOST_SPEC[] = {
@@ -80,12 +80,10 @@ hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, Hy
                              gboolean icase, gboolean with_nevra, gboolean with_provides,
                              gboolean with_filenames, gboolean with_src)
 {
-    libdnf::Solution solution;
-    libdnf::Query query(sack, libdnf::Query::ExcludeFlags::APPLY_EXCLUDES);
-    solution.getBestSolution(subject, forms, icase, with_nevra, with_provides, with_filenames,
-        query);
-    *out_nevra = solution.nevra.release();
-    return solution.query.release();
+    std::unique_ptr<libdnf::Query> query(new libdnf::Query(sack, libdnf::Query::ExcludeFlags::APPLY_EXCLUDES));
+    auto ret = query->filterSubject(subject, forms, icase, with_nevra, with_provides, with_filenames);
+    *out_nevra = ret.second.release();
+    return query.release();
 }
 
 

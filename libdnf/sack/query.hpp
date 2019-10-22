@@ -25,6 +25,7 @@
 #include <vector>
 #include "../hy-types.h"
 #include "../hy-query.h"
+#include "../hy-subject.h"
 #include "../repo/solvable/Dependency.hpp"
 #include "../repo/solvable/DependencyContainer.hpp"
 #include "../transaction/Swdb.hpp"
@@ -32,6 +33,7 @@
 #include "advisorypkg.hpp"
 
 #include <set>
+#include <utility>
 
 namespace libdnf {
 
@@ -187,6 +189,23 @@ public:
      * @return std::set< std::__cxx11::string >
      */
     std::set<std::string> getStringsFromProvide(const char * patternProvide);
+
+    /**
+    * @brief Filter packages to match a given subject
+    *
+    * @param subject an subject to match
+    * @param forms an array of pattern forms, nullptr means a default forms are used, used only for search with_nevra
+    * @param icase true - matches the subject without sensitivity to case
+    * @param with_nevra true - enable search by nevra
+    * @param with_provides true - provides are searched for a match
+    * @param with_filenames true - file provides are searched for a match
+    *
+    * @return std::pair<bool, std::unique_ptr<Nevra>> The bool is denoting whether there are matched packages.
+    *         The Nevra is denoting used pattern form to match.  It is nullptr, if with_nevra search
+    *         was not used or there is no package whose Nevra would match to the subject.
+    */
+    std::pair<bool, std::unique_ptr<Nevra>> filterSubject(const char * subject, HyForm * forms,
+        bool icase, bool with_nevra, bool with_provides, bool with_filenames);
 private:
     class Impl;
     std::unique_ptr<Impl> pImpl;
