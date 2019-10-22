@@ -1,7 +1,7 @@
 %global libsolv_version 0.7.4-1
 %global libmodulemd_version 1.6.1
 %global librepo_version 1.11.0
-%global dnf_conflict 4.2.11
+%global dnf_conflict 4.2.13
 %global swig_version 3.0.12
 
 # set sphinx package name according to distro
@@ -48,7 +48,7 @@
     %{nil}
 
 Name:           libdnf
-Version:        0.36.0
+Version:        0.37.0
 Release:        1%{?dist}
 Summary:        Library providing simplified C and Python API to libsolv
 License:        LGPLv2+
