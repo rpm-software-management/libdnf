@@ -254,6 +254,10 @@ bool             dnf_context_plugin_hook                (DnfContext     *context
                                                          PluginHookId    id,
                                                          DnfPluginHookData *hookData,
                                                          DnfPluginError *error);
+gboolean         dnf_context_reset_modules              (DnfContext * context,
+                                                         DnfSack * sack,
+                                                         const char ** module_names,
+                                                         GError ** error);
 
 G_END_DECLS
 
