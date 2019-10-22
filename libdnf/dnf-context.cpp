@@ -2513,6 +2513,41 @@ pluginGetContext(DnfPluginInitData * data)
     return (static_cast<PluginHookContextInitData *>(data)->context);
 }
 
+gboolean
+dnf_context_reset_modules(DnfContext * context, DnfSack * sack, const char ** module_names, GError ** error)
+{
+    assert(sack);
+    assert(module_names);
+
+    DnfContextPrivate * priv = GET_PRIVATE(context);
+    auto container = dnf_sack_get_module_container(sack);
+    if (!container) {
+        return TRUE;
+    }
+    for (const char ** names = module_names; *names != NULL; ++names) {
+        container->reset(*names);
+    }
+    if (sack != nullptr) {
+        std::vector<const char *> hotfixRepos;
+        // don't filter RPMs from repos with the 'module_hotfixes' flag set
+        for (unsigned int i = 0; i < priv->repos->len; i++) {
+            auto repo = static_cast<DnfRepo *>(g_ptr_array_index(priv->repos, i));
+            if (dnf_repo_get_module_hotfixes(repo)) {
+                hotfixRepos.push_back(dnf_repo_get_id(repo));
+            }
+        }
+        hotfixRepos.push_back(nullptr);
+        try {
+            dnf_sack_filter_modules_v2(sack, nullptr, hotfixRepos.data(), priv->install_root,
+                priv->platform_module, false, false);
+        } catch (libdnf::ModuleDefaultsContainer::ConflictException & exception) {
+            g_set_error(error, DNF_ERROR, DNF_ERROR_FAILED, "%s", exception.what());
+            return FALSE;
+        }
+    }
+    return TRUE;
+}
+
 namespace libdnf {
 
 std::map<std::string, std::string> &
