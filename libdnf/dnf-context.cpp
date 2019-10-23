@@ -33,6 +33,7 @@
 #include "config.h"
 #include "conf/Const.hpp"
 #include "dnf-context.hpp"
+#include "libdnf/conf/ConfigParser.hpp"
 
 #include <memory>
 #include <vector>
@@ -2573,6 +2574,43 @@ dnf_context_load_vars(DnfContext * context)
         ConfigMain::addVarsFromDir(*priv->vars, std::string(priv->install_root) + *dir);
     ConfigMain::addVarsFromEnv(*priv->vars);
     priv->varsCached = true;
+}
+
+static libdnf::ConfigMain globalMainConfig;
+static std::atomic_flag cfgMainLoaded = ATOMIC_FLAG_INIT;
+
+libdnf::ConfigMain & getGlobalMainConfig()
+{
+    if (!cfgMainLoaded.test_and_set()) {
+        // The gpgcheck was enabled by default in context part of libdnf. We stay "compatible".
+        globalMainConfig.gpgcheck().set(libdnf::Option::Priority::DEFAULT, true);
+
+        libdnf::ConfigParser parser;
+        const std::string cfgPath{globalMainConfig.config_file_path().getValue()};
+        try {
+            parser.read(cfgPath);
+            const auto & cfgParserData = parser.getData();
+            auto cfgParserDataIter = cfgParserData.find("main");
+            if (cfgParserDataIter != cfgParserData.end()) {
+                auto optBinds = globalMainConfig.optBinds();
+                const auto & cfgParserMainSect = cfgParserDataIter->second;
+                for (const auto & opt : cfgParserMainSect) {
+                    auto optBindsIter = optBinds.find(opt.first);
+                    if (optBindsIter != optBinds.end()) {
+                        try {
+                            optBindsIter->second.newString(libdnf::Option::Priority::MAINCONFIG, opt.second);
+                        } catch (const std::exception & ex) {
+                            g_warning("Config error in file \"%s\" section \"main\" key \"%s\": %s",
+                                      cfgPath.c_str(), opt.first.c_str(), ex.what());
+                        }
+                    }
+                }
+            }
+        } catch (const std::exception & ex) {
+            g_warning("Loading \"%s\": %s", cfgPath.c_str(), ex.what());
+        }
+    }
+    return globalMainConfig;
 }
 
 }

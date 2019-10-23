@@ -22,9 +22,11 @@
 #define __DNF_CONTEXT_HPP
 
 #include "dnf-context.h"
+#include "conf/ConfigMain.hpp"
 
 #include <map>
 #include <string>
+
 
 inline DnfContextInvalidateFlags operator|(DnfContextInvalidateFlags a, DnfContextInvalidateFlags b)
 {
@@ -36,7 +38,7 @@ namespace libdnf {
 std::map<std::string, std::string> & dnf_context_get_vars(DnfContext * context);
 bool dnf_context_get_vars_cached(DnfContext * context);
 void dnf_context_load_vars(DnfContext * context);
-
+ConfigMain & getGlobalMainConfig();
 }
 
 #endif /* __DNF_CONTEXT_HPP */
