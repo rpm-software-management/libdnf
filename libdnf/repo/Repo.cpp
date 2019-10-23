@@ -27,12 +27,12 @@
 #include "../log.hpp"
 #include "Repo-private.hpp"
 #include "../dnf-utils.h"
+#include "../dnf-context.hpp"
 #include "../hy-iutil.h"
 #include "../hy-repo-private.hpp"
 #include "../hy-util-private.hpp"
 #include "../hy-iutil-private.hpp"
 #include "../hy-types.h"
-#include "libdnf/conf/ConfigParser.hpp"
 #include "libdnf/utils/File.hpp"
 #include "libdnf/utils/utils.hpp"
 #include "libdnf/utils/os-release.hpp"
@@ -2076,44 +2076,13 @@ repo_set_repodata(HyRepo repo, enum _hy_repo_repodata which, Id repodata)
     }
 }
 
-static libdnf::ConfigMain cfgMain;
-static std::atomic_flag cfgMainLoaded = ATOMIC_FLAG_INIT;
-
 // public functions
 
 HyRepo
 hy_repo_create(const char *name)
 {
     assert(name);
-    if (!cfgMainLoaded.test_and_set()) {
-        // The gpgcheck was enabled by default in context part of libdnf. We stay "compatible".
-        cfgMain.gpgcheck().set(libdnf::Option::Priority::DEFAULT, true);
-
-        libdnf::ConfigParser parser;
-        const std::string cfgPath{cfgMain.config_file_path().getValue()};
-        try {
-            parser.read(cfgPath);
-            const auto & cfgParserData = parser.getData();
-            auto cfgParserDataIter = cfgParserData.find("main");
-            if (cfgParserDataIter != cfgParserData.end()) {
-                auto optBinds = cfgMain.optBinds();
-                const auto & cfgParserMainSect = cfgParserDataIter->second;
-                for (const auto & opt : cfgParserMainSect) {
-                    auto optBindsIter = optBinds.find(opt.first);
-                    if (optBindsIter != optBinds.end()) {
-                        try {
-                            optBindsIter->second.newString(libdnf::Option::Priority::MAINCONFIG, opt.second);
-                        } catch (const std::exception & ex) {
-                            g_warning("Config error in file \"%s\" section \"main\" key \"%s\": %s",
-                                      cfgPath.c_str(), opt.first.c_str(), ex.what());
-                        }
-                    }
-                }
-            }
-        } catch (const std::exception & ex) {
-            g_warning("Loading \"%s\": %s", cfgPath.c_str(), ex.what());
-        }
-    }
+    auto & cfgMain = libdnf::getGlobalMainConfig();
     std::unique_ptr<libdnf::ConfigRepo> cfgRepo(new libdnf::ConfigRepo(cfgMain));
     auto repo = new libdnf::Repo(name, std::move(cfgRepo), libdnf::Repo::Type::COMMANDLINE);
     auto repoImpl = libdnf::repoGetImpl(repo);
