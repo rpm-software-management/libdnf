@@ -34,6 +34,7 @@
 #include "conf/Const.hpp"
 #include "dnf-context.hpp"
 #include "libdnf/conf/ConfigParser.hpp"
+#include "conf/Option.hpp"
 
 #include <memory>
 #include <vector>
@@ -71,6 +72,7 @@
 #include "plugin/plugin-private.hpp"
 #include "module/modulemd/ModuleDefaultsContainer.hpp"
 #include "utils/os-release.hpp"
+
 
 #define MAX_NATIVE_ARCHES    12
 
@@ -756,6 +758,22 @@ dnf_context_get_cache_only(DnfContext * context)
 }
 
 /**
+ * dnf_context_get_best:
+ *
+ * Gets best global configuration value.
+ *
+ * Returns: %TRUE if best mode is enabled
+ *
+ * Since: 0.37.0
+ **/
+gboolean
+dnf_context_get_best()
+{
+    auto & mainConf = libdnf::getGlobalMainConfig();
+    return mainConf.best().getValue();
+}
+
+/**
  * dnf_context_get_check_disk_space:
  * @context: a #DnfContext instance.
  *
@@ -1147,6 +1165,21 @@ dnf_context_set_source_root(DnfContext *context, const gchar *source_root)
     DnfContextPrivate *priv = GET_PRIVATE(context);
     g_free(priv->source_root);
     priv->source_root = g_strdup(source_root);
+}
+
+/**
+ * dnf_context_set_best:
+ * @gboolean: a value for best configuration
+ *
+ * Sets best global configuration value.
+ *
+ * Since: 0.37.0
+ **/
+void
+dnf_context_set_best(gboolean best)
+{
+    auto & mainConf = libdnf::getGlobalMainConfig();
+    mainConf.best().set(libdnf::Option::Priority::RUNTIME, best);
 }
 
 /**
