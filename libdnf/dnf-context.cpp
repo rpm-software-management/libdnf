@@ -2527,6 +2527,8 @@ dnf_context_reset_modules(DnfContext * context, DnfSack * sack, const char ** mo
     for (const char ** names = module_names; *names != NULL; ++names) {
         container->reset(*names);
     }
+    container->save();
+    container->updateFailSafeData();
     if (sack != nullptr) {
         std::vector<const char *> hotfixRepos;
         // don't filter RPMs from repos with the 'module_hotfixes' flag set
