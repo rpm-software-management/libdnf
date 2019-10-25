@@ -28,6 +28,8 @@ extern "C" {
 #include <solv/util.h>
 }
 
+#include <stdexcept>
+
 namespace libdnf {
 
 static int transformToLibsolvComparisonType(int cmp_type)

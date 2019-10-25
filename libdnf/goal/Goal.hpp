@@ -22,6 +22,7 @@
 #define __GOAL_HPP
 
 #include <memory>
+#include <stdexcept>
 
 #include "../dnf-types.h"
 #include "../hy-goal.h"
