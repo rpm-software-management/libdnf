@@ -143,6 +143,11 @@ if(ENABLE_SOLV_URPMREORDER)
     add_definitions(-DLIBSOLV_FLAG_URPMREORDER=1)
 endif()
 
+# librepo
+if(NOT REPO_VERSION VERSION_LESS 1.11.0)
+    add_definitions(-DHAVE_LRO_ONETIMEFLAG)
+endif()
+
 
 # build binaries
 add_subdirectory(libdnf)

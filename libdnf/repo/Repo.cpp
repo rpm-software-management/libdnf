@@ -1128,7 +1128,9 @@ void Repo::Impl::addCountmeFlag(LrHandle *handle) {
 
         // Set the flag
         std::string flag = "countme=" + std::to_string(bucket);
+#if defined(HAVE_LRO_ONETIMEFLAG)
         handleSetOpt(handle, LRO_ONETIMEFLAG, flag.c_str());
+#endif
         logger->debug(tfm::format("countme: event triggered for %s: bucket %i", id, bucket));
 
         // Request a new budget
