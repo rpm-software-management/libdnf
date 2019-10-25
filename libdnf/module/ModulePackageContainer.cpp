@@ -171,6 +171,9 @@ public:
 
     const std::string & getStream(const std::string &name);
     const std::vector<std::string> & getProfiles(const std::string &name);
+    /**
+     * @brief Can throw NoModuleException
+     */
     const ModuleState & getState(const std::string &name);
 
     std::map<std::string, std::string> getEnabledStreams();
@@ -446,7 +449,11 @@ bool ModulePackageContainer::isEnabled(const ModulePackage * module)
  */
 bool ModulePackageContainer::isDisabled(const std::string &name)
 {
-    return pImpl->persistor->getState(name) == ModuleState::DISABLED;
+    try {
+        return pImpl->persistor->getState(name) == ModuleState::DISABLED;
+    } catch (NoModuleException &) {
+        return false;
+    }
 }
 
 bool ModulePackageContainer::isDisabled(const ModulePackage * module)
@@ -742,7 +749,11 @@ void ModulePackageContainer::enableDependencyTree(std::vector<ModulePackage *> &
 ModulePackageContainer::ModuleState
 ModulePackageContainer::getModuleState(const std::string& name)
 {
-    return pImpl->persistor->getState(name);
+    try {
+        return pImpl->persistor->getState(name);
+    } catch (NoModuleException &) {
+        return ModuleState::UNKNOWN;
+    }
 }
 
 std::set<std::string> ModulePackageContainer::getInstalledPkgNames()
