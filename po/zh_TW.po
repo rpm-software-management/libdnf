@@ -44,7 +44,7 @@ msgstr " 第 %1$i 個問題：%2$s\n"
 #: ../libdnf/dnf-goal.cpp:79
 #, c-format
 msgid " Problem: %s\n"
-msgstr ""
+msgstr " 問題： %s\n"
 
 #: ../libdnf/goal/Goal.cpp:55
 msgid "Ill-formed Selector, presence of multiple match objects in the filter"
@@ -64,7 +64,7 @@ msgstr ""
 
 #: ../libdnf/goal/Goal.cpp:69
 msgid "problem with installed package "
-msgstr ""
+msgstr "已安裝軟體包的問題"
 
 #: ../libdnf/goal/Goal.cpp:70 ../libdnf/goal/Goal.cpp:96
 msgid "conflicting requests"
@@ -81,15 +81,15 @@ msgstr ""
 #: ../libdnf/goal/Goal.cpp:73
 #, c-format
 msgid "package %s does not exist"
-msgstr ""
+msgstr "軟體包 %s 不存在"
 
 #: ../libdnf/goal/Goal.cpp:74 ../libdnf/goal/Goal.cpp:100
 msgid " is provided by the system"
-msgstr ""
+msgstr " 是由系統提供"
 
 #: ../libdnf/goal/Goal.cpp:75 ../libdnf/goal/Goal.cpp:101
 msgid "some dependency problem"
-msgstr ""
+msgstr "一些相依性問題"
 
 #: ../libdnf/goal/Goal.cpp:76
 msgid "cannot install the best update candidate for package "
@@ -102,17 +102,17 @@ msgstr ""
 #: ../libdnf/goal/Goal.cpp:78
 #, c-format
 msgid "package %s is excluded"
-msgstr ""
+msgstr "%s 軟體包已被排除"
 
 #: ../libdnf/goal/Goal.cpp:79
 #, c-format
 msgid "package %s does not have a compatible architecture"
-msgstr ""
+msgstr "%s 軟體包不具有相容的格式"
 
 #: ../libdnf/goal/Goal.cpp:80
 #, c-format
 msgid "package %s is not installable"
-msgstr ""
+msgstr "%s 軟體包為不可安裝的"
 
 #: ../libdnf/goal/Goal.cpp:81
 #, c-format
@@ -122,7 +122,7 @@ msgstr ""
 #: ../libdnf/goal/Goal.cpp:82
 #, c-format
 msgid "cannot install both %s and %s"
-msgstr ""
+msgstr "無法安裝 %s 和 %s"
 
 #: ../libdnf/goal/Goal.cpp:83
 #, c-format
@@ -152,7 +152,7 @@ msgstr ""
 #: ../libdnf/goal/Goal.cpp:88
 #, c-format
 msgid "package %s conflicts with %s provided by itself"
-msgstr ""
+msgstr "%s 軟體包與自身提供的 %s 衝突"
 
 #: ../libdnf/goal/Goal.cpp:89
 #, c-format
@@ -161,12 +161,12 @@ msgstr ""
 
 #: ../libdnf/goal/Goal.cpp:95
 msgid "problem with installed module "
-msgstr ""
+msgstr "已安裝模組的問題 "
 
 #: ../libdnf/goal/Goal.cpp:99
 #, c-format
 msgid "module %s does not exist"
-msgstr ""
+msgstr "%s 模組不存在"
 
 #: ../libdnf/goal/Goal.cpp:102
 msgid "cannot install the best update candidate for module "
@@ -175,17 +175,17 @@ msgstr ""
 #: ../libdnf/goal/Goal.cpp:104
 #, c-format
 msgid "module %s is disabled"
-msgstr ""
+msgstr "%s 模組已停用"
 
 #: ../libdnf/goal/Goal.cpp:105
 #, c-format
 msgid "module %s does not have a compatible architecture"
-msgstr ""
+msgstr "%s 模組不具有相容的格式"
 
 #: ../libdnf/goal/Goal.cpp:106
 #, c-format
 msgid "module %s is not installable"
-msgstr ""
+msgstr "%s 模組為不可安裝的"
 
 #: ../libdnf/goal/Goal.cpp:107
 #, c-format
@@ -195,7 +195,7 @@ msgstr ""
 #: ../libdnf/goal/Goal.cpp:108
 #, c-format
 msgid "cannot install both modules %s and %s"
-msgstr ""
+msgstr "無法安裝 %s 和 %s"
 
 #: ../libdnf/goal/Goal.cpp:109
 #, c-format
@@ -225,7 +225,7 @@ msgstr ""
 #: ../libdnf/goal/Goal.cpp:114
 #, c-format
 msgid "module %s conflicts with %s provided by itself"
-msgstr ""
+msgstr "%s 模組與自身提供的 %s 衝突"
 
 #: ../libdnf/goal/Goal.cpp:115
 #, c-format
@@ -244,7 +244,7 @@ msgstr ""
 #: ../libdnf/goal/Goal.cpp:1006
 #, c-format
 msgid "failed writing debugdata to %1$s: %2$s"
-msgstr ""
+msgstr "無法寫入除錯資料至 %1$s ： %2$s"
 
 #: ../libdnf/goal/Goal.cpp:1018
 msgid "no solv in the goal"
