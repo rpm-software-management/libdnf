@@ -2559,7 +2559,12 @@ dnf_context_reset_modules(DnfContext * context, DnfSack * sack, const char ** mo
         return TRUE;
     }
     for (const char ** names = module_names; *names != NULL; ++names) {
-        container->reset(*names);
+        try {
+            container->reset(*names);
+        } catch (libdnf::ModulePackageContainer::NoModuleException & exception) {
+            g_set_error(error, DNF_ERROR, DNF_ERROR_FAILED, "%s", exception.what());
+            return FALSE;
+        }
     }
     container->save();
     container->updateFailSafeData();
