@@ -78,6 +78,7 @@ void             dnf_package_set_user_action            (DnfPackage     *pkg,
                                                          gboolean        user_action);
 gboolean         dnf_package_is_gui                     (DnfPackage     *pkg);
 gboolean         dnf_package_is_devel                   (DnfPackage     *pkg);
+gboolean         dnf_package_is_local                   (DnfPackage     *pkg);
 gboolean         dnf_package_is_downloaded              (DnfPackage     *pkg);
 gboolean         dnf_package_is_installonly             (DnfPackage     *pkg);
 const gchar     *dnf_package_get_pkgid                  (DnfPackage     *pkg);
