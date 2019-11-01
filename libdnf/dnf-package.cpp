@@ -35,6 +35,7 @@
 #include <fcntl.h>
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <assert.h>
 
 #include <librepo/librepo.h>
 #include <memory>
@@ -90,6 +91,29 @@ dnf_package_get_priv(DnfPackage *pkg)
 }
 
 /**
+ * dnf_package_is_local:
+ * @pkg: a #DnfPackage *instance.
+ *
+ * Returns: %TRUE if the pkg is a pkg on local or media filesystem
+ *
+ * Since: 0.38.2
+ **/
+gboolean
+dnf_package_is_local(DnfPackage *pkg)
+{
+    DnfPackagePrivate *priv;
+    priv = dnf_package_get_priv(pkg);
+
+    assert(priv->repo);
+
+    if (!dnf_repo_is_local(priv->repo))
+        return FALSE;
+     
+    const gchar *url_location = dnf_package_get_baseurl(pkg);
+    return (!url_location  || (url_location && g_str_has_prefix(url_location, "file:/")));
+}
+
+/**
  * dnf_package_get_filename:
  * @pkg: a #DnfPackage *instance.
  *
@@ -114,7 +138,7 @@ dnf_package_get_filename(DnfPackage *pkg)
 
     /* default cache filename location */
     if (!priv->filename) {
-        if (dnf_repo_is_local(priv->repo)) {
+        if (dnf_package_is_local(pkg)) {
             const gchar *url_location = dnf_package_get_baseurl(pkg);
             if (!url_location){
                 url_location = dnf_repo_get_location(priv->repo);
@@ -660,9 +684,9 @@ dnf_package_check_filename(DnfPackage *pkg, gboolean *valid, GError **error)
     if (!g_file_test(path, G_FILE_TEST_EXISTS)) {
         *valid = FALSE;
 
-        /* a missing file in a local repo is an error since we can't
-           download it. */
-        if (dnf_repo_is_local (dnf_package_get_repo (pkg))) {
+        /* a missing file in a local repo is an error, unless it is remote via base:url,
+         * since we can't download it */
+        if (dnf_package_is_local(pkg)) {
             ret = FALSE;
             g_set_error(error,
                         DNF_ERROR,
