@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-05 11:00+0200\n"
+"POT-Creation-Date: 2019-11-03 21:37-0500\n"
 "PO-Revision-Date: 2019-05-21 06:12+0000\n"
 "Last-Translator: Jean-Baptiste Holcroft <jean-baptiste@holcroft.fr>\n"
 "Language-Team: French\n"
@@ -19,36 +19,71 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
 "X-Generator: Zanata 4.6.2\n"
 
-#: ../libdnf/hy-iutil.cpp:316
+#: ../libdnf/dnf-transaction.cpp:276
 #, c-format
-msgid "Failed renaming %1$s to %2$s: %3$s"
-msgstr "N’a pas pu renommer %1$s en %2$s: %3$s"
+msgid "Sources not set when trying to ensure package %s"
+msgstr "Sources non définies quand vous essayez d’assurer paquet %s"
 
-#: ../libdnf/hy-iutil.cpp:324
+#: ../libdnf/dnf-transaction.cpp:302
 #, c-format
-msgid "Failed setting perms on %1$s: %2$s"
-msgstr "N’a pas pu définir les perms sur %1$s: %2$s"
+msgid "Failed to ensure %1$s as repo %2$s not found(%3$i repos loaded)"
+msgstr "N’a pu assurer %1$s comme dépôt %2$s non trouvé (%3$i dépôts chargés)"
 
-#: ../libdnf/dnf-goal.cpp:67
-msgid "Could not depsolve transaction; "
-msgstr "N’a pas pu depsolve la transaction; "
+#: ../libdnf/dnf-transaction.cpp:343
+msgid "Failed to check untrusted: "
+msgstr "N’a pas pu vérifier untrusted : "
 
-#: ../libdnf/dnf-goal.cpp:69
+#: ../libdnf/dnf-transaction.cpp:353
 #, c-format
-msgid "%i problem detected:\n"
-msgid_plural "%i problems detected:\n"
-msgstr[0] "%i problème détecté :\n"
-msgstr[1] "%i problèmes détectés:\n"
+msgid "Downloaded file for %s not found"
+msgstr "Fichier téléchargé pour %s non trouvé"
 
-#: ../libdnf/dnf-goal.cpp:77
+#: ../libdnf/dnf-transaction.cpp:373
 #, c-format
-msgid " Problem %1$i: %2$s\n"
-msgstr " Probléme %1$i: %2$s\n"
+msgid "package %1$s cannot be verified and repo %2$s is GPG enabled: %3$s"
+msgstr ""
+"le paquet %1$s ne peut être vérifié et le dépôt %2$s est activé GPG : %3$s"
 
-#: ../libdnf/dnf-goal.cpp:79
+#: ../libdnf/dnf-transaction.cpp:807 ../libdnf/dnf-transaction.cpp:879
+msgid "Failed to get value for CacheDir"
+msgstr "N’a pas pu obtenir la valeur de CacheDir"
+
+#: ../libdnf/dnf-transaction.cpp:887
 #, c-format
-msgid " Problem: %s\n"
-msgstr " Probléme: %s\n"
+msgid "Failed to get filesystem free size for %s: "
+msgstr "N’a pas pu obtenir la taille libre du système de fichiers pour %s : "
+
+#: ../libdnf/dnf-transaction.cpp:895
+#, c-format
+msgid "Failed to get filesystem free size for %s"
+msgstr "N’a pas pu obtenir la taille libre du système de fichiers pour %s"
+
+#: ../libdnf/dnf-transaction.cpp:911
+#, c-format
+msgid "Not enough free space in %1$s: needed %2$s, available %3$s"
+msgstr ""
+"Pas suffisamment d’espace libre dans %1$s: a besoin de %2$s, disponible %3$s"
+
+#: ../libdnf/dnf-transaction.cpp:1169
+msgid "failed to set root"
+msgstr "n’a pu réussi à définir root"
+
+#: ../libdnf/dnf-transaction.cpp:1391
+#, c-format
+msgid "Error %i running transaction test"
+msgstr "Erreur %i lors du test transactionnel"
+
+#: ../libdnf/dnf-transaction.cpp:1431
+#, c-format
+msgid "Error %i running transaction"
+msgstr "Erreur %i pendant la transaction"
+
+#: ../libdnf/dnf-transaction.cpp:1446
+#, c-format
+msgid "Transaction did not go to writing phase, but returned no error(%i)"
+msgstr ""
+"La transaction n’a pas pu opérer en phase d’écriture, mais a renvoyé « no "
+"error(%i) »"
 
 #: ../libdnf/goal/Goal.cpp:55
 msgid "Ill-formed Selector, presence of multiple match objects in the filter"
@@ -243,60 +278,466 @@ msgstr "le module %s est en conflit avec %s fourni par lui-même"
 msgid "both module %s and %s obsolete %s"
 msgstr "à la fois le module %s et %s rendent obsolète %s"
 
-#: ../libdnf/goal/Goal.cpp:994
+#: ../libdnf/goal/Goal.cpp:998
 msgid "no solver set"
 msgstr "aucun solveur défini"
 
-#: ../libdnf/goal/Goal.cpp:999
+#: ../libdnf/goal/Goal.cpp:1003
 #, c-format
 msgid "failed to make %s absolute"
 msgstr "n’a pas pu rendre %s absolu"
 
-#: ../libdnf/goal/Goal.cpp:1006
+#: ../libdnf/goal/Goal.cpp:1010
 #, c-format
 msgid "failed writing debugdata to %1$s: %2$s"
 msgstr "n’a pas pu écrire debugdata dans %1$s: %2$s"
 
-#: ../libdnf/goal/Goal.cpp:1018
+#: ../libdnf/goal/Goal.cpp:1022
 msgid "no solv in the goal"
 msgstr "pas de solv dans l’objectif"
 
-#: ../libdnf/goal/Goal.cpp:1020
+#: ../libdnf/goal/Goal.cpp:1024
 msgid "no solution, cannot remove protected package"
 msgstr "aucune solution, n’a pas pu supprimer le package protégé"
 
-#: ../libdnf/goal/Goal.cpp:1023
+#: ../libdnf/goal/Goal.cpp:1027
 msgid "no solution possible"
 msgstr "aucune solution n’est possible"
 
-#: ../libdnf/goal/Goal.cpp:1429
+#: ../libdnf/goal/Goal.cpp:1433
 msgid ""
 "The operation would result in removing the following protected packages: "
 msgstr ""
 "L’opération résulterait en la suppression des packages protégés suivants : "
 
-#: ../libdnf/repo/Repo.cpp:324
+#: ../libdnf/transaction/Transformer.cpp:659
+msgid "Transformer: can't open history persist dir"
+msgstr ""
+"Transformer: n’a pu ouvrir le répertoire de persistance de l’historique"
+
+#: ../libdnf/transaction/Transformer.cpp:672
+msgid "Couldn't find a history database"
+msgstr "N’a pas pu trouver de base de données de l’historique"
+
+#: ../libdnf/transaction/Swdb.cpp:107
+msgid "In progress"
+msgstr "En cours"
+
+#: ../libdnf/transaction/Swdb.cpp:121 ../libdnf/transaction/Swdb.cpp:148
+#: ../libdnf/transaction/Swdb.cpp:160 ../libdnf/transaction/Swdb.cpp:177
+#: ../libdnf/transaction/Swdb.cpp:316 ../libdnf/transaction/Swdb.cpp:326
+msgid "Not in progress"
+msgstr "Pas en cours"
+
+#: ../libdnf/transaction/Swdb.cpp:187
+msgid "No transaction in progress"
+msgstr "Aucune transaction n’est en cours"
+
+#: ../libdnf/transaction/private/Transaction.cpp:41
+msgid "Transaction has already began!"
+msgstr "La transaction a déjà commencé !"
+
+#: ../libdnf/transaction/private/Transaction.cpp:58
+#, c-format
+msgid "TransactionItem state is not set: %s"
+msgstr "L’état du TransactionItem n’est pas défini: %s"
+
+#: ../libdnf/transaction/private/Transaction.cpp:239
+msgid "Can't add console output to unsaved transaction"
+msgstr ""
+"Ne peut pas ajouter une sortie de console à une transaction non enregistrée"
+
+#: ../libdnf/transaction/TransactionItem.cpp:147
+msgid "Attempt to insert transaction item into completed transaction"
+msgstr ""
+"Tentative d’insérer un élément de transaction dans une transaction achevée"
+
+#: ../libdnf/transaction/TransactionItem.cpp:218
+msgid "Attempt to update transaction item in completed transaction"
+msgstr ""
+"Tentative de mettre à jour un élément de transaction dans une transaction "
+"achevée"
+
+#: ../libdnf/module/ModulePackageContainer.cpp:68
+#, c-format
+msgid "Cannot enable multiple streams for module '%s'"
+msgstr "Impossible d’activer les flux pour le module « %s »"
+
+#: ../libdnf/module/ModulePackageContainer.cpp:293
+#, c-format
+msgid "Conflicting defaults with repo '%s': %s"
+msgstr "Valeurs par défaut en conflit avec le dépôt « %s » : %s"
+
+#: ../libdnf/module/ModulePackageContainer.cpp:1563
+#, c-format
+msgid "Unable to load modular Fail-Safe data at '%s'"
+msgstr ""
+
+#: ../libdnf/module/ModulePackageContainer.cpp:1569
+#, c-format
+msgid "Unable to load modular Fail-Safe data for module '%s:%s'"
+msgstr ""
+
+#: ../libdnf/module/ModulePackageContainer.cpp:1633
+#, c-format
+msgid "Unable to create directory \"%s\" for modular Fail Safe data: %s"
+msgstr ""
+
+#: ../libdnf/module/ModulePackageContainer.cpp:1655
+#, c-format
+msgid "Unable to save a modular Fail Safe data to '%s'"
+msgstr ""
+
+#: ../libdnf/module/ModulePackageContainer.cpp:1680
+#, c-format
+msgid "Unable to remove a modular Fail Safe data in '%s'"
+msgstr ""
+
+#: ../libdnf/module/ModulePackage.cpp:413
+#, c-format
+msgid "Invalid format of Platform module: %s"
+msgstr "Format invalide du module de plateforme : %s"
+
+#: ../libdnf/module/ModulePackage.cpp:428
+msgid "Multiple module platforms provided by available packages\n"
+msgstr ""
+"De multiples modules de plateformes sont fournis par les paquets "
+"disponibles\n"
+
+#: ../libdnf/module/ModulePackage.cpp:441
+msgid "Multiple module platforms provided by installed packages\n"
+msgstr ""
+"De multiples modules de plateformes sont fournis par les paquets installés\n"
+
+#: ../libdnf/module/ModulePackage.cpp:468
+#, c-format
+msgid "Detection of Platform Module in %s failed: %s"
+msgstr "La détection des modules de plateformes dans %s a échoué : %s"
+
+#: ../libdnf/module/ModulePackage.cpp:477
+#, c-format
+msgid "Missing PLATFORM_ID in %s"
+msgstr "L'identifiant de la platforme est manquant dans %s"
+
+#: ../libdnf/module/ModulePackage.cpp:482
+msgid "No valid Platform ID detected"
+msgstr "Aucun identifiant de plateforme n'a été détecté"
+
+#: ../libdnf/conf/OptionEnum.cpp:72 ../libdnf/conf/OptionEnum.cpp:158
+#: ../libdnf/conf/OptionStringList.cpp:59 ../libdnf/conf/OptionString.cpp:59
+#, c-format
+msgid "'%s' is not an allowed value"
+msgstr "la valeur « %s » n’est pas autorisée"
+
+#: ../libdnf/conf/OptionEnum.cpp:83 ../libdnf/conf/OptionNumber.cpp:88
+msgid "invalid value"
+msgstr "valeur non valide"
+
+#: ../libdnf/conf/OptionBinds.cpp:76
+#, c-format
+msgid "Configuration: OptionBinding with id \"%s\" does not exist"
+msgstr "Configuration : OptionBinding ayant pour id « %s » n’existe pas"
+
+#: ../libdnf/conf/OptionBinds.cpp:88
+#, c-format
+msgid "Configuration: OptionBinding with id \"%s\" already exists"
+msgstr "Configuration: OptionBinding ayant pour « %s » n’existe pas"
+
+#: ../libdnf/conf/OptionSeconds.cpp:40 ../libdnf/conf/ConfigMain.cpp:62
+msgid "no value specified"
+msgstr "aucune valeur n’est indiquée"
+
+#: ../libdnf/conf/OptionSeconds.cpp:48 ../libdnf/conf/ConfigMain.cpp:67
+#, c-format
+msgid "seconds value '%s' must not be negative"
+msgstr "la valeur en secondes « %s » ne doit pas être négative"
+
+#: ../libdnf/conf/OptionSeconds.cpp:52
+#, c-format
+msgid "could not convert '%s' to seconds"
+msgstr "n’a pu convertir « %s » en secondes"
+
+#: ../libdnf/conf/OptionSeconds.cpp:66 ../libdnf/conf/ConfigMain.cpp:83
+#, c-format
+msgid "unknown unit '%s'"
+msgstr "unité « %s » inconnue"
+
+#: ../libdnf/conf/OptionBool.cpp:47
+#, c-format
+msgid "invalid boolean value '%s'"
+msgstr "valeur booléenne invalide : « %s »"
+
+#: ../libdnf/conf/OptionNumber.cpp:73
+#, c-format
+msgid "given value [%d] should be less than allowed value [%d]."
+msgstr "la valeur fournie [%d] doit être inférieure à la valeur permise [%d]"
+
+#: ../libdnf/conf/OptionNumber.cpp:76
+#, c-format
+msgid "given value [%d] should be greater than allowed value [%d]."
+msgstr "la valeur fournie [%d] doit être supérieure à la valeur permise [%d]"
+
+#: ../libdnf/conf/OptionPath.cpp:78
+#, c-format
+msgid "given path '%s' is not absolute."
+msgstr "le chemin fourni « %s » n’est pas absolu."
+
+#: ../libdnf/conf/OptionPath.cpp:82
+#, c-format
+msgid "given path '%s' does not exist."
+msgstr "le chemin fourni « %s » n’existe pas."
+
+#: ../libdnf/conf/OptionString.cpp:74
+msgid "GetValue(): Value not set"
+msgstr "GetValue(): valeur non définie"
+
+#: ../libdnf/conf/ConfigMain.cpp:71
+#, c-format
+msgid "could not convert '%s' to bytes"
+msgstr "n’a pu convertir « %s » en octets"
+
+#: ../libdnf/conf/ConfigMain.cpp:329
+#, c-format
+msgid "percentage '%s' is out of range"
+msgstr "le pourcentage « %s » est en dehors des limites"
+
+#: ../libdnf/dnf-state.cpp:1183
+#, c-format
+msgid "percentage not 100: %i"
+msgstr "pourcentage pas à 100: %i"
+
+#: ../libdnf/dnf-state.cpp:1193
+#, c-format
+msgid "failed to set number steps: %i"
+msgstr "n’a pas pu définir le nombre d’étapes: %i"
+
+#: ../libdnf/dnf-state.cpp:1292
+msgid "cancelled by user action"
+msgstr "annulé par action de l’utilisateur"
+
+#: ../libdnf/dnf-state.cpp:1331
+#, c-format
+msgid "done on a state %1$p that did not have a size set! [%2$s]"
+msgstr "effectué sur un état %1$p qui n’avait pas de taille définie [%2$s]"
+
+#: ../libdnf/dnf-state.cpp:1356
+#, c-format
+msgid "already at 100%% state [%s]"
+msgstr "déjà en état à 100% [%s]"
+
+#: ../libdnf/hy-iutil.cpp:321
+#, c-format
+msgid "Failed renaming %1$s to %2$s: %3$s"
+msgstr "N’a pas pu renommer %1$s en %2$s: %3$s"
+
+#: ../libdnf/hy-iutil.cpp:329
+#, c-format
+msgid "Failed setting perms on %1$s: %2$s"
+msgstr "N’a pas pu définir les perms sur %1$s: %2$s"
+
+#: ../libdnf/hy-iutil.cpp:375
+#, c-format
+msgid "cannot create directory %1$s: %2$s"
+msgstr ""
+
+#: ../libdnf/hy-iutil.cpp:398 ../libdnf/dnf-utils.cpp:110
+#, c-format
+msgid "cannot open directory %1$s: %2$s"
+msgstr "n’a pas pu ouvrir le répertoire %1$s: %2$s"
+
+#: ../libdnf/hy-iutil.cpp:410
+#, c-format
+msgid "cannot stat path %1$s: %2$s"
+msgstr ""
+
+#: ../libdnf/dnf-rpmts.cpp:78
+#, c-format
+msgid ""
+"No available modular metadata for modular package '%s'; cannot be installed "
+"on the system"
+msgstr ""
+
+#: ../libdnf/dnf-rpmts.cpp:120 ../libdnf/dnf-rpmts.cpp:165
+#, c-format
+msgid "signature does not verify for %s"
+msgstr "signature ne correspondant pas pour %s"
+
+#: ../libdnf/dnf-rpmts.cpp:128 ../libdnf/dnf-rpmts.cpp:173
+#, c-format
+msgid "failed to open(generic error): %s"
+msgstr "n’a pas pu ouvrir(erreur générique): %s"
+
+#: ../libdnf/dnf-rpmts.cpp:141
+#, c-format
+msgid "failed to verify key for %s"
+msgstr "n’a pas pu vérifier la clé pour %s"
+
+#: ../libdnf/dnf-rpmts.cpp:149
+#, c-format
+msgid "public key unavailable for %s"
+msgstr "clé publique non disponible pour %s"
+
+#: ../libdnf/dnf-rpmts.cpp:157
+#, c-format
+msgid "signature not found for %s"
+msgstr "signature non trouvée pour %s"
+
+#: ../libdnf/dnf-rpmts.cpp:192
+#, c-format
+msgid "failed to add install element: %1$s [%2$i]"
+msgstr "n’a pas pu ajouter l’élément : %1$s [%2$i]"
+
+#: ../libdnf/dnf-rpmts.cpp:273
+#, c-format
+msgid "Error running transaction: %s"
+msgstr "Erreur d’exécution pour la transaction : %s"
+
+#: ../libdnf/dnf-rpmts.cpp:282
+msgid "Error running transaction and no problems were reported!"
+msgstr "Erreur d’exécution de la transaction et pas de problème reporté !"
+
+#: ../libdnf/dnf-rpmts.cpp:345
+msgid "Fatal error, run database recovery"
+msgstr "Erreur fatale, exécuter le recouvrement de la base de données"
+
+#: ../libdnf/dnf-rpmts.cpp:354
+#, c-format
+msgid "failed to find package %s"
+msgstr "n’a pas pu trouver le package %s"
+
+#: ../libdnf/dnf-rpmts.cpp:400
+#, c-format
+msgid "could not add erase element %1$s(%2$i)"
+msgstr "n’a pas pu ajouter d’élément pour effacer %1$s(%2$i)"
+
+#: ../libdnf/dnf-goal.cpp:67
+msgid "Could not depsolve transaction; "
+msgstr "N’a pas pu depsolve la transaction; "
+
+#: ../libdnf/dnf-goal.cpp:69
+#, c-format
+msgid "%i problem detected:\n"
+msgid_plural "%i problems detected:\n"
+msgstr[0] "%i problème détecté :\n"
+msgstr[1] "%i problèmes détectés:\n"
+
+#: ../libdnf/dnf-goal.cpp:77
+#, c-format
+msgid " Problem %1$i: %2$s\n"
+msgstr " Probléme %1$i: %2$s\n"
+
+#: ../libdnf/dnf-goal.cpp:79
+#, c-format
+msgid " Problem: %s\n"
+msgstr " Probléme: %s\n"
+
+#: ../libdnf/dnf-sack.cpp:417
+#, c-format
+msgid "no %1$s string for %2$s"
+msgstr ""
+
+#: ../libdnf/dnf-sack.cpp:440
+msgid "failed to add solv"
+msgstr "n’a pu ajouter solv"
+
+#: ../libdnf/dnf-sack.cpp:458
+#, c-format
+msgid "failed to open: %s"
+msgstr "n’a pas pu ouvrir: %s"
+
+#: ../libdnf/dnf-sack.cpp:537
+#, c-format
+msgid "cannot create temporary file: %s"
+msgstr "n’a pas pu créer le fichier temporaire : %s"
+
+#: ../libdnf/dnf-sack.cpp:547
+#, c-format
+msgid "failed opening tmp file: %s"
+msgstr "n’a pas pu ouvrir le fichier tmp : %s"
+
+#: ../libdnf/dnf-sack.cpp:559
+#, c-format
+msgid "write_main() failed writing data: %i"
+msgstr "write_main() n’a pu écrire les données : %i"
+
+#: ../libdnf/dnf-sack.cpp:576
+msgid "write_main() failed to re-load written solv file"
+msgstr "write_main() n’a pas pu charger à nouveau le fichier solv"
+
+#: ../libdnf/dnf-sack.cpp:641
+#, c-format
+msgid "can not create temporary file %s"
+msgstr "n’a pas pu créer le fichier temporaire %s"
+
+#: ../libdnf/dnf-sack.cpp:659
+#, c-format
+msgid "write_ext(%1$d) has failed: %2$d"
+msgstr "write_ext(%1$d) a échoué : %2$d"
+
+#: ../libdnf/dnf-sack.cpp:714
+msgid "null repo md file"
+msgstr "null repo md file"
+
+#: ../libdnf/dnf-sack.cpp:723
+#, c-format
+msgid "can not read file %1$s: %2$s"
+msgstr "n’a pu lire le fichier %1$s: %2$s"
+
+#: ../libdnf/dnf-sack.cpp:737
+msgid "repo_add_solv() has failed."
+msgstr "repo_add_solv() a échoué."
+
+#: ../libdnf/dnf-sack.cpp:750
+msgid "loading of MD_TYPE_PRIMARY has failed."
+msgstr ""
+
+#: ../libdnf/dnf-sack.cpp:763
+msgid "repo_add_repomdxml/rpmmd() has failed."
+msgstr "repo_add_repomdxml/rpmmd() a échoué."
+
+#: ../libdnf/dnf-sack.cpp:830
+msgid "failed to auto-detect architecture"
+msgstr "n’a pu auto-détecter l’architecture"
+
+#: ../libdnf/dnf-sack.cpp:955
+#, c-format
+msgid "failed creating cachedir %s"
+msgstr "n’a pu créer le cachedir %s"
+
+#: ../libdnf/dnf-sack.cpp:1727
+msgid "failed calculating RPMDB checksum"
+msgstr "n’a pu calculer la somme de contrôle RPMDB"
+
+#: ../libdnf/dnf-sack.cpp:1751
+msgid "failed loading RPMDB"
+msgstr "n’a pu télécharger RPMDB"
+
+#: ../libdnf/dnf-sack.cpp:2423
+msgid "No module defaults found"
+msgstr "Aucun module par défaut n’a été trouvé"
+
+#: ../libdnf/repo/Repo.cpp:337
 #, c-format
 msgid "Bad id for repo: %s, byte = %s %d"
 msgstr "Id erroné pour le dépôt : %s, byte = %s %d"
 
-#: ../libdnf/repo/Repo.cpp:349
+#: ../libdnf/repo/Repo.cpp:362
 #, c-format
 msgid "Repository %s has no mirror or baseurl set."
 msgstr "Le dépôt %s n’a pas de miroir ou d’adresse de base"
 
-#: ../libdnf/repo/Repo.cpp:358
+#: ../libdnf/repo/Repo.cpp:371
 #, c-format
 msgid "Repository '%s' has unsupported type: 'type=%s', skipping."
 msgstr ""
 "Le dépôt « %s » n’a pas de type pris en charge : « type=%s », passer outre."
 
-#: ../libdnf/repo/Repo.cpp:562
+#: ../libdnf/repo/Repo.cpp:580
 #, c-format
 msgid "Cannot find a valid baseurl for repo: %s"
 msgstr "Impossible de trouver une adresse de base pour le dépôt : %s"
 
-#: ../libdnf/repo/Repo.cpp:598 ../libdnf/repo/Repo.cpp:1508
+#: ../libdnf/repo/Repo.cpp:616 ../libdnf/repo/Repo.cpp:1699
 msgid ""
 "Maximum download speed is lower than minimum. Please change configuration of"
 " minrate or throttle"
@@ -304,214 +745,148 @@ msgstr ""
 "La vitesse de téléchargement maximale est plus basse que le minimum. "
 "Veuillez modifier les paramètres minrate ou throttle"
 
-#: ../libdnf/repo/Repo.cpp:648 ../libdnf/repo/Repo.cpp:670
+#: ../libdnf/repo/Repo.cpp:666 ../libdnf/repo/Repo.cpp:688
 #, c-format
 msgid "%s: gpgme_data_new_from_fd(): %s"
 msgstr "%s: gpgme_data_new_from_fd(): %s"
 
-#: ../libdnf/repo/Repo.cpp:656 ../libdnf/repo/Repo.cpp:678
+#: ../libdnf/repo/Repo.cpp:674 ../libdnf/repo/Repo.cpp:696
 #, c-format
 msgid "%s: gpgme_op_import(): %s"
 msgstr "%s: gpgme_op_import(): %s"
 
-#: ../libdnf/repo/Repo.cpp:701 ../libdnf/repo/Repo.cpp:767
-#: ../libdnf/repo/Repo.cpp:861
+#: ../libdnf/repo/Repo.cpp:719 ../libdnf/repo/Repo.cpp:785
+#: ../libdnf/repo/Repo.cpp:862 ../libdnf/repo/Repo.cpp:904
 #, c-format
 msgid "%s: gpgme_ctx_set_engine_info(): %s"
 msgstr "%s: gpgme_ctx_set_engine_info(): %s"
 
-#: ../libdnf/repo/Repo.cpp:728 ../libdnf/repo/Repo.cpp:792
+#: ../libdnf/repo/Repo.cpp:746 ../libdnf/repo/Repo.cpp:810
 #, c-format
 msgid "can not list keys: %s"
 msgstr "n’a pas pu lister les clés : %s"
 
-#: ../libdnf/repo/Repo.cpp:836
+#: ../libdnf/repo/Repo.cpp:839
+#, c-format
+msgid "Failed to retrieve GPG key for repo '%s': %s"
+msgstr ""
+
+#: ../libdnf/repo/Repo.cpp:855
+#, c-format
+msgid "%s: gpgme_set_protocol(): %s"
+msgstr ""
+
+#: ../libdnf/repo/Repo.cpp:868
+#, c-format
+msgid "%s: gpgme_op_assuan_transact_ext(): %s"
+msgstr ""
+
+#: ../libdnf/repo/Repo.cpp:883
 #, c-format
 msgid "repo %s: 0x%s already imported"
 msgstr "dépôt %s: 0x%s déjà importé"
 
-#: ../libdnf/repo/Repo.cpp:868
+#: ../libdnf/repo/Repo.cpp:918
 #, c-format
 msgid "repo %s: imported key 0x%s."
 msgstr "dépôt %s: clé importée 0x%s."
 
-#: ../libdnf/repo/Repo.cpp:1007
+#: ../libdnf/repo/Repo.cpp:1162
 #, c-format
 msgid "reviving: repo '%s' skipped, no metalink."
 msgstr "relance : dépôt « %s » ignoré, pas de méta-lien."
 
-#: ../libdnf/repo/Repo.cpp:1026
+#: ../libdnf/repo/Repo.cpp:1181
 #, c-format
 msgid "reviving: repo '%s' skipped, no usable hash."
 msgstr "relance : dépôt « %s » ignoré, pas de hachage utilisable."
 
-#: ../libdnf/repo/Repo.cpp:1049
+#: ../libdnf/repo/Repo.cpp:1204
 #, c-format
 msgid "reviving: failed for '%s', mismatched %s sum."
 msgstr "relance : échec pour « %s », la somme de %s ne correspond pas."
 
-#: ../libdnf/repo/Repo.cpp:1055
+#: ../libdnf/repo/Repo.cpp:1210
 #, c-format
 msgid "reviving: '%s' can be revived - metalink checksums match."
 msgstr ""
 "relance : « %s » peut être relancé - la somme de contrôle du méta-lien "
 "correspond."
 
-#: ../libdnf/repo/Repo.cpp:1080
+#: ../libdnf/repo/Repo.cpp:1235
 #, c-format
 msgid "reviving: '%s' can be revived - repomd matches."
 msgstr "relance : « %s » peut être relancé - le repomd correspond."
 
-#: ../libdnf/repo/Repo.cpp:1082
+#: ../libdnf/repo/Repo.cpp:1237
 #, c-format
 msgid "reviving: failed for '%s', mismatched repomd."
 msgstr "relance : échec pour « %s », le repomd ne correspond pas."
 
-#: ../libdnf/repo/Repo.cpp:1100
+#: ../libdnf/repo/Repo.cpp:1255
 #, c-format
 msgid "Cannot create repo destination directory \"%s\": %s"
 msgstr "N’a pas pu créer le répertoire de destination du dépôt « %s »: %s"
 
-#: ../libdnf/repo/Repo.cpp:1106
+#: ../libdnf/repo/Repo.cpp:1261
 #, c-format
 msgid "Cannot create repo temporary directory \"%s\": %s"
 msgstr "N’a pas pu créer le répertoire temporaire du dépôt « %s »: %s"
 
-#: ../libdnf/repo/Repo.cpp:1120
+#: ../libdnf/repo/Repo.cpp:1275
 #, c-format
 msgid "Cannot create directory \"%s\": %s"
 msgstr "N’a pas pu créer le répertoire « %s »: %s"
 
-#: ../libdnf/repo/Repo.cpp:1143
+#: ../libdnf/repo/Repo.cpp:1298
 #, c-format
 msgid "Cannot rename directory \"%s\" to \"%s\": %s"
 msgstr "N’a pas pu renommer le répertoire « %s » en « %s »: %s"
 
-#: ../libdnf/repo/Repo.cpp:1163
+#: ../libdnf/repo/Repo.cpp:1321
 #, c-format
 msgid "repo: using cache for: %s"
 msgstr "dépôt : utilisation du cache pour : %s"
 
-#: ../libdnf/repo/Repo.cpp:1175
+#: ../libdnf/repo/Repo.cpp:1333
 #, c-format
 msgid "Cache-only enabled but no cache for '%s'"
 msgstr "« cache uniquement » activé, mais pas de cache pour « %s »"
 
-#: ../libdnf/repo/Repo.cpp:1179
+#: ../libdnf/repo/Repo.cpp:1337
 #, c-format
 msgid "repo: downloading from remote: %s"
 msgstr "dépôt : téléchargement à distance en provenance de : %s"
 
-#: ../libdnf/repo/Repo.cpp:1185
+#: ../libdnf/repo/Repo.cpp:1343
 #, c-format
-msgid "Cannot download '%s': %s."
-msgstr "Impossible de télécharger « %s » : %s."
+msgid "Failed to download metadata for repo '%s': %s"
+msgstr ""
 
-#: ../libdnf/repo/Repo.cpp:1186
-#, c-format
-msgid "Failed to synchronize cache for repo '%s'"
-msgstr "Échec de la synchronisation du cache pour le dépôt « %s »"
-
-#: ../libdnf/repo/Repo.cpp:1212
+#: ../libdnf/repo/Repo.cpp:1369
 msgid "getCachedir(): Computation of SHA256 failed"
 msgstr "getCachedir(): computation de SHA256 a échoué"
 
-#: ../libdnf/repo/Repo.cpp:1598
+#: ../libdnf/repo/Repo.cpp:1790
 msgid "resume cannot be used simultaneously with the byterangestart param"
 msgstr ""
 "« resume » (reprise) ne peut pas être utilisé avec le paramètre "
 "byterangestart"
 
-#: ../libdnf/repo/Repo.cpp:1609
+#: ../libdnf/repo/Repo.cpp:1801
 #, c-format
 msgid "PackageTarget initialization failed: %s"
 msgstr "L’initialisation de Package Target a échoué : %s"
 
-#: ../libdnf/repo/Repo.cpp:1726
+#: ../libdnf/repo/Repo.cpp:1918
 #, c-format
 msgid "Cannot open %s: %s"
 msgstr "impossible d’ouvrir %s: %s"
 
-#: ../libdnf/repo/Repo.cpp:1770
+#: ../libdnf/repo/Repo.cpp:1962
 #, c-format
 msgid "Log handler with id %ld doesn't exist"
 msgstr "Log handler ayant pour id %ld n’existe pas"
-
-#: ../libdnf/dnf-transaction.cpp:276
-#, c-format
-msgid "Sources not set when trying to ensure package %s"
-msgstr "Sources non définies quand vous essayez d’assurer paquet %s"
-
-#: ../libdnf/dnf-transaction.cpp:302
-#, c-format
-msgid "Failed to ensure %1$s as repo %2$s not found(%3$i repos loaded)"
-msgstr "N’a pu assurer %1$s comme dépôt %2$s non trouvé (%3$i dépôts chargés)"
-
-#: ../libdnf/dnf-transaction.cpp:343
-msgid "Failed to check untrusted: "
-msgstr "N’a pas pu vérifier untrusted : "
-
-#: ../libdnf/dnf-transaction.cpp:353
-#, c-format
-msgid "Downloaded file for %s not found"
-msgstr "Fichier téléchargé pour %s non trouvé"
-
-#: ../libdnf/dnf-transaction.cpp:373
-#, c-format
-msgid "package %1$s cannot be verified and repo %2$s is GPG enabled: %3$s"
-msgstr ""
-"le paquet %1$s ne peut être vérifié et le dépôt %2$s est activé GPG : %3$s"
-
-#: ../libdnf/dnf-transaction.cpp:807 ../libdnf/dnf-transaction.cpp:879
-msgid "Failed to get value for CacheDir"
-msgstr "N’a pas pu obtenir la valeur de CacheDir"
-
-#: ../libdnf/dnf-transaction.cpp:887
-#, c-format
-msgid "Failed to get filesystem free size for %s: "
-msgstr "N’a pas pu obtenir la taille libre du système de fichiers pour %s : "
-
-#: ../libdnf/dnf-transaction.cpp:895
-#, c-format
-msgid "Failed to get filesystem free size for %s"
-msgstr "N’a pas pu obtenir la taille libre du système de fichiers pour %s"
-
-#: ../libdnf/dnf-transaction.cpp:911
-#, c-format
-msgid "Not enough free space in %1$s: needed %2$s, available %3$s"
-msgstr ""
-"Pas suffisamment d’espace libre dans %1$s: a besoin de %2$s, disponible %3$s"
-
-#: ../libdnf/dnf-transaction.cpp:1169
-msgid "failed to set root"
-msgstr "n’a pu réussi à définir root"
-
-#: ../libdnf/dnf-transaction.cpp:1390
-#, c-format
-msgid "Error %i running transaction test"
-msgstr "Erreur %i lors du test transactionnel"
-
-#: ../libdnf/dnf-transaction.cpp:1430
-#, c-format
-msgid "Error %i running transaction"
-msgstr "Erreur %i pendant la transaction"
-
-#: ../libdnf/dnf-transaction.cpp:1445
-#, c-format
-msgid "Transaction did not go to writing phase, but returned no error(%i)"
-msgstr ""
-"La transaction n’a pas pu opérer en phase d’écriture, mais a renvoyé « no "
-"error(%i) »"
-
-#: ../libdnf/dnf-utils.cpp:110
-#, c-format
-msgid "cannot open directory %1$s: %2$s"
-msgstr "n’a pas pu ouvrir le répertoire %1$s: %2$s"
-
-#: ../libdnf/dnf-utils.cpp:135
-#, c-format
-msgid "failed to remove %s"
-msgstr "n’a pas pu supprimer %s"
 
 #: ../libdnf/plugin/plugin.cpp:46
 #, c-format
@@ -549,326 +924,7 @@ msgstr "Impossible de lire de dossier de l’extension « %s » : %s"
 msgid "Can't load plugin \"%s\": %s"
 msgstr "Impossible de charger l’extension « %s » : %s"
 
-#: ../libdnf/dnf-state.cpp:1183
+#: ../libdnf/dnf-utils.cpp:135
 #, c-format
-msgid "percentage not 100: %i"
-msgstr "pourcentage pas à 100: %i"
-
-#: ../libdnf/dnf-state.cpp:1193
-#, c-format
-msgid "failed to set number steps: %i"
-msgstr "n’a pas pu définir le nombre d’étapes: %i"
-
-#: ../libdnf/dnf-state.cpp:1292
-msgid "cancelled by user action"
-msgstr "annulé par action de l’utilisateur"
-
-#: ../libdnf/dnf-state.cpp:1331
-#, c-format
-msgid "done on a state %1$p that did not have a size set! [%2$s]"
-msgstr "effectué sur un état %1$p qui n’avait pas de taille définie [%2$s]"
-
-#: ../libdnf/dnf-state.cpp:1356
-#, c-format
-msgid "already at 100%% state [%s]"
-msgstr "déjà en état à 100% [%s]"
-
-#: ../libdnf/module/ModulePackage.cpp:413
-#, c-format
-msgid "Invalid format of Platform module: %s"
-msgstr "Format invalide du module de plateforme : %s"
-
-#: ../libdnf/module/ModulePackage.cpp:428
-msgid "Multiple module platforms provided by available packages\n"
-msgstr ""
-"De multiples modules de plateformes sont fournis par les paquets "
-"disponibles\n"
-
-#: ../libdnf/module/ModulePackage.cpp:441
-msgid "Multiple module platforms provided by installed packages\n"
-msgstr ""
-"De multiples modules de plateformes sont fournis par les paquets installés\n"
-
-#: ../libdnf/module/ModulePackage.cpp:468
-#, c-format
-msgid "Detection of Platform Module in %s failed: %s"
-msgstr "La détection des modules de plateformes dans %s a échoué : %s"
-
-#: ../libdnf/module/ModulePackage.cpp:477
-#, c-format
-msgid "Missing PLATFORM_ID in %s"
-msgstr "L'identifiant de la platforme est manquant dans %s"
-
-#: ../libdnf/module/ModulePackage.cpp:482
-msgid "No valid Platform ID detected"
-msgstr "Aucun identifiant de plateforme n'a été détecté"
-
-#: ../libdnf/module/ModulePackageContainer.cpp:57
-#, c-format
-msgid "Cannot enable multiple streams for module '%s'"
-msgstr "Impossible d’activer les flux pour le module « %s »"
-
-#: ../libdnf/module/ModulePackageContainer.cpp:219
-#, c-format
-msgid "Conflicting defaults with repo '%s': %s"
-msgstr "Valeurs par défaut en conflit avec le dépôt « %s » : %s"
-
-#: ../libdnf/dnf-rpmts.cpp:88 ../libdnf/dnf-rpmts.cpp:133
-#, c-format
-msgid "signature does not verify for %s"
-msgstr "signature ne correspondant pas pour %s"
-
-#: ../libdnf/dnf-rpmts.cpp:96 ../libdnf/dnf-rpmts.cpp:141
-#, c-format
-msgid "failed to open(generic error): %s"
-msgstr "n’a pas pu ouvrir(erreur générique): %s"
-
-#: ../libdnf/dnf-rpmts.cpp:109
-#, c-format
-msgid "failed to verify key for %s"
-msgstr "n’a pas pu vérifier la clé pour %s"
-
-#: ../libdnf/dnf-rpmts.cpp:117
-#, c-format
-msgid "public key unavailable for %s"
-msgstr "clé publique non disponible pour %s"
-
-#: ../libdnf/dnf-rpmts.cpp:125
-#, c-format
-msgid "signature not found for %s"
-msgstr "signature non trouvée pour %s"
-
-#: ../libdnf/dnf-rpmts.cpp:154
-#, c-format
-msgid "failed to add install element: %1$s [%2$i]"
-msgstr "n’a pas pu ajouter l’élément : %1$s [%2$i]"
-
-#: ../libdnf/dnf-rpmts.cpp:210
-#, c-format
-msgid "Error running transaction: %s"
-msgstr "Erreur d’exécution pour la transaction : %s"
-
-#: ../libdnf/dnf-rpmts.cpp:219
-msgid "Error running transaction and no problems were reported!"
-msgstr "Erreur d’exécution de la transaction et pas de problème reporté !"
-
-#: ../libdnf/dnf-rpmts.cpp:282
-msgid "Fatal error, run database recovery"
-msgstr "Erreur fatale, exécuter le recouvrement de la base de données"
-
-#: ../libdnf/dnf-rpmts.cpp:291
-#, c-format
-msgid "failed to find package %s"
-msgstr "n’a pas pu trouver le package %s"
-
-#: ../libdnf/dnf-rpmts.cpp:337
-#, c-format
-msgid "could not add erase element %1$s(%2$i)"
-msgstr "n’a pas pu ajouter d’élément pour effacer %1$s(%2$i)"
-
-#: ../libdnf/conf/OptionString.cpp:59 ../libdnf/conf/OptionStringList.cpp:59
-#: ../libdnf/conf/OptionEnum.cpp:72 ../libdnf/conf/OptionEnum.cpp:158
-#, c-format
-msgid "'%s' is not an allowed value"
-msgstr "la valeur « %s » n’est pas autorisée"
-
-#: ../libdnf/conf/OptionString.cpp:74
-msgid "GetValue(): Value not set"
-msgstr "GetValue(): valeur non définie"
-
-#: ../libdnf/conf/OptionPath.cpp:78
-#, c-format
-msgid "given path '%s' is not absolute."
-msgstr "le chemin fourni « %s » n’est pas absolu."
-
-#: ../libdnf/conf/OptionPath.cpp:82
-#, c-format
-msgid "given path '%s' does not exist."
-msgstr "le chemin fourni « %s » n’existe pas."
-
-#: ../libdnf/conf/OptionBool.cpp:47
-#, c-format
-msgid "invalid boolean value '%s'"
-msgstr "valeur booléenne invalide : « %s »"
-
-#: ../libdnf/conf/ConfigMain.cpp:58 ../libdnf/conf/OptionSeconds.cpp:40
-msgid "no value specified"
-msgstr "aucune valeur n’est indiquée"
-
-#: ../libdnf/conf/ConfigMain.cpp:63 ../libdnf/conf/OptionSeconds.cpp:48
-#, c-format
-msgid "seconds value '%s' must not be negative"
-msgstr "la valeur en secondes « %s » ne doit pas être négative"
-
-#: ../libdnf/conf/ConfigMain.cpp:67
-#, c-format
-msgid "could not convert '%s' to bytes"
-msgstr "n’a pu convertir « %s » en octets"
-
-#: ../libdnf/conf/ConfigMain.cpp:79 ../libdnf/conf/OptionSeconds.cpp:66
-#, c-format
-msgid "unknown unit '%s'"
-msgstr "unité « %s » inconnue"
-
-#: ../libdnf/conf/ConfigMain.cpp:320
-#, c-format
-msgid "percentage '%s' is out of range"
-msgstr "le pourcentage « %s » est en dehors des limites"
-
-#: ../libdnf/conf/OptionNumber.cpp:73
-#, c-format
-msgid "given value [%d] should be less than allowed value [%d]."
-msgstr "la valeur fournie [%d] doit être inférieure à la valeur permise [%d]"
-
-#: ../libdnf/conf/OptionNumber.cpp:76
-#, c-format
-msgid "given value [%d] should be greater than allowed value [%d]."
-msgstr "la valeur fournie [%d] doit être supérieure à la valeur permise [%d]"
-
-#: ../libdnf/conf/OptionNumber.cpp:88 ../libdnf/conf/OptionEnum.cpp:83
-msgid "invalid value"
-msgstr "valeur non valide"
-
-#: ../libdnf/conf/OptionBinds.cpp:76
-#, c-format
-msgid "Configuration: OptionBinding with id \"%s\" does not exist"
-msgstr "Configuration : OptionBinding ayant pour id « %s » n’existe pas"
-
-#: ../libdnf/conf/OptionBinds.cpp:88
-#, c-format
-msgid "Configuration: OptionBinding with id \"%s\" already exists"
-msgstr "Configuration: OptionBinding ayant pour « %s » n’existe pas"
-
-#: ../libdnf/conf/OptionSeconds.cpp:52
-#, c-format
-msgid "could not convert '%s' to seconds"
-msgstr "n’a pu convertir « %s » en secondes"
-
-#: ../libdnf/dnf-sack.cpp:399
-#, c-format
-msgid "no %1$d string for %2$s"
-msgstr "par de string %1$d pour %2$s"
-
-#: ../libdnf/dnf-sack.cpp:422
-msgid "failed to add solv"
-msgstr "n’a pu ajouter solv"
-
-#: ../libdnf/dnf-sack.cpp:440
-#, c-format
-msgid "failed to open: %s"
-msgstr "n’a pas pu ouvrir: %s"
-
-#: ../libdnf/dnf-sack.cpp:519
-#, c-format
-msgid "cannot create temporary file: %s"
-msgstr "n’a pas pu créer le fichier temporaire : %s"
-
-#: ../libdnf/dnf-sack.cpp:529
-#, c-format
-msgid "failed opening tmp file: %s"
-msgstr "n’a pas pu ouvrir le fichier tmp : %s"
-
-#: ../libdnf/dnf-sack.cpp:541
-#, c-format
-msgid "write_main() failed writing data: %i"
-msgstr "write_main() n’a pu écrire les données : %i"
-
-#: ../libdnf/dnf-sack.cpp:558
-msgid "write_main() failed to re-load written solv file"
-msgstr "write_main() n’a pas pu charger à nouveau le fichier solv"
-
-#: ../libdnf/dnf-sack.cpp:623
-#, c-format
-msgid "can not create temporary file %s"
-msgstr "n’a pas pu créer le fichier temporaire %s"
-
-#: ../libdnf/dnf-sack.cpp:641
-#, c-format
-msgid "write_ext(%1$d) has failed: %2$d"
-msgstr "write_ext(%1$d) a échoué : %2$d"
-
-#: ../libdnf/dnf-sack.cpp:696
-msgid "null repo md file"
-msgstr "null repo md file"
-
-#: ../libdnf/dnf-sack.cpp:705
-#, c-format
-msgid "can not read file %1$s: %2$s"
-msgstr "n’a pu lire le fichier %1$s: %2$s"
-
-#: ../libdnf/dnf-sack.cpp:719
-msgid "repo_add_solv() has failed."
-msgstr "repo_add_solv() a échoué."
-
-#: ../libdnf/dnf-sack.cpp:735
-msgid "repo_add_repomdxml/rpmmd() has failed."
-msgstr "repo_add_repomdxml/rpmmd() a échoué."
-
-#: ../libdnf/dnf-sack.cpp:802
-msgid "failed to auto-detect architecture"
-msgstr "n’a pu auto-détecter l’architecture"
-
-#: ../libdnf/dnf-sack.cpp:927
-#, c-format
-msgid "failed creating cachedir %s"
-msgstr "n’a pu créer le cachedir %s"
-
-#: ../libdnf/dnf-sack.cpp:1700
-msgid "failed calculating RPMDB checksum"
-msgstr "n’a pu calculer la somme de contrôle RPMDB"
-
-#: ../libdnf/dnf-sack.cpp:1724
-msgid "failed loading RPMDB"
-msgstr "n’a pu télécharger RPMDB"
-
-#: ../libdnf/dnf-sack.cpp:2387
-msgid "No module defaults found"
-msgstr "Aucun module par défaut n’a été trouvé"
-
-#: ../libdnf/transaction/Transformer.cpp:658
-msgid "Transformer: can't open history persist dir"
-msgstr ""
-"Transformer: n’a pu ouvrir le répertoire de persistance de l’historique"
-
-#: ../libdnf/transaction/Transformer.cpp:672
-msgid "Couldn't find a history database"
-msgstr "N’a pas pu trouver de base de données de l’historique"
-
-#: ../libdnf/transaction/Swdb.cpp:107
-msgid "In progress"
-msgstr "En cours"
-
-#: ../libdnf/transaction/Swdb.cpp:121 ../libdnf/transaction/Swdb.cpp:148
-#: ../libdnf/transaction/Swdb.cpp:160 ../libdnf/transaction/Swdb.cpp:177
-#: ../libdnf/transaction/Swdb.cpp:316 ../libdnf/transaction/Swdb.cpp:326
-msgid "Not in progress"
-msgstr "Pas en cours"
-
-#: ../libdnf/transaction/Swdb.cpp:187
-msgid "No transaction in progress"
-msgstr "Aucune transaction n’est en cours"
-
-#: ../libdnf/transaction/TransactionItem.cpp:147
-msgid "Attempt to insert transaction item into completed transaction"
-msgstr ""
-"Tentative d’insérer un élément de transaction dans une transaction achevée"
-
-#: ../libdnf/transaction/TransactionItem.cpp:218
-msgid "Attempt to update transaction item in completed transaction"
-msgstr ""
-"Tentative de mettre à jour un élément de transaction dans une transaction "
-"achevée"
-
-#: ../libdnf/transaction/private/Transaction.cpp:41
-msgid "Transaction has already began!"
-msgstr "La transaction a déjà commencé !"
-
-#: ../libdnf/transaction/private/Transaction.cpp:58
-#, c-format
-msgid "TransactionItem state is not set: %s"
-msgstr "L’état du TransactionItem n’est pas défini: %s"
-
-#: ../libdnf/transaction/private/Transaction.cpp:239
-msgid "Can't add console output to unsaved transaction"
-msgstr ""
-"Ne peut pas ajouter une sortie de console à une transaction non enregistrée"
+msgid "failed to remove %s"
+msgstr "n’a pas pu supprimer %s"
