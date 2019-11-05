@@ -36,11 +36,11 @@
 namespace libdnf {
 
 // sorted by precedence (see os-release(5) for details)
-std::array<const std::string, 2> paths = {"/etc/os-release", "/usr/lib/os-release"};
+static const std::array<const std::string, 2> paths = {"/etc/os-release", "/usr/lib/os-release"};
 // whitelists used for sanity-checking the os-release data when constructing a
 // User-Agent string (to avoid reporting rare systems or platforms that could
 // be tracked)
-std::map<std::string, std::vector<std::string>> distros = {
+static const std::map<std::string, std::vector<std::string>> distros = {
     // taken from the {fedora,generic}-release.spec files
     { "Fedora", { "cinnamon", "cloud", "container", "coreos", "generic", "iot",
                   "kde", "matecompiz", "server", "silverblue", "snappy", "soas",
@@ -146,7 +146,7 @@ std::string getUserAgent(const std::map<std::string, std::string> & osReleaseDat
 
     // optional OS data (use fallback values if missing or unknown)
     std::string variant = "generic";
-    auto list = distros[name];
+    auto list = distros.at(name);
     if (osReleaseData.count("VARIANT_ID")) {
         std::string value = osReleaseData.at("VARIANT_ID");
         if (std::find(list.begin(), list.end(), value) != list.end())
