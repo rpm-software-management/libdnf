@@ -20,6 +20,27 @@
 ######################
 
 ====================
+0.37.1 Release Notes
+====================
+
+- Change the best option default to false
+- Use more descriptive message when failed to retrieve GPG key (RhBug:1605117)
+- Add removeMetadataTypeFromDownload function to the API
+- Context part of libdnf can now read vars (urlvars) from dirs and environment
+- Throw exception immediately if file cannot be opened
+- Add test when there is no primary metadata in compatible format (RhBug:1744960)
+- Various improvements to countme features
+- Don't abort on rpmdb checksum calculation failure
+- Enable module dependency trees when using set_modules_enabled_by_pkgset() (RhBug:1762314)
+- Resolve problem with --best and search in provides (RhBug:1737469)
+- New method "Query::filterSubject()", replaces Solution::getBestSolution()
+- The Solution class was removed
+- Add query argument into get_best_query and get_best_solution
+- Add module reset function into dnf_context
+- Add method to get all repository metadata locations
+- Catch NoModuleException in case of not existent value was used in persistor (RhBug:1761773)
+
+====================
 0.35.5 Release Notes
 ====================
 
