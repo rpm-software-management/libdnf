@@ -2609,23 +2609,24 @@ dnf_context_load_vars(DnfContext * context)
     priv->varsCached = true;
 }
 
-static libdnf::ConfigMain globalMainConfig;
+static std::unique_ptr<libdnf::ConfigMain> globalMainConfig;
 static std::atomic_flag cfgMainLoaded = ATOMIC_FLAG_INIT;
 
 libdnf::ConfigMain & getGlobalMainConfig()
 {
     if (!cfgMainLoaded.test_and_set()) {
+        globalMainConfig.reset(new libdnf::ConfigMain);
         // The gpgcheck was enabled by default in context part of libdnf. We stay "compatible".
-        globalMainConfig.gpgcheck().set(libdnf::Option::Priority::DEFAULT, true);
+        globalMainConfig->gpgcheck().set(libdnf::Option::Priority::DEFAULT, true);
 
         libdnf::ConfigParser parser;
-        const std::string cfgPath{globalMainConfig.config_file_path().getValue()};
+        const std::string cfgPath{globalMainConfig->config_file_path().getValue()};
         try {
             parser.read(cfgPath);
             const auto & cfgParserData = parser.getData();
             auto cfgParserDataIter = cfgParserData.find("main");
             if (cfgParserDataIter != cfgParserData.end()) {
-                auto optBinds = globalMainConfig.optBinds();
+                auto optBinds = globalMainConfig->optBinds();
                 const auto & cfgParserMainSect = cfgParserDataIter->second;
                 for (const auto & opt : cfgParserMainSect) {
                     auto optBindsIter = optBinds.find(opt.first);
@@ -2643,7 +2644,7 @@ libdnf::ConfigMain & getGlobalMainConfig()
             g_warning("Loading \"%s\": %s", cfgPath.c_str(), ex.what());
         }
     }
-    return globalMainConfig;
+    return *globalMainConfig;
 }
 
 }
