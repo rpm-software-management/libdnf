@@ -28,7 +28,7 @@
 #include <vector>
 
 namespace libdnf {
-class Swdb;
+struct Swdb;
 class Transformer;
 }
 
@@ -44,7 +44,7 @@ class Transformer;
 
 namespace libdnf {
 
-class Swdb {
+struct Swdb {
 public:
     explicit Swdb(SQLite3Ptr conn);
     explicit Swdb(const std::string &path);
