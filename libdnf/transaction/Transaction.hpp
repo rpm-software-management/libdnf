@@ -41,6 +41,7 @@ class Transaction {
 public:
     // load from db
     Transaction(SQLite3Ptr conn, int64_t pk);
+    virtual ~Transaction() = default;
 
     bool operator==(const Transaction &other) const;
     bool operator<(const Transaction &other) const;
