@@ -64,9 +64,9 @@ public:
     CompsPackageType getPackageTypes() const noexcept { return packageTypes; }
     void setPackageTypes(CompsPackageType value) { packageTypes = value; }
 
-    virtual std::string toStr() const override;
-    virtual ItemType getItemType() const noexcept { return itemType; }
-    virtual void save();
+    std::string toStr() const override;
+    ItemType getItemType() const noexcept override { return itemType; }
+    void save() override;
     CompsGroupPackagePtr addPackage(std::string name, bool installed, CompsPackageType pkgType);
     std::vector< CompsGroupPackagePtr > getPackages();
     static TransactionItemPtr getTransactionItem(SQLite3Ptr conn, const std::string &groupid);
