@@ -81,6 +81,8 @@ hy_subject_get_best_solution(HySubject subject, DnfSack *sack, HyForm *forms, Hy
                              gboolean with_filenames, gboolean with_src)
 {
     std::unique_ptr<libdnf::Query> query(new libdnf::Query(sack, libdnf::Query::ExcludeFlags::APPLY_EXCLUDES));
+    if (!with_src)
+        query->addFilter(HY_PKG_ARCH, HY_NEQ, "src");
     auto ret = query->filterSubject(subject, forms, icase, with_nevra, with_provides, with_filenames);
     *out_nevra = ret.second.release();
     return query.release();
