@@ -18,11 +18,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "hy-util.h"
-#include <glib.h>
-
 #ifndef HY_UTIL_PRIVATE_HPP
 #define HY_UTIL_PRIVATE_HPP
+
+#include "hy-util.h"
+#include <glib.h>
 
 gboolean hy_is_glob_pattern(const char *pattern);
 
