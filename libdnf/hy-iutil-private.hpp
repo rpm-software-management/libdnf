@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#ifndef HY_IUTIL_PRIVATE_HPP
+#define HY_IUTIL_PRIVATE_HPP
+
 #include "hy-iutil.h"
 #include "hy-types.h"
 #include "sack/packageset.hpp"
-
-#ifndef HY_IUTIL_PRIVATE_HPP
-#define HY_IUTIL_PRIVATE_HPP
 
 /* crypto utils */
 int checksum_cmp(const unsigned char *cs1, const unsigned char *cs2);

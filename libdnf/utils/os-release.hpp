@@ -18,6 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#ifndef _OS_RELEASE_HPP_
+#define _OS_RELEASE_HPP_
+
 #include <map>
 #include <string>
 #include <vector>
@@ -63,3 +66,5 @@ std::string
 getUserAgent();
 
 }
+
+#endif

@@ -1,4 +1,3 @@
-#include <glib/garray.h>
 /*
  * Copyright (C) 2018 Red Hat, Inc.
  *
@@ -25,6 +24,8 @@
 #include "dnf-context.h"
 #include "dnf-types.h"
 #include "hy-package.h"
+
+#include <glib/garray.h>
 
 #ifdef __cplusplus
 extern "C" {
