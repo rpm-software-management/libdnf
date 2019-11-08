@@ -165,6 +165,7 @@ dnf_repo_loader_add_media(DnfRepoLoader *self,
     dnf_repo_set_enabled(repo, DNF_REPO_ENABLED_PACKAGES);
     dnf_repo_set_gpgcheck(repo, TRUE);
     dnf_repo_set_kind(repo, DNF_REPO_KIND_MEDIA);
+    dnf_repo_set_skip_if_unavailable(repo, TRUE);
     dnf_repo_set_cost(repo, 100);
     dnf_repo_set_keyfile(repo, treeinfo);
     if (idx == 0) {
