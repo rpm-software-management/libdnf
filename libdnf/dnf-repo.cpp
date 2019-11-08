@@ -749,6 +749,22 @@ dnf_repo_set_gpgcheck(DnfRepo *repo, gboolean gpgcheck_pkgs)
 }
 
 /**
+ * dnf_repo_set_skip_if_unavailiable:
+ * @repo: a #DnfRepo instance.
+ * @skip_if_unavailable: whether the repo should be skipped if unavailable
+ *
+ * Sets the repo skip_if_unavailable status
+ *
+ * Since: 0.7.3
+ **/
+void
+dnf_repo_set_skip_if_unavailable(DnfRepo *repo, gboolean skip_if_unavailable)
+{
+    DnfRepoPrivate *priv = GET_PRIVATE(repo);
+    priv->repo->getConfig()->skip_if_unavailable().set(libdnf::Option::Priority::RUNTIME, skip_if_unavailable);
+}
+
+/**
  * dnf_repo_set_gpgcheck_md:
  * @repo: a #DnfRepo instance.
  * @gpgcheck_md: if the repo metadata should be signed

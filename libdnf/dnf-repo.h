@@ -155,6 +155,8 @@ void             dnf_repo_set_kind              (DnfRepo              *repo,
                                                  DnfRepoKind           kind);
 void             dnf_repo_set_gpgcheck          (DnfRepo              *repo,
                                                  gboolean              gpgcheck_pkgs);
+void             dnf_repo_set_skip_if_unavailable(DnfRepo             *repo,
+                                                 gboolean              skip_if_unavailable);
 void             dnf_repo_set_gpgcheck_md       (DnfRepo              *repo,
                                                  gboolean              gpgcheck_md);
 void             dnf_repo_set_keyfile           (DnfRepo              *repo,
