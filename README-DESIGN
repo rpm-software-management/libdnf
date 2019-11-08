@@ -1,0 +1,62 @@
+A libdnf::Base instance is a center of all business logic.
+It's purpose is to integrate remaining libdnf classes
+and it's not implementing any complex business logic by itself.
+
+Every content type (rpm, comps, etc.) implements it's own
+libdnf::<content_type>::Base class that integrates all classes
+managing the content type.
+
+These clases are usually following:
+- Sack - high-level abstraction on package data (libsolv pool, comps xml, ...)
+- Query - query interface on Sack that returns PackageSet
+- Package - object interface to packages from Sack; doesn't carry any data, just interfaces Sack
+- PackageSet - represents a set of packages + operations on it
+- Goal - dependency resolver
+- Selector - 
+
+Solution = string -> nevra and/or query; formerly - getBestQuery/Nevra/Solution
+
+dnf install '*dnf'
+getBestSelectors('*dnf', sack)
+    -> getBestSolution('*dnf', sack)
+        -> parse '*dnf', tries NEVRA_FORMs, if there's a non-empty query for a form, return the query
+    -> transform query to {name: [pkgs]} dict
+    -> for each such group by name, create a selector
+    -> list of selectors == candidates for install jobs
+
+for each selector:
+    goal.install(sel)
+
+
+FUTURE:
+lazy evaluation (for modularity)
+
+object:
+    input: '*dnf'
+    demands: (make read-only copy, global config changes must note change it)
+    "resolve() == getBestSelectors()"
+>   name: pset/query
+
+goal install (sltr) == for name, q in sltr: goal.install(oneof(q))
+
+
+
+
+Dependencies
+------------
+* Hide all libsolv internals, libsolv header files should not be necessary to use libdnf
+
+
+C++ specifics
+-------------
+* Avoid lambda
+* use // and /// comments; make block comments available for debugging (commenting out parts of code)
+* Write documentation strings to the header files. They are part of public API.
+* Avoid writing inline method directly to the class headers. They make the headers harder to read.
+
+
+Exceptions
+----------
+* Reduce number of exception nested in classes
+  Group all exceptions in namespace in exceptions.hpp instead
+  It's better for portability into other languages

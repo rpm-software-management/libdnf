@@ -1,0 +1,40 @@
+options / repo options:
+enable_filelists (lazy file lists?)
+repo content type = mixed, binary, source, devel, debug; auto-detection from repoid instead?
+
+keyring
+ - global, per-repo
+ - ability to manage trusted keys by admin (regular user cannot manage the keys)
+
+
+RepoDict -> Repos/RepoContainer?
+@System & @Commandline repos part of it
+
+
+versionlock - from python plugin to libdnf core?
+
+
+introduce libdnf.arch
+- arm - let Peter Robinson to review the arch list
+
+
+references to sack:
+https://github.com/rpm-software-management/libdnf/issues/817
+
+
+logging
+- drop, use journald?
+
+
+deb and rpm in parallel
+multisemantics mode?
+it's turned on in Fedora
+for queries, etc.
+deb2solv etc.
+debconf - callback system; dpkg pauses in interactive mode
+depkg devert? - no alternative in rpm (possibly similar to relocations but smarter)
+
+
+perms:
+root_user -> privileged_user
+or fine-grained perms for individual actions

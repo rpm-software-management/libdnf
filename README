@@ -1,0 +1,6 @@
+This repo contains draft of the future dnf5 stack,
+mainly the C++ libdnf API which will be exported to Python via SWIG.
+
+This repo is work in progress and it's far from the final shape.
+It is not advised to fork it and base any work on it,
+because it may change incl. force pushes.
