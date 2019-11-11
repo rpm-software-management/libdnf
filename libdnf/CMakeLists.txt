@@ -84,6 +84,7 @@ set_target_properties(libdnf PROPERTIES SOVERSION ${DNF_SO_VERSION})
 
 set(LIBHAWKEY_headers
     hy-goal.h
+    hy-nevra.h
     hy-package.h
     hy-packageset.h
     hy-query.h
