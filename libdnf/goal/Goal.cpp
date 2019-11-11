@@ -58,7 +58,7 @@ static std::map<int, const char *> ERROR_DICT = {
 
 enum {RULE_DISTUPGRADE=1, RULE_INFARCH, RULE_UPDATE, RULE_JOB, RULE_JOB_UNSUPPORTED, RULE_JOB_NOTHING_PROVIDES_DEP,
     RULE_JOB_UNKNOWN_PACKAGE, RULE_JOB_PROVIDED_BY_SYSTEM, RULE_PKG, RULE_BEST_1, RULE_BEST_2,
-    RULE_PKG_NOT_INSTALLABLE_1, RULE_PKG_NOT_INSTALLABLE_2, RULE_PKG_NOT_INSTALLABLE_3, RULE_PKG_NOTHING_PROVIDES_DEP,
+    RULE_PKG_NOT_INSTALLABLE_1, RULE_PKG_NOT_INSTALLABLE_2, RULE_PKG_NOT_INSTALLABLE_3, RULE_PKG_NOT_INSTALLABLE_4, RULE_PKG_NOTHING_PROVIDES_DEP,
     RULE_PKG_SAME_NAME, RULE_PKG_CONFLICTS, RULE_PKG_OBSOLETES, RULE_PKG_INSTALLED_OBSOLETES, RULE_PKG_IMPLICIT_OBSOLETES,
     RULE_PKG_REQUIRES, RULE_PKG_SELF_CONFLICT, RULE_YUMOBS
 };
@@ -75,9 +75,10 @@ static const std::map<int, const char *> PKG_PROBLEMS_DICT = {
     {RULE_PKG, _("some dependency problem")},
     {RULE_BEST_1, _("cannot install the best update candidate for package ")},
     {RULE_BEST_2, _("cannot install the best candidate for the job")},
-    {RULE_PKG_NOT_INSTALLABLE_1, _("package %s is excluded")},
+    {RULE_PKG_NOT_INSTALLABLE_1, _("package %s is filtered out by modular filtering")},
     {RULE_PKG_NOT_INSTALLABLE_2, _("package %s does not have a compatible architecture")},
     {RULE_PKG_NOT_INSTALLABLE_3, _("package %s is not installable")},
+    {RULE_PKG_NOT_INSTALLABLE_4, _("package %s is filtered out by exclude filtering")},
     {RULE_PKG_NOTHING_PROVIDES_DEP, _("nothing provides %s needed by %s")},
     {RULE_PKG_SAME_NAME, _("cannot install both %s and %s")},
     {RULE_PKG_CONFLICTS, _("package %s conflicts with %s provided by %s")},
@@ -104,6 +105,7 @@ static const std::map<int, const char *> MODULE_PROBLEMS_DICT = {
     {RULE_PKG_NOT_INSTALLABLE_1, _("module %s is disabled")},
     {RULE_PKG_NOT_INSTALLABLE_2, _("module %s does not have a compatible architecture")},
     {RULE_PKG_NOT_INSTALLABLE_3, _("module %s is not installable")},
+    {RULE_PKG_NOT_INSTALLABLE_4, _("module %s is disabled")},
     {RULE_PKG_NOTHING_PROVIDES_DEP, _("nothing provides %s needed by module %s")},
     {RULE_PKG_SAME_NAME, _("cannot install both modules %s and %s")},
     {RULE_PKG_CONFLICTS, _("module %s conflicts with %s provided by %s")},
@@ -116,8 +118,8 @@ static const std::map<int, const char *> MODULE_PROBLEMS_DICT = {
 };
 
 static std::string
-libdnf_problemruleinfo2str(Solver *solv, SolverRuleinfo type, Id source, Id target, Id dep,
-    std::map<int, const char *> problemDict)
+libdnf_problemruleinfo2str(libdnf::PackageSet * modularExclude, Solver *solv, SolverRuleinfo type, Id source, Id target,
+    Id dep, std::map<int, const char *> problemDict)
 {
     Pool *pool = solv->pool;
     Solvable *ss;
@@ -147,9 +149,15 @@ libdnf_problemruleinfo2str(Solver *solv, SolverRuleinfo type, Id source, Id targ
             return std::string(problemDict[RULE_BEST_2]);
         case SOLVER_RULE_PKG_NOT_INSTALLABLE:
             ss = pool->solvables + source;
-            if (pool_disabled_solvable(pool, ss))
-                return tfm::format(problemDict[RULE_PKG_NOT_INSTALLABLE_1], pool_solvid2str(
-                    pool, source));
+            if (pool_disabled_solvable(pool, ss)) {
+                if (modularExclude && modularExclude->has(source)) {
+                    return tfm::format(problemDict[RULE_PKG_NOT_INSTALLABLE_1], pool_solvid2str(
+                        pool, source));
+                } else {
+                    return tfm::format(problemDict[RULE_PKG_NOT_INSTALLABLE_4], pool_solvid2str(
+                        pool, source));
+                }
+            }
             if (ss->arch && ss->arch != ARCH_SRC && ss->arch != ARCH_NOSRC &&
                 pool->id2arch && (ss->arch > pool->lastarch || !pool->id2arch[ss->arch]))
                 return tfm::format(problemDict[RULE_PKG_NOT_INSTALLABLE_2], pool_solvid2str(pool, source));
@@ -921,35 +929,37 @@ Goal::describeProblemRules(unsigned i, bool pkgs)
         output.push_back(std::move(problem));
         return output;
     }
+    auto solv = pImpl->solv;
 
     Id rid, source, target, dep;
     SolverRuleinfo type;
     int j;
     bool unique;
 
-    if (i >= solver_problem_count(pImpl->solv))
+    if (i >= solver_problem_count(solv))
         return output;
 
     IdQueue pq;
     IdQueue rq;
     // this libsolv interface indexes from 1 (we do from 0), so:
-    solver_findallproblemrules(pImpl->solv, i+1, pq.getQueue());
+    solver_findallproblemrules(solv, i+1, pq.getQueue());
     std::map<int, const char *> problemDict;
     if (pkgs) {
         problemDict = PKG_PROBLEMS_DICT;
     } else {
         problemDict = MODULE_PROBLEMS_DICT;
     }
+    std::unique_ptr<libdnf::PackageSet> modularExcludes(dnf_sack_get_module_excludes(pImpl->sack));
     for (j = 0; j < pq.size(); j++) {
         rid = pq[j];
-        if (solver_allruleinfos(pImpl->solv, rid, rq.getQueue())) {
+        if (solver_allruleinfos(solv, rid, rq.getQueue())) {
             for (int ir = 0; ir < rq.size(); ir+=4) {
                 type = static_cast<SolverRuleinfo>(rq[ir]);
                 source = rq[ir + 1];
                 target = rq[ir + 2];
                 dep = rq[ir + 3];
-                auto problem_str = libdnf_problemruleinfo2str(pImpl->solv, type, source, target,
-                                                              dep, problemDict);
+                auto problem_str = libdnf_problemruleinfo2str(modularExcludes.get(), solv, type,
+                                                              source, target, dep, problemDict);
                 unique = true;
                 for (auto & item: output) {
                     if (problem_str == item) {
