@@ -964,9 +964,6 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
         if (!dnf_repo_parse_time_from_str(metadata_expire_str, &metadata_expire, error))
             return FALSE;
         dnf_repo_set_metadata_expire(repo, metadata_expire);
-    } else {
-        /* default to 48h; this is in line with dnf's default */
-        dnf_repo_set_metadata_expire(repo, 60 * 60 * 48);
     }
 
     /* the "mirrorlist" entry could be either a real mirrorlist, or a metalink entry */
