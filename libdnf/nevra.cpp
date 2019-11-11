@@ -19,6 +19,7 @@
  */
 
 #include "nevra.hpp"
+#include "hy-nevra.h"
 #include "dnf-sack.h"
 
 #include "regex/regex.hpp"
@@ -99,4 +100,10 @@ Nevra::compare(const Nevra & nevra2) const
     return arch.compare(nevra2.arch);
 }
 
+}
+
+void
+hy_nevra_free(HyNevra nevra)
+{
+    delete nevra;
 }

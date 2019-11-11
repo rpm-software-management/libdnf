@@ -51,6 +51,7 @@ extern "C" {
 #include <libdnf/dnf-reldep-list.h>
 #include <libdnf/dnf-reldep.h>
 #include <libdnf/hy-goal.h>
+#include <libdnf/hy-nevra.h>
 #include <libdnf/hy-package.h>
 #include <libdnf/hy-packageset.h>
 #include <libdnf/hy-query.h>
