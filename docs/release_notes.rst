@@ -20,6 +20,14 @@
 ######################
 
 ====================
+0.38.1 Release Notes
+====================
+
+- Handle NoModuleException in dnf_context_reset_modules (RhBug:1767453)
+- Add missing C function hy_nevra_free() for HyNevra deallocation
+- Context part of libdnf now uses metadata_expire from global configuration 
+
+====================
 0.37.1 Release Notes
 ====================
 
