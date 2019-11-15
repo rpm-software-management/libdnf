@@ -58,7 +58,7 @@ public:
     std::string getDescription() const;
 
     std::vector<std::string> getArtifacts() const;
-
+    bool operator==(const ModulePackage &r) const;
     /**
     * @brief Return profiles matched by name.
     *
@@ -94,6 +94,11 @@ private:
     std::string repoID;
     Id id;
 };
+
+inline bool ModulePackage::operator==(const ModulePackage &r) const
+{
+    return id == r.id && moduleSack == r.moduleSack;
+}
 
 }
 

@@ -33,6 +33,13 @@ typedef int Id;
     typedef libdnf::ModuleProfile ModuleProfile;
 %}
 
+%extend libdnf::ModulePackage {
+    long __hash__()
+    {
+        return $self->getId();
+    }
+}
+
 %template(VectorModulePackagePtr) std::vector<libdnf::ModulePackage *>;
 %template(VectorVectorVectorModulePackagePtr) std::vector<std::vector<std::vector<libdnf::ModulePackage *>>>;
 %template(VectorModuleProfile) std::vector<libdnf::ModuleProfile>;
