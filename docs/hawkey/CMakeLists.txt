@@ -2,15 +2,17 @@
 # tell sphinx-build to do them both in one go:
 
 
-find_program(SPHINX_PROGRAM NAMES "sphinx-build-${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
-if(NOT EXISTS ${SPHINX_PROGRAM})
-    find_program(SPHINX_PROGRAM NAMES sphinx-build-${PYTHON_VERSION_MAJOR})
-endif()
-if(NOT EXISTS ${SPHINX_PROGRAM})
-    find_program(SPHINX_PROGRAM NAMES sphinx-build)
-endif()
-if(NOT EXISTS ${SPHINX_PROGRAM})
-    message(FATAL_ERROR "Sphinx program not found." )
+if (WITH_HTML OR WITH_MAN)
+    find_program(SPHINX_PROGRAM NAMES "sphinx-build-${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
+    if(NOT EXISTS ${SPHINX_PROGRAM})
+        find_program(SPHINX_PROGRAM NAMES sphinx-build-${PYTHON_VERSION_MAJOR})
+    endif()
+    if(NOT EXISTS ${SPHINX_PROGRAM})
+        find_program(SPHINX_PROGRAM NAMES sphinx-build)
+    endif()
+    if(NOT EXISTS ${SPHINX_PROGRAM})
+        message(FATAL_ERROR "Sphinx program not found." )
+    endif()
 endif()
 
 if(WITH_HTML)
