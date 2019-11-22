@@ -59,15 +59,22 @@ Swdb::Swdb(const std::string &path)
         conn = std::make_shared< SQLite3 >(path);
         Transformer::createDatabase(conn);
     } else if (!pathExists(path.c_str())) {
-        // writing to a file that doesn't exist and must be created
+        if (geteuid() == 0) {
+            // writing to a file that doesn't exist and must be created
 
-        // extract persistdir from path - "/var/lib/dnf/"
-        auto found = path.find_last_of("/");
+            // extract persistdir from path - "/var/lib/dnf/"
+            auto found = path.find_last_of("/");
 
-        Transformer transformer(path.substr(0, found), path);
-        transformer.transform();
+            Transformer transformer(path.substr(0, found), path);
+            transformer.transform();
 
-        conn = std::make_shared< SQLite3 >(path);
+            conn = std::make_shared< SQLite3 >(path);
+        } else {
+            // History db doesn't exist and an unprivileged user can't create it.
+            // As a fail-safe, open a connection to an empty in-memory database.
+            conn = std::make_shared< SQLite3 >(":memory:");
+            Transformer::createDatabase(conn);
+        }
     } else {
         // writing to an existing file
         conn = std::make_shared< SQLite3 >(path);
