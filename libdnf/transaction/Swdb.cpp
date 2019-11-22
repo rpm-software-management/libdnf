@@ -28,9 +28,11 @@
 
 #include "../sack/packageset.hpp"
 
+#include "../log.hpp"
 #include "../utils/bgettext/bgettext-lib.h"
 #include "../utils/filesystem.hpp"
 #include "../utils/sqlite3/Sqlite3.hpp"
+#include "../utils/tinyformat/tinyformat.hpp"
 
 #include "RPMItem.hpp"
 #include "Swdb.hpp"
@@ -55,22 +57,67 @@ Swdb::Swdb(const std::string &path)
   , autoClose(true)
 {
     if (path == ":memory:") {
-        // writing to an in-memory database
-        conn = std::make_shared< SQLite3 >(path);
+        // connect to an in-memory database as requested
+        conn = std::make_shared<SQLite3>(path);
         Transformer::createDatabase(conn);
-    } else if (!pathExists(path.c_str())) {
-        // writing to a file that doesn't exist and must be created
+    } else if (pathExists(path.c_str())) {
+        if (geteuid() == 0) {
+            // database exists, running under root
+            try {
+                conn = std::make_shared<SQLite3>(path);
+                // execute an update to detect if the database is writable
+                conn->exec("BEGIN; UPDATE config SET value='test' WHERE key='test'; ROLLBACK;");
+            } catch (std::exception & ex) {
+                // root must have the database writable -> log and re-throw the exception
+                auto logger(libdnf::Log::getLogger());
+                logger->error(tfm::format("History database is not writable: %s. Error: %s", path, ex.what()));
+                throw;
+            }
+        } else {
+            // database exists, running under unprivileged user
+            try {
+                conn = std::make_shared<SQLite3>(path);
+                // execute a select to detect if the database is readable
+                conn->exec("SELECT * FROM config WHERE key='test'");
+            } catch (std::exception & ex) {
+                // unpriviledged user may have insufficient permissions to open the database -> in-memory fallback
+                conn = std::make_shared<SQLite3>(":memory:");
+                Transformer::createDatabase(conn);
+                auto logger(libdnf::Log::getLogger());
+                logger->error(tfm::format("History database is not readable: %s. Using in-memory database instead. Error: %s", path, ex.what()));
+            }
+        }
+     } else {
+        if (geteuid() == 0) {
+            // database doesn't exist, running under root
+            // create a new database and migrate old data
 
-        // extract persistdir from path - "/var/lib/dnf/"
-        auto found = path.find_last_of("/");
-
-        Transformer transformer(path.substr(0, found), path);
-        transformer.transform();
-
-        conn = std::make_shared< SQLite3 >(path);
-    } else {
-        // writing to an existing file
-        conn = std::make_shared< SQLite3 >(path);
+            // extract persistdir from path - "/var/lib/dnf/"
+            auto found = path.find_last_of("/");
+            try {
+                Transformer transformer(path.substr(0, found), path);
+                transformer.transform();
+                conn = std::make_shared<SQLite3>(path);
+            } catch (std::exception & ex) {
+                // root must have the database writable -> log and re-throw the exception
+                auto logger(libdnf::Log::getLogger());
+                logger->error(tfm::format("History database cannot be created: %s. Error: %s", path, ex.what()));
+                throw;
+            }
+        } else {
+            try {
+                // database doesn't exist, running under unprivileged user
+                // connect to a new database and initialize it; old data is not migrated
+                conn = std::make_shared<SQLite3>(path);
+                Transformer::createDatabase(conn);
+            } catch (std::exception & ex) {
+                // unpriviledged user may have insufficient permissions to create the database -> in-memory fallback
+                conn = std::make_shared<SQLite3>(":memory:");
+                Transformer::createDatabase(conn);
+                auto logger(libdnf::Log::getLogger());
+                logger->error(tfm::format("History database cannot be created: %s. Using in-memory database instead. Error: %s", path, ex.what()));
+            }
+        }
     }
 }
 
