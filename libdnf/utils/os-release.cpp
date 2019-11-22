@@ -45,6 +45,8 @@ static const std::map<std::string, std::vector<std::string>> distros = {
     { "Fedora", { "cinnamon", "cloud", "container", "coreos", "generic", "iot",
                   "kde", "matecompiz", "server", "silverblue", "snappy", "soas",
                   "workstation", "xfce" } },
+    { "Red Hat Enterprise Linux", {} },
+    { "CentOS Linux", {} },
 };
 std::array<const std::string, 1> canons = { "Linux" };
 
