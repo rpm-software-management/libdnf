@@ -8,6 +8,7 @@ of the type of `s`, tinyformat might be for you.  Design goals include:
 
 * Type safety and extensibility for user defined types.
 * C99 `printf()` compatibility, to the extent possible using `std::ostream`
+* POSIX extension for positional arguments
 * Simplicity and minimalism.  A single header file to include and distribute
   with your projects.
 * Augment rather than replace the standard stream formatting mechanism
@@ -16,5 +17,3 @@ of the type of `s`, tinyformat might be for you.  Design goals include:
 Original project URL:
 https://github.com/c42f/tinyformat
 
-Added:
-* POSIX extension for positional arguments
