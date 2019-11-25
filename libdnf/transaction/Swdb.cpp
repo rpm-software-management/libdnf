@@ -31,6 +31,7 @@
 #include "../utils/bgettext/bgettext-lib.h"
 #include "../utils/filesystem.hpp"
 #include "../utils/sqlite3/Sqlite3.hpp"
+#include "../utils/tinyformat/tinyformat.hpp"
 
 #include "RPMItem.hpp"
 #include "Swdb.hpp"
@@ -77,9 +78,14 @@ Swdb::Swdb(const std::string &path)
 void
 Swdb::resetDatabase()
 {
+    auto dbpath=getPath().c_str();
     conn->close();
-    if (pathExists(getPath().c_str())) {
-        remove(getPath().c_str());
+    if (pathExists(dbpath)) {
+        if (remove(dbpath)) {
+            throw std::runtime_error(
+                tfm::format(_("Failed to remove history database file '%s': '%s'"),
+                            dbpath, strerror(errno)));
+        }
     }
     conn->open();
     Transformer::createDatabase(conn);
