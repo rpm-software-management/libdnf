@@ -20,6 +20,16 @@
 ######################
 
 ====================
+0.39.1 Release Notes
+====================
+
+- Report reason how package was excluded (RhBug:1649754)
+- Additional Arm detection improvements (RhBug:1691430)
+- Handle situation when an unprivileged user cannot create history database
+- Set skip_if_unavailable for media repos to skip their update (RhBug:1716067)
+- Add support of xml:base for remote and local url in context (RhBug:1734350, 1717865)
+
+====================
 0.38.1 Release Notes
 ====================
 
