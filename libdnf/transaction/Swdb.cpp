@@ -97,6 +97,12 @@ Swdb::closeDatabase()
     conn->close();
 }
 
+void
+Swdb::backupDatabase(const std::string &path)
+{
+    conn->backup(path);
+}
+
 Swdb::~Swdb()
 {
     if (autoClose) {

@@ -58,6 +58,10 @@ public:
     static constexpr const char *defaultDatabaseName = "history.sqlite";
 
     const std::string &getPath() { return conn->getPath(); }
+    /**
+    * @brief Backup history database to given location
+    */
+    void backupDatabase(const std::string &path);
     void resetDatabase();
     void closeDatabase();
 
