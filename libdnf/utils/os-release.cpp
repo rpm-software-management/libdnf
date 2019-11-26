@@ -36,17 +36,8 @@
 namespace libdnf {
 
 // sorted by precedence (see os-release(5) for details)
-static const std::array<const std::string, 2> paths = {"/etc/os-release", "/usr/lib/os-release"};
-// whitelists used for sanity-checking the os-release data when constructing a
-// User-Agent string (to avoid reporting rare systems or platforms that could
-// be tracked)
-static const std::map<std::string, std::vector<std::string>> distros = {
-    // taken from the {fedora,generic}-release.spec files
-    { "Fedora", { "cinnamon", "cloud", "container", "coreos", "generic", "iot",
-                  "kde", "matecompiz", "server", "silverblue", "snappy", "soas",
-                  "workstation", "xfce" } },
-};
-std::array<const std::string, 1> canons = { "Linux" };
+static const std::array<const std::string, 2>
+paths = {"/etc/os-release", "/usr/lib/os-release"};
 
 std::map<std::string, std::string> getOsReleaseData()
 {
@@ -118,47 +109,38 @@ std::string getUserAgent(const std::map<std::string, std::string> & osReleaseDat
 {
     std::ostringstream oss;
     auto logger(Log::getLogger());
-    std::string msg = "os-release: falling back to basic User-Agent";
 
-    // start with the basic libdnf string
     oss << USER_AGENT;
+    std::string fallback = oss.str();
 
-    // mandatory OS data (bail out if missing or unknown)
     if (!osReleaseData.count("NAME") || !osReleaseData.count("VERSION_ID")) {
-        logger->debug(tfm::format("%s: missing NAME or VERSION_ID", msg));
-        return oss.str();
+        logger->debug(tfm::format(
+            "User-Agent: falling back to '%s': missing NAME or VERSION_ID",
+            fallback
+        ));
+        return fallback;
     }
     std::string name = osReleaseData.at("NAME");
     std::string version = osReleaseData.at("VERSION_ID");
-    if (!distros.count(name)) {
-        logger->debug(tfm::format("%s: distro %s not whitelisted", msg, name));
-        return oss.str();
-    }
+    std::string variant = "generic";
+    if (osReleaseData.count("VARIANT_ID"))
+        variant = osReleaseData.at("VARIANT_ID");
 
-    // mandatory platform data from RPM (bail out if missing or unknown)
     std::string canon = getCanonOs();
     std::string arch = getBaseArch();
-    if (canon.empty() || arch.empty()
-        || std::find(canons.begin(), canons.end(), canon) == canons.end()) {
-        logger->debug(tfm::format("%s: could not detect canonical OS or basearch", msg));
-        return oss.str();
+    if (canon.empty() || arch.empty()) {
+        logger->debug(tfm::format(
+            "User-Agent: falling back to '%s': could not detect OS or basearch",
+            fallback
+        ));
+        return fallback;
     }
 
-    // optional OS data (use fallback values if missing or unknown)
-    std::string variant = "generic";
-    auto list = distros.at(name);
-    if (osReleaseData.count("VARIANT_ID")) {
-        std::string value = osReleaseData.at("VARIANT_ID");
-        if (std::find(list.begin(), list.end(), value) != list.end())
-            variant = value;
-    }
-
-    // good to go!
-    oss << " (" << name << " " << version << "; " << variant << "; "
-        << canon << "." << arch << ")";
+    oss << " (" << name << " " << version << "; " << variant << "; " << canon
+        << "." << arch << ")";
 
     std::string result = oss.str();
-    logger->debug(tfm::format("os-release: User-Agent constructed: %s", result));
+    logger->debug(tfm::format("User-Agent: constructed: '%s'", result));
     return result;
 }
 

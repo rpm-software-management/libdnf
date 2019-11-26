@@ -50,11 +50,8 @@ getOsReleaseData();
  *   libdnf (NAME VERSION_ID; VARIANT_ID; OS.BASEARCH)
  *
  * where NAME, VERSION_ID and VARIANT_ID are OS identifiers read from the
- * passed os-release data, and OS and BASEARCH (if found) are the canonical OS
- * name and base architecture, respectively, detected using RPM.
- *
- * Note that the OS part (enclosed in parentheses) will only be included for
- * whitelisted values.
+ * passed os-release data, and OS and BASEARCH are the canonical OS name and
+ * base architecture, respectively, detected using RPM.
  *
  * @param  osReleaseData a map containing os-release data (will be loaded from
  *                       disk if not specified)
