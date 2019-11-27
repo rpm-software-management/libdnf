@@ -2097,7 +2097,7 @@ process_excludes(DnfSack *sack, DnfRepo *repo)
         query = hy_query_create(sack);
         hy_query_filter(query, HY_PKG_REPONAME, HY_EQ, dnf_repo_get_id(repo));
         hy_query_filter(query, HY_PKG_ARCH, HY_NEQ, "src");
-        hy_query_filter(query, HY_PKG_NAME, HY_EQ, name);
+        hy_query_filter(query, HY_PKG_NAME, HY_GLOB, name);
         pkgset = hy_query_run_set(query);
 
         if (dnf_packageset_count(pkgset) > 0)
