@@ -942,7 +942,8 @@ dnf_context_get_installonly_pkgs(DnfContext *context)
 guint
 dnf_context_get_installonly_limit(DnfContext *context)
 {
-    return 3;
+    auto & mainConf = libdnf::getGlobalMainConfig();
+    return mainConf.installonly_limit().getValue();
 }
 
 /**
