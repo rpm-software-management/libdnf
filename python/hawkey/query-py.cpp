@@ -809,8 +809,8 @@ q_add(_QueryObject *self, PyObject *list)
     return query_list;
 }
 
-static PyObject *
-q_contains(PyObject *self, PyObject *pypkg)
+static int
+query_contains(PyObject *self, PyObject *pypkg)
 {
     HyQuery q = ((_QueryObject *) self)->query;
     DnfPackage *pkg = packageFromPyObject(pypkg);
@@ -819,9 +819,9 @@ q_contains(PyObject *self, PyObject *pypkg)
         Id id = dnf_package_get_id(pkg);
         q->apply();
         if (MAPTST(q->getResult(), id))
-            Py_RETURN_TRUE;
+            return 1;
     }
-    Py_RETURN_FALSE;
+    return 0;
 }
 
 static size_t
@@ -848,12 +848,6 @@ query_get_item(PyObject *self, int index)
     }
     PyObject *package = new_package(((_QueryObject *) self)->sack, id);
     return package;
-}
-
-static PyObject *
-query_get_item_by_pyindex(PyObject *self, PyObject *index)
-{
-    return query_get_item(self, (int) PyLong_AsLong(index));
 }
 
 static PyObject *
@@ -1026,6 +1020,10 @@ PySequenceMethods query_sequence = {
     (binaryfunc)q_add,                /* sq_concat */
     0,                                /* sq_repeat */
     (ssizeargfunc) query_get_item,    /* sq_item */
+    0,                                /* sq_slice */
+    0,                                /* sq_ass_item */
+    0,                                /* sq_ass_slice */
+    (objobjproc)query_contains,       /* sq_contains */
 };
 
 static struct PyMethodDef query_methods[] = {
@@ -1059,14 +1057,6 @@ static struct PyMethodDef query_methods[] = {
     {"_recent", (PyCFunction)add_filter_recent, METH_VARARGS, NULL},
     {"_unneeded", (PyCFunction)filter_unneeded, METH_KEYWORDS|METH_VARARGS, NULL},
     {"_safe_to_remove", (PyCFunction)filter_safe_to_remove, METH_KEYWORDS|METH_VARARGS, NULL},
-    {"__add__", (PyCFunction)q_add, METH_O, NULL},
-    {"__contains__", (PyCFunction)q_contains, METH_O,
-     NULL},
-    {"__getitem__", (PyCFunction)query_get_item_by_pyindex, METH_O,
-     NULL},
-    {"__iter__", (PyCFunction)query_iter, METH_NOARGS, NULL},
-    {"__len__", (PyCFunction)q_length, METH_NOARGS,
-     NULL},
     {NULL}                      /* sentinel */
 };
 
