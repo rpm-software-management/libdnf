@@ -1061,6 +1061,7 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
 
     /* gpgkey is optional for gpgcheck=1, but required for repo_gpgcheck=1 */
     g_strfreev(priv->gpgkeys);
+    priv->gpgkeys = NULL;
     tmp_strval = g_key_file_get_string(priv->keyfile, repoId, "gpgkey", NULL);
     if (tmp_strval) {
         priv->gpgkeys = g_strsplit_set(tmp_strval, " ,", -1);
@@ -1105,9 +1106,12 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
         tmp_strval = g_key_file_get_string(priv->keyfile, repoId, "exclude", NULL);
     }
 
+    g_strfreev(priv->exclude_packages);
     if (tmp_strval) {
         priv->exclude_packages = g_strsplit_set(tmp_strval, " ,", -1);
         g_free(g_steal_pointer (&tmp_strval));
+    } else {
+        priv->exclude_packages = NULL;
     }
 
     /* proxy is optional */
