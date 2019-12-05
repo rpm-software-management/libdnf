@@ -2086,19 +2086,17 @@ process_excludes(DnfSack *sack, GPtrArray *enabled_repos)
     libdnf::PackageSet repoExcludes(sack);
     
     for (guint i = 0; i < enabled_repos->len; i++) {
-        auto repo = static_cast<DnfRepo *>(enabled_repos->pdata[i]);
+        auto dnfRepo = static_cast<DnfRepo *>(enabled_repos->pdata[i]);
+        auto repo = dnf_repo_get_repo(dnfRepo);
 
         libdnf::Query repoQuery(sack);
-        repoQuery.addFilter(HY_PKG_REPONAME, HY_EQ, dnf_repo_get_id(repo));
+        repoQuery.addFilter(HY_PKG_REPONAME, HY_EQ, repo->getId().c_str());
         repoQuery.apply();
-        if (auto excludes = dnf_repo_get_exclude_packages(repo)) {
-            for (auto iter = excludes; *iter; ++iter) {
-                const char *name = *iter;
-                libdnf::Query query(repoQuery);
-                auto ret = query.filterSubject(name, nullptr, false, true, false, false);
-                if (ret.first) {
-                    repoExcludes += *query.runSet();
-                }
+        for (const auto & name : repo->getConfig()->excludepkgs().getValue()) {
+            libdnf::Query query(repoQuery);
+            auto ret = query.filterSubject(name.c_str(), nullptr, false, true, false, false);
+            if (ret.first) {
+                repoExcludes += *query.runSet();
             }
         }
     }
