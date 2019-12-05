@@ -2084,12 +2084,22 @@ dnf_sack_get_module_container(DnfSack *sack)
 static void
 process_excludes(DnfSack *sack, GPtrArray *enabled_repos)
 {
+    auto & mainConf = libdnf::getGlobalMainConfig();
+    auto & disabled = mainConf.disable_excludes().getValue();
+
+    if (std::find(disabled.begin(), disabled.end(), "all") != disabled.end()) {
+        return;
+    }
+
     libdnf::PackageSet repoIncludes(sack);
     libdnf::PackageSet repoExcludes(sack);
     
     for (guint i = 0; i < enabled_repos->len; i++) {
         auto dnfRepo = static_cast<DnfRepo *>(enabled_repos->pdata[i]);
         auto repo = dnf_repo_get_repo(dnfRepo);
+        if (std::find(disabled.begin(), disabled.end(), repo->getId()) != disabled.end()) {
+            continue;
+        }
 
         libdnf::Query repoQuery(sack);
         repoQuery.addFilter(HY_PKG_REPONAME, HY_EQ, repo->getId().c_str());
@@ -2113,29 +2123,30 @@ process_excludes(DnfSack *sack, GPtrArray *enabled_repos)
         }
     }
 
-    auto & mainConf = libdnf::getGlobalMainConfig();
-
-    bool useGlobalIncludes = false;
-    for (const auto & name : mainConf.includepkgs().getValue()) {
-        libdnf::Query query(sack);
-        auto ret = query.filterSubject(name.c_str(), nullptr, false, true, false, false);
-        if (ret.first) {
-            repoIncludes += *query.runSet();
-            useGlobalIncludes = true;
+    if (std::find(disabled.begin(), disabled.end(), "main") == disabled.end()) {
+        bool useGlobalIncludes = false;
+        for (const auto & name : mainConf.includepkgs().getValue()) {
+            libdnf::Query query(sack);
+            auto ret = query.filterSubject(name.c_str(), nullptr, false, true, false, false);
+            if (ret.first) {
+                repoIncludes += *query.runSet();
+                useGlobalIncludes = true;
+            }
         }
-    }
 
-    for (const auto & name : mainConf.excludepkgs().getValue()) {
-        libdnf::Query query(sack);
-        auto ret = query.filterSubject(name.c_str(), nullptr, false, true, false, false);
-        if (ret.first) {
-            repoExcludes += *query.runSet();
+        for (const auto & name : mainConf.excludepkgs().getValue()) {
+            libdnf::Query query(sack);
+            auto ret = query.filterSubject(name.c_str(), nullptr, false, true, false, false);
+            if (ret.first) {
+                repoExcludes += *query.runSet();
+            }
+        }
+        
+        if (useGlobalIncludes) {
+            dnf_sack_set_use_includes(sack, nullptr, true);
         }
     }
     
-    if (useGlobalIncludes) {
-        dnf_sack_set_use_includes(sack, nullptr, true);
-    }
     dnf_sack_add_includes(sack, &repoIncludes);
     dnf_sack_add_excludes(sack, &repoExcludes);
 }
