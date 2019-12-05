@@ -1093,23 +1093,26 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_GPGCHECK, (long)gpgcheck_md))
         return FALSE;
 
-    tmp_strval = g_key_file_get_string(priv->keyfile, repoId, "excludepkgs", NULL);
-    if (tmp_strval) {
-        gchar *tmp_strval2 = g_key_file_get_string(priv->keyfile, repoId, "exclude", NULL);
-        if (tmp_strval2) {
-            gchar *joined = g_strjoin(",", tmp_strval, tmp_strval2, NULL);
-            g_free(tmp_strval);
-            g_free(tmp_strval2);
-            tmp_strval = joined;
-        }
-    } else {
-        tmp_strval = g_key_file_get_string(priv->keyfile, repoId, "exclude", NULL);
+    auto & repoExcludepkgs = priv->repo->getConfig()->excludepkgs();
+    repoExcludepkgs.set(libdnf::Option::Priority::REPOCONFIG, "");
+
+    auto & bindExcludepkgs = priv->repo->getConfig()->optBinds().at("excludepkgs");
+    if (auto excludepkgs = g_key_file_get_string(priv->keyfile, repoId, "exclude", NULL)) {
+        bindExcludepkgs.newString(libdnf::Option::Priority::REPOCONFIG, excludepkgs);
+        g_free(excludepkgs);
+    }
+    if (auto excludepkgs = g_key_file_get_string(priv->keyfile, repoId, "excludepkgs", NULL)) {
+        bindExcludepkgs.newString(libdnf::Option::Priority::REPOCONFIG, excludepkgs);
+        g_free(excludepkgs);
     }
 
     g_strfreev(priv->exclude_packages);
-    if (tmp_strval) {
-        priv->exclude_packages = g_strsplit_set(tmp_strval, " ,", -1);
-        g_free(g_steal_pointer (&tmp_strval));
+    if (!repoExcludepkgs.getValue().empty()) {
+        auto len = repoExcludepkgs.getValue().size();
+        priv->exclude_packages = g_new0(char *, len + 1);
+        for (size_t i = 0; i < len; ++i) {
+            priv->exclude_packages[i] = g_strdup(repoExcludepkgs.getValue()[i].c_str());
+        }
     } else {
         priv->exclude_packages = NULL;
     }
