@@ -117,29 +117,29 @@ void         dnf_sack_set_installonly_limit (DnfSack        *sack,
 guint        dnf_sack_get_installonly_limit (DnfSack        *sack);
 DnfPackage  *dnf_sack_add_cmdline_package   (DnfSack        *sack,
                                              const char     *fn);
-DnfPackage  *dnf_sack_add_cmdline_package_nochecksum   (DnfSack        *sack,
+DnfPackage  *dnf_sack_add_cmdline_package_nochecksum(DnfSack *sack,
                                              const char     *fn);
 int          dnf_sack_count                 (DnfSack        *sack);
 void         dnf_sack_add_excludes          (DnfSack        *sack,
-                                             DnfPackageSet  *pset);
+                                             const DnfPackageSet *pset);
 void         dnf_sack_add_module_excludes   (DnfSack        *sack,
-                                             DnfPackageSet *pset);
+                                             const DnfPackageSet *pset);
 void         dnf_sack_add_includes          (DnfSack        *sack,
-                                             DnfPackageSet  *pset);
+                                             const DnfPackageSet *pset);
 void         dnf_sack_remove_excludes       (DnfSack        *sack,
-                                             DnfPackageSet  *pset);
+                                             const DnfPackageSet *pset);
 void         dnf_sack_remove_module_excludes(DnfSack        *sack,
-                                             DnfPackageSet  *pset);
+                                             const DnfPackageSet *pset);
 void         dnf_sack_remove_includes       (DnfSack        *sack,
-                                             DnfPackageSet  *pset);
+                                             const DnfPackageSet *pset);
 void         dnf_sack_set_excludes          (DnfSack        *sack,
-                                             DnfPackageSet  *pset);
-void         dnf_sack_set_module_excludes   (DnfSack *sack,
-                                             DnfPackageSet *pset);
-void         dnf_sack_set_module_includes   (DnfSack *sack,
-                                             DnfPackageSet *pset);
+                                             const DnfPackageSet *pset);
+void         dnf_sack_set_module_excludes   (DnfSack        *sack,
+                                             const DnfPackageSet *pset);
+void         dnf_sack_set_module_includes   (DnfSack        *sack,
+                                             const DnfPackageSet *pset);
 void         dnf_sack_set_includes          (DnfSack        *sack,
-                                             DnfPackageSet  *pset);
+                                             const DnfPackageSet *pset);
 void         dnf_sack_reset_excludes        (DnfSack        *sack);
 void         dnf_sack_reset_module_excludes (DnfSack        *sack);
 void         dnf_sack_reset_includes        (DnfSack        *sack);
