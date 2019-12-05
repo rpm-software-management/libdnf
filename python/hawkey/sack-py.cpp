@@ -488,7 +488,7 @@ add_cmdline_package(_SackObject *self, PyObject *fn_obj)
     return pkg;
 }
 
-template<void (*sackExcludeIncludeFunc)(DnfSack *, DnfPackageSet*)>
+template<void (*sackExcludeIncludeFunc)(DnfSack *, const DnfPackageSet*)>
 static PyObject *
 modify_excl_incl(_SackObject *self, PyObject *o)
 {

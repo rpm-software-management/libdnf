@@ -1240,7 +1240,7 @@ dnf_sack_count(DnfSack *sack)
 }
 
 static void
-dnf_sack_add_excludes_or_includes(DnfSack *sack, Map **dest, DnfPackageSet *pkgset)
+dnf_sack_add_excludes_or_includes(DnfSack *sack, Map **dest, const DnfPackageSet *pkgset)
 {
     Map *destmap = *dest;
     if (destmap == NULL) {
@@ -1250,7 +1250,7 @@ dnf_sack_add_excludes_or_includes(DnfSack *sack, Map **dest, DnfPackageSet *pkgs
         *dest = destmap;
     }
 
-    Map *pkgmap = dnf_packageset_get_map(pkgset);
+    auto pkgmap = pkgset->getMap();
     map_or(destmap, pkgmap);
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     priv->considered_uptodate = FALSE;
@@ -1266,7 +1266,7 @@ dnf_sack_add_excludes_or_includes(DnfSack *sack, Map **dest, DnfPackageSet *pkgs
  * Since: 0.7.0
  */
 void
-dnf_sack_add_excludes(DnfSack *sack, DnfPackageSet *pset)
+dnf_sack_add_excludes(DnfSack *sack, const DnfPackageSet *pset)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     dnf_sack_add_excludes_or_includes(sack, &priv->pkg_excludes, pset);
@@ -1282,7 +1282,7 @@ dnf_sack_add_excludes(DnfSack *sack, DnfPackageSet *pset)
  * Since: 0.13.4
  */
 void
-dnf_sack_add_module_excludes(DnfSack *sack, DnfPackageSet *pset)
+dnf_sack_add_module_excludes(DnfSack *sack, const DnfPackageSet *pset)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     dnf_sack_add_excludes_or_includes(sack, &priv->module_excludes, pset);
@@ -1298,18 +1298,18 @@ dnf_sack_add_module_excludes(DnfSack *sack, DnfPackageSet *pset)
  * Since: 0.7.0
  */
 void
-dnf_sack_add_includes(DnfSack *sack, DnfPackageSet *pset)
+dnf_sack_add_includes(DnfSack *sack, const DnfPackageSet *pset)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     dnf_sack_add_excludes_or_includes(sack, &priv->pkg_includes, pset);
 }
 
 static void
-dnf_sack_remove_excludes_or_includes(DnfSack *sack, Map *from, DnfPackageSet *pkgset)
+dnf_sack_remove_excludes_or_includes(DnfSack *sack, Map *from, const DnfPackageSet *pkgset)
 {
     if (from == NULL)
         return;
-    Map *pkgmap = dnf_packageset_get_map(pkgset);
+    auto pkgmap = pkgset->getMap();
     map_subtract(from, pkgmap);
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     priv->considered_uptodate = FALSE;
@@ -1325,7 +1325,7 @@ dnf_sack_remove_excludes_or_includes(DnfSack *sack, Map *from, DnfPackageSet *pk
  * Since: 0.9.4
  */
 void
-dnf_sack_remove_excludes(DnfSack *sack, DnfPackageSet *pset)
+dnf_sack_remove_excludes(DnfSack *sack, const DnfPackageSet *pset)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     dnf_sack_remove_excludes_or_includes(sack, priv->pkg_excludes, pset);
@@ -1341,7 +1341,7 @@ dnf_sack_remove_excludes(DnfSack *sack, DnfPackageSet *pset)
  * Since: 0.13.4
  */
 void
-dnf_sack_remove_module_excludes(DnfSack *sack, DnfPackageSet *pset)
+dnf_sack_remove_module_excludes(DnfSack *sack, const DnfPackageSet *pset)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     dnf_sack_remove_excludes_or_includes(sack, priv->module_excludes, pset);
@@ -1357,14 +1357,14 @@ dnf_sack_remove_module_excludes(DnfSack *sack, DnfPackageSet *pset)
  * Since: 0.9.4
  */
 void
-dnf_sack_remove_includes(DnfSack *sack, DnfPackageSet *pset)
+dnf_sack_remove_includes(DnfSack *sack, const DnfPackageSet *pset)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     dnf_sack_remove_excludes_or_includes(sack, priv->pkg_includes, pset);
 }
 
 static void
-dnf_sack_set_excludes_or_includes(DnfSack *sack, Map **dest, DnfPackageSet *pkgset)
+dnf_sack_set_excludes_or_includes(DnfSack *sack, Map **dest, const DnfPackageSet *pkgset)
 {
     if (*dest == NULL && pkgset == NULL)
         return;
@@ -1372,7 +1372,7 @@ dnf_sack_set_excludes_or_includes(DnfSack *sack, Map **dest, DnfPackageSet *pkgs
     *dest = free_map_fully(*dest);
     if (pkgset) {
         *dest = static_cast<Map *>(g_malloc0(sizeof(Map)));
-        Map *pkgmap = dnf_packageset_get_map(pkgset);
+        auto pkgmap = pkgset->getMap();
         map_init_clone(*dest, pkgmap);
     }
     DnfSackPrivate *priv = GET_PRIVATE(sack);
@@ -1380,7 +1380,7 @@ dnf_sack_set_excludes_or_includes(DnfSack *sack, Map **dest, DnfPackageSet *pkgs
 }
 
 void
-dnf_sack_set_module_includes(DnfSack *sack, DnfPackageSet *pset)
+dnf_sack_set_module_includes(DnfSack *sack, const DnfPackageSet *pset)
 {
     if (!pset) {
         return;
@@ -1388,7 +1388,7 @@ dnf_sack_set_module_includes(DnfSack *sack, DnfPackageSet *pset)
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     free_map_fully(priv->module_includes);
     priv->module_includes = static_cast<Map *>(g_malloc0(sizeof(Map)));
-    Map *pkgmap = dnf_packageset_get_map(pset);
+    auto pkgmap = pset->getMap();
     map_init_clone(priv->module_includes, pkgmap);
 }
 
@@ -1402,7 +1402,7 @@ dnf_sack_set_module_includes(DnfSack *sack, DnfPackageSet *pset)
  * Since: 0.7.0
  */
 void
-dnf_sack_set_excludes(DnfSack *sack, DnfPackageSet *pset)
+dnf_sack_set_excludes(DnfSack *sack, const DnfPackageSet *pset)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     dnf_sack_set_excludes_or_includes(sack, &priv->pkg_excludes, pset);
@@ -1418,7 +1418,7 @@ dnf_sack_set_excludes(DnfSack *sack, DnfPackageSet *pset)
  * Since: 0.13.4
  */
 void
-dnf_sack_set_module_excludes(DnfSack *sack, DnfPackageSet *pset)
+dnf_sack_set_module_excludes(DnfSack *sack, const DnfPackageSet *pset)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     dnf_sack_set_excludes_or_includes(sack, &priv->module_excludes, pset);
@@ -1434,7 +1434,7 @@ dnf_sack_set_module_excludes(DnfSack *sack, DnfPackageSet *pset)
  * Since: 0.7.0
  */
 void
-dnf_sack_set_includes(DnfSack *sack, DnfPackageSet *pset)
+dnf_sack_set_includes(DnfSack *sack, const DnfPackageSet *pset)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     dnf_sack_set_excludes_or_includes(sack, &priv->pkg_includes, pset);
