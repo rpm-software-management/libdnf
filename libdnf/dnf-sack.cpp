@@ -2081,31 +2081,29 @@ dnf_sack_get_module_container(DnfSack *sack)
 /**********************************************************************/
 
 static void
-process_excludes(DnfSack *sack, DnfRepo *repo)
+process_excludes(DnfSack *sack, GPtrArray *enabled_repos)
 {
-    gchar **excludes = dnf_repo_get_exclude_packages(repo);
-    gchar **iter;
+    libdnf::PackageSet repoExcludes(sack);
+    
+    for (guint i = 0; i < enabled_repos->len; i++) {
+        auto repo = static_cast<DnfRepo *>(enabled_repos->pdata[i]);
 
-    if (excludes == NULL)
-        return;
-
-    for (iter = excludes; *iter; iter++) {
-        const char *name = *iter;
-        HyQuery query;
-        DnfPackageSet *pkgset;
-
-        query = hy_query_create(sack);
-        hy_query_filter(query, HY_PKG_REPONAME, HY_EQ, dnf_repo_get_id(repo));
-        hy_query_filter(query, HY_PKG_ARCH, HY_NEQ, "src");
-        hy_query_filter(query, HY_PKG_NAME, HY_GLOB, name);
-        pkgset = hy_query_run_set(query);
-
-        if (dnf_packageset_count(pkgset) > 0)
-            dnf_sack_add_excludes(sack, pkgset);
-
-        hy_query_free(query);
-        delete pkgset;
+        libdnf::Query repoQuery(sack);
+        repoQuery.addFilter(HY_PKG_REPONAME, HY_EQ, dnf_repo_get_id(repo));
+        repoQuery.apply();
+        if (auto excludes = dnf_repo_get_exclude_packages(repo)) {
+            for (auto iter = excludes; *iter; ++iter) {
+                const char *name = *iter;
+                libdnf::Query query(repoQuery);
+                auto ret = query.filterSubject(name, nullptr, false, true, false, false);
+                if (ret.first) {
+                    repoExcludes += *query.runSet();
+                }
+            }
+        }
     }
+    
+    dnf_sack_add_excludes(sack, &repoExcludes);
 }
 
 /**
@@ -2258,11 +2256,7 @@ dnf_sack_add_repos(DnfSack *sack,
             return FALSE;
     }
 
-    for (i = 0; i < enabled_repos->len; i++) {
-        repo = static_cast<DnfRepo *>(enabled_repos->pdata[i]);
-
-        process_excludes(sack, repo);
-    }
+    process_excludes(sack, enabled_repos);
 
     /* success */
     return TRUE;
