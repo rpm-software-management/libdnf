@@ -1117,6 +1117,11 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
         priv->exclude_packages = NULL;
     }
 
+    if (auto includepkgs = g_key_file_get_string(priv->keyfile, repoId, "includepkgs", NULL)) {
+        priv->repo->getConfig()->includepkgs().set(libdnf::Option::Priority::REPOCONFIG, includepkgs);
+        g_free(includepkgs);
+    }
+
     /* proxy is optional */
     proxy = g_key_file_get_string(priv->keyfile, repoId, "proxy", NULL);
     auto repoProxy = proxy ? (strcasecmp(proxy, "_none_") == 0 ? NULL : proxy)
