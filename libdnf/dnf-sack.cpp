@@ -60,6 +60,7 @@ extern "C" {
 #include <cstring>
 #include <sstream>
 
+#include "dnf-context.hpp"
 #include "dnf-types.h"
 #include "dnf-package.h"
 #include "hy-iutil-private.hpp"
@@ -2111,7 +2112,30 @@ process_excludes(DnfSack *sack, GPtrArray *enabled_repos)
             }
         }
     }
+
+    auto & mainConf = libdnf::getGlobalMainConfig();
+
+    bool useGlobalIncludes = false;
+    for (const auto & name : mainConf.includepkgs().getValue()) {
+        libdnf::Query query(sack);
+        auto ret = query.filterSubject(name.c_str(), nullptr, false, true, false, false);
+        if (ret.first) {
+            repoIncludes += *query.runSet();
+            useGlobalIncludes = true;
+        }
+    }
+
+    for (const auto & name : mainConf.excludepkgs().getValue()) {
+        libdnf::Query query(sack);
+        auto ret = query.filterSubject(name.c_str(), nullptr, false, true, false, false);
+        if (ret.first) {
+            repoExcludes += *query.runSet();
+        }
+    }
     
+    if (useGlobalIncludes) {
+        dnf_sack_set_use_includes(sack, nullptr, true);
+    }
     dnf_sack_add_includes(sack, &repoIncludes);
     dnf_sack_add_excludes(sack, &repoExcludes);
 }
