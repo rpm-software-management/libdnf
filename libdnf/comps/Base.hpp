@@ -51,16 +51,16 @@ public:
 
 //protected:
 //    friend libdnf::Base;
-    Base(libdnf::Base & dnfBase);
+    Base(libdnf::Base & dnf_base);
 
 
 private:
-    const libdnf::Base & dnfBase;
+    const libdnf::Base & dnf_base;
 };
 
 
-Base::Base(libdnf::Base & dnfBase)
-    : dnfBase{dnfBase}
+Base::Base(libdnf::Base & dnf_base)
+    : dnf_base{dnf_base}
 {
 }
 

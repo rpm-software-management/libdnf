@@ -19,7 +19,7 @@ public:
     SHA1Hash();
     void update(const char *data);
     std::string hexdigest();
-    static constexpr int digestLength = SHA_DIGEST_LENGTH;
+    static constexpr int DIGEST_LENGTH = SHA_DIGEST_LENGTH;
 
 private:
     SHA_CTX ctx;

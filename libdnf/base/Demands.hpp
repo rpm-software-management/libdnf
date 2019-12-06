@@ -13,16 +13,16 @@ namespace libdnf {
 class Demands {
 public:
     // allowerasing
-    bool getAllowErasing() const { return allowErasing; }
-    void setAllowErasing(bool value) { allowErasing = value; }
+    bool get_allow_erasing() const { return allowErasing; }
+    void set_allow_erasing(bool value) { allowErasing = value; }
 
     // best
-    bool getBest() const { return best; }
-    void setBest(bool value) { best = value; }
+    bool get_best() const { return best; }
+    void set_best(bool value) { best = value; }
 
     // cacheonly: 0 = off; 1 = repodata; 2 = repodata + packages
-    int getCacheOnlyLevel() const { return cacheOnlyLevel; }
-    void setCacheOnlyLevel(int value) { cacheOnlyLevel = value; }
+    int get_cache_only_level() const { return cacheOnlyLevel; }
+    void set_cache_only_level(int value) { cacheOnlyLevel = value; }
 
 private:
     bool allowErasing = false;

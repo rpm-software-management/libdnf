@@ -59,14 +59,14 @@ class Goal {
     /// @replaces dnf:dnf/comps.py:attribute:TransactionBunch.install
     /// @replaces dnf:dnf/comps.py:attribute:TransactionBunch.install_opt
     /// @replaces dnf:dnf/db/group.py:attribute:RPMTransaction.install_set
-    void listInstalls();
+    void list_installs();
 
     /// @replaces dnf:dnf/comps.py:attribute:TransactionBunch.remove
     /// @replaces dnf:dnf/db/group.py:attribute:RPMTransaction.remove_set
-    void listRemovals();
+    void list_removals();
 
     /// @replaces dnf:dnf/comps.py:attribute:TransactionBunch.upgrade
-    void listUpgrades();
+    void list_upgrades();
 };
 
 

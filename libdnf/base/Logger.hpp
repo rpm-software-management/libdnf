@@ -20,13 +20,13 @@ public:
     void error(std::string msg);
 //private:
 //    friend Base;
-    const Base & dnfBase;
-    Logger(Base & dnfBase);
+    const Base & dnf_base;
+    Logger(Base & dnf_base);
 };
 
 
-Logger::Logger(Base & dnfBase)
-    : dnfBase{dnfBase}
+Logger::Logger(Base & dnf_base)
+    : dnf_base{dnf_base}
 {
 }
 

@@ -15,7 +15,7 @@ class Repos {
 public:
     /// @replaces dnf:dnf/repodict.py:method:RepoDict.add(self, repo)
     /// @replaces dnf:dnf/repodict.py:method:RepoDict.add_new_repo(self, repoid, conf, baseurl=(), **kwargs)
-    Repo & newRepo(void conf);
+    Repo & new_repo(void conf);
 
     // TODO: Query() -> get(id), filter(...)
 };

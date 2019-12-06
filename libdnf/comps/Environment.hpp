@@ -14,21 +14,21 @@ namespace libdnf::comps {
 ///
 /// @replaces dnf:dnf/comps.py:class:Environment
 class Environment {
-    std::string getName();
-    std::string getDescription();
+    std::string get_name();
+    std::string get_description();
 
     /// @replaces dnf:dnf/comps.py:attribute:Environment.ui_name
-    std::string getTranslatedName() const;
+    std::string get_translated_name() const;
 
     /// @replaces dnf:dnf/comps.py:attribute:Environment.ui_description
-    std::string getTranslatedDescription() const;
+    std::string get_translated_description() const;
 
     /// @replaces dnf:dnf/comps.py:method:Environment.groups_iter(self)
-    std::vector<Group> getGroups() const;
+    std::vector<Group> get_groups() const;
 
     /// @replaces dnf:dnf/comps.py:attribute:Environment.mandatory_groups
     /// @replaces dnf:dnf/comps.py:attribute:Environment.optional_groups
-    std::vector<Group> getGroups(bool mandatoryGroups, bool optionalGroups) const;
+    std::vector<Group> get_groups(bool mandatory_groups, bool optional_groups) const;
 };
 
 

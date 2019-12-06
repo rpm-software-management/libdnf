@@ -24,7 +24,7 @@ public:
     PackageSet(const Sack & sack);
 
     /// @replaces libdnf:libdnf/sack/packageset.hpp:method:PackageSet.getSack()
-    Sack & getStack() const;
+    Sack & get_stack() const;
 
     /// @replaces libdnf:libdnf/hy-packageset.h:function:dnf_packageset_add(DnfPackageSet * pset, DnfPackage * pkg)
     /// @replaces libdnf:libdnf/sack/packageset.hpp:method:PackageSet.set(DnfPackage * pkg)
@@ -89,12 +89,12 @@ private:
     const Sack & sack;
 
     /// @replaces libdnf:libdnf/sack/packageset.hpp:method:PackageSet.has(Id id)
-    bool contains(const Id id) const;
+    bool contains(Id id) const;
 
     /// Return a copy of bitmap representing the package set
     /// @replaces libdnf:libdnf/hy-packageset.h:function:dnf_packageset_get_map(DnfPackageSet * pset)
     /// @replaces libdnf:libdnf/sack/packageset.hpp:method:PackageSet.getMap()
-    Map * getMap() const;
+    Map * get_map() const;
 };
 
 

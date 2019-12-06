@@ -8,34 +8,34 @@ namespace libdnf::repo {
 class Repo {
 public:
     /// @replaces dnf:dnf/repo.py:attribute:Repo.id
-    std::string getRepoId() const;
+    std::string get_repo_id() const;
 
-    bool getEnabled const;
+    bool getEnabled; const;
 
     /// @replaces dnf:dnf/repo.py:method:Repo.disable(self)
     /// @replaces dnf:dnf/repo.py:method:Repo.enable(self)
     /// TODO: enable -> load to sack(s) (first time only), enable in sack(s)
     /// TODO: disable -> must remain in sack(s), disable in sack(s)
     /// TODO: consider simple integration with rpm/comps/modules/etc.; every enable/disable changes underlying sack data!
-    void setEnabled(bool value);
+    void set_enabled(bool value);
 
     /// @replaces dnf:dnf/repo.py:method:Repo.add_metadata_type_to_download(self, metadata_type)
     /// @replaces libdnf:libdnf/dnf-repo.h:function:dnf_repo_add_metadata_type_to_download(DnfRepo * repo, const gchar * metadataType)
-    void addMetadataTypeToDownload(std::string & metadataType);
+    void add_metadata_type_to_download(std::string & metadata_type);
 
     /// @replaces dnf:dnf/repo.py:method:Repo.remove_metadata_type_from_download(self, metadata_type)
-    void removeMetadataTypeToDownload(std::string & metadataType);
+    void remove_metadata_type_to_download(std::string & metadata_type);
 
     /// @replaces dnf:dnf/repo.py:method:Repo.get_metadata_content(self, metadata_type)
     /// @replaces libdnf:libdnf/dnf-repo.h:function:dnf_repo_get_metadata_content(DnfRepo * repo, const gchar * metadataType, gpointer * content, int * length, GError ** error)
     /// TODO: return a stream
-    void getMetadataContent(std::string & metadataType);
+    void get_metadata_content(std::string & metadata_type);
 
     /// @replaces dnf:dnf/repo.py:method:Repo.get_http_headers(self)
-    void getHttpHeaders();
+    void get_http_headers();
 
     /// @replaces dnf:dnf/repo.py:method:Repo.set_http_headers(self, headers)
-    void setHttpHeaders();
+    void set_http_headers();
 };
 
 

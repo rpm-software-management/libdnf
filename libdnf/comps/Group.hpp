@@ -14,26 +14,26 @@ namespace libdnf::comps {
 ///
 /// @replaces dnf:dnf/comps.py:class:Group
 class Group {
-    std::string getName();
-    std::string getDescription();
+    std::string get_name();
+    std::string get_description();
 
     /// @replaces dnf:dnf/comps.py:attribute:Group.ui_name
-    std::string getTranslatedName();
+    std::string get_translated_name();
 
     /// @replaces dnf:dnf/comps.py:attribute:Group.ui_description
-    std::string getTranslatedDescription();
+    std::string get_translated_description();
 
     /// @replaces dnf:dnf/comps.py:attribute:Group.visible
-    bool isVisible();
+    bool is_visible();
 
     /// @replaces dnf:dnf/comps.py:method:Group.packages_iter(self)
-    std::vector<Package> getPackages();
+    std::vector<Package> get_packages();
 
     /// @replaces dnf:dnf/comps.py:attribute:Group.conditional_packages
     /// @replaces dnf:dnf/comps.py:attribute:Group.default_packages
     /// @replaces dnf:dnf/comps.py:attribute:Group.mandatory_packages
     /// @replaces dnf:dnf/comps.py:attribute:Group.optional_packages
-    std::vector<Package> getPackages(bool mandatoryGroups, bool optionalGroups);
+    std::vector<Package> get_packages(bool mandatory_groups, bool optional_groups);
 };
 
 

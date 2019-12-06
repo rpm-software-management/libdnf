@@ -13,14 +13,14 @@ namespace libdnf {
 
 class Cache {
 public:
-    Cache(std::string cacheDir);
-    Cache(std::string cacheDir, std::vector<Cache> references);
+    Cache(std::string cache_dir);
+    Cache(std::string cache_dir, std::vector<Cache> references);
 
     /// Add a file into cache, return cached path
-    std::string add(const std::string & objectType, const std::string & checksum, const std::string & path);
+    std::string add(const std::string & object_type, const std::string & checksum, const std::string & path);
 
     /// Return cached path on cache hit or an empty string on cache miss
-    std::string get(const std::string & objectType, const std::string & checksum) const;
+    std::string get(const std::string & object_type, const std::string & checksum) const;
 
 private:
     std::string cacheDir;
@@ -28,22 +28,22 @@ private:
 };
 
 
-Cache::Cache(std::string cacheDir)
-    : cacheDir{cacheDir}
+Cache::Cache(std::string cache_dir)
+    : cacheDir{cache_dir}
 {
 }
 
 
-Cache::Cache(std::string cacheDir, std::vector<Cache> references)
-    : cacheDir{cacheDir}
+Cache::Cache(std::string cache_dir, std::vector<Cache> references)
+    : cacheDir{cache_dir}
     , references{references}
 {
 }
 
 
-std::string Cache::add(const std::string & objectType, const std::string & checksum, const std::string & path)
+std::string Cache::add(const std::string & object_type, const std::string & checksum, const std::string & path)
 {
-    std::string p = cacheDir + "/" + objectType;
+    std::string p = cacheDir + "/" + object_type;
     std::cout << p << std::endl;
     try {
         std::filesystem::create_directories(p);

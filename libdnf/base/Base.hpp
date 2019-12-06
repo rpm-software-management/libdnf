@@ -47,31 +47,31 @@ public:
     // ACTIONS
 
     /// @replaces dnf:dnf/base.py:method:Base.autoremove(self, forms=None, pkg_specs=None, grp_specs=None, filenames=None)
-    void autoRemove(const Demands & demands, std::vector<std::string> patterns, std::vector<std::string> excludePatterns);
+    void auto_remove(const Demands & demands, std::vector<std::string> patterns, std::vector<std::string> exclude_patterns);
 
     /// @replaces dnf:dnf/base.py:method:Base.distro_sync(self, pkg_spec=None)
-    void distroSync(const Demands & demands, std::vector<std::string> patterns, std::vector<std::string> excludePatterns);
+    void distro_sync(const Demands & demands, std::vector<std::string> patterns, std::vector<std::string> exclude_patterns);
 
     /// @replaces dnf:dnf/base.py:method:Base.downgrade(self, pkg_spec)
     /// @replaces dnf:dnf/base.py:method:Base.downgrade_to(self, pkg_spec, strict=False)
-    void downgrade(const Demands & demands, std::vector<std::string> patterns, std::vector<std::string> excludePatterns);
+    void downgrade(const Demands & demands, std::vector<std::string> patterns, std::vector<std::string> exclude_patterns);
 
     /// @replaces dnf:dnf/base.py:method:Base.install(self, pkg_spec, reponame=None, strict=True, forms=None)
     /// @replaces dnf:dnf/base.py:method:Base.install_specs(self, install, exclude=None, reponame=None, strict=True, forms=None)
-    void install(const Demands & demands, std::vector<std::string> patterns, std::vector<std::string> excludePatterns);
+    void install(const Demands & demands, std::vector<std::string> patterns, std::vector<std::string> exclude_patterns);
 
     /// @replaces dnf:dnf/base.py:method:Base.reinstall(self, pkg_spec, old_reponame=None, new_reponame=None, new_reponame_neq=None, remove_na=False)
     // TODO: specify additional args in demands? e.g. limit the operation to old/new repo etc.?
-    void reinstall(const Demands & demands, std::vector<std::string> patterns, std::vector<std::string> excludePatterns);
+    void reinstall(const Demands & demands, std::vector<std::string> patterns, std::vector<std::string> exclude_patterns);
 
     /// @replaces dnf:dnf/base.py:method:Base.remove(self, pkg_spec, reponame=None, forms=None)
-    void remove(const Demands & demands, std::vector<std::string> patterns, std::vector<std::string> excludePatterns);
+    void remove(const Demands & demands, std::vector<std::string> patterns, std::vector<std::string> exclude_patterns);
 
     /// @replaces dnf:dnf/base.py:method:Base.upgrade(self, pkg_spec, reponame=None)
-    void upgrade(const Demands & demands, std::vector<std::string> patterns, std::vector<std::string> excludePatterns);
+    void upgrade(const Demands & demands, std::vector<std::string> patterns, std::vector<std::string> exclude_patterns);
 
     /// @replaces dnf:dnf/base.py:method:Base.upgrade_all(self, reponame=None)
-    void upgradeAll(const Demands & demands);
+    void upgrade_all(const Demands & demands);
 };
 
 

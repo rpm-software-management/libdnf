@@ -13,19 +13,19 @@ namespace libdnf::module {
 /// @replaces dnf:dnf/module/module_base.py:class:ModuleBase
 class Base {
 public:
-    Base(libdnf::Base * dnfBase);
+    Base(libdnf::Base * dnf_base);
 
-    void getSack();
+    void get_sack();
 
-    void getGoal();
+    void get_goal();
 
 private:
-    const libdnf::Base * dnfBase;
+    const libdnf::Base * dnf_base;
 };
 
 
-Base::Base(libdnf::Base * dnfBase)
-    : dnfBase{dnfBase}
+Base::Base(libdnf::Base * dnf_base)
+    : dnf_base{dnf_base}
 {
 }
 

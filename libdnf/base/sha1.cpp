@@ -22,11 +22,11 @@ SHA1Hash::update(const char * data)
 std::string
 SHA1Hash::hexdigest()
 {
-    unsigned char md[digestLength];
+    unsigned char md[DIGEST_LENGTH];
     SHA1_Final(md, &ctx);
 
     std::stringstream ss;
-    for(int i=0; i<digestLength; i++) {
+    for(int i=0; i<DIGEST_LENGTH; i++) {
         ss << std::setfill('0') << std::setw(2) << std::hex << static_cast<int>(md[i]);
     }
 
