@@ -28,6 +28,22 @@ for each selector:
     goal.install(sel)
 
 
+GPG: if a key is distributed in a signed rpm, can we trust it automatically? (chain of trust)
+
+
+tsflags=test / --assumeno : don't log, don't update history; only import GPG keys
+
+
+excludes/includes only for available packages
+- well documented change in dnf5 (would break dnf4)
+- currently affects versionlock?
+
+
+fix debug/verbose modes
+ - debug to report what dnf/libdnf is doing
+ - verbose to add more details to user output
+
+
 FUTURE:
 lazy evaluation (for modularity)
 
@@ -40,6 +56,7 @@ object:
 goal install (sltr) == for name, q in sltr: goal.install(oneof(q))
 
 
+forward/backward actions -> in/out actions
 
 
 Dependencies
