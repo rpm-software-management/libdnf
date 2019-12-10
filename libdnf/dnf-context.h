@@ -128,6 +128,7 @@ const gchar     *dnf_context_get_source_root            (DnfContext     *context
 const gchar     **dnf_context_get_native_arches         (DnfContext     *context);
 const gchar     **dnf_context_get_installonly_pkgs      (DnfContext     *context);
 gboolean         dnf_context_get_best                   (void);
+gboolean         dnf_context_get_install_weak_deps      (void);
 gboolean         dnf_context_get_cache_only             (DnfContext     *context);
 gboolean         dnf_context_get_check_disk_space       (DnfContext     *context);
 gboolean         dnf_context_get_check_transaction      (DnfContext     *context);
@@ -178,6 +179,7 @@ void             dnf_context_set_install_root           (DnfContext     *context
 void             dnf_context_set_source_root            (DnfContext     *context,
                                                          const gchar    *source_root);
 void             dnf_context_set_best                   (gboolean        best);
+void             dnf_context_set_install_weak_deps      (gboolean        enabled);
 void             dnf_context_set_cache_only             (DnfContext     *context,
                                                          gboolean        cache_only);
 void             dnf_context_set_check_disk_space       (DnfContext     *context,

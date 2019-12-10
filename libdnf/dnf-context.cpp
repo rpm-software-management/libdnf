@@ -774,6 +774,22 @@ dnf_context_get_best()
 }
 
 /**
+ * dnf_context_get_install_weak_deps:
+ *
+ * Gets install_weak_deps global configuration value.
+ *
+ * Returns: %TRUE if installation of weak dependencies is allowed
+ *
+ * Since: 0.40.0
+ */
+gboolean
+dnf_context_get_install_weak_deps()
+{
+    auto & mainConf = libdnf::getGlobalMainConfig();
+    return mainConf.install_weak_deps().getValue();
+}
+
+/**
  * dnf_context_get_check_disk_space:
  * @context: a #DnfContext instance.
  *
@@ -1181,6 +1197,20 @@ dnf_context_set_best(gboolean best)
 {
     auto & mainConf = libdnf::getGlobalMainConfig();
     mainConf.best().set(libdnf::Option::Priority::RUNTIME, best);
+}
+
+/**
+ * dnf_context_set_install_weak_deps:
+ *
+ * Sets install_weak_deps global configuration value.
+ *
+ * Since: 0.40.0
+ */
+void
+dnf_context_set_install_weak_deps(gboolean enabled)
+{
+    auto & mainConf = libdnf::getGlobalMainConfig();
+    mainConf.install_weak_deps().set(libdnf::Option::Priority::RUNTIME, enabled);
 }
 
 /**
