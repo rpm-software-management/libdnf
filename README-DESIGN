@@ -42,6 +42,13 @@ excludes/includes only for available packages
 fix debug/verbose modes
  - debug to report what dnf/libdnf is doing
  - verbose to add more details to user output
+ - remove tracebacks from logs?
+   - make sure that debug info is still available
+
+
+--help
+ - group commands, options
+ - make sure the general help is way shorter than in dnf4
 
 
 FUTURE:
