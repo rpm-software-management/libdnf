@@ -1913,6 +1913,10 @@ dnf_context_setup_enrollments(DnfContext *context, GError **error)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
 
+    /* Do not use this "hardcoded plugin" if plugins are disabled. */
+    if (!libdnf::getGlobalMainConfig().plugins().getValue())
+        return TRUE;
+
     /* no need to refresh */
     if (priv->enrollment_valid)
         return TRUE;
