@@ -267,7 +267,7 @@ dnf_context_init(DnfContext *context)
     priv->vars = new std::map<std::string, std::string>;
 
     priv->plugins = new libdnf::Plugins;
-    if (!pluginsDir.empty()) {
+    if (libdnf::getGlobalMainConfig().plugins().getValue() && !pluginsDir.empty()) {
         priv->plugins->loadPlugins(pluginsDir);
         PluginHookContextInitData initData(PLUGIN_MODE_CONTEXT, context);
         priv->plugins->init(PLUGIN_MODE_CONTEXT, &initData);
