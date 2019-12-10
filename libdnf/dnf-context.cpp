@@ -267,11 +267,6 @@ dnf_context_init(DnfContext *context)
     priv->vars = new std::map<std::string, std::string>;
 
     priv->plugins = new libdnf::Plugins;
-    if (libdnf::getGlobalMainConfig().plugins().getValue() && !pluginsDir.empty()) {
-        priv->plugins->loadPlugins(pluginsDir);
-        PluginHookContextInitData initData(PLUGIN_MODE_CONTEXT, context);
-        priv->plugins->init(PLUGIN_MODE_CONTEXT, &initData);
-    }
 
     /* Initialize some state that used to happen in
      * dnf_context_setup(), because callers like rpm-ostree want
@@ -2017,6 +2012,12 @@ dnf_context_setup(DnfContext *context,
     g_autofree char *rpmdb_path = NULL;
     g_autoptr(GFile) file_rpmdb = NULL;
 
+    if (libdnf::getGlobalMainConfig().plugins().getValue() && !pluginsDir.empty()) {
+        priv->plugins->loadPlugins(pluginsDir);
+        PluginHookContextInitData initData(PLUGIN_MODE_CONTEXT, context);
+        priv->plugins->init(PLUGIN_MODE_CONTEXT, &initData);
+    }
+
     if (!dnf_context_plugin_hook(context, PLUGIN_HOOK_ID_CONTEXT_PRE_CONF, nullptr, nullptr))
         return FALSE;
 
@@ -2628,6 +2629,40 @@ dnf_context_new(void)
 }
 
 /**
+ * dnf_context_get_plugins_all_disabled:
+ * @context: a #DnfContext instance.
+ *
+ * Gets plugins global configuration value.
+ *
+ * Returns: %TRUE if plugins are disabled
+ *
+ * Since: 0.41.0
+ **/
+gboolean
+dnf_context_get_plugins_all_disabled()
+{
+    auto & mainConf = libdnf::getGlobalMainConfig();
+    return !mainConf.plugins().getValue();
+}
+
+/**
+ * dnf_context_set_plugins_all_disabled:
+ * @context: a #DnfContext instance.
+ *
+ * Disable or enable plugins.
+ * Sets plugins global configuration value.
+ * To take effect must be called before dnf_context_setup().
+ *
+ * Since: 0.41.0
+ **/
+void
+dnf_context_set_plugins_all_disabled(gboolean disabled)
+{
+    auto & mainConf = libdnf::getGlobalMainConfig();
+    mainConf.plugins().set(libdnf::Option::Priority::RUNTIME, !disabled);
+}
+
+/**
  * dnf_context_get_plugins_dir:
  * @context: a #DnfContext instance.
  *
@@ -2644,11 +2679,11 @@ dnf_context_get_plugins_dir(DnfContext * context)
 }
 
 /**
- * dnf_context_get_plugins_dir:
+ * dnf_context_set_plugins_dir:
  * @context: a #DnfContext instance.
  *
  * Sets path to plugin directory.
- * To take effect must be called before dnf_context_init().
+ * To take effect must be called before dnf_context_setup().
  * Empty path disable loading of plugins at all.
  *
  * Since: 0.21.0

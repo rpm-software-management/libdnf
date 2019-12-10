@@ -151,7 +151,6 @@ HyGoal           dnf_context_get_goal                   (DnfContext     *context
 #endif
 DnfState*        dnf_context_get_state                  (DnfContext     *context);
 const char *     dnf_context_get_user_agent             (DnfContext     *context);
-const char *     dnf_context_get_plugins_dir            (DnfContext     *context);
 
 /* setters */
 void             dnf_context_set_config_file_path       (const gchar    *config_file_path);
@@ -211,8 +210,6 @@ void             dnf_context_set_http_proxy             (DnfContext     *context
                                                          const gchar    *proxyurl);
 void             dnf_context_set_user_agent             (DnfContext     *context,
                                                          const gchar    *user_agent);
-void             dnf_context_set_plugins_dir            (DnfContext     *context,
-                                                         const char     *plugins_dir);
 
 /* object methods */
 gboolean         dnf_context_setup                      (DnfContext     *context,
@@ -259,10 +256,18 @@ gboolean         dnf_context_run                        (DnfContext     *context
                                                          GCancellable   *cancellable,
                                                          GError         **error);
 
+/* plugins support */
+gboolean         dnf_context_get_plugins_all_disabled   (void);
+void             dnf_context_set_plugins_all_disabled   (gboolean        disabled);
+const char *     dnf_context_get_plugins_dir            (DnfContext     *context);
+void             dnf_context_set_plugins_dir            (DnfContext     *context,
+                                                         const char     *plugins_dir);
 bool             dnf_context_plugin_hook                (DnfContext     *context,
                                                          PluginHookId    id,
                                                          DnfPluginHookData *hookData,
                                                          DnfPluginError *error);
+
+
 gboolean         dnf_context_reset_modules              (DnfContext * context,
                                                          DnfSack * sack,
                                                          const char ** module_names,
