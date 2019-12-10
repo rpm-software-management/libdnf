@@ -1,6 +1,7 @@
 #pragma once
 
 
+// forward declarations
 namespace libdnf {
 class Base;
 }  // namespace libdnf

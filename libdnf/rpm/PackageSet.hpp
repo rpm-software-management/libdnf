@@ -1,9 +1,10 @@
 #pragma once
 
 
+// forward declarations
 namespace libdnf::rpm {
 class PackageSet;
-}
+}  // namespace libdnf::rpm
 
 
 #include <string>

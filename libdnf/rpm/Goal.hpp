@@ -1,6 +1,12 @@
 #pragma once
 
+// forward declarations
+namespace libdnf::rpm {
+class Goal;
+}  // namespace libdnf::rpm
 
+
+#include "Base.hpp"
 #include "Package.hpp"
 #include "PackageSet.hpp"
 #include "Selector.hpp"

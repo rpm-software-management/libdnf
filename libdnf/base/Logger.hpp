@@ -1,6 +1,14 @@
 #pragma once
 
 
+// forward declarations
+namespace libdnf {
+class Logger;
+}  // namespace libdnf
+
+
+#include "Base.hpp"
+
 #include <string>
 
 

@@ -1,6 +1,12 @@
 #pragma once
 
 
+// forward declarations
+namespace libdnf::rpm {
+class Query;
+}  // namespace libdnf::rpm
+
+
 #include <string>
 
 

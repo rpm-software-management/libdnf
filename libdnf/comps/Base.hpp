@@ -1,6 +1,12 @@
 #pragma once
 
 
+// forward declarations
+namespace libdnf::comps {
+class Base;
+}  // namespace libdnf::comps
+
+
 #include "../base/base.hpp"
 
 #include "Environment.hpp"

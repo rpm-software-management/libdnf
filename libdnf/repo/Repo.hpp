@@ -1,6 +1,9 @@
 #pragma once
 
 
+#include <string>
+
+
 namespace libdnf::repo {
 
 
@@ -10,7 +13,7 @@ public:
     /// @replaces dnf:dnf/repo.py:attribute:Repo.id
     std::string get_repo_id() const;
 
-    bool getEnabled; const;
+    bool get_enabled() const;
 
     /// @replaces dnf:dnf/repo.py:method:Repo.disable(self)
     /// @replaces dnf:dnf/repo.py:method:Repo.enable(self)

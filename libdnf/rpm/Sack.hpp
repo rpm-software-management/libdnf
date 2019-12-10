@@ -1,13 +1,16 @@
 #pragma once
 
 
+// foward declarations
 namespace libdnf::rpm {
 class Sack;
-}
+}  // namespace libdnf::rpm
 
 
 #include <string>
 
+#include "Base.hpp"
+#include "Package.hpp"
 #include "PackageSet.hpp"
 #include "Query.hpp"
 
