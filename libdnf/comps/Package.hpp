@@ -10,6 +10,7 @@ namespace libdnf::comps {
 /// @replaces dnf:dnf/comps.py:class:Package
 /// @replaces dnf:dnf/comps.py:class:CompsTransPkg
 class Package {
+    // lukash: Why is there Package in comps?
     /// @replaces dnf:dnf/comps.py:attribute:Package.name
     std::string get_name();
 

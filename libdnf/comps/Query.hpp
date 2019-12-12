@@ -19,6 +19,7 @@ namespace libdnf::comps {
 /// @replaces dnf:dnf/comps.py:attribute:CompsQuery.GROUPS
 /// @replaces dnf:dnf/comps.py:attribute:CompsQuery.INSTALLED
 class Query {
+    // lukash: Again, Query in comps?
 };
 
 

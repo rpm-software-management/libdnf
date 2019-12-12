@@ -20,6 +20,7 @@ class Goal {
     /// @replaces dnf:dnf/comps.py:attribute:TransactionBunch.install
     /// @replaces dnf:dnf/db/group.py:method:GroupPersistor.install(self, obj)
     void install(Group group);
+    // lukash: Ok, so why is there comps::Base::install etc. and the same methods here in Goal? They take the same argument too.
 
     /// @replaces dnf:dnf/db/group.py:method:GroupPersistor.remove(self, obj)
     void remove(Group group);

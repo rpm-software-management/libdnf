@@ -40,6 +40,8 @@ public:
     /// @replaces dnf:dnf/db/group.py:method:EnvironmentPersistor.install(self, obj)
     void install(Environment env);
 
+    // lukash: I don't like overloading the methods here. woudn't it be better to have comps::Group and comps::Environment as separate classes with their respective methods?
+
     /// @replaces dnf:dnf/db/group.py:method:EnvironmentPersistor.remove(self, obj)
     void remove(Environment env);
 

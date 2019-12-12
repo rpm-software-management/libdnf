@@ -29,6 +29,8 @@ class Environment {
     /// @replaces dnf:dnf/comps.py:attribute:Environment.mandatory_groups
     /// @replaces dnf:dnf/comps.py:attribute:Environment.optional_groups
     std::vector<Group> get_groups(bool mandatory_groups, bool optional_groups) const;
+
+    // lukash: reference to Base is missing here, are we sure it won't be necessary for the methods?
 };
 
 

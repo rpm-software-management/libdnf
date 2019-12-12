@@ -5,6 +5,8 @@
 namespace libdnf {
 class Base;
 }  // namespace libdnf
+// lukash: this is really bad. By doing this, you can never be sure which headers can compile standalone, because in our codebase they will have the forward declaration, which they may not have when used elsewhere.
+// lukash: ideally we should get rid of the circular includes by proper design :)
 
 
 #include <memory>
@@ -24,10 +26,14 @@ namespace libdnf {
 /// ime needed to accomplish its packaging tasks. Plugins are managed by DNF and get a reference to :class:`dnf.Base` object when they run.
 /// :class:`.Base` instances are stateful objects holding references to various data sources and data sinks. To properly finalize and close off any handles the object may hold, client code
 /// should either call :meth:`.Base.close` when it has finished operations with the instance, or use the instance as a context manager. After the object has left the context, or its :meth:`.Base.
+// lukash: Is this the python documentation talking about context manager? Lets translate that into C++
 /// close` has been called explicitly, it must not be used. :meth:`.Base.close` will delete all downloaded packages upon successful transaction.
 ///
 /// @replaces dnf:dnf/base.py:class:Base
 class Base {
+    // lukash: So this class could be called Dnf (or Libdnf), the other Bases could be called e.g. comps::Comps, rpm::Rpm etc.
+    // lukash: There are many classes containing the same methods (install, remove, upgrade, ...) and I'm not sure what is the purpose.
+    // lukash: I'd try to figure out if we can move the methods out of this Base to a more suited class(es) and see what's left here.
 public:
     Base();
 
@@ -73,6 +79,8 @@ public:
 
     /// @replaces dnf:dnf/base.py:method:Base.upgrade_all(self, reponame=None)
     void upgrade_all(const Demands & demands);
+
+    // lukash: we should add the shared_ptrs and weak_ptrs as we discussed to see how exactly it's going to work
 };
 
 

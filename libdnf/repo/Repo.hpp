@@ -39,6 +39,9 @@ public:
 
     /// @replaces dnf:dnf/repo.py:method:Repo.set_http_headers(self, headers)
     void set_http_headers();
+
+    // lukash: Member variables are missing, right? I'm thinking we should add them, while not API, they are integral part of the design, they show the relations between classes (well, some of them).
+    // lukash: And the libsolv member variables (mainly the Pool?) will make it clear what holds the "shared" data that need to be stored through base.
 };
 
 

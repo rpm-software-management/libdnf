@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# lukash: jeez write a makefile :)
 
 set -e
 

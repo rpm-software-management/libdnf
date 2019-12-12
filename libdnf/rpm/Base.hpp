@@ -27,7 +27,7 @@ public:
 
     /// @replaces dnf:dnf/base.py:attribute:Base.sack
     /// @replaces libdnf:libdnf/dnf-context.h:function:dnf_context_get_sack(DnfContext * context)
-    void get_sack();
+    Sack get_sack() { return Sack(*this); }
 
     /// @replaces libdnf:libdnf/dnf-context.h:function:dnf_context_get_goal(DnfContext * context)
     void get_goal();

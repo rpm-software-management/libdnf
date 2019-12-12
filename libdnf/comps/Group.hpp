@@ -34,6 +34,8 @@ class Group {
     /// @replaces dnf:dnf/comps.py:attribute:Group.mandatory_packages
     /// @replaces dnf:dnf/comps.py:attribute:Group.optional_packages
     std::vector<Package> get_packages(bool mandatory_groups, bool optional_groups);
+
+    // lukash: reference to Base is missing here, are we sure it won't be necessary for the methods?
 };
 
 

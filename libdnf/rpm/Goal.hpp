@@ -67,6 +67,7 @@ public:
     /// @replaces libdnf:libdnf/goal/Goal.hpp:method:Goal.setProtected(const libdnf::PackageSet & pset)
     /// @replaces libdnf:libdnf/dnf-goal.h:function:dnf_goal_set_protected(HyGoal goal, DnfPackageSet * pset)
     void set_protected(const PackageSet & pset);
+    // lukash: I'd welcome short descriptions for the non-obvious functions. Obviously it's tedious to add them, but we'll need to do that sooner or later... And it will help those reading the API the sooner we add them.
 
 
     // COMMON
