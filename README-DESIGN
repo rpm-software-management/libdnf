@@ -65,6 +65,12 @@ goal install (sltr) == for name, q in sltr: goal.install(oneof(q))
 
 forward/backward actions -> in/out actions
 
+Must compile with both gcc and clang.
+
+Tests:
+* use MALLOC_PERTURB_
+* use sanitizers
+
 
 Dependencies
 ------------
