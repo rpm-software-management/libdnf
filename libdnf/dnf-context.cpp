@@ -37,6 +37,7 @@
 #include "conf/Option.hpp"
 
 #include <memory>
+#include <set>
 #include <vector>
 #include <gio/gio.h>
 #include <rpm/rpmlib.h>
@@ -186,7 +187,13 @@ enum {
 
 static std::string pluginsDir = DEFAULT_PLUGINS_DIRECTORY;
 static std::unique_ptr<std::string> configFilePath;
+static std::set<std::string> pluginsEnabled;
+static std::set<std::string> pluginsDisabled;
 static guint signals [SIGNAL_LAST] = { 0 };
+
+#ifdef RHSM_SUPPORT
+static bool disableInternalRhsmPlugin = false;
+#endif
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfContext, dnf_context, G_TYPE_OBJECT)
 #define GET_PRIVATE(o) (static_cast<DnfContextPrivate *>(dnf_context_get_instance_private (o)))
@@ -241,6 +248,80 @@ dnf_context_finalize(GObject *object)
         g_object_unref(priv->monitor_rpmdb);
 
     G_OBJECT_CLASS(dnf_context_parent_class)->finalize(object);
+}
+
+static void
+dnf_context_plugins_disable_enable(DnfContext *context)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+
+    // apply pluginsDisabled and pluginsEnabled
+    std::set<std::string> patternDisableFound;
+    std::set<std::string> patternEnableFound;
+    for (size_t i = 0; i < priv->plugins->count(); ++i) {
+        auto pluginInfo = priv->plugins->getPluginInfo(i);
+        bool enabled = true;
+        for (const auto & patternSkip : pluginsDisabled) {
+            if (fnmatch(patternSkip.c_str(), pluginInfo->name, 0) == 0) {
+                enabled = false;
+                patternDisableFound.insert(patternSkip);
+            }
+        }
+        for (const auto & patternEnable : pluginsEnabled) {
+            if (fnmatch(patternEnable.c_str(), pluginInfo->name, 0) == 0) {
+                enabled = true;
+                patternEnableFound.insert(patternEnable);
+            }
+        }
+        if (!enabled) {
+            priv->plugins->enablePlugin(i, false);
+        }
+    }
+
+#ifdef RHSM_SUPPORT
+    // apply pluginsDisabled and pluginsEnabled to the internal RHSM plugin
+    const char * RhsmPluginName = "subscription-manager";
+    for (const auto & patternSkip : pluginsDisabled) {
+        if (fnmatch(patternSkip.c_str(), RhsmPluginName, 0) == 0) {
+            disableInternalRhsmPlugin = true;
+            patternDisableFound.insert(patternSkip);
+        }
+    }
+    for (const auto & patternEnable : pluginsEnabled) {
+        if (fnmatch(patternEnable.c_str(), RhsmPluginName, 0) == 0) {
+            disableInternalRhsmPlugin = false;
+            patternEnableFound.insert(patternEnable);
+        }
+    }
+#endif
+
+    // Log non matched disable patterns
+    std::string nonMatched;
+    for (const auto & pattern : pluginsDisabled) {
+        if (patternDisableFound.count(pattern) == 0) {
+            if (nonMatched.length() > 0) {
+                nonMatched += ", ";
+            }
+            nonMatched += pattern;
+        }
+    }
+    if (!nonMatched.empty()) {
+        g_warning("No matches found for the following disable plugin patterns: %s", nonMatched.c_str());
+    }
+
+    // Log non matched enable patterns
+    nonMatched.clear();
+    for (const auto & pattern : pluginsEnabled) {
+        if (patternEnableFound.count(pattern) == 0) {
+            if (nonMatched.length() > 0) {
+                nonMatched += ", ";
+            }
+            nonMatched += pattern;
+        }
+    }
+    if (!nonMatched.empty()) {
+        g_warning("No matches found for the following enable plugin patterns: %s", nonMatched.c_str());
+    }
 }
 
 /**
@@ -1908,10 +1989,6 @@ dnf_context_setup_enrollments(DnfContext *context, GError **error)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
 
-    /* Do not use this "hardcoded plugin" if plugins are disabled. */
-    if (!libdnf::getGlobalMainConfig().plugins().getValue())
-        return TRUE;
-
     /* no need to refresh */
     if (priv->enrollment_valid)
         return TRUE;
@@ -1933,6 +2010,11 @@ dnf_context_setup_enrollments(DnfContext *context, GError **error)
         return TRUE;
 
 #ifdef RHSM_SUPPORT
+    /* Do not use the "hardcoded plugin" if this plugin or all plugins are disabled. */
+    if (disableInternalRhsmPlugin || !libdnf::getGlobalMainConfig().plugins().getValue()) {
+        return TRUE;
+    }
+
     /* If /var/lib/rhsm exists, then we can assume that
      * subscription-manager is installed, and thus don't need to
      * manage redhat.repo via librhsm.
@@ -2014,9 +2096,10 @@ dnf_context_setup(DnfContext *context,
 
     if (libdnf::getGlobalMainConfig().plugins().getValue() && !pluginsDir.empty()) {
         priv->plugins->loadPlugins(pluginsDir);
-        PluginHookContextInitData initData(PLUGIN_MODE_CONTEXT, context);
-        priv->plugins->init(PLUGIN_MODE_CONTEXT, &initData);
     }
+    dnf_context_plugins_disable_enable(context);
+    PluginHookContextInitData initData(PLUGIN_MODE_CONTEXT, context);
+    priv->plugins->init(PLUGIN_MODE_CONTEXT, &initData);
 
     if (!dnf_context_plugin_hook(context, PLUGIN_HOOK_ID_CONTEXT_PRE_CONF, nullptr, nullptr))
         return FALSE;
@@ -2626,6 +2709,86 @@ DnfContext *
 dnf_context_new(void)
 {
     return DNF_CONTEXT(g_object_new(DNF_TYPE_CONTEXT, NULL));
+}
+
+/**
+ * dnf_context_disable_plugins:
+ * @plugin_name: a name pattern of plugins to disable.
+ *
+ * Adds name pattern into list of disabled plugins.
+ * NULL or empty string means clear the list.
+ * The list has lower priority than list of enabled plugins.
+ *
+ * Since: 0.41.0
+ **/
+void
+dnf_context_disable_plugins(const gchar * plugin_name_pattern)
+{
+    if (!plugin_name_pattern || plugin_name_pattern[0] == '\0') {
+        pluginsDisabled.clear();
+    } else {
+        pluginsDisabled.insert(plugin_name_pattern);
+    }
+}
+
+/**
+ * dnf_context_enable_plugins:
+ * @plugin_name: a name pattern of plugins to enable.
+ *
+ * Adds name pattern into list of enabled plugins.
+ * NULL or empty string means clear the list.
+ * The list has higher priority than list of disabled plugins.
+ *
+ * Since: 0.41.0
+ **/
+void
+dnf_context_enable_plugins(const gchar * plugin_name_pattern)
+{
+    if (!plugin_name_pattern || plugin_name_pattern[0] == '\0') {
+        pluginsEnabled.clear();
+    } else {
+        pluginsEnabled.insert(plugin_name_pattern);
+    }
+}
+
+/**
+ * dnf_context_get_disabled_plugins:
+ *
+ * List of name patterns of disabled plugins.
+ * 
+ * Returns: NULL terminated array. Caller must free it.
+ *
+ * Since: 0.41.0
+ **/
+gchar **
+dnf_context_get_disabled_plugins()
+{
+    gchar ** ret = g_new0(gchar*, pluginsDisabled.size() + 1);
+    size_t i = 0;
+    for (auto & namePattern : pluginsDisabled) {
+        ret[i++] = g_strdup(namePattern.c_str());
+    }
+    return ret;
+}
+
+/**
+ * dnf_context_get_enabled_plugins:
+ *
+ * List of name patterns of enabled plugins.
+ * 
+ * Returns: NULL terminated array. Caller must free it.
+ *
+ * Since: 0.41.0
+ **/
+gchar **
+dnf_context_get_enabled_plugins()
+{
+    gchar ** ret = g_new0(gchar*, pluginsEnabled.size() + 1);
+    size_t i = 0;
+    for (auto & namePattern : pluginsEnabled) {
+        ret[i++] = g_strdup(namePattern.c_str());
+    }
+    return ret;
 }
 
 /**
