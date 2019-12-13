@@ -84,8 +84,8 @@ void Plugins::loadPlugin(const std::string & path)
 {
     auto logger(Log::getLogger());
     logger->debug(tfm::format(_("Loading plugin file=\"%s\""), path));
-    pluginsWithHandles.emplace_back(PluginWithHandle{std::unique_ptr<Plugin>(new Plugin(path.c_str())), nullptr});
-    auto info = pluginsWithHandles.back().plugin->getInfo();
+    pluginsWithData.emplace_back(PluginWithData{std::unique_ptr<Plugin>(new Plugin(path.c_str())), true, nullptr});
+    auto info = pluginsWithData.back().plugin->getInfo();
     logger->debug(tfm::format(_("Loaded plugin name=\"%s\", version=\"%s\""), info->name, info->version));
 }
 
@@ -124,25 +124,36 @@ void Plugins::loadPlugins(std::string dirPath)
 
 bool Plugins::init(PluginMode mode, PluginInitData * initData)
 {
-    for (auto & pluginWithHandle : pluginsWithHandles) {
-        pluginWithHandle.handle = pluginWithHandle.plugin->initHandle(PLUGIN_API_VERSION, mode, initData);
-        if (!pluginWithHandle.handle)
+    for (auto & pluginWithData : pluginsWithData) {
+        if (!pluginWithData.enabled) {
+            continue;
+        }
+        pluginWithData.handle = pluginWithData.plugin->initHandle(PLUGIN_API_VERSION, mode, initData);
+        if (!pluginWithData.handle) {
             return false;
+        }
     }
     return true;
 }
 
 void Plugins::free()
 {
-    for (auto it = pluginsWithHandles.rbegin(); it != pluginsWithHandles.rend(); ++it)
-        it->plugin->freeHandle(it->handle);
+    for (auto it = pluginsWithData.rbegin(); it != pluginsWithData.rend(); ++it) {
+        if (it->handle) {
+            it->plugin->freeHandle(it->handle);
+        }
+    }
 }
 
 bool Plugins::hook(PluginHookId id, PluginHookData * hookData, DnfPluginError * error)
 {
-    for (auto & pluginWithHandle : pluginsWithHandles) {
-        if (!pluginWithHandle.plugin->hook(pluginWithHandle.handle, id, hookData, error))
+    for (auto & pluginWithData : pluginsWithData) {
+        if (!pluginWithData.enabled || !pluginWithData.handle) {
+            continue;
+        }
+        if (!pluginWithData.plugin->hook(pluginWithData.handle, id, hookData, error)) {
             return false;
+        }
     }
     return true;
 }

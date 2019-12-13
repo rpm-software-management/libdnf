@@ -257,6 +257,10 @@ gboolean         dnf_context_run                        (DnfContext     *context
                                                          GError         **error);
 
 /* plugins support */
+void             dnf_context_disable_plugins            (const gchar    *plugin_name_pattern);
+void             dnf_context_enable_plugins             (const gchar    *plugin_name_pattern);
+gchar**          dnf_context_get_disabled_plugins       (void);
+gchar**          dnf_context_get_enabled_plugins        (void);
 gboolean         dnf_context_get_plugins_all_disabled   (void);
 void             dnf_context_set_plugins_all_disabled   (gboolean        disabled);
 const char *     dnf_context_get_plugins_dir            (DnfContext     *context);

@@ -73,16 +73,40 @@ public:
     bool init(PluginMode mode, PluginInitData * initData);
     void free();
     bool hook(PluginHookId id, PluginHookData * hookData, DnfPluginError * error);
-    size_t count() const { return pluginsWithHandles.size(); }
+    size_t count() const;
+    const PluginInfo * getPluginInfo(size_t index) const;
+    bool isPluginEnabled(size_t index) const;
+    void enablePlugin(size_t index, bool enabled);
 
 private:
-    struct PluginWithHandle {
+    struct PluginWithData {
         std::unique_ptr<Plugin> plugin;
+        bool enabled;
         PluginHandle * handle;
     };
-    std::vector<PluginWithHandle> pluginsWithHandles;
+    std::vector<PluginWithData> pluginsWithData;
 };
 
+inline size_t Plugins::count() const
+{
+    return pluginsWithData.size();
+}
+
+inline const PluginInfo * Plugins::getPluginInfo(size_t index) const
+{
+    return pluginsWithData.at(index).plugin->getInfo();
+} 
+
+inline bool Plugins::isPluginEnabled(size_t index) const
+{
+    return pluginsWithData.at(index).enabled;
+} 
+
+inline void Plugins::enablePlugin(size_t index, bool enabled)
+{
+    pluginsWithData.at(index).enabled = enabled;
+} 
+    
 }
 
 #endif
