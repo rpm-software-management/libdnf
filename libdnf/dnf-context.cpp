@@ -52,6 +52,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #endif
+#include <fnmatch.h>
 #include <unistd.h>
 
 #include "log.hpp"
@@ -2242,20 +2243,19 @@ dnf_context_repo_set_data(DnfContext *context,
                           GError **error)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
-    DnfRepo *repo = NULL;
-    guint i;
+    bool found = false;
 
-    /* find a repo with a matching ID */
-    for (i = 0; i < priv->repos->len; i++) {
-        auto repo_tmp = static_cast<DnfRepo *>(g_ptr_array_index(priv->repos, i));
-        if (g_strcmp0(dnf_repo_get_id(repo_tmp), repo_id) == 0) {
-            repo = repo_tmp;
-            break;
+    /* set repos with a matching ID */
+    for (guint i = 0; i < priv->repos->len; ++i) {
+        auto repo = static_cast<DnfRepo *>(g_ptr_array_index(priv->repos, i));
+        if (fnmatch(repo_id, dnf_repo_get_id(repo), 0) == 0) {
+            dnf_repo_set_enabled(repo, enabled);
+            found = true;
         }
     }
 
     /* nothing found */
-    if (repo == NULL) {
+    if (!found) {
         g_set_error(error,
                     DNF_ERROR,
                     DNF_ERROR_INTERNAL_ERROR,
@@ -2263,8 +2263,6 @@ dnf_context_repo_set_data(DnfContext *context,
         return FALSE;
     }
 
-    /* this is runtime only */
-    dnf_repo_set_enabled(repo, enabled);
     return TRUE;
 }
 
@@ -2274,7 +2272,8 @@ dnf_context_repo_set_data(DnfContext *context,
  * @repo_id: A repo_id, e.g. "fedora-rawhide"
  * @error: A #GError or %NULL
  *
- * Enables a specific repo.
+ * Enables a specific repo(s).
+ * Wildcard pattern is supported.
  *
  * This must be done before dnf_context_setup() is called.
  *
@@ -2298,7 +2297,8 @@ dnf_context_repo_enable(DnfContext *context,
  * @repo_id: A repo_id, e.g. "fedora-rawhide"
  * @error: A #GError or %NULL
  *
- * Disables a specific repo.
+ * Disables a specific repo(s).
+ * Wildcard pattern is supported.
  *
  * This must be done before dnf_context_setup() is called.
  *
