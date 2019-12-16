@@ -270,6 +270,7 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "PKG_NEVRA", HY_PKG_NEVRA);
     PyModule_AddIntConstant(m, "PKG_NEVRA_STRICT", HY_PKG_NEVRA_STRICT);
     PyModule_AddIntConstant(m, "PKG_OBSOLETES", HY_PKG_OBSOLETES);
+    PyModule_AddIntConstant(m, "PKG_OBSOLETES_BY_PRIORITY", HY_PKG_OBSOLETES_BY_PRIORITY);
     PyModule_AddIntConstant(m, "PKG_PROVIDES", HY_PKG_PROVIDES);
     PyModule_AddIntConstant(m, "PKG_RECOMMENDS", HY_PKG_RECOMMENDS);
     PyModule_AddIntConstant(m, "PKG_RELEASE", HY_PKG_RELEASE);
