@@ -179,6 +179,7 @@ match_type_pkg(int keyname) {
     switch (keyname) {
         case HY_PKG:
         case HY_PKG_OBSOLETES:
+        case HY_PKG_OBSOLETES_BY_PRIORITY:
             return true;
         default:
             return false;
@@ -692,6 +693,7 @@ private:
     void filterArch(const Filter & f, Map *m);
     void filterSourcerpm(const Filter & f, Map *m);
     void filterObsoletes(const Filter & f, Map *m);
+    void filterObsoletesByPriority(const Filter & f, Map *m);
     void filterProvidesReldep(const Filter & f, Map *m);
     void filterReponame(const Filter & f, Map *m);
     void filterLocation(const Filter & f, Map *m);
@@ -702,6 +704,7 @@ private:
     void filterUpdownAble(const Filter  &f, Map *m);
     void filterDataiterator(const Filter & f, Map *m);
     int filterUnneededOrSafeToRemove(const Swdb &swdb, bool debug_solver, bool safeToRemove);
+    void obsoletesByPriority(Pool * pool, Solvable * candidate, Map * m, const Map * target, int obsprovides);
 
     bool isGlob(const std::vector<const char *> &matches) const;
 };
@@ -1470,6 +1473,65 @@ Query::Impl::filterObsoletes(const Filter & f, Map *m)
 }
 
 void
+Query::Impl::obsoletesByPriority(Pool * pool, Solvable * candidate, Map * m, const Map * target, int obsprovides)
+{
+    if (!candidate->repo)
+        return;
+    for (Id *r_id = candidate->repo->idarraydata + candidate->obsoletes; *r_id; ++r_id) {
+        Id r, rr;
+        FOR_PROVIDES(r, rr, *r_id) {
+            if (!MAPTST(target, r))
+                continue;
+            assert(r != SYSTEMSOLVABLE);
+            Solvable *so = pool_id2solvable(pool, r);
+            if (!obsprovides && !pool_match_nevr(pool, so, *r_id))
+                continue; /* only matching pkg names */
+            MAPSET(m, pool_solvable2id(pool, candidate));
+            break;
+        }
+    }
+}
+
+void
+Query::Impl::filterObsoletesByPriority(const Filter & f, Map *m)
+{
+    Pool *pool = dnf_sack_get_pool(sack);
+    int obsprovides = pool_get_flag(pool, POOL_FLAG_OBSOLETEUSESPROVIDES);
+    Map *target;
+    auto resultPset = result.get();
+
+    assert(f.getMatchType() == _HY_PKG);
+    assert(f.getMatches().size() == 1);
+    target = dnf_packageset_get_map(f.getMatches()[0].pset);
+    dnf_sack_make_provides_ready(sack);
+    std::vector<Solvable *> obsoleteCandidates;
+    obsoleteCandidates.reserve(resultPset->size());
+    Id id = -1;
+    while ((id = resultPset->next(id)) != -1) {
+        Solvable *candidate = pool_id2solvable(pool, id);
+        obsoleteCandidates.push_back(candidate);
+    }
+    if (obsoleteCandidates.empty()) {
+        return;
+    }
+    std::sort(obsoleteCandidates.begin(), obsoleteCandidates.end(), NamePrioritySolvableKey);
+    Id name = 0;
+    int priority = 0;
+    for (auto * candidate: obsoleteCandidates) {
+        if (candidate->repo == pool->installed) {
+            obsoletesByPriority(pool, candidate, m, target, obsprovides);
+        }
+        if (name != candidate->name) {
+            name = candidate->name;
+            priority = candidate->repo->priority;
+            obsoletesByPriority(pool, candidate, m, target, obsprovides);
+        } else if (priority == candidate->repo->priority) {
+            obsoletesByPriority(pool, candidate, m, target, obsprovides);
+        }
+    }
+}
+
+void
 Query::Impl::filterProvidesReldep(const Filter & f, Map *m)
 {
     Pool *pool = dnf_sack_get_pool(sack);
@@ -1968,6 +2030,9 @@ Query::Impl::apply()
                     assert(f.getMatchType() == _HY_PKG);
                     filterObsoletes(f, &m);
                 }
+                break;
+            case HY_PKG_OBSOLETES_BY_PRIORITY:
+                filterObsoletesByPriority(f, &m);
                 break;
             case HY_PKG_PROVIDES:
                 assert(f.getMatchType() == _HY_RELDEP);
