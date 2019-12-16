@@ -99,6 +99,7 @@ enum _hy_key_name_e {
     */
     HY_PKG_NEVRA_STRICT = 36,
     HY_PKG_UPGRADES_BY_PRIORITY = 37,
+    HY_PKG_OBSOLETES_BY_PRIORITY = 38,
 };
 
 enum _hy_comparison_type_e {

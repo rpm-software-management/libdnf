@@ -78,6 +78,7 @@ static const int keyname_int_matches[] = {
     HY_PKG_NEVRA,
     HY_PKG_NEVRA_STRICT,
     HY_PKG_OBSOLETES,
+    HY_PKG_OBSOLETES_BY_PRIORITY,
     HY_PKG_PROVIDES,
     HY_PKG_RECOMMENDS,
     HY_PKG_RELEASE,
@@ -118,6 +119,7 @@ static const char * const keyname_char_matches[] = {
     "nevra",
     "nevra_strict",
     "obsoletes",
+    "obsoletes_by_priority",
     "provides",
     "recommends",
     "release",
@@ -342,7 +344,8 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
     // match is a sequence now:
     switch (keyname) {
     case HY_PKG:
-    case HY_PKG_OBSOLETES: {
+    case HY_PKG_OBSOLETES:
+    case HY_PKG_OBSOLETES_BY_PRIORITY: {
         // It could be a sequence of packages or reldep/strings. Lets try packages first.
         auto pset = pyseq_to_packageset(match, query->getSack());
         if (!pset) {
