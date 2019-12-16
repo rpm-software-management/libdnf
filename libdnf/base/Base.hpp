@@ -65,6 +65,7 @@ public:
 
     /// @replaces dnf:dnf/base.py:method:Base.install(self, pkg_spec, reponame=None, strict=True, forms=None)
     /// @replaces dnf:dnf/base.py:method:Base.install_specs(self, install, exclude=None, reponame=None, strict=True, forms=None)
+    /// @replaces libdnf:libdnf/dnf-context.h:function:dnf_context_install(DnfContext * context, const gchar * name, GError ** error)
     void install(const Demands & demands, std::vector<std::string> patterns, std::vector<std::string> exclude_patterns);
 
     /// @replaces dnf:dnf/base.py:method:Base.reinstall(self, pkg_spec, old_reponame=None, new_reponame=None, new_reponame_neq=None, remove_na=False)
@@ -72,12 +73,15 @@ public:
     void reinstall(const Demands & demands, std::vector<std::string> patterns, std::vector<std::string> exclude_patterns);
 
     /// @replaces dnf:dnf/base.py:method:Base.remove(self, pkg_spec, reponame=None, forms=None)
+    /// @replaces libdnf:libdnf/dnf-context.h:function:dnf_context_remove(DnfContext * context, const gchar * name, GError ** error)
     void remove(const Demands & demands, std::vector<std::string> patterns, std::vector<std::string> exclude_patterns);
 
     /// @replaces dnf:dnf/base.py:method:Base.upgrade(self, pkg_spec, reponame=None)
+    /// @replaces libdnf:libdnf/dnf-context.h:function:dnf_context_update(DnfContext * context, const gchar * name, GError ** error)
     void upgrade(const Demands & demands, std::vector<std::string> patterns, std::vector<std::string> exclude_patterns);
 
     /// @replaces dnf:dnf/base.py:method:Base.upgrade_all(self, reponame=None)
+    /// @replaces libdnf:libdnf/dnf-context.h:function:dnf_context_update_all(DnfContext * context, GError ** error)
     void upgrade_all(const Demands & demands);
 
     // lukash: we should add the shared_ptrs and weak_ptrs as we discussed to see how exactly it's going to work

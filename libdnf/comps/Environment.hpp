@@ -14,8 +14,11 @@ namespace libdnf::comps {
 ///
 /// @replaces dnf:dnf/comps.py:class:Environment
 class Environment {
-    std::string get_name();
-    std::string get_description();
+    std::string get_id() const;
+
+    std::string get_name() const;
+
+    std::string get_description() const;
 
     /// @replaces dnf:dnf/comps.py:attribute:Environment.ui_name
     std::string get_translated_name() const;

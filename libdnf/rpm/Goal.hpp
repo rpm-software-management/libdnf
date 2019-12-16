@@ -29,32 +29,55 @@ public:
     /// @replaces libdnf:libdnf/hy-goal.h:function:hy_goal_downgrade_to(HyGoal goal, DnfPackage * new_pkg)
     void downgrade(const Package & pkg);
 
+    void downgrade(const Selector & sltr);
+
     /// @replaces dnf:dnf/base.py:method:Base.package_install(self, pkg, strict=True)
     /// @replaces libdnf:libdnf/hy-goal.h:function:hy_goal_install(HyGoal goal, DnfPackage * new_pkg)
+    /// @replaces libdnf:libdnf/goal/Goal.hpp:method:Goal.install(DnfPackage * new_pkg, bool optional)
+    /// @replaces libdnf:libdnf/hy-goal.h:function:hy_goal_install_optional(HyGoal goal, DnfPackage * new_pkg)
     void install(const Package & pkg);
+
+    /// @replaces libdnf:libdnf/goal/Goal.hpp:method:Goal.install(HySelector sltr, bool optional)
+    /// @replaces libdnf:libdnf/hy-goal.h:function:hy_goal_install_selector(HyGoal goal, HySelector sltr, GError ** error)
+    /// @replaces libdnf:libdnf/hy-goal.h:function:hy_goal_install_selector_optional(HyGoal goal, HySelector sltr, GError ** error)
+    void install(const Selector & sltr);
 
     /// @replaces dnf:dnf/base.py:method:Base.package_reinstall(self, pkg)
     void reinstall(const Package & pkg);
 
     /// @replaces dnf:dnf/base.py:method:Base.package_remove(self, pkg)
     /// @replaces libdnf:libdnf/hy-goal.h:function:hy_goal_erase(HyGoal goal, DnfPackage * pkg)
+    /// @replaces libdnf:libdnf/goal/Goal.hpp:method:Goal.erase(DnfPackage * pkg, int flags)
+    /// @replaces libdnf:libdnf/hy-goal.h:function:hy_goal_erase_flags(HyGoal goal, DnfPackage * pkg, int flags)
     void remove(const Package & pkg);
+
+    /// @replaces libdnf:libdnf/goal/Goal.hpp:method:Goal.erase(HySelector sltr, int flags)
+    /// @replaces libdnf:libdnf/hy-goal.h:function:hy_goal_erase_selector_flags(HyGoal goal, HySelector sltr, int flags)
+    void remove(const Selector & sltr);
 
     /// @replaces dnf:dnf/base.py:method:Base.package_upgrade(self, pkg)
     /// @replaces libdnf:libdnf/goal/Goal.hpp:method:Goal.upgrade()
     /// @replaces libdnf:libdnf/hy-goal.h:function:hy_goal_upgrade_to(HyGoal goal, DnfPackage * new_pkg)
+    /// @replaces libdnf:libdnf/goal/Goal.hpp:method:Goal.upgrade(DnfPackage * new_pkg)
     void upgrade(const Package & pkg);
+
+    /// @replaces libdnf:libdnf/goal/Goal.hpp:method:Goal.upgrade(HySelector sltr)
+    /// @replaces libdnf:libdnf/hy-goal.h:function:hy_goal_upgrade_selector(HyGoal goal, HySelector sltr)
+    void upgrade(const Selector & sltr);
 
     /// @replaces libdnf:libdnf/hy-goal.h:function:hy_goal_upgrade_all(HyGoal goal)
     void upgrade_all();
 
     /// @replaces libdnf:libdnf/hy-goal.h:function:hy_goal_distupgrade(HyGoal goal, DnfPackage * new_pkg)
+    /// @replaces libdnf:libdnf/goal/Goal.hpp:method:Goal.distupgrade(DnfPackage * new_pkg)
     void distro_sync(const Package & pkg);
 
     /// @replaces libdnf:libdnf/hy-goal.h:function:hy_goal_distupgrade_selector(HyGoal goal, HySelector )
+    /// @replaces libdnf:libdnf/goal/Goal.hpp:method:Goal.distupgrade(HySelector )
     void distro_sync(const Selector & sel);
 
     /// @replaces libdnf:libdnf/hy-goal.h:function:hy_goal_distupgrade_all(HyGoal goal)
+    /// @replaces libdnf:libdnf/goal/Goal.hpp:method:Goal.distupgrade()
     void distro_sync_all();
 
 
@@ -73,6 +96,13 @@ public:
     // COMMON
 
     void reset();
+
+    /// @replaces libdnf:libdnf/dnf-goal.h:function:dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError ** error)
+    /// @replaces libdnf:libdnf/hy-goal.h:function:hy_goal_run_flags(HyGoal goal, DnfGoalActions flags)
+    void depsolve();
+
+    /// libdnf:libdnf/hy-goal.h:function:hy_goal_write_debugdata(HyGoal goal, const char * dir, GError ** error)
+    void write_debugdata(const std::string & dir);
 
 
     // RESULTS

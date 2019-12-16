@@ -1,0 +1,3 @@
+class TransactionSetCallback : public TransactionSetCallbackBase {
+
+};

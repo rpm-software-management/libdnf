@@ -51,9 +51,20 @@ public:
     /// @replaces libdnf:libdnf/hy-package.h:function:dnf_package_get_group(DnfPackage * pkg)
     std::string get_group() const;
 
+    /// If package is installed, return get_install_size(). Return get_download_size() otherwise.
     /// @replaces dnf:dnf/package.py:attribute:Package.size
     /// @replaces libdnf:libdnf/hy-package.h:function:dnf_package_get_size(DnfPackage * pkg)
     std::size_t get_size() const;
+
+    /// Return size of an RPM package: <size package="..."/>
+    /// @replaces dnf:dnf/package.py:attribute:Package.downloadsize
+    /// @replaces libdnf:libdnf/hy-package.h:function:dnf_package_get_downloadsize(DnfPackage * pkg)
+    std::size_t get_download_size() const;
+
+    /// Return size of an RPM package installed on a system: <size installed="..."/>
+    /// @replaces dnf:dnf/package.py:attribute:Package.installsize
+    /// @replaces libdnf:libdnf/hy-package.h:function:dnf_package_get_installsize(DnfPackage * pkg)
+    std::size_t get_install_size() const;
 
     /// @replaces dnf:dnf/package.py:attribute:Package.license
     /// @replaces libdnf:libdnf/hy-package.h:function:dnf_package_get_license(DnfPackage * pkg)
@@ -147,7 +158,21 @@ public:
     /// @replaces libdnf:libdnf/hy-package.h:function:dnf_package_get_reponame(DnfPackage * pkg)
     void get_repo() const;
 
+    /// @replaces dnf:dnf/package.py:attribute:Package.baseurl
+    /// @replaces libdnf:libdnf/hy-package.h:function:dnf_package_get_baseurl(DnfPackage * pkg)
+    std::string get_baseurl() const;
+
+    /// @replaces dnf:dnf/package.py:attribute:Package.location
+    /// @replaces dnf:dnf/package.py:attribute:Package.relativepath
+    /// @replaces libdnf:libdnf/hy-package.h:function:dnf_package_get_location(DnfPackage * pkg)
+    std::string get_location() const;
+
+
     // SYSTEM
+
+    /// @replaces libdnf:libdnf/hy-package.h:function:dnf_package_installed(DnfPackage * pkg)
+    /// @replaces dnf:dnf/package.py:attribute:Package.installed
+    void is_installed() const;
 
     /// For an installed package, return repoid of repo from the package was installed.
     /// For an available package, return an empty string.

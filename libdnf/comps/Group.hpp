@@ -14,26 +14,29 @@ namespace libdnf::comps {
 ///
 /// @replaces dnf:dnf/comps.py:class:Group
 class Group {
-    std::string get_name();
-    std::string get_description();
+    std::string get_id() const;
+
+    std::string get_name() const;
+
+    std::string get_description() const;
 
     /// @replaces dnf:dnf/comps.py:attribute:Group.ui_name
-    std::string get_translated_name();
+    std::string get_translated_name() const;
 
     /// @replaces dnf:dnf/comps.py:attribute:Group.ui_description
-    std::string get_translated_description();
+    std::string get_translated_description() const;
 
     /// @replaces dnf:dnf/comps.py:attribute:Group.visible
-    bool is_visible();
+    bool is_visible() const;
 
     /// @replaces dnf:dnf/comps.py:method:Group.packages_iter(self)
-    std::vector<Package> get_packages();
+    std::vector<Package> get_packages() const;
 
     /// @replaces dnf:dnf/comps.py:attribute:Group.conditional_packages
     /// @replaces dnf:dnf/comps.py:attribute:Group.default_packages
     /// @replaces dnf:dnf/comps.py:attribute:Group.mandatory_packages
     /// @replaces dnf:dnf/comps.py:attribute:Group.optional_packages
-    std::vector<Package> get_packages(bool mandatory_groups, bool optional_groups);
+    std::vector<Package> get_packages(bool mandatory_groups, bool optional_groups) const;
 
     // lukash: reference to Base is missing here, are we sure it won't be necessary for the methods?
 };
