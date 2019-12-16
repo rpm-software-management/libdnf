@@ -89,6 +89,7 @@ static const int keyname_int_matches[] = {
     HY_PKG_SUPPLEMENTS,
     HY_PKG_UPGRADABLE,
     HY_PKG_UPGRADES,
+    HY_PKG_UPGRADES_BY_PRIORITY,
     HY_PKG_URL,
     HY_PKG_VERSION
 };
@@ -128,6 +129,7 @@ static const char * const keyname_char_matches[] = {
     "supplements",
     "upgradable",
     "upgrades",
+    "upgrades_by_priority",
     "url",
     "version",
     NULL
@@ -273,7 +275,8 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
         keyname == HY_PKG_LATEST_PER_ARCH ||
         keyname == HY_PKG_LATEST ||
         keyname == HY_PKG_UPGRADABLE ||
-        keyname == HY_PKG_UPGRADES) {
+        keyname == HY_PKG_UPGRADES ||
+        keyname == HY_PKG_UPGRADES_BY_PRIORITY) {
         int val;
 
         if (!PyInt_Check(match) || cmp_type != HY_EQ) {

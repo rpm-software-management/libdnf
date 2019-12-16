@@ -148,6 +148,13 @@ NameArchSolvableComparator(const Solvable * first, const Solvable * second)
     return first->arch < second->arch;
 }
 
+static bool
+NamePrioritySolvableKey(const Solvable * first, const Solvable * second)
+{
+    if (first->name != second->name)
+        return first->name < second->name;
+    return first->repo->priority > second->repo->priority;
+}
 
 static bool
 match_type_num(int keyname) {
@@ -158,6 +165,7 @@ match_type_num(int keyname) {
         case HY_PKG_LATEST_PER_ARCH:
         case HY_PKG_UPGRADABLE:
         case HY_PKG_UPGRADES:
+        case HY_PKG_UPGRADES_BY_PRIORITY:
         case HY_PKG_DOWNGRADABLE:
         case HY_PKG_DOWNGRADES:
             return true;
@@ -690,6 +698,7 @@ private:
     void filterAdvisory(const Filter & f, Map *m, int keyname);
     void filterLatest(const Filter & f, Map *m);
     void filterUpdown(const Filter & f, Map *m);
+    void filterUpdownByPriority(const Filter & f, Map *m);
     void filterUpdownAble(const Filter  &f, Map *m);
     void filterDataiterator(const Filter & f, Map *m);
     int filterUnneededOrSafeToRemove(const Swdb &swdb, bool debug_solver, bool safeToRemove);
@@ -1733,6 +1742,54 @@ Query::Impl::filterUpdown(const Filter & f, Map *m)
 }
 
 void
+Query::Impl::filterUpdownByPriority(const Filter & f, Map *m)
+{
+    Pool *pool = dnf_sack_get_pool(sack);
+    auto resultPset = result.get();
+
+    dnf_sack_make_provides_ready(sack);
+    auto repoInstalled = pool->installed;
+    if (!repoInstalled) {
+        return;
+    }
+
+    for (auto match_in : f.getMatches()) {
+        if (match_in.num == 0)
+            continue;
+        std::vector<Solvable *> upgradeCandidates;
+        upgradeCandidates.reserve(resultPset->size());
+        Id id = -1;
+        while ((id = resultPset->next(id)) != -1) {
+            Solvable *candidate = pool_id2solvable(pool, id);
+            if (candidate->repo == repoInstalled)
+                continue;
+            upgradeCandidates.push_back(candidate);
+        }
+        if (upgradeCandidates.empty()) {
+            continue;
+        }
+        std::sort(upgradeCandidates.begin(), upgradeCandidates.end(), NamePrioritySolvableKey);
+        Id name = 0;
+        int priority = 0;
+        for (auto * candidate: upgradeCandidates) {
+            if (name != candidate->name) {
+                name = candidate->name;
+                priority = candidate->repo->priority;
+                id = pool_solvable2id(pool, candidate);
+                if (what_upgrades(pool, id) > 0) {
+                    MAPSET(m, id);
+                }
+            } else if (priority == candidate->repo->priority) {
+                id = pool_solvable2id(pool, candidate);
+                if (what_upgrades(pool, id) > 0) {
+                    MAPSET(m, id);
+                }
+            }
+        }
+    }
+}
+
+void
 Query::Impl::filterUpdownAble(const Filter  &f, Map *m)
 {
     Id p, what;
@@ -1948,6 +2005,9 @@ Query::Impl::apply()
             case HY_PKG_DOWNGRADES:
             case HY_PKG_UPGRADES:
                 filterUpdown(f, &m);
+                break;
+            case HY_PKG_UPGRADES_BY_PRIORITY:
+                filterUpdownByPriority(f, &m);
                 break;
             default:
                 filterDataiterator(f, &m);

@@ -97,7 +97,8 @@ enum _hy_key_name_e {
     * @brief Use for strings of whole NEVRA (missing epoch is handled as epoch 0)
     * Allowed compare types - only HY_EQ or HY_NEQ
     */
-    HY_PKG_NEVRA_STRICT = 36
+    HY_PKG_NEVRA_STRICT = 36,
+    HY_PKG_UPGRADES_BY_PRIORITY = 37,
 };
 
 enum _hy_comparison_type_e {

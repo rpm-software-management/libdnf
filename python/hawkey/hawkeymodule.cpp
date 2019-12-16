@@ -281,6 +281,7 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "PKG_SUPPLEMENTS", HY_PKG_SUPPLEMENTS);
     PyModule_AddIntConstant(m, "PKG_UPGRADABLE", HY_PKG_UPGRADABLE);
     PyModule_AddIntConstant(m, "PKG_UPGRADES", HY_PKG_UPGRADES);
+    PyModule_AddIntConstant(m, "PKG_UPGRADES_BY_PRIORITY", HY_PKG_UPGRADES_BY_PRIORITY);
     PyModule_AddIntConstant(m, "PKG_URL", HY_PKG_URL);
     PyModule_AddIntConstant(m, "PKG_VERSION", HY_PKG_VERSION);
 
