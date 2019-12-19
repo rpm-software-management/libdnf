@@ -62,7 +62,7 @@ selector_converter(PyObject *o, HySelector *sltr_ptr)
 }
 
 static PyObject *
-selector_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+selector_new(PyTypeObject *type, PyObject *args, PyObject *kwds) try
 {
     _SelectorObject *self = (_SelectorObject*)type->tp_alloc(type, 0);
     if (self) {
@@ -70,10 +70,10 @@ selector_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         self->sack = NULL;
     }
     return (PyObject*)self;
-}
+} CATCH_TO_PYTHON
 
 static int
-selector_init(_SelectorObject *self, PyObject *args, PyObject *kwds)
+selector_init(_SelectorObject *self, PyObject *args, PyObject *kwds) try
 {
     PyObject *sack;
     DnfSack *csack;
@@ -87,7 +87,7 @@ selector_init(_SelectorObject *self, PyObject *args, PyObject *kwds)
     Py_INCREF(self->sack); // sack has to kept around until we are
     self->sltr = hy_selector_create(csack);
     return 0;
-}
+} CATCH_TO_PYTHON_INT
 
 static void
 selector_dealloc(_SelectorObject *self)
@@ -100,16 +100,16 @@ selector_dealloc(_SelectorObject *self)
 }
 
 static PyObject *
-matches(_SelectorObject *self, PyObject *args)
+matches(_SelectorObject *self, PyObject *args) try
 {
     GPtrArray *plist = hy_selector_matches(self->sltr);
     PyObject *list = packagelist_to_pylist(plist, self->sack);
     g_ptr_array_unref(plist);
     return list;
-}
+} CATCH_TO_PYTHON
 
 static _SelectorObject *
-set(_SelectorObject *self, PyObject *args, PyObject *kwds)
+set(_SelectorObject *self, PyObject *args, PyObject *kwds) try
 {
     gboolean ret = filter_internal(NULL, self->sltr, self->sack, args, kwds);
     if (!ret) {
@@ -117,7 +117,7 @@ set(_SelectorObject *self, PyObject *args, PyObject *kwds)
     }
     Py_INCREF(self);
     return self;
-}
+} CATCH_TO_PYTHON
 
 static struct PyMethodDef selector_methods[] = {
     {"matches", (PyCFunction)matches, METH_NOARGS,

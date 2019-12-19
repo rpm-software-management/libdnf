@@ -21,6 +21,7 @@
 #include <Python.h>
 
 // pyhawkey
+#include "exception-py.hpp"
 #include "iutil-py.hpp"
 #include "nsvcap-py.hpp"
 #include "pycomp.hpp"
@@ -52,7 +53,7 @@ nsvcapToPyObject(libdnf::Nsvcap * nsvcap)
 // getsetters
 template<const std::string & (libdnf::Nsvcap::*getMethod)() const>
 static PyObject *
-get_attr(_NsvcapObject *self, void *closure)
+get_attr(_NsvcapObject *self, void *closure) try
 {
     auto str = (self->nsvcap->*getMethod)();
 
@@ -60,18 +61,18 @@ get_attr(_NsvcapObject *self, void *closure)
         Py_RETURN_NONE;
     else
         return PyString_FromString(str.c_str());
-}
+} CATCH_TO_PYTHON
 
 template<void (libdnf::Nsvcap::*setMethod)(std::string &&)>
 static int
-set_attr(_NsvcapObject *self, PyObject *value, void *closure)
+set_attr(_NsvcapObject *self, PyObject *value, void *closure) try
 {
     PycompString str_value(value);
     if (!str_value.getCString())
         return -1;
     (self->nsvcap->*setMethod)(str_value.getCString());
     return 0;
-}
+} CATCH_TO_PYTHON_INT
 
 static PyGetSetDef nsvcap_getsetters[] = {
         {(char*)"name", (getter)get_attr<&libdnf::Nsvcap::getName>,
@@ -90,13 +91,13 @@ static PyGetSetDef nsvcap_getsetters[] = {
 };
 
 static PyObject *
-nsvcap_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+nsvcap_new(PyTypeObject *type, PyObject *args, PyObject *kwds) try
 {
     _NsvcapObject *self = (_NsvcapObject*)type->tp_alloc(type, 0);
     if (self)
         self->nsvcap = new libdnf::Nsvcap;
     return (PyObject*)self;
-}
+} CATCH_TO_PYTHON
 
 static void
 nsvcap_dealloc(_NsvcapObject *self)
@@ -106,7 +107,7 @@ nsvcap_dealloc(_NsvcapObject *self)
 }
 
 static int
-nsvcap_init(_NsvcapObject *self, PyObject *args, PyObject *kwds)
+nsvcap_init(_NsvcapObject *self, PyObject *args, PyObject *kwds) try
 {
     char *name = NULL, *stream = NULL, *version = NULL, *context = NULL, *arch = NULL, *profile = NULL;
     libdnf::Nsvcap * cNsvcap = NULL;
@@ -144,7 +145,7 @@ nsvcap_init(_NsvcapObject *self, PyObject *args, PyObject *kwds)
         self->nsvcap->setProfile(profile);
     }
     return 0;
-}
+} CATCH_TO_PYTHON_INT
 
 /* object methods */
 

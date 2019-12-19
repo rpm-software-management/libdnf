@@ -24,6 +24,7 @@
 #include <solv/util.h>
 #include <time.h>
 
+#include "error.hpp"
 #include "nevra.hpp"
 #include "hy-query-private.hpp"
 #include "hy-selector.h"
@@ -197,7 +198,7 @@ query_converter(PyObject *o, HyQuery *query_ptr)
 /* functions on the type */
 
 static PyObject *
-query_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+query_new(PyTypeObject *type, PyObject *args, PyObject *kwds) try
 {
     _QueryObject *self = (_QueryObject *)type->tp_alloc(type, 0);
     if (self) {
@@ -205,7 +206,7 @@ query_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         self->sack = NULL;
     }
     return (PyObject *)self;
-}
+} CATCH_TO_PYTHON
 
 static void
 query_dealloc(_QueryObject *self)
@@ -217,7 +218,7 @@ query_dealloc(_QueryObject *self)
 }
 
 static int
-query_init(_QueryObject * self, PyObject *args, PyObject *kwds)
+query_init(_QueryObject * self, PyObject *args, PyObject *kwds) try
 {
     const char *kwlist[] = {"sack", "flags", "query", NULL};
     PyObject *sack = NULL;
@@ -243,23 +244,23 @@ query_init(_QueryObject * self, PyObject *args, PyObject *kwds)
     }
     Py_INCREF(self->sack);
     return 0;
-}
+} CATCH_TO_PYTHON_INT
 
 /* object attributes */
 
 static PyObject *
-get_evaluated(_QueryObject *self, void *unused)
+get_evaluated(_QueryObject *self, void *unused) try
 {
     HyQuery q = self->query;
     return PyBool_FromLong((long) q->getApplied());
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-clear(_QueryObject *self, PyObject *unused)
+clear(_QueryObject *self, PyObject *unused) try
 {
     self->query->clear();
     Py_RETURN_NONE;
-}
+} CATCH_TO_PYTHON
 
 static int
 raise_bad_filter(void)
@@ -539,73 +540,71 @@ filter_internal(HyQuery query, HySelector sltr, PyObject *sack, PyObject *args, 
 }
 
 static PyObject *
-filter(_QueryObject *self, PyObject *args, PyObject *kwds)
-{
+filter(_QueryObject *self, PyObject *args, PyObject *kwds) try {
     auto query = std::unique_ptr<libdnf::Query>(new libdnf::Query(*self->query));
     gboolean ret = filter_internal(query.get(), NULL, self->sack, args, kwds);
     if (!ret)
         return NULL;
     PyObject *final_query = queryToPyObject(query.release(), self->sack, Py_TYPE(self));
     return final_query;
-}
+} CATCH_TO_PYTHON
 
 static _QueryObject *
-filterm(_QueryObject *self, PyObject *args, PyObject *kwds)
-{
+filterm(_QueryObject *self, PyObject *args, PyObject *kwds) try {
     gboolean ret = filter_internal(self->query, NULL, self->sack, args, kwds);
     if (!ret)
         return NULL;
     Py_INCREF(self);
     return self;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-add_available_filter(_QueryObject *self, PyObject *unused)
+add_available_filter(_QueryObject *self, PyObject *unused) try
 {
     HyQuery query = new libdnf::Query(*self->query);
     query->addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     PyObject *final_query = queryToPyObject(query, self->sack, Py_TYPE(self));
     return final_query;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-add_downgrades_filter(_QueryObject *self, PyObject *unused)
+add_downgrades_filter(_QueryObject *self, PyObject *unused) try
 {
     HyQuery query = new libdnf::Query(*self->query);
     query->addFilter(HY_PKG_DOWNGRADES, HY_EQ, 1);
     PyObject *final_query = queryToPyObject(query, self->sack, Py_TYPE(self));
     return final_query;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-duplicated_filter(_QueryObject *self, PyObject *unused)
+duplicated_filter(_QueryObject *self, PyObject *unused) try
 {
     HyQuery self_query_copy = new libdnf::Query(*self->query);
     self_query_copy->filterDuplicated();
     PyObject *final_query = queryToPyObject(self_query_copy, self->sack, Py_TYPE(self));
     return final_query;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-add_filter_extras(_QueryObject *self, PyObject *unused)
+add_filter_extras(_QueryObject *self, PyObject *unused) try
 {
     HyQuery self_query_copy = new libdnf::Query(*self->query);
     self_query_copy->filterExtras();
     PyObject *final_query = queryToPyObject(self_query_copy, self->sack, Py_TYPE(self));
     return final_query;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-add_installed_filter(_QueryObject *self, PyObject *unused)
+add_installed_filter(_QueryObject *self, PyObject *unused) try
 {
     HyQuery query = new libdnf::Query(*self->query);
     query->addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
     PyObject *final_query = queryToPyObject(query, self->sack, Py_TYPE(self));
     return final_query;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-add_filter_latest(_QueryObject *self, PyObject *args)
+add_filter_latest(_QueryObject *self, PyObject *args) try
 {
     int value = 1;
 
@@ -616,38 +615,38 @@ add_filter_latest(_QueryObject *self, PyObject *args)
     query->addFilter(HY_PKG_LATEST_PER_ARCH, HY_EQ, value);
     PyObject *final_query = queryToPyObject(query, self->sack, Py_TYPE(self));
     return final_query;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-add_upgrades_filter(_QueryObject *self, PyObject *unused)
+add_upgrades_filter(_QueryObject *self, PyObject *unused) try
 {
     HyQuery query = new libdnf::Query(*self->query);
     query->addFilter(HY_PKG_UPGRADES, HY_EQ, 1);
     PyObject *final_query = queryToPyObject(query, self->sack, Py_TYPE(self));
     return final_query;
-}
+} CATCH_TO_PYTHON
 
 
 static PyObject *
-run(_QueryObject *self, PyObject *unused)
+run(_QueryObject *self, PyObject *unused) try
 {
     PyObject *list;
 
     const DnfPackageSet * pset = self->query->runSet();
     list = packageset_to_pylist(pset, self->sack);
     return list;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-apply(PyObject *self, PyObject *unused)
+apply(PyObject *self, PyObject *unused) try
 {
     ((_QueryObject *) self)->query->apply();
     Py_INCREF(self);
     return self;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-q_union(PyObject *self, PyObject *args)
+q_union(PyObject *self, PyObject *args) try
 {
     PyObject *other;
     if (!PyArg_ParseTuple(args, "O!", &query_Type, &other))
@@ -659,10 +658,10 @@ q_union(PyObject *self, PyObject *args)
     PyObject *final_query = queryToPyObject(self_query_copy, ((_QueryObject *) self)->sack,
                                             Py_TYPE(self));
     return final_query;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-q_intersection(PyObject *self, PyObject *args)
+q_intersection(PyObject *self, PyObject *args) try
 {
     PyObject *other;
     if (!PyArg_ParseTuple(args, "O!", &query_Type, &other))
@@ -674,10 +673,10 @@ q_intersection(PyObject *self, PyObject *args)
     PyObject *final_query = queryToPyObject(self_query_copy, ((_QueryObject *) self)->sack,
                                             Py_TYPE(self));
     return final_query;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-q_difference(PyObject *self, PyObject *args)
+q_difference(PyObject *self, PyObject *args) try
 {
     PyObject *other;
     if (!PyArg_ParseTuple(args, "O!", &query_Type, &other))
@@ -689,7 +688,7 @@ q_difference(PyObject *self, PyObject *args)
     PyObject *final_query = queryToPyObject(self_query_copy, ((_QueryObject *) self)->sack,
                                             Py_TYPE(self));
     return final_query;
-}
+} CATCH_TO_PYTHON
 
 typedef struct {
     PyObject_HEAD
@@ -700,7 +699,7 @@ typedef struct {
 } SwdbSwigPyObject;
 
 static PyObject *
-get_advisory_pkgs(_QueryObject *self, PyObject *args)
+get_advisory_pkgs(_QueryObject *self, PyObject *args) try
 {
     int cmpType;
 
@@ -711,10 +710,10 @@ get_advisory_pkgs(_QueryObject *self, PyObject *args)
 
     self->query->getAdvisoryPkgs(cmpType, advisoryPkgs);
     return advisoryPkgVectorToPylist(advisoryPkgs);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-filter_userinstalled(PyObject *self, PyObject *args, PyObject *kwds)
+filter_userinstalled(PyObject *self, PyObject *args, PyObject *kwds) try
 {
     const char *kwlist[] = {"swdb", NULL};
     PyObject *pySwdb;
@@ -741,7 +740,7 @@ filter_userinstalled(PyObject *self, PyObject *args, PyObject *kwds)
     PyObject *final_query = queryToPyObject(self_query_copy, ((_QueryObject *) self)->sack,
                                             Py_TYPE(self));
     return final_query;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
 filter_unneeded_or_safe_to_remove(PyObject *self, PyObject *args, PyObject *kwds, bool SafeToRemove)
@@ -787,20 +786,20 @@ filter_unneeded_or_safe_to_remove(PyObject *self, PyObject *args, PyObject *kwds
 }
 
 static PyObject *
-filter_safe_to_remove(PyObject *self, PyObject *args, PyObject *kwds)
+filter_safe_to_remove(PyObject *self, PyObject *args, PyObject *kwds) try
 {
     return filter_unneeded_or_safe_to_remove(self, args, kwds, true);
-}
+} CATCH_TO_PYTHON
 
 
 static PyObject *
-filter_unneeded(PyObject *self, PyObject *args, PyObject *kwds)
+filter_unneeded(PyObject *self, PyObject *args, PyObject *kwds) try
 {
     return filter_unneeded_or_safe_to_remove(self, args, kwds, false);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-q_add(_QueryObject *self, PyObject *list)
+q_add(_QueryObject *self, PyObject *list) try
 {
     if (!PyList_Check(list)) {
         PyErr_SetString(PyExc_TypeError, "Only a list can be concatenated to a Query");
@@ -813,10 +812,10 @@ q_add(_QueryObject *self, PyObject *list)
     for (int index = 0; index < list_count; ++index)
         PyList_Append(query_list, PyList_GetItem(list, index));
     return query_list;
-}
+} CATCH_TO_PYTHON
 
 static int
-query_contains(PyObject *self, PyObject *pypkg)
+query_contains(PyObject *self, PyObject *pypkg) try
 {
     HyQuery q = ((_QueryObject *) self)->query;
     DnfPackage *pkg = packageFromPyObject(pypkg);
@@ -828,23 +827,23 @@ query_contains(PyObject *self, PyObject *pypkg)
             return 1;
     }
     return 0;
-}
+} CATCH_TO_PYTHON_INT
 
 static size_t
-query_len(PyObject *self)
+query_len(PyObject *self) try
 {
     HyQuery q = ((_QueryObject *) self)->query;
     return q->size();
-}
+} CATCH_TO_PYTHON_INT
 
 static PyObject *
-q_length(PyObject *self, PyObject *unused)
+q_length(PyObject *self, PyObject *unused) try
 {
     return PyLong_FromLong(query_len(self));
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-query_get_item(PyObject *self, int index)
+query_get_item(PyObject *self, int index) try
 {
     HyQuery query = ((_QueryObject *) self)->query;
     Id id = query->getIndexItem(index);
@@ -854,10 +853,10 @@ query_get_item(PyObject *self, int index)
     }
     PyObject *package = new_package(((_QueryObject *) self)->sack, id);
     return package;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-query_iter(PyObject *self)
+query_iter(PyObject *self) try
 {
     const DnfPackageSet * pset = ((_QueryObject *) self)->query->runSet();
     UniquePtrPyObject list(packageset_to_pylist(pset, ((_QueryObject *) self)->sack));
@@ -866,10 +865,10 @@ query_iter(PyObject *self)
     PyObject *iter = PyObject_GetIter(list.get());
     Py_INCREF(iter);
     return iter;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-query_to_name_dict(_QueryObject *self, PyObject *unused)
+query_to_name_dict(_QueryObject *self, PyObject *unused) try
 {
     HyQuery query = ((_QueryObject *) self)->query;
     Pool *pool = dnf_sack_get_pool(query->getSack());
@@ -907,10 +906,10 @@ query_to_name_dict(_QueryObject *self, PyObject *unused)
     fail:
         PyErr_SetString(PyExc_SystemError, "Unable to create name_dict");
         return NULL;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-query_to_name_arch_dict(_QueryObject *self, PyObject *unused)
+query_to_name_arch_dict(_QueryObject *self, PyObject *unused) try
 {
     HyQuery query = ((_QueryObject *) self)->query;
     Pool *pool = dnf_sack_get_pool(query->getSack());
@@ -964,10 +963,10 @@ query_to_name_arch_dict(_QueryObject *self, PyObject *unused)
     fail:
         PyErr_SetString(PyExc_SystemError, "Unable to create name_arch_dict");
         return NULL;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-add_nevra_or_other_filter(_QueryObject *self, PyObject *args)
+add_nevra_or_other_filter(_QueryObject *self, PyObject *args) try
 {
     auto self_query_copy = std::unique_ptr<libdnf::Query>(new libdnf::Query(*self->query));
 
@@ -998,10 +997,10 @@ add_nevra_or_other_filter(_QueryObject *self, PyObject *args)
     }
     PyObject *final_query = queryToPyObject(self_query_copy.release(), self->sack, Py_TYPE(self));
     return final_query;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-add_filter_recent(_QueryObject *self, PyObject *args)
+add_filter_recent(_QueryObject *self, PyObject *args) try
 {
     long recent;
     if (!PyArg_ParseTuple(args, "l", &recent))
@@ -1014,7 +1013,7 @@ add_filter_recent(_QueryObject *self, PyObject *args)
     self_query_copy->filterRecent((recent_limit < 0) ? 0 : recent_limit);
     PyObject *final_query = queryToPyObject(self_query_copy, self->sack, Py_TYPE(self));
     return final_query;
-}
+} CATCH_TO_PYTHON
 
 static PyGetSetDef query_getsetters[] = {
     {(char*)"evaluated",  (getter)get_evaluated, NULL, NULL, NULL},

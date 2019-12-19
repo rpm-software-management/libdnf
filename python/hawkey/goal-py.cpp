@@ -178,7 +178,7 @@ op_ret2exc(int ret)
 /* functions on the type */
 
 static PyObject *
-goal_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+goal_new(PyTypeObject *type, PyObject *args, PyObject *kwds) try
 {
     _GoalObject *self = (_GoalObject*)type->tp_alloc(type, 0);
     if (self) {
@@ -186,7 +186,7 @@ goal_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         self->sack = NULL;
     }
     return (PyObject*)self;
-}
+} CATCH_TO_PYTHON
 
 static void
 goal_dealloc(_GoalObject *self)
@@ -199,7 +199,7 @@ goal_dealloc(_GoalObject *self)
 }
 
 static int
-goal_init(_GoalObject *self, PyObject *args, PyObject *kwds)
+goal_init(_GoalObject *self, PyObject *args, PyObject *kwds) try
 {
     PyObject *sack;
     DnfSack *csack;
@@ -213,19 +213,19 @@ goal_init(_GoalObject *self, PyObject *args, PyObject *kwds)
     Py_INCREF(self->sack); // sack has to kept around until we are
     self->goal = hy_goal_create(csack);
     return 0;
-}
+} CATCH_TO_PYTHON_INT
 
 /* object methods */
 
 static PyObject *
-distupgrade_all(_GoalObject *self, PyObject *unused)
+distupgrade_all(_GoalObject *self, PyObject *unused) try
 {
     int ret = hy_goal_distupgrade_all(self->goal);
     return op_ret2exc(ret);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-distupgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
+distupgrade(_GoalObject *self, PyObject *args, PyObject *kwds) try
 {
     DnfPackage *pkg = NULL;
     HySelector sltr = NULL;
@@ -235,10 +235,10 @@ distupgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
     int ret = pkg ? hy_goal_distupgrade(self->goal, pkg) :
         hy_goal_distupgrade_selector(self->goal, sltr);
     return op_ret2exc(ret);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-erase(_GoalObject *self, PyObject *args, PyObject *kwds)
+erase(_GoalObject *self, PyObject *args, PyObject *kwds) try
 {
     DnfPackage *pkg = NULL;
     HySelector sltr = NULL;
@@ -249,10 +249,10 @@ erase(_GoalObject *self, PyObject *args, PyObject *kwds)
     int ret = pkg ? hy_goal_erase_flags(self->goal, pkg, flags) :
         hy_goal_erase_selector_flags(self->goal, sltr, flags);
     return op_ret2exc(ret);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-install(_GoalObject *self, PyObject *args, PyObject *kwds)
+install(_GoalObject *self, PyObject *args, PyObject *kwds) try
 {
     DnfPackage *pkg = NULL;
     HySelector sltr = NULL;
@@ -275,10 +275,10 @@ install(_GoalObject *self, PyObject *args, PyObject *kwds)
         }
     }
     return op_error2exc(error);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-upgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
+upgrade(_GoalObject *self, PyObject *args, PyObject *kwds) try
 {
     DnfPackage *pkg = NULL;
     HySelector sltr = NULL;
@@ -291,17 +291,17 @@ upgrade(_GoalObject *self, PyObject *args, PyObject *kwds)
     }
     int ret = hy_goal_upgrade_selector(self->goal, sltr);
     return op_ret2exc(ret);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-upgrade_all(_GoalObject *self, PyObject *unused)
+upgrade_all(_GoalObject *self, PyObject *unused) try
 {
     int ret = hy_goal_upgrade_all(self->goal);
     return op_ret2exc(ret);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-userinstalled(_GoalObject *self, PyObject *obj)
+userinstalled(_GoalObject *self, PyObject *obj) try
 {
     if (queryObject_Check(obj)) {
         HyQuery query = queryFromPyObject(obj);
@@ -319,35 +319,35 @@ userinstalled(_GoalObject *self, PyObject *obj)
     if (!ret)
         Py_RETURN_TRUE;
     Py_RETURN_FALSE;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-get_actions(_GoalObject *self, void *unused)
+get_actions(_GoalObject *self, void *unused) try
 {
     HyGoal goal = self->goal;
     return PyLong_FromLong(goal->getActions());
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-req_has_distupgrade_all(_GoalObject *self, PyObject *unused)
+req_has_distupgrade_all(_GoalObject *self, PyObject *unused) try
 {
     return PyBool_FromLong(hy_goal_has_actions(self->goal, DNF_DISTUPGRADE_ALL));
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-req_has_erase(_GoalObject *self, PyObject *unused)
+req_has_erase(_GoalObject *self, PyObject *unused) try
 {
     return PyBool_FromLong(hy_goal_has_actions(self->goal, DNF_ERASE));
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-req_length(_GoalObject *self, PyObject *unused)
+req_length(_GoalObject *self, PyObject *unused) try
 {
     return PyLong_FromLong(hy_goal_req_length(self->goal));
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-add_protected(_GoalObject *self, PyObject *seq)
+add_protected(_GoalObject *self, PyObject *seq) try
 {
     HyGoal goal = self->goal;
     auto pset = pyseq_to_packageset(seq, hy_goal_get_sack(goal));
@@ -355,10 +355,10 @@ add_protected(_GoalObject *self, PyObject *seq)
         return NULL;
     dnf_goal_add_protected(goal, pset.get());
     Py_RETURN_NONE;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-run(_GoalObject *self, PyObject *args, PyObject *kwds)
+run(_GoalObject *self, PyObject *args, PyObject *kwds) try
 {
     int flags = 0;
     if (!args_run_parse(args, kwds, &flags, NULL))
@@ -368,13 +368,13 @@ run(_GoalObject *self, PyObject *args, PyObject *kwds)
     if (!ret)
         Py_RETURN_TRUE;
     Py_RETURN_FALSE;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-count_problems(_GoalObject *self, PyObject *unused)
+count_problems(_GoalObject *self, PyObject *unused) try
 {
     return PyLong_FromLong(hy_goal_count_problems(self->goal));
-}
+} CATCH_TO_PYTHON
 
 /**
  * Reports problems described in strings.
@@ -383,11 +383,11 @@ count_problems(_GoalObject *self, PyObject *unused)
  * problem or NULL in case of error.
  */
 static PyObject *
-problem_rules(_GoalObject *self, PyObject *unused)
+problem_rules(_GoalObject *self, PyObject *unused) try
 {
     auto allProblems = self->goal->describeAllProblemRules(true);
     return problemRulesPyConverter(allProblems);
-}
+} CATCH_TO_PYTHON
 
 /**
  * Reports packages that has a conflict
@@ -395,7 +395,7 @@ problem_rules(_GoalObject *self, PyObject *unused)
  * Returns Python list with package objects that have a conflict.
  */
 static PyObject *
-problem_conflicts(_GoalObject *self, PyObject *args, PyObject *kwds)
+problem_conflicts(_GoalObject *self, PyObject *args, PyObject *kwds) try
 {
     const char *kwlist[] = {"available", NULL};
     int available = 0;
@@ -408,7 +408,7 @@ problem_conflicts(_GoalObject *self, PyObject *args, PyObject *kwds)
         pkg_type = DNF_PACKAGE_STATE_AVAILABLE;
     auto pset = self->goal->listConflictPkgs(pkg_type);
     return packageset_to_pylist(pset.get(), self->sack);
-}
+} CATCH_TO_PYTHON
 
 /**
  * Reports packages that has a conflict
@@ -416,7 +416,7 @@ problem_conflicts(_GoalObject *self, PyObject *args, PyObject *kwds)
  * Returns Python list with package objects that have a conflict.
  */
 static PyObject *
-problem_broken_dependency(_GoalObject *self, PyObject *args, PyObject *kwds)
+problem_broken_dependency(_GoalObject *self, PyObject *args, PyObject *kwds) try
 {
     const char *kwlist[] = {"available", NULL};
     int available = 0;
@@ -431,18 +431,18 @@ problem_broken_dependency(_GoalObject *self, PyObject *args, PyObject *kwds)
     auto pset = self->goal->listBrokenDependencyPkgs(pkg_type);
 
     return packageset_to_pylist(pset.get(), self->sack);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-log_decisions(_GoalObject *self, PyObject *unused)
+log_decisions(_GoalObject *self, PyObject *unused) try
 {
     if (hy_goal_log_decisions(self->goal))
         PyErr_SetString(PyExc_ValueError, "log_decisions() failed.");
     Py_RETURN_NONE;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-write_debugdata(_GoalObject *self, PyObject *dir_str)
+write_debugdata(_GoalObject *self, PyObject *dir_str) try
 {
     g_autoptr(GError) error = NULL;
     PycompString dir(dir_str);
@@ -456,7 +456,7 @@ write_debugdata(_GoalObject *self, PyObject *dir_str)
         return NULL;
     }
     Py_RETURN_NONE;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
 list_generic(_GoalObject *self, GPtrArray *(*func)(HyGoal, GError **))
@@ -484,55 +484,55 @@ list_generic(_GoalObject *self, GPtrArray *(*func)(HyGoal, GError **))
 }
 
 static PyObject *
-list_erasures(_GoalObject *self, PyObject *unused)
+list_erasures(_GoalObject *self, PyObject *unused) try
 {
     return list_generic(self, hy_goal_list_erasures);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-list_installs(_GoalObject *self, PyObject *unused)
+list_installs(_GoalObject *self, PyObject *unused) try
 {
     return list_generic(self, hy_goal_list_installs);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-list_obsoleted(_GoalObject *self, PyObject *unused)
+list_obsoleted(_GoalObject *self, PyObject *unused) try
 {
     return list_generic(self, hy_goal_list_obsoleted);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-list_reinstalls(_GoalObject *self, PyObject *unused)
+list_reinstalls(_GoalObject *self, PyObject *unused) try
 {
     return list_generic(self, hy_goal_list_reinstalls);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-list_unneeded(_GoalObject *self, PyObject *unused)
+list_unneeded(_GoalObject *self, PyObject *unused) try
 {
     return list_generic(self, hy_goal_list_unneeded);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-list_suggested(_GoalObject *self, PyObject *unused)
+list_suggested(_GoalObject *self, PyObject *unused) try
 {
     return list_generic(self, hy_goal_list_suggested);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-list_downgrades(_GoalObject *self, PyObject *unused)
+list_downgrades(_GoalObject *self, PyObject *unused) try
 {
     return list_generic(self, hy_goal_list_downgrades);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-list_upgrades(_GoalObject *self, PyObject *unused)
+list_upgrades(_GoalObject *self, PyObject *unused) try
 {
     return list_generic(self, hy_goal_list_upgrades);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-obsoleted_by_package(_GoalObject *self, PyObject *pkg)
+obsoleted_by_package(_GoalObject *self, PyObject *pkg) try
 {
     DnfPackage *cpkg = packageFromPyObject(pkg);
 
@@ -542,10 +542,10 @@ obsoleted_by_package(_GoalObject *self, PyObject *pkg)
     PyObject *list = packagelist_to_pylist(plist, self->sack);
     g_ptr_array_unref(plist);
     return list;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-get_reason(_GoalObject *self, PyObject *pkg)
+get_reason(_GoalObject *self, PyObject *pkg) try
 {
     DnfPackage *cpkg = packageFromPyObject(pkg);
 
@@ -553,7 +553,7 @@ get_reason(_GoalObject *self, PyObject *pkg)
         return NULL;
     int reason = hy_goal_get_reason(self->goal, cpkg);
     return PyLong_FromLong(reason);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
 goalToPyObject(HyGoal goal, PyObject *sack)
@@ -568,11 +568,11 @@ goalToPyObject(HyGoal goal, PyObject *sack)
 }
 
 static PyObject *
-deepcopy(_GoalObject *self, PyObject *args, PyObject *kwds)
+deepcopy(_GoalObject *self, PyObject *args, PyObject *kwds) try
 {
     HyGoal goal = hy_goal_clone(self->goal);
     return goalToPyObject(goal, self->sack);
-}
+} CATCH_TO_PYTHON
 
 static struct PyMethodDef goal_methods[] = {
     {"__deepcopy__", (PyCFunction)deepcopy, METH_KEYWORDS|METH_VARARGS,

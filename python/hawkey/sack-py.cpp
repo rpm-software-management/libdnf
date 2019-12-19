@@ -158,7 +158,7 @@ sack_dealloc(_SackObject *o)
 }
 
 static PyObject *
-sack_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+sack_new(PyTypeObject *type, PyObject *args, PyObject *kwds) try
 {
     _SackObject *self = (_SackObject *)type->tp_alloc(type, 0);
 
@@ -169,7 +169,7 @@ sack_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         self->ModulePackageContainerPy = NULL;
     }
     return (PyObject *)self;
-}
+} CATCH_TO_PYTHON
 
 const char *
 log_level_name(int level)
@@ -243,7 +243,7 @@ sack_set_logfile(_SackObject *self, const gchar *path, bool debug)
 }
 
 static int
-sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
+sack_init(_SackObject *self, PyObject *args, PyObject *kwds) try
 {
     g_autoptr(GError) error = NULL;
     PyObject *custom_class = NULL;
@@ -328,21 +328,21 @@ sack_init(_SackObject *self, PyObject *args, PyObject *kwds)
 
     }
     return 0;
-}
+} CATCH_TO_PYTHON_INT
 
 /* getsetters */
 
 static PyObject *
-get_cache_dir(_SackObject *self, void *unused)
+get_cache_dir(_SackObject *self, void *unused) try
 {
     const char *cstr = dnf_sack_get_cache_dir(self->sack);
     if (cstr == NULL)
         Py_RETURN_NONE;
     return PyString_FromString(cstr);
-}
+} CATCH_TO_PYTHON
 
 static int
-set_installonly(_SackObject *self, PyObject *obj, void *unused)
+set_installonly(_SackObject *self, PyObject *obj, void *unused) try
 {
     if (!PySequence_Check(obj)) {
         PyErr_SetString(PyExc_AttributeError, "Expected a sequence.");
@@ -369,20 +369,20 @@ set_installonly(_SackObject *self, PyObject *obj, void *unused)
     dnf_sack_set_installonly(sack, strings);
 
     return 0;
-}
+} CATCH_TO_PYTHON_INT
 
 static int
-set_installonly_limit(_SackObject *self, PyObject *obj, void *unused)
+set_installonly_limit(_SackObject *self, PyObject *obj, void *unused) try
 {
     int limit = (int)PyLong_AsLong(obj);
     if (PyErr_Occurred())
         return -1;
     dnf_sack_set_installonly_limit(self->sack, limit);
     return 0;
-}
+} CATCH_TO_PYTHON_INT
 
 static int
-set_module_container(_SackObject *self, PyObject *obj, void *unused)
+set_module_container(_SackObject *self, PyObject *obj, void *unused) try
 {
     auto swigContainer = reinterpret_cast< ModulePackageContainerPyObject * >(
         PyObject_GetAttrString(obj, "this"));
@@ -405,17 +405,17 @@ set_module_container(_SackObject *self, PyObject *obj, void *unused)
     Py_INCREF(obj);
 
     return 0;
-}
+} CATCH_TO_PYTHON_INT
 
 static PyObject *
-get_module_container(_SackObject *self, void *unused)
+get_module_container(_SackObject *self, void *unused) try
 {
     if (auto moduleConteinerPy = self->ModulePackageContainerPy) {
         Py_INCREF(moduleConteinerPy);
         return moduleConteinerPy;
     }
     Py_RETURN_NONE;
-}
+} CATCH_TO_PYTHON
 
 static PyGetSetDef sack_getsetters[] = {
     {(char*)"cache_dir",        (getter)get_cache_dir, NULL, NULL, NULL},
@@ -429,7 +429,7 @@ static PyGetSetDef sack_getsetters[] = {
 /* object methods */
 
 static PyObject *
-evr_cmp(_SackObject *self, PyObject *args)
+evr_cmp(_SackObject *self, PyObject *args) try
 {
     const char *evr1 = NULL, *evr2 = NULL;
 
@@ -437,10 +437,10 @@ evr_cmp(_SackObject *self, PyObject *args)
         return NULL;
     int cmp = dnf_sack_evr_cmp(self->sack, evr1, evr2);
     return PyLong_FromLong(cmp);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-get_running_kernel(_SackObject *self, PyObject *unused)
+get_running_kernel(_SackObject *self, PyObject *unused) try
 {
     DnfSack *sack = self->sack;
     DnfPackage *cpkg = dnf_sack_get_running_kernel(sack);
@@ -450,16 +450,16 @@ get_running_kernel(_SackObject *self, PyObject *unused)
     PyObject *pkg = new_package((PyObject*)self, dnf_package_get_id(cpkg));
     g_object_unref(cpkg);
     return pkg;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-create_cmdline_repo(_SackObject *self, PyObject *unused)
+create_cmdline_repo(_SackObject *self, PyObject *unused) try
 {
     Py_RETURN_NONE;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-create_package(_SackObject *self, PyObject *solvable_id)
+create_package(_SackObject *self, PyObject *solvable_id) try
 {
     Id id  = PyLong_AsLong(solvable_id);
     if (id <= 0) {
@@ -467,10 +467,10 @@ create_package(_SackObject *self, PyObject *solvable_id)
         return NULL;
     }
     return new_package((PyObject*)self, id);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-add_cmdline_package(_SackObject *self, PyObject *fn_obj)
+add_cmdline_package(_SackObject *self, PyObject *fn_obj) try
 {
     DnfPackage *cpkg;
     PyObject *pkg;
@@ -486,11 +486,11 @@ add_cmdline_package(_SackObject *self, PyObject *fn_obj)
     pkg = new_package((PyObject*)self, dnf_package_get_id(cpkg));
     g_object_unref(cpkg);
     return pkg;
-}
+} CATCH_TO_PYTHON
 
 template<void (*sackExcludeIncludeFunc)(DnfSack *, const DnfPackageSet*)>
 static PyObject *
-modify_excl_incl(_SackObject *self, PyObject *o)
+modify_excl_incl(_SackObject *self, PyObject *o) try
 {
     DnfSack *sack = self->sack;
     auto pset = pyseq_to_packageset(o, sack);
@@ -498,20 +498,20 @@ modify_excl_incl(_SackObject *self, PyObject *o)
         return NULL;
     sackExcludeIncludeFunc(sack, pset.get());
     Py_RETURN_NONE;
-}
+} CATCH_TO_PYTHON
 
 template<void (*sackExcludeIncludeFunc)(DnfSack *)>
 static PyObject *
-reset_excl_incl(_SackObject *self)
+reset_excl_incl(_SackObject *self) try
 {
     DnfSack *sack = self->sack;
     sackExcludeIncludeFunc(sack);
     Py_RETURN_NONE;
-}
+} CATCH_TO_PYTHON
 
 template<DnfPackageSet * (*sackExcludeIncludeFunc)(DnfSack *)>
 static PyObject *
-get_excl_incl(_SackObject *self)
+get_excl_incl(_SackObject *self) try
 {
     DnfSack *sack = self->sack;
     DnfPackageSet * pset = sackExcludeIncludeFunc(sack);
@@ -520,10 +520,10 @@ get_excl_incl(_SackObject *self)
     PyObject * pyList = packageset_to_pylist(pset, (PyObject *)self);
     delete pset;
     return pyList;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-set_use_includes(_SackObject *self, PyObject *args)
+set_use_includes(_SackObject *self, PyObject *args) try
 {
     PyObject *py_enabled;
     const char *creponame = NULL;
@@ -537,10 +537,10 @@ set_use_includes(_SackObject *self, PyObject *args)
     }
 
     Py_RETURN_NONE;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-get_use_includes(_SackObject *self, PyObject *reponame)
+get_use_includes(_SackObject *self, PyObject *reponame) try
 {
     DnfSack *sack = self->sack;
 
@@ -558,22 +558,22 @@ get_use_includes(_SackObject *self, PyObject *reponame)
         Py_RETURN_TRUE;
     else
         Py_RETURN_FALSE;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-disable_repo(_SackObject *self, PyObject *reponame)
+disable_repo(_SackObject *self, PyObject *reponame) try
 {
     return repo_enabled(self, reponame, 0);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-enable_repo(_SackObject *self, PyObject *reponame)
+enable_repo(_SackObject *self, PyObject *reponame) try
 {
     return repo_enabled(self, reponame, 1);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-list_arches(_SackObject *self, PyObject *unused)
+list_arches(_SackObject *self, PyObject *unused) try
 {
     const char **arches = dnf_sack_list_arches(self->sack);
     PyObject *list;
@@ -589,10 +589,10 @@ list_arches(_SackObject *self, PyObject *unused)
     } else {
         return PyList_New(0);
     }
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-filter_modules(_SackObject *self, PyObject *args, PyObject *kwds)
+filter_modules(_SackObject *self, PyObject *args, PyObject *kwds) try
 {
     const char *kwlist[] = {"module_container", "hotfix_repos", "install_root", "platform_module",
         "update_only", "debugsolver", NULL};
@@ -636,11 +636,11 @@ filter_modules(_SackObject *self, PyObject *args, PyObject *kwds)
         PyErr_SetString(HyExc_Runtime, exception.what());
         return NULL;
     }
-}
+} CATCH_TO_PYTHON
 
 
 static PyObject *
-set_modules_enabled_by_pkgset(_SackObject *self, PyObject *args, PyObject *kwds)
+set_modules_enabled_by_pkgset(_SackObject *self, PyObject *args, PyObject *kwds) try
 {
     const char *kwlist[] = {"module_container", "pkgs", NULL};
     PyObject * pyModuleContainer;
@@ -660,7 +660,7 @@ set_modules_enabled_by_pkgset(_SackObject *self, PyObject *args, PyObject *kwds)
     auto modules = moduleContainer->requiresModuleEnablement(*pset.get());
     moduleContainer->enableDependencyTree(modules);
     Py_RETURN_NONE;
-}
+} CATCH_TO_PYTHON
 
 typedef struct {
     PyObject_HEAD
@@ -717,7 +717,7 @@ load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
-load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
+load_repo(_SackObject *self, PyObject *args, PyObject *kwds) try
 {
     const char *kwlist[] = {"repo", "build_cache", "load_filelists", "load_presto",
                       "load_updateinfo", "load_other", NULL};
@@ -767,27 +767,27 @@ load_repo(_SackObject *self, PyObject *args, PyObject *kwds)
     if (!ret)
         return op_error2exc(error);
     Py_RETURN_NONE;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-rpmdb_version(_SackObject *self, PyObject *unused)
+rpmdb_version(_SackObject *self, PyObject *unused) try
 {
     auto result = dnf_sack_get_rpmdb_version(self->sack);
     return PyString_FromString(result.c_str());
-}
+} CATCH_TO_PYTHON
 
 static Py_ssize_t
-len(_SackObject *self)
+len(_SackObject *self) try
 {
     return dnf_sack_count(self->sack);
-}
+} CATCH_TO_PYTHON_INT
 
 static PyObject *
-deepcopy(_SackObject *self, PyObject *args, PyObject *kwds)
+deepcopy(_SackObject *self, PyObject *args, PyObject *kwds) try
 {
     PyErr_SetString(PyExc_NotImplementedError, "sack can't be deepcopied");
     return NULL;
-}
+} CATCH_TO_PYTHON
 
 static struct
 PyMethodDef sack_methods[] = {

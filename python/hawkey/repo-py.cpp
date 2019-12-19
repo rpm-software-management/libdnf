@@ -25,6 +25,7 @@
 #include "hy-repo.h"
 
 // pyhawkey
+#include "exception-py.hpp"
 #include "hawkey-pysys.hpp"
 #include "repo-py.hpp"
 
@@ -59,7 +60,7 @@ PyObject *repoToPyObject(HyRepo repo)
 /* functions on the type */
 
 static PyObject *
-repo_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+repo_new(PyTypeObject *type, PyObject *args, PyObject *kwds) try
 {
     _RepoObject *self = (_RepoObject *)type->tp_alloc(type, 0);
     if (self) {
@@ -70,17 +71,17 @@ repo_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         }
     }
     return (PyObject *) self;
-}
+} CATCH_TO_PYTHON
 
 static int
-repo_init(_RepoObject *self, PyObject *args, PyObject *kwds)
+repo_init(_RepoObject *self, PyObject *args, PyObject *kwds) try
 {
     const char *name;
     if (!PyArg_ParseTuple(args, "s", &name))
         return -1;
     hy_repo_set_string(self->repo, HY_REPO_NAME, name);
     return 0;
-}
+} CATCH_TO_PYTHON_INT
 
 static void
 repo_dealloc(_RepoObject *self)
@@ -92,14 +93,14 @@ repo_dealloc(_RepoObject *self)
 /* getsetters */
 
 static PyObject *
-get_int(_RepoObject *self, void *closure)
+get_int(_RepoObject *self, void *closure) try
 {
     IntGetSetter *functions = (IntGetSetter*)closure;
     return PyLong_FromLong(functions->getter(self->repo));
-}
+} CATCH_TO_PYTHON
 
 static int
-set_int(_RepoObject *self, PyObject *value, void *closure)
+set_int(_RepoObject *self, PyObject *value, void *closure) try
 {
     IntGetSetter *functions = (IntGetSetter*)closure;
     long num = PyLong_AsLong(value);
@@ -111,10 +112,10 @@ set_int(_RepoObject *self, PyObject *value, void *closure)
     }
     functions->setter(self->repo, num);
     return 0;
-}
+} CATCH_TO_PYTHON_INT
 
 static PyObject *
-get_str(_RepoObject *self, void *closure)
+get_str(_RepoObject *self, void *closure) try
 {
     int str_key = (intptr_t)closure;
     const char *str;
@@ -127,10 +128,10 @@ get_str(_RepoObject *self, void *closure)
         ret = PyString_FromString(str);
     }
     return ret; // NULL if PyString_FromString failed
-}
+} CATCH_TO_PYTHON
 
 static int
-set_str(_RepoObject *self, PyObject *value, void *closure)
+set_str(_RepoObject *self, PyObject *value, void *closure) try
 {
     intptr_t str_key = (intptr_t)closure;
     PycompString str_value(value);
@@ -138,7 +139,7 @@ set_str(_RepoObject *self, PyObject *value, void *closure)
         return -1;
     hy_repo_set_string(self->repo, str_key, str_value.getCString());
     return 0;
-}
+} CATCH_TO_PYTHON_INT
 
 static IntGetSetter hy_repo_cost{hy_repo_get_cost, hy_repo_set_cost};
 
