@@ -40,6 +40,7 @@
 #include <librepo/librepo.h>
 #include <memory>
 
+#include "catch-error.hpp"
 #include "dnf-package.h"
 #include "dnf-types.h"
 #include "dnf-utils.h"
@@ -668,7 +669,7 @@ dnf_repo_checksum_hy_to_lr(GChecksumType checksum)
  * Since: 0.1.0
  **/
 gboolean
-dnf_package_check_filename(DnfPackage *pkg, gboolean *valid, GError **error)
+dnf_package_check_filename(DnfPackage *pkg, gboolean *valid, GError **error) try
 {
     LrChecksumType checksum_type_lr;
     char *checksum_valid = NULL;
@@ -739,7 +740,7 @@ dnf_package_check_filename(DnfPackage *pkg, gboolean *valid, GError **error)
 out:
     g_free(checksum_valid);
     return ret;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_package_download:
@@ -758,7 +759,7 @@ gchar *
 dnf_package_download(DnfPackage *pkg,
               const gchar *directory,
               DnfState *state,
-              GError **error)
+              GError **error) try
 {
     DnfRepo *repo;
     repo = dnf_package_get_repo(pkg);
@@ -770,7 +771,7 @@ dnf_package_download(DnfPackage *pkg,
         return NULL;
     }
     return dnf_repo_download_package(repo, pkg, directory, state, error);
-}
+} CATCH_TO_GERROR(NULL)
 
 /**
  * dnf_package_array_download:
@@ -789,7 +790,7 @@ gboolean
 dnf_package_array_download(GPtrArray *packages,
                 const gchar *directory,
                 DnfState *state,
-                GError **error)
+                GError **error) try
 {
     DnfState *state_local;
     GHashTableIter hiter;
@@ -838,7 +839,7 @@ dnf_package_array_download(GPtrArray *packages,
             return FALSE;
     }
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_package_array_get_download_size:

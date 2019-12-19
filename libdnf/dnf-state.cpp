@@ -81,6 +81,7 @@
  */
 
 
+#include "catch-error.hpp"
 #include "dnf-state.h"
 #include "dnf-utils.h"
 
@@ -337,7 +338,7 @@ gboolean
 dnf_state_take_lock(DnfState *state,
                     DnfLockType lock_type,
                     DnfLockMode lock_mode,
-                    GError **error)
+                    GError **error) try
 {
     DnfStatePrivate *priv = GET_PRIVATE(state);
     guint lock_id = 0;
@@ -355,7 +356,7 @@ dnf_state_take_lock(DnfState *state,
     g_ptr_array_add(priv->lock_ids,
                     GUINT_TO_POINTER(lock_id));
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_state_discrete_to_percent:
@@ -1147,7 +1148,7 @@ dnf_state_set_number_steps_real(DnfState *state, guint steps, const gchar *strlo
  * Since: 0.1.0
  **/
 gboolean
-dnf_state_set_steps_real(DnfState *state, GError **error, const gchar *strloc, gint value, ...)
+dnf_state_set_steps_real(DnfState *state, GError **error, const gchar *strloc, gint value, ...) try
 {
     DnfStatePrivate *priv = GET_PRIVATE(state);
     va_list args;
@@ -1214,7 +1215,7 @@ dnf_state_set_steps_real(DnfState *state, GError **error, const gchar *strloc, g
 
     /* success */
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_state_show_profile:
@@ -1277,7 +1278,7 @@ dnf_state_show_profile(DnfState *state)
  * Since: 0.1.0
  **/
 gboolean
-dnf_state_check(DnfState *state, GError **error)
+dnf_state_check(DnfState *state, GError **error) try
 {
     DnfStatePrivate *priv = GET_PRIVATE(state);
 
@@ -1293,7 +1294,7 @@ dnf_state_check(DnfState *state, GError **error)
         return FALSE;
     }
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_state_done_real:
@@ -1308,7 +1309,7 @@ dnf_state_check(DnfState *state, GError **error)
  * Since: 0.1.0
  **/
 gboolean
-dnf_state_done_real(DnfState *state, GError **error, const gchar *strloc)
+dnf_state_done_real(DnfState *state, GError **error, const gchar *strloc) try
 {
     DnfStatePrivate *priv = GET_PRIVATE(state);
     gdouble elapsed;
@@ -1396,7 +1397,7 @@ dnf_state_done_real(DnfState *state, GError **error, const gchar *strloc)
     if (priv->child != NULL)
         dnf_state_reset(priv->child);
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_state_finished_real:
@@ -1411,7 +1412,7 @@ dnf_state_done_real(DnfState *state, GError **error, const gchar *strloc)
  * Since: 0.1.0
  **/
 gboolean
-dnf_state_finished_real(DnfState *state, GError **error, const gchar *strloc)
+dnf_state_finished_real(DnfState *state, GError **error, const gchar *strloc) try
 {
     DnfStatePrivate *priv = GET_PRIVATE(state);
 
@@ -1432,7 +1433,7 @@ dnf_state_finished_real(DnfState *state, GError **error, const gchar *strloc)
     /* set new percentage */
     dnf_state_set_percentage(state, 100);
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_state_new:

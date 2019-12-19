@@ -35,6 +35,7 @@
 #include <rpm/rpmlib.h>
 #include <rpm/rpmts.h>
 
+#include "catch-error.hpp"
 #include "dnf-types.h"
 #include "dnf-keyring.h"
 #include "dnf-utils.h"
@@ -54,7 +55,7 @@
 gboolean
 dnf_keyring_add_public_key(rpmKeyring keyring,
                            const gchar *filename,
-                           GError **error)
+                           GError **error) try
 {
     gboolean ret = TRUE;
     int rc;
@@ -169,7 +170,7 @@ out:
     if (dig != NULL)
         pgpFreeDig(dig);
     return ret;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_keyring_add_public_keys:
@@ -183,7 +184,7 @@ out:
  * Since: 0.1.0
  **/
 gboolean
-dnf_keyring_add_public_keys(rpmKeyring keyring, GError **error)
+dnf_keyring_add_public_keys(rpmKeyring keyring, GError **error) try
 {
     const gchar *gpg_dir = "/etc/pki/rpm-gpg";
     gboolean ret = TRUE;
@@ -208,7 +209,7 @@ dnf_keyring_add_public_keys(rpmKeyring keyring, GError **error)
         }
     } while (true);
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_keyring_check_untrusted_file:
@@ -216,7 +217,7 @@ dnf_keyring_add_public_keys(rpmKeyring keyring, GError **error)
 gboolean
 dnf_keyring_check_untrusted_file(rpmKeyring keyring,
                                  const gchar *filename,
-                                 GError **error)
+                                 GError **error) try
 {
     FD_t fd = NULL;
     gboolean ret = FALSE;
@@ -325,4 +326,4 @@ out:
     if (fd != NULL)
         Fclose(fd);
     return ret;
-}
+} CATCH_TO_GERROR(FALSE)

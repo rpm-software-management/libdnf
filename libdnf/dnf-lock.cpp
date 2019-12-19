@@ -35,6 +35,7 @@
 
 #include <gio/gio.h>
 
+#include "catch-error.hpp"
 #include "dnf-lock.h"
 #include "dnf-types.h"
 #include "dnf-utils.h"
@@ -371,7 +372,7 @@ guint
 dnf_lock_take(DnfLock *lock,
               DnfLockType type,
               DnfLockMode mode,
-              GError **error)
+              GError **error) try
 {
     DnfLockItem *item;
     DnfLockPrivate *priv = GET_PRIVATE(lock);
@@ -472,7 +473,7 @@ out:
     /* unlock other threads */
     g_mutex_unlock(&priv->mutex);
     return id;
-}
+} CATCH_TO_GERROR(0)
 
 /**
  * dnf_lock_release:
@@ -487,7 +488,7 @@ out:
  * Since: 0.1.0
  **/
 gboolean
-dnf_lock_release(DnfLock *lock, guint id, GError **error)
+dnf_lock_release(DnfLock *lock, guint id, GError **error) try
 {
     DnfLockItem *item;
     DnfLockPrivate *priv = GET_PRIVATE(lock);
@@ -557,7 +558,7 @@ out:
     /* unlock other threads */
     g_mutex_unlock(&priv->mutex);
     return ret;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_lock_release_noerror:

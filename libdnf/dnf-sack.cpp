@@ -60,6 +60,7 @@ extern "C" {
 #include <cstring>
 #include <sstream>
 
+#include "catch-error.hpp"
 #include "dnf-context.hpp"
 #include "dnf-types.h"
 #include "dnf-package.h"
@@ -815,7 +816,7 @@ dnf_sack_set_cachedir (DnfSack *sack, const gchar *value)
  * Since: 0.7.0
  */
 gboolean
-dnf_sack_set_arch (DnfSack *sack, const gchar *value, GError **error)
+dnf_sack_set_arch (DnfSack *sack, const gchar *value, GError **error) try
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     Pool *pool = dnf_sack_get_pool(sack);
@@ -844,7 +845,7 @@ dnf_sack_set_arch (DnfSack *sack, const gchar *value, GError **error)
      * which means it will be 'newcoolarch' and 'noarch' always. */
     priv->have_set_arch = TRUE;
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_sack_set_all_arch:
@@ -929,7 +930,7 @@ dnf_sack_set_rootdir (DnfSack *sack, const gchar *value)
  * Since: 0.7.0
  */
 gboolean
-dnf_sack_setup(DnfSack *sack, int flags, GError **error)
+dnf_sack_setup(DnfSack *sack, int flags, GError **error) try
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     Pool *pool = dnf_sack_get_pool(sack);
@@ -965,7 +966,7 @@ dnf_sack_setup(DnfSack *sack, int flags, GError **error)
             return FALSE;
     }
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_sack_evr_cmp:
@@ -1699,7 +1700,7 @@ dnf_sack_repo_enabled(DnfSack *sack, const char *reponame, int enabled)
  * Since: 0.7.0
  */
 gboolean
-dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **error)
+dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **error) try
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     Pool *pool = dnf_sack_get_pool(sack);
@@ -1774,7 +1775,7 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
     if (a_hrepo == NULL)
         hy_repo_free(hrepo);
     return ret;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_sack_load_repo:
@@ -1790,7 +1791,7 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
  * Since: 0.7.0
  */
 gboolean
-dnf_sack_load_repo(DnfSack *sack, HyRepo repo, int flags, GError **error)
+dnf_sack_load_repo(DnfSack *sack, HyRepo repo, int flags, GError **error) try
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     auto repoImpl = libdnf::repoGetImpl(repo);
@@ -1896,7 +1897,7 @@ dnf_sack_load_repo(DnfSack *sack, HyRepo repo, int flags, GError **error)
     }
     priv->considered_uptodate = FALSE;
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 // internal to hawkey
 
@@ -2165,7 +2166,7 @@ dnf_sack_add_repo(DnfSack *sack,
                     guint permissible_cache_age,
                     DnfSackAddFlags flags,
                     DnfState *state,
-                    GError **error)
+                    GError **error) try
 {
     gboolean ret = TRUE;
     GError *error_local = NULL;
@@ -2241,7 +2242,7 @@ dnf_sack_add_repo(DnfSack *sack,
 
     /* done */
     return dnf_state_done(state, error);
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_sack_add_repos:
@@ -2252,7 +2253,7 @@ dnf_sack_add_repos(DnfSack *sack,
                      guint permissible_cache_age,
                      DnfSackAddFlags flags,
                      DnfState *state,
-                     GError **error)
+                     GError **error) try
 {
     gboolean ret;
     guint cnt = 0;
@@ -2310,7 +2311,7 @@ dnf_sack_add_repos(DnfSack *sack,
 
     /* success */
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 namespace {
 void readModuleMetadataFromRepo(DnfSack * sack, libdnf::ModulePackageContainer * modulePackages,

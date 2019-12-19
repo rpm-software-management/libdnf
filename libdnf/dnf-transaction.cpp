@@ -32,6 +32,7 @@
 #include <rpm/rpmlog.h>
 #include <rpm/rpmts.h>
 
+#include "catch-error.hpp"
 #include "log.hpp"
 #include "tinyformat/tinyformat.hpp"
 #include "dnf-context.hpp"
@@ -286,7 +287,7 @@ dnf_transaction_set_dont_solve_goal(DnfTransaction *transaction, gboolean dont_s
  * Since: 0.1.0
  */
 gboolean
-dnf_transaction_ensure_repo(DnfTransaction *transaction, DnfPackage *pkg, GError **error)
+dnf_transaction_ensure_repo(DnfTransaction *transaction, DnfPackage *pkg, GError **error) try
 {
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     guint i;
@@ -328,7 +329,7 @@ dnf_transaction_ensure_repo(DnfTransaction *transaction, DnfPackage *pkg, GError
                 dnf_package_get_reponame(pkg),
                 priv->repos->len);
     return FALSE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_transaction_ensure_repo_list:
@@ -343,7 +344,7 @@ dnf_transaction_ensure_repo(DnfTransaction *transaction, DnfPackage *pkg, GError
  * Since: 0.1.0
  */
 gboolean
-dnf_transaction_ensure_repo_list(DnfTransaction *transaction, GPtrArray *pkglist, GError **error)
+dnf_transaction_ensure_repo_list(DnfTransaction *transaction, GPtrArray *pkglist, GError **error) try
 {
     for (guint i = 0; i < pkglist->len; i++) {
         auto pkg = static_cast< DnfPackage * >(g_ptr_array_index(pkglist, i));
@@ -351,10 +352,10 @@ dnf_transaction_ensure_repo_list(DnfTransaction *transaction, GPtrArray *pkglist
             return FALSE;
     }
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 gboolean
-dnf_transaction_gpgcheck_package(DnfTransaction *transaction, DnfPackage *pkg, GError **error)
+dnf_transaction_gpgcheck_package(DnfTransaction *transaction, DnfPackage *pkg, GError **error) try
 {
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     GError *error_local = NULL;
@@ -412,7 +413,7 @@ dnf_transaction_gpgcheck_package(DnfTransaction *transaction, DnfPackage *pkg, G
     }
 
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_transaction_check_untrusted:
@@ -424,7 +425,7 @@ dnf_transaction_gpgcheck_package(DnfTransaction *transaction, DnfPackage *pkg, G
  * of @goal.
  */
 gboolean
-dnf_transaction_check_untrusted(DnfTransaction *transaction, HyGoal goal, GError **error)
+dnf_transaction_check_untrusted(DnfTransaction *transaction, HyGoal goal, GError **error) try
 {
     guint i;
     g_autoptr(GPtrArray) install = NULL;
@@ -447,7 +448,7 @@ dnf_transaction_check_untrusted(DnfTransaction *transaction, HyGoal goal, GError
             return FALSE;
     }
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_find_pkg_from_header:
@@ -954,7 +955,7 @@ dnf_transaction_check_free_space(DnfTransaction *transaction, GError **error)
  * Since: 0.1.0
  **/
 gboolean
-dnf_transaction_download(DnfTransaction *transaction, DnfState *state, GError **error)
+dnf_transaction_download(DnfTransaction *transaction, DnfState *state, GError **error) try
 {
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
 
@@ -964,7 +965,7 @@ dnf_transaction_download(DnfTransaction *transaction, DnfState *state, GError **
 
     /* just download the list */
     return dnf_package_array_download(priv->pkgs_to_download, NULL, state, error);
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_transaction_depsolve:
@@ -980,7 +981,7 @@ dnf_transaction_download(DnfTransaction *transaction, DnfState *state, GError **
  * Since: 0.1.0
  **/
 gboolean
-dnf_transaction_depsolve(DnfTransaction *transaction, HyGoal goal, DnfState *state, GError **error)
+dnf_transaction_depsolve(DnfTransaction *transaction, HyGoal goal, DnfState *state, GError **error) try
 {
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     gboolean valid;
@@ -1024,7 +1025,7 @@ dnf_transaction_depsolve(DnfTransaction *transaction, HyGoal goal, DnfState *sta
         }
     }
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_transaction_reset:
@@ -1069,7 +1070,7 @@ dnf_transaction_reset(DnfTransaction *transaction)
  * by dnf_transaction_commit().
  **/
 gboolean
-dnf_transaction_import_keys(DnfTransaction *transaction, GError **error)
+dnf_transaction_import_keys(DnfTransaction *transaction, GError **error) try
 {
     guint i;
 
@@ -1095,7 +1096,7 @@ dnf_transaction_import_keys(DnfTransaction *transaction, GError **error)
     }
 
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_transaction_commit:
@@ -1113,7 +1114,7 @@ dnf_transaction_import_keys(DnfTransaction *transaction, GError **error)
  * Since: 0.1.0
  **/
 gboolean
-dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state, GError **error)
+dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state, GError **error) try
 {
     const gchar *filename;
     const gchar *tmp;
@@ -1528,7 +1529,7 @@ out:
     dnf_transaction_reset(transaction);
     dnf_state_release_locks(state);
     return ret;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_transaction_new:

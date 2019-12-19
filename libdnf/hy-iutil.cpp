@@ -44,6 +44,7 @@ extern "C" {
 }
 
 // hawkey
+#include "catch-error.hpp"
 #include "dnf-advisory-private.hpp"
 #include "dnf-types.h"
 #include "hy-iutil-private.hpp"
@@ -312,7 +313,7 @@ mkcachedir(char *path)
 }
 
 gboolean
-mv(const char* old_path, const char* new_path, GError** error)
+mv(const char* old_path, const char* new_path, GError** error) try
 {
     if (rename(old_path, new_path)) {
         g_set_error(error,
@@ -331,7 +332,7 @@ mv(const char* old_path, const char* new_path, GError** error)
         return FALSE;
     }
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_remove_recursive_v2:
@@ -343,26 +344,26 @@ mv(const char* old_path, const char* new_path, GError** error)
  * Returns: %FALSE if an error was set
  **/
 gboolean
-dnf_remove_recursive_v2(const gchar *path, GError **error)
+dnf_remove_recursive_v2(const gchar *path, GError **error) try
 {
     if (g_file_test(path, G_FILE_TEST_IS_DIR))
         return dnf_remove_recursive(path, error);
     else
         return dnf_ensure_file_unlinked(path, error);
-}
+} CATCH_TO_GERROR(FALSE)
 
 gboolean
-dnf_copy_file(const std::string & srcPath, const std::string & dstPath, GError ** error)
+dnf_copy_file(const std::string & srcPath, const std::string & dstPath, GError ** error) try
 {
     g_autoptr(GFile) src = g_file_new_for_path(srcPath.c_str());
     g_autoptr(GFile) dest = g_file_new_for_path(dstPath.c_str());
     return g_file_copy(src, dest,
         static_cast<GFileCopyFlags>(G_FILE_COPY_NOFOLLOW_SYMLINKS | G_FILE_COPY_ALL_METADATA),
         NULL, NULL, NULL, error);
-}
+} CATCH_TO_GERROR(FALSE)
 
 gboolean
-dnf_copy_recursive(const std::string & srcPath, const std::string & dstPath, GError ** error)
+dnf_copy_recursive(const std::string & srcPath, const std::string & dstPath, GError ** error) try
 {
     struct stat info;
     if (!stat(srcPath.c_str(), &info)) {
@@ -411,7 +412,7 @@ dnf_copy_recursive(const std::string & srcPath, const std::string & dstPath, GEr
             srcPath.c_str(), strerror(err));
         return FALSE;
     }
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_move_recursive:
@@ -425,7 +426,7 @@ dnf_copy_recursive(const std::string & srcPath, const std::string & dstPath, GEr
  * Returns: %TRUE on successful move, %FALSE otherwise
  **/
 gboolean
-dnf_move_recursive(const char * srcDir, const char * dstDir, GError ** error)
+dnf_move_recursive(const char * srcDir, const char * dstDir, GError ** error) try
 {
     if (rename(srcDir, dstDir) == -1) {
         if (!dnf_copy_recursive(srcDir, dstDir, error))
@@ -433,7 +434,7 @@ dnf_move_recursive(const char * srcDir, const char * dstDir, GError ** error)
         return dnf_remove_recursive_v2(srcDir, error);
     }
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 char *
 this_username(void)

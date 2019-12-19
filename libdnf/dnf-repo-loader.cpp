@@ -37,6 +37,7 @@
 #include <librepo/util.h>
 #include <string.h>
 
+#include "catch-error.hpp"
 #include "dnf-package.h"
 #include "dnf-repo-loader.h"
 #include "dnf-utils.h"
@@ -473,7 +474,7 @@ dnf_repo_loader_has_removable_repos(DnfRepoLoader *self)
  * Returns:(transfer container)(element-type DnfRepo): Array of repos
  */
 GPtrArray *
-dnf_repo_loader_get_repos(DnfRepoLoader *self, GError **error)
+dnf_repo_loader_get_repos(DnfRepoLoader *self, GError **error) try
 {
     DnfRepoLoaderPrivate *priv = GET_PRIVATE(self);
 
@@ -488,13 +489,13 @@ dnf_repo_loader_get_repos(DnfRepoLoader *self, GError **error)
 
     /* all okay */
     return g_ptr_array_ref(priv->repos);
-}
+} CATCH_TO_GERROR(NULL)
 
 /**
  * dnf_repo_loader_get_repo_by_id:
  */
 DnfRepo *
-dnf_repo_loader_get_repo_by_id(DnfRepoLoader *self, const gchar *id, GError **error)
+dnf_repo_loader_get_repo_by_id(DnfRepoLoader *self, const gchar *id, GError **error) try
 {
     DnfRepoLoaderPrivate *priv = GET_PRIVATE(self);
     guint i;
@@ -521,7 +522,7 @@ dnf_repo_loader_get_repo_by_id(DnfRepoLoader *self, const gchar *id, GError **er
                 DNF_ERROR_REPO_NOT_FOUND,
                 "failed to find %s", id);
     return NULL;
-}
+} CATCH_TO_GERROR(NULL)
 
 /**
  * dnf_repo_loader_directory_changed_cb:
