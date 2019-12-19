@@ -21,6 +21,8 @@
 #ifndef EXCEPTION_PY_H
 #define EXCEPTION_PY_H
 
+#include "error.hpp"
+
 #include <glib.h>
 
 extern PyObject *HyExc_Exception;
@@ -33,5 +35,13 @@ extern PyObject *HyExc_Validation;
 int init_exceptions(void);
 PyObject *op_error2exc(const GError *error);
 int ret2e(int ret, const char *msg);
+
+#define CATCH_TO_PYTHON_RET(RET) catch (const libdnf::Error& e) { \
+    PyErr_Format(HyExc_Exception, e.what());                      \
+    return RET;                                                   \
+}
+
+#define CATCH_TO_PYTHON CATCH_TO_PYTHON_RET(NULL)
+#define CATCH_TO_PYTHON_INT CATCH_TO_PYTHON_RET(-1)
 
 #endif // EXCEPTION_PY_H

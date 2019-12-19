@@ -55,7 +55,7 @@
 #include "pycomp.hpp"
 
 static PyObject *
-detect_arch(PyObject *unused, PyObject *args)
+detect_arch(PyObject *unused, PyObject *args) try
 {
     char *arch;
 
@@ -64,10 +64,10 @@ detect_arch(PyObject *unused, PyObject *args)
     PyObject * pyArch = PyString_FromString(arch);
     g_free(arch);
     return pyArch;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-chksum_name(PyObject *unused, PyObject *args)
+chksum_name(PyObject *unused, PyObject *args) try
 {
     int i;
     const char *name;
@@ -81,10 +81,10 @@ chksum_name(PyObject *unused, PyObject *args)
     }
 
     return PyString_FromString(name);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-chksum_type(PyObject *unused, PyObject *str_o)
+chksum_type(PyObject *unused, PyObject *str_o) try
 {
     PycompString str(str_o);
     if (!str.getCString())
@@ -96,10 +96,10 @@ chksum_type(PyObject *unused, PyObject *str_o)
         return NULL;
     }
     return PyLong_FromLong(type);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-split_nevra(PyObject *unused, PyObject *nevra_o)
+split_nevra(PyObject *unused, PyObject *nevra_o) try
 {
     PycompString nevra(nevra_o);
     if (!nevra.getCString())
@@ -114,7 +114,7 @@ split_nevra(PyObject *unused, PyObject *nevra_o)
 
     PyObject *ret = Py_BuildValue("slsss", name, epoch, version, release, arch);
     return ret;
-}
+} CATCH_TO_PYTHON
 
 static struct PyMethodDef hawkey_methods[] = {
     {"chksum_name",                (PyCFunction)chksum_name,

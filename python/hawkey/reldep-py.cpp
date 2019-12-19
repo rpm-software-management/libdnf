@@ -82,7 +82,7 @@ reldepFromPyObject(PyObject *o)
 static Id reldep_hash(_ReldepObject *self);
 
 static PyObject *
-reldep_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+reldep_new(PyTypeObject *type, PyObject *args, PyObject *kwds) try
 {
     PyObject *sack = PyTuple_GetItem(args, 0);
     if (sack == NULL) {
@@ -96,7 +96,7 @@ reldep_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         return NULL;
     }
     return (PyObject *)reldep_new_core(type, sack);
-}
+} CATCH_TO_PYTHON
 
 PyObject *
 reldepToPyObject(DnfReldep *reldep)
@@ -108,7 +108,7 @@ reldepToPyObject(DnfReldep *reldep)
 }
 
 static int
-reldep_init(_ReldepObject *self, PyObject *args, PyObject *kwds)
+reldep_init(_ReldepObject *self, PyObject *args, PyObject *kwds) try
 {
     PyObject *sack;
     PyObject *reldep_str_py = NULL;
@@ -129,7 +129,7 @@ reldep_init(_ReldepObject *self, PyObject *args, PyObject *kwds)
         return -1;
     }
     return 0;
-}
+} CATCH_TO_PYTHON_INT
 
 static void
 reldep_dealloc(_ReldepObject *self)
@@ -142,7 +142,7 @@ reldep_dealloc(_ReldepObject *self)
 }
 
 static PyObject *
-reldep_repr(_ReldepObject *self)
+reldep_repr(_ReldepObject *self) try
 {
     long hash = reldep_hash(self);
     if (PyErr_Occurred()) {
@@ -151,26 +151,26 @@ reldep_repr(_ReldepObject *self)
         return PyString_FromString("<_hawkey.Reldep object, INVALID value>");
     }
     return PyString_FromFormat("<_hawkey.Reldep object, id: %lu>", hash);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-reldep_str(_ReldepObject *self)
+reldep_str(_ReldepObject *self) try
 {
     DnfReldep *reldep = self->reldep;
     const char *cstr = reldep->toString();
     PyObject *retval = PyString_FromString(cstr);
     return retval;
-}
+} CATCH_TO_PYTHON
 
 static Id
-reldep_hash(_ReldepObject *self)
+reldep_hash(_ReldepObject *self) try
 {
     if (self->reldep == NULL) {
         PyErr_SetString(HyExc_Value, "Invalid Reldep has no hash.");
         return -1;
     }
     return self->reldep->getId();
-}
+} CATCH_TO_PYTHON_INT
 
 static int
 reldep_converter(PyObject *o, DnfReldep **reldep_ptr)
@@ -183,7 +183,7 @@ reldep_converter(PyObject *o, DnfReldep **reldep_ptr)
 }
 
 static PyObject *
-reldep_richcompare(PyObject *self, PyObject *other, int op)
+reldep_richcompare(PyObject *self, PyObject *other, int op) try
 {
     PyObject *result = NULL;
     DnfReldep *cself, *cother;
@@ -218,7 +218,7 @@ reldep_richcompare(PyObject *self, PyObject *other, int op)
 
     Py_INCREF(result);
     return result;
-}
+} CATCH_TO_PYTHON
 
 PyTypeObject reldep_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)

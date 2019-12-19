@@ -25,6 +25,7 @@
 #include "hy-iutil.h"
 
 // pyhawkey
+#include "exception-py.hpp"
 #include "packagedelta-py.hpp"
 
 #include "pycomp.hpp"
@@ -54,7 +55,7 @@ packageDelta_dealloc(_PackageDeltaObject *self)
 /* getsetters */
 
 static PyObject *
-get_str(_PackageDeltaObject *self, void *closure)
+get_str(_PackageDeltaObject *self, void *closure) try
 {
     const char *(*func)(DnfPackageDelta *);
     const char *cstr;
@@ -64,18 +65,18 @@ get_str(_PackageDeltaObject *self, void *closure)
     if (cstr == NULL)
         Py_RETURN_NONE;
     return PyString_FromString(cstr);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-get_num(_PackageDeltaObject *self, void *closure)
+get_num(_PackageDeltaObject *self, void *closure) try
 {
     guint64 (*func)(DnfPackageDelta *);
     func = (guint64 (*)(DnfPackageDelta *))closure;
     return PyLong_FromUnsignedLongLong(func(self->delta));
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-get_chksum(_PackageDeltaObject *self, void *closure)
+get_chksum(_PackageDeltaObject *self, void *closure) try
 {
     HyChecksum *(*func)(DnfPackageDelta *, int *);
     int type;
@@ -97,7 +98,7 @@ get_chksum(_PackageDeltaObject *self, void *closure)
 #endif
 
     return res;
-}
+} CATCH_TO_PYTHON
 
 static PyGetSetDef packageDelta_getsetters[] = {
     {(char*) "location", (getter)get_str, NULL, NULL,

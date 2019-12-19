@@ -25,6 +25,7 @@
 
 // pyhawkey
 #include "advisoryref-py.hpp"
+#include "exception-py.hpp"
 #include "iutil-py.hpp"
 
 #include "pycomp.hpp"
@@ -81,7 +82,7 @@ advisoryref_dealloc(_AdvisoryRefObject *self)
 }
 
 static PyObject *
-advisoryref_richcompare(PyObject *self, PyObject *other, int op)
+advisoryref_richcompare(PyObject *self, PyObject *other, int op) try
 {
     PyObject *result;
     DnfAdvisoryRef *cself, *cother;
@@ -115,12 +116,12 @@ advisoryref_richcompare(PyObject *self, PyObject *other, int op)
 
     Py_INCREF(result);
     return result;
-}
+} CATCH_TO_PYTHON
 
 /* getsetters */
 
 static PyObject *
-get_type(_AdvisoryRefObject *self, void *closure)
+get_type(_AdvisoryRefObject *self, void *closure) try
 {
     DnfAdvisoryRefKind (*func)(DnfAdvisoryRef*);
     DnfAdvisoryRefKind ctype;
@@ -128,10 +129,10 @@ get_type(_AdvisoryRefObject *self, void *closure)
     func = (DnfAdvisoryRefKind (*)(DnfAdvisoryRef*))closure;
     ctype = func(self->advisoryref);
     return PyLong_FromLong(ctype);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-get_str(_AdvisoryRefObject *self, void *closure)
+get_str(_AdvisoryRefObject *self, void *closure) try
 {
     const char *(*func)(DnfAdvisoryRef*);
     const char *cstr;
@@ -141,7 +142,7 @@ get_str(_AdvisoryRefObject *self, void *closure)
     if (cstr == NULL)
         Py_RETURN_NONE;
     return PyUnicode_FromString(cstr);
-}
+} CATCH_TO_PYTHON
 
 static PyGetSetDef advisoryref_getsetters[] = {
     {(char*)"type", (getter)get_type, NULL, NULL, (void *)dnf_advisoryref_get_kind},

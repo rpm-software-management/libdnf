@@ -32,6 +32,7 @@
 #include "dnf-types.h"
 #include "libdnf/sack/packageset.hpp"
 
+#include "exception-py.hpp"
 #include "iutil-py.hpp"
 #include "package-py.hpp"
 #include "packagedelta-py.hpp"
@@ -70,7 +71,7 @@ package_converter(PyObject *o, DnfPackage **pkg_ptr)
 /* functions on the type */
 
 static PyObject *
-package_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+package_new(PyTypeObject *type, PyObject *args, PyObject *kwds) try
 {
     _PackageObject *self = (_PackageObject*)type->tp_alloc(type, 0);
     if (self) {
@@ -78,7 +79,7 @@ package_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         self->package = NULL;
     }
     return (PyObject*)self;
-}
+} CATCH_TO_PYTHON
 
 static void
 package_dealloc(_PackageObject *self)
@@ -91,7 +92,7 @@ package_dealloc(_PackageObject *self)
 }
 
 static int
-package_init(_PackageObject *self, PyObject *args, PyObject *kwds)
+package_init(_PackageObject *self, PyObject *args, PyObject *kwds) try
 {
     Id id;
     PyObject *sack;
@@ -106,10 +107,10 @@ package_init(_PackageObject *self, PyObject *args, PyObject *kwds)
     Py_INCREF(self->sack);
     self->package = dnf_package_new(csack, id);
     return 0;
-}
+} CATCH_TO_PYTHON_INT
 
 static PyObject *
-package_py_richcompare(PyObject *self, PyObject *other, int op)
+package_py_richcompare(PyObject *self, PyObject *other, int op) try
 {
     PyObject *v;
     DnfPackage *self_package, *other_package;
@@ -149,10 +150,10 @@ package_py_richcompare(PyObject *self, PyObject *other, int op)
     }
     Py_INCREF(v);
     return v;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-package_repr(_PackageObject *self)
+package_repr(_PackageObject *self) try
 {
     DnfPackage *pkg = self->package;
     const char *nevra = dnf_package_get_nevra(pkg);
@@ -162,41 +163,41 @@ package_repr(_PackageObject *self)
                                package_hash(self), nevra,
                                dnf_package_get_reponame(pkg));
     return repr;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-package_str(_PackageObject *self)
+package_str(_PackageObject *self) try
 {
     const char *cstr = dnf_package_get_nevra(self->package);
     PyObject *ret = PyString_FromString(cstr);
     return ret;
-}
+} CATCH_TO_PYTHON
 
-long package_hash(_PackageObject *self)
+long package_hash(_PackageObject *self) try
 {
     return dnf_package_get_id(self->package);
-}
+} CATCH_TO_PYTHON_INT
 
 /* getsetters */
 
 static PyObject *
-get_bool(_PackageObject *self, void *closure)
+get_bool(_PackageObject *self, void *closure) try
 {
     unsigned long (*func)(DnfPackage*);
     func = (unsigned long (*)(DnfPackage*))closure;
     return PyBool_FromLong(func(self->package));
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-get_num(_PackageObject *self, void *closure)
+get_num(_PackageObject *self, void *closure) try
 {
     guint64 (*func)(DnfPackage*);
     func = (guint64 (*)(DnfPackage*))closure;
     return PyLong_FromUnsignedLongLong(func(self->package));
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-get_reldep(_PackageObject *self, void *closure)
+get_reldep(_PackageObject *self, void *closure) try
 {
     DnfReldepList *(*func)(DnfPackage*) = (DnfReldepList *(*)(DnfPackage*))closure;
     std::unique_ptr<DnfReldepList> reldeplist(func(self->package));
@@ -204,10 +205,10 @@ get_reldep(_PackageObject *self, void *closure)
     PyObject *list = reldeplist_to_pylist(reldeplist.get(), self->sack);
 
     return list;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-get_str(_PackageObject *self, void *closure)
+get_str(_PackageObject *self, void *closure) try
 {
     const char *(*func)(DnfPackage*);
     const char *cstr;
@@ -217,10 +218,10 @@ get_str(_PackageObject *self, void *closure)
     if (cstr == NULL)
         Py_RETURN_NONE;
     return PyUnicode_FromString(cstr);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-get_str_array(_PackageObject *self, void *closure)
+get_str_array(_PackageObject *self, void *closure) try
 {
     gchar ** (*func)(DnfPackage*);
     gchar ** strv;
@@ -231,10 +232,10 @@ get_str_array(_PackageObject *self, void *closure)
     g_strfreev(strv);
 
     return list;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-get_chksum(_PackageObject *self, void *closure)
+get_chksum(_PackageObject *self, void *closure) try
 {
     HyChecksum *(*func)(DnfPackage*, int *);
     int type;
@@ -256,13 +257,13 @@ get_chksum(_PackageObject *self, void *closure)
 #endif
 
     return res;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-get_changelogs(_PackageObject *self, void *closure)
+get_changelogs(_PackageObject *self, void *closure) try
 {
     return changelogslist_to_pylist(dnf_package_get_changelogs(self->package));
-}
+} CATCH_TO_PYTHON
 
 static PyGetSetDef package_getsetters[] = {
     {(char*)"baseurl",        (getter)get_str, NULL, NULL,
@@ -329,16 +330,16 @@ static PyGetSetDef package_getsetters[] = {
 /* object methods */
 
 static PyObject *
-evr_cmp(_PackageObject *self, PyObject *other)
+evr_cmp(_PackageObject *self, PyObject *other) try
 {
     DnfPackage *pkg2 = packageFromPyObject(other);
     if (pkg2 == NULL)
         return NULL;
     return PyLong_FromLong(dnf_package_evr_cmp(self->package, pkg2));
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-get_delta_from_evr(_PackageObject *self, PyObject *evr_str)
+get_delta_from_evr(_PackageObject *self, PyObject *evr_str) try
 {
     PycompString evr(evr_str);
     if (!evr.getCString())
@@ -347,10 +348,10 @@ get_delta_from_evr(_PackageObject *self, PyObject *evr_str)
     if (delta_c)
         return packageDeltaToPyObject(delta_c);
     Py_RETURN_NONE;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-is_in_active_module(_PackageObject *self, PyObject *unused)
+is_in_active_module(_PackageObject *self, PyObject *unused) try
 {
     DnfSack * csack = sackFromPyObject(self->sack);
     std::unique_ptr<DnfPackageSet> includes(dnf_sack_get_module_includes(csack));
@@ -361,10 +362,10 @@ is_in_active_module(_PackageObject *self, PyObject *unused)
         Py_RETURN_TRUE;
     }
     Py_RETURN_FALSE;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-get_advisories(_PackageObject *self, PyObject *args)
+get_advisories(_PackageObject *self, PyObject *args) try
 {
     int cmp_type;
     GPtrArray *advisories;
@@ -378,7 +379,7 @@ get_advisories(_PackageObject *self, PyObject *args)
     g_ptr_array_unref(advisories);
 
     return list;
-}
+} CATCH_TO_PYTHON
 
 
 static struct PyMethodDef package_methods[] = {

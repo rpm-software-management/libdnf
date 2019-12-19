@@ -26,6 +26,7 @@
 
 // pyhawkey
 #include "advisorypkg-py.hpp"
+#include "exception-py.hpp"
 #include "iutil-py.hpp"
 
 #include "pycomp.hpp"
@@ -78,7 +79,7 @@ advisorypkg_dealloc(_AdvisoryPkgObject *self)
 }
 
 static PyObject *
-advisorypkg_richcompare(PyObject *self, PyObject *other, int op)
+advisorypkg_richcompare(PyObject *self, PyObject *other, int op) try
 {
     PyObject *result;
     DnfAdvisoryPkg *cself, *cother;
@@ -112,12 +113,12 @@ advisorypkg_richcompare(PyObject *self, PyObject *other, int op)
 
     Py_INCREF(result);
     return result;
-}
+} CATCH_TO_PYTHON
 
 /* getsetters */
 
 static PyObject *
-get_attr(_AdvisoryPkgObject *self, void *closure)
+get_attr(_AdvisoryPkgObject *self, void *closure) try
 {
     intptr_t str_key = (intptr_t)closure;
     if (str_key == 0)
@@ -129,17 +130,17 @@ get_attr(_AdvisoryPkgObject *self, void *closure)
     if (str_key == 3)
         return PyUnicode_FromString(dnf_advisorypkg_get_filename(self->advisorypkg));
     Py_RETURN_NONE;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-get_advisory(_AdvisoryPkgObject *self, PyObject *args)
+get_advisory(_AdvisoryPkgObject *self, PyObject *args) try
 {
     PyObject *sack = NULL;
     if (!PyArg_ParseTuple(args, "O!", &sack_Type, &sack))
         return NULL;
     auto advisory = self->advisorypkg->getAdvisory();
     return advisoryToPyObject(advisory, sack);
-}
+} CATCH_TO_PYTHON
 
 static struct PyMethodDef advisorypkg_methods[] = {
     {"get_advisory", (PyCFunction)get_advisory, METH_VARARGS, NULL},

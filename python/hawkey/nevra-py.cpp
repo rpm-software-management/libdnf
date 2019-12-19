@@ -28,6 +28,7 @@
 #include "dnf-sack.h"
 
 // pyhawkey
+#include "exception-py.hpp"
 #include "iutil-py.hpp"
 #include "nevra-py.hpp"
 #include "pycomp.hpp"
@@ -60,7 +61,7 @@ nevraToPyObject(libdnf::Nevra *nevra)
 
 // getsetters
 static int
-set_epoch(_NevraObject *self, PyObject *value, void *closure)
+set_epoch(_NevraObject *self, PyObject *value, void *closure) try
 {
     if (value == NULL)
         self->nevra->setEpoch(libdnf::Nevra::EPOCH_NOT_SET);
@@ -71,10 +72,10 @@ set_epoch(_NevraObject *self, PyObject *value, void *closure)
     else
         return -1;
     return 0;
-}
+} CATCH_TO_PYTHON_INT
 
 static PyObject *
-get_epoch(_NevraObject *self, void *closure)
+get_epoch(_NevraObject *self, void *closure) try
 {
     if (self->nevra->getEpoch() == libdnf::Nevra::EPOCH_NOT_SET)
         Py_RETURN_NONE;
@@ -83,29 +84,29 @@ get_epoch(_NevraObject *self, void *closure)
 #else
     return PyInt_FromLong(self->nevra->getEpoch());
 #endif
-}
+} CATCH_TO_PYTHON
 
 template<const std::string & (libdnf::Nevra::*getMethod)() const>
 static PyObject *
-get_attr(_NevraObject *self, void *closure)
+get_attr(_NevraObject *self, void *closure) try
 {
     auto str = (self->nevra->*getMethod)();
     if (str.empty())
         Py_RETURN_NONE;
     else
         return PyString_FromString(str.c_str());
-}
+} CATCH_TO_PYTHON
 
 template<void (libdnf::Nevra::*setMethod)(std::string &&)>
 static int
-set_attr(_NevraObject *self, PyObject *value, void *closure)
+set_attr(_NevraObject *self, PyObject *value, void *closure) try
 {
     PycompString str_value(value);
     if (!str_value.getCString())
         return -1;
     (self->nevra->*setMethod)(str_value.getCString());
     return 0;
-}
+} CATCH_TO_PYTHON_INT
 
 static PyGetSetDef nevra_getsetters[] = {
     {(char*)"name", (getter)get_attr<&libdnf::Nevra::getName>,
@@ -122,13 +123,13 @@ static PyGetSetDef nevra_getsetters[] = {
 };
 
 static PyObject *
-nevra_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+nevra_new(PyTypeObject *type, PyObject *args, PyObject *kwds) try
 {
     _NevraObject *self = (_NevraObject*)type->tp_alloc(type, 0);
     if (self)
         self->nevra = new libdnf::Nevra;
     return (PyObject*)self;
-}
+} CATCH_TO_PYTHON
 
 static void
 nevra_dealloc(_NevraObject *self)
@@ -138,7 +139,7 @@ nevra_dealloc(_NevraObject *self)
 }
 
 static int
-nevra_init(_NevraObject *self, PyObject *args, PyObject *kwds)
+nevra_init(_NevraObject *self, PyObject *args, PyObject *kwds) try
 {
     char *name = NULL, *version = NULL, *release = NULL, *arch = NULL;
     PyObject *epoch_o = NULL;
@@ -173,15 +174,15 @@ nevra_init(_NevraObject *self, PyObject *args, PyObject *kwds)
     if (arch)
         self->nevra->setArch(arch);
     return 0;
-}
+} CATCH_TO_PYTHON_INT
 
 /* object methods */
 
 static PyObject *
-evr(_NevraObject *self, PyObject *unused)
+evr(_NevraObject *self, PyObject *unused) try
 {
     return PyString_FromString(self->nevra->getEvr().c_str());;
-}
+} CATCH_TO_PYTHON
 
 int
 nevra_converter(PyObject *o, libdnf::Nevra **nevra_ptr)
@@ -194,7 +195,7 @@ nevra_converter(PyObject *o, libdnf::Nevra **nevra_ptr)
 }
 
 static PyObject *
-evr_cmp(_NevraObject *self, PyObject *args)
+evr_cmp(_NevraObject *self, PyObject *args) try
 {
     DnfSack *sack;
     libdnf::Nevra *nevra;
@@ -205,16 +206,16 @@ evr_cmp(_NevraObject *self, PyObject *args)
         return NULL;
     int cmp = self->nevra->compareEvr(*nevra, sack);
     return PyLong_FromLong(cmp);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-has_just_name(_NevraObject *self, PyObject *unused)
+has_just_name(_NevraObject *self, PyObject *unused) try
 {
     return PyBool_FromLong(self->nevra->hasJustName());
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-to_query(_NevraObject *self, PyObject *args, PyObject *kwds)
+to_query(_NevraObject *self, PyObject *args, PyObject *kwds) try
 {
     PyObject *sack;
     DnfSack *csack;
@@ -230,7 +231,7 @@ to_query(_NevraObject *self, PyObject *args, PyObject *kwds)
     HyQuery query = hy_query_from_nevra(self->nevra, csack, c_icase);
     PyObject *q = queryToPyObject(query, sack, &query_Type);
     return q;
-}
+} CATCH_TO_PYTHON
 
 static struct PyMethodDef nevra_methods[] = {
     {"evr_cmp",     (PyCFunction) evr_cmp, METH_VARARGS, NULL},
@@ -242,7 +243,7 @@ static struct PyMethodDef nevra_methods[] = {
 };
 
 static PyObject *
-nevra_richcompare(PyObject *self, PyObject *other, int op)
+nevra_richcompare(PyObject *self, PyObject *other, int op) try
 {
     PyObject *v;
     libdnf::Nevra *other_nevra, *self_nevra;
@@ -283,7 +284,7 @@ nevra_richcompare(PyObject *self, PyObject *other, int op)
     }
     Py_INCREF(v);
     return v;
-}
+} CATCH_TO_PYTHON
 
 PyTypeObject nevra_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)

@@ -29,6 +29,7 @@
 
 // pyhawkey
 #include "advisory-py.hpp"
+#include "exception-py.hpp"
 #include "iutil-py.hpp"
 
 #include "pycomp.hpp"
@@ -85,7 +86,7 @@ advisory_dealloc(_AdvisoryObject *self)
 }
 
 static PyObject *
-advisory_richcompare(PyObject *self, PyObject *other, int op)
+advisory_richcompare(PyObject *self, PyObject *other, int op) try
 {
     PyObject *result;
     DnfAdvisory *cself, *cother;
@@ -119,12 +120,12 @@ advisory_richcompare(PyObject *self, PyObject *other, int op)
 
     Py_INCREF(result);
     return result;
-}
+} CATCH_TO_PYTHON
 
 /* getsetters */
 
 static PyObject *
-get_str(_AdvisoryObject *self, void *closure)
+get_str(_AdvisoryObject *self, void *closure) try
 {
     const char *(*func)(DnfAdvisory*);
     const char *cstr;
@@ -134,10 +135,10 @@ get_str(_AdvisoryObject *self, void *closure)
     if (cstr == NULL)
         Py_RETURN_NONE;
     return PyUnicode_FromString(cstr);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-get_type(_AdvisoryObject *self, void *closure)
+get_type(_AdvisoryObject *self, void *closure) try
 {
     DnfAdvisoryKind (*func)(DnfAdvisory*);
     DnfAdvisoryKind ctype;
@@ -145,10 +146,10 @@ get_type(_AdvisoryObject *self, void *closure)
     func = (DnfAdvisoryKind (*)(DnfAdvisory*))closure;
     ctype = func(self->advisory);
     return PyLong_FromLong(ctype);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-get_datetime(_AdvisoryObject *self, void *closure)
+get_datetime(_AdvisoryObject *self, void *closure) try
 {
     guint64 (*func)(DnfAdvisory*);
     func = (guint64 (*)(DnfAdvisory*))closure;
@@ -157,23 +158,23 @@ get_datetime(_AdvisoryObject *self, void *closure)
     PyDateTime_IMPORT;
     PyObject *datetime = PyDateTime_FromTimestamp(args.get());
     return datetime;
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-get_advisorypkg_list(_AdvisoryObject *self, void *closure)
+get_advisorypkg_list(_AdvisoryObject *self, void *closure) try
 {
     std::vector<libdnf::AdvisoryPkg> advisoryPkgs;
     self->advisory->getPackages(advisoryPkgs);
     return advisoryPkgVectorToPylist(advisoryPkgs);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-get_advisoryref_list(_AdvisoryObject *self, void *closure)
+get_advisoryref_list(_AdvisoryObject *self, void *closure) try
 {
     std::vector<libdnf::AdvisoryRef> advisoryRefs;
     self->advisory->getReferences(advisoryRefs);
     return advisoryRefVectorToPylist(advisoryRefs, self->sack);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
 matchBugOrCVE(_AdvisoryObject *self, PyObject *args, bool bug)
@@ -196,16 +197,16 @@ matchBugOrCVE(_AdvisoryObject *self, PyObject *args, bool bug)
 }
 
 static PyObject *
-matchBug(_AdvisoryObject *self, PyObject *args)
+matchBug(_AdvisoryObject *self, PyObject *args) try
 {
     return matchBugOrCVE(self, args, true);
-}
+} CATCH_TO_PYTHON
 
 static PyObject *
-matchCVE(_AdvisoryObject *self, PyObject *args)
+matchCVE(_AdvisoryObject *self, PyObject *args) try
 {
     return matchBugOrCVE(self, args, false);
-}
+} CATCH_TO_PYTHON
 
 static PyGetSetDef advisory_getsetters[] = {
     {(char*)"title", (getter)get_str, NULL, NULL, (void *)dnf_advisory_get_title},
