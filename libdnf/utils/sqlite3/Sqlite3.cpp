@@ -28,7 +28,7 @@ SQLite3::open()
         auto result = sqlite3_open(path.c_str(), &db);
         if (result != SQLITE_OK) {
             sqlite3_close(db);
-            throw LibException(result, "Open failed");
+            throw Error(result, "Open failed");
         }
 
         // the busy timeout must be set before executing *any* statements
@@ -63,7 +63,7 @@ SQLite3::close()
         result = sqlite3_close(db);
     }
     if (result != SQLITE_OK) {
-        throw LibException(result, "Close failed");
+        throw Error(result, "Close failed");
     }
     db = nullptr;
 }
@@ -76,7 +76,7 @@ SQLite3::backup(const std::string &outputFile)
     auto result = sqlite3_open(outputFile.c_str(), &backupDB);
     if (result != SQLITE_OK) {
         sqlite3_close(backupDB);
-        throw LibException(result, "Failed to open backup database: " + outputFile);
+        throw Error(result, "Failed to open backup database: " + outputFile);
     }
 
     sqlite3_backup *backupHandle = sqlite3_backup_init(backupDB, "main", db, "main");
@@ -91,7 +91,7 @@ SQLite3::backup(const std::string &outputFile)
     sqlite3_close(backupDB);
 
     if (result != SQLITE_OK) {
-        throw LibException(result, "Database backup failed");
+        throw Error(result, "Database backup failed");
     }
 }
 
@@ -103,7 +103,7 @@ SQLite3::restore(const std::string &inputFile)
     auto result = sqlite3_open(inputFile.c_str(), &backupDB);
     if (result != SQLITE_OK) {
         sqlite3_close(backupDB);
-        throw LibException(result, "Failed to open backup database: " + inputFile);
+        throw Error(result, "Failed to open backup database: " + inputFile);
     }
 
     sqlite3_backup *backupHandle = sqlite3_backup_init(db, "main", backupDB, "main");
@@ -118,6 +118,6 @@ SQLite3::restore(const std::string &inputFile)
     sqlite3_close(backupDB);
 
     if (result != SQLITE_OK) {
-        throw LibException(result, "Database restore failed");
+        throw Error(result, "Database restore failed");
     }
 }

@@ -22,6 +22,8 @@
 #ifndef _SQLITE3_HPP
 #define _SQLITE3_HPP
 
+#include "../../error.hpp"
+
 #include <sqlite3.h>
 
 #include <map>
@@ -32,30 +34,11 @@
 
 class SQLite3 {
 public:
-    class Exception : public std::runtime_error {
+    class Error : public libdnf::Error {
     public:
-        Exception(const std::string &msg)
-          : runtime_error(msg)
-        {
-        }
-        Exception(const char *msg)
-          : runtime_error(msg)
-        {
-        }
-    };
+        Error(int code, const std::string &msg) : libdnf::Error(msg), ecode{code} {}
+        Error(int code, const char *msg) : libdnf::Error(msg), ecode{code} {}
 
-    class LibException : public Exception {
-    public:
-        LibException(int code, const std::string &msg)
-          : Exception(msg)
-          , ecode{code}
-        {
-        }
-        LibException(int code, const char *msg)
-          : Exception(msg)
-          , ecode{code}
-        {
-        }
         int code() const noexcept { return ecode; }
         const char *codeStr() const noexcept { return sqlite3_errstr(ecode); }
 
@@ -80,7 +63,7 @@ public:
         {
             auto result = sqlite3_prepare_v2(db.db, sql, -1, &stmt, nullptr);
             if (result != SQLITE_OK)
-                throw LibException(result, "Statement: " + db.getError() + " in\n" + sql);
+                throw Error(result, "Statement: " + db.getError() + " in\n" + sql);
         };
 
         Statement(SQLite3 &db, const std::string &sql)
@@ -88,70 +71,70 @@ public:
         {
             auto result = sqlite3_prepare_v2(db.db, sql.c_str(), sql.length() + 1, &stmt, nullptr);
             if (result != SQLITE_OK)
-                throw LibException(result, "Statement: " + db.getError() + " in\n" + sql);
+                throw Error(result, "Statement: " + db.getError() + " in\n" + sql);
         };
 
         void bind(int pos, int val)
         {
             auto result = sqlite3_bind_int(stmt, pos, val);
             if (result != SQLITE_OK)
-                throw LibException(result, "Integer bind failed: " + db.getError());
+                throw Error(result, "Integer bind failed: " + db.getError());
         }
 
         void bind(int pos, std::int64_t val)
         {
             auto result = sqlite3_bind_int64(stmt, pos, val);
             if (result != SQLITE_OK)
-                throw LibException(result, "Integer64 bind failed: " + db.getError());
+                throw Error(result, "Integer64 bind failed: " + db.getError());
         }
 
         void bind(int pos, std::uint32_t val)
         {
             auto result = sqlite3_bind_int(stmt, pos, val);
             if (result != SQLITE_OK)
-                throw LibException(result, "Unsigned integer bind failed: " + db.getError());
+                throw Error(result, "Unsigned integer bind failed: " + db.getError());
         }
 
         void bind(int pos, double val)
         {
             auto result = sqlite3_bind_double(stmt, pos, val);
             if (result != SQLITE_OK)
-                throw LibException(result, "Double bind failed: " + db.getError());
+                throw Error(result, "Double bind failed: " + db.getError());
         }
 
         void bind(int pos, bool val)
         {
             auto result = sqlite3_bind_int(stmt, pos, val ? 1 : 0);
             if (result != SQLITE_OK)
-                throw LibException(result, "Bool bind failed: " + db.getError());
+                throw Error(result, "Bool bind failed: " + db.getError());
         }
 
         void bind(int pos, const char *val)
         {
             auto result = sqlite3_bind_text(stmt, pos, val, -1, SQLITE_TRANSIENT);
             if (result != SQLITE_OK)
-                throw LibException(result, "Text bind failed: " + db.getError());
+                throw Error(result, "Text bind failed: " + db.getError());
         }
 
         void bind(int pos, const std::string &val)
         {
             auto result = sqlite3_bind_text(stmt, pos, val.c_str(), -1, SQLITE_TRANSIENT);
             if (result != SQLITE_OK)
-                throw LibException(result, "Text bind failed: " + db.getError());
+                throw Error(result, "Text bind failed: " + db.getError());
         }
 
         void bind(int pos, const Blob &val)
         {
             auto result = sqlite3_bind_blob(stmt, pos, val.data, val.size, SQLITE_TRANSIENT);
             if (result != SQLITE_OK)
-                throw LibException(result, "Blob bind failed: " + db.getError());
+                throw Error(result, "Blob bind failed: " + db.getError());
         }
 
         void bind(int pos, const std::vector< unsigned char > &val)
         {
             auto result = sqlite3_bind_blob(stmt, pos, val.data(), val.size(), SQLITE_TRANSIENT);
             if (result != SQLITE_OK)
-                throw LibException(result, "Blob bind failed: " + db.getError());
+                throw Error(result, "Blob bind failed: " + db.getError());
         }
 
         template< typename... Args >
@@ -174,7 +157,7 @@ public:
                 case SQLITE_BUSY:
                     return StepResult::BUSY;
                 default:
-                    throw LibException(result,
+                    throw Error(result,
                                        "Step: " + db.getError() + " in\n" + getExpandedSql());
             }
         }
@@ -207,10 +190,11 @@ public:
             return getSql();
 #else
             expandSql = sqlite3_expanded_sql(stmt);
-            if (!expandSql)
-                throw Exception(
+            if (!expandSql) {
+                throw libdnf::Exception(
                     "getExpandedSql(): insufficient memory or result "
                     "exceed the maximum SQLite3 string length");
+            }
             return expandSql;
 #endif
         }
@@ -299,7 +283,7 @@ public:
         {
             auto it = colsName2idx.find(colName);
             if (it == colsName2idx.end())
-                throw Exception("get() column \"" + colName + "\" not found");
+                throw libdnf::Exception("get() column \"" + colName + "\" not found");
             return it->second;
         }
 
@@ -346,7 +330,7 @@ public:
     {
         auto result = sqlite3_exec(db, sql, nullptr, nullptr, nullptr);
         if (result != SQLITE_OK) {
-            throw LibException(result, "Exec failed: " + getError());
+            throw Error(result, "Exec failed: " + getError());
         }
     }
 
