@@ -33,6 +33,7 @@
 
 #include <glib.h>
 
+#include "catch-error.hpp"
 #include "hy-util.h"
 #include "hy-goal-private.hpp"
 #include "dnf-goal.h"
@@ -55,7 +56,7 @@
  * Since: 0.7.0
  */
 gboolean
-dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError **error)
+dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError **error) try
 {
     gint cnt;
     gint j;
@@ -110,7 +111,7 @@ dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError **error)
         }
     }
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_goal_get_packages:

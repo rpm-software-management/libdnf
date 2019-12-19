@@ -36,6 +36,7 @@
 #include <rpm/rpmlog.h>
 #include <rpm/rpmdb.h>
 
+#include "catch-error.hpp"
 #include "sack/packageset.hpp"
 #include "hy-package-private.hpp"
 #include "dnf-rpmts-private.hpp"
@@ -93,7 +94,7 @@ dnf_rpmts_add_install_filename2(rpmts ts,
                                 gboolean allow_untrusted,
                                 gboolean is_update,
                                 DnfPackage * pkg,
-                                GError **error)
+                                GError **error) try
 {
     gboolean ret = TRUE;
     gint res;
@@ -197,7 +198,7 @@ out:
     Fclose(fd);
     headerFree(hdr);
     return ret;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_rpmts_add_install_filename:
@@ -218,10 +219,10 @@ dnf_rpmts_add_install_filename(rpmts ts,
                                const gchar *filename,
                                gboolean allow_untrusted,
                                gboolean is_update,
-                               GError **error)
+                               GError **error) try
 {
     return dnf_rpmts_add_install_filename2(ts, filename, allow_untrusted, is_update, NULL, error);
-}
+} CATCH_TO_GERROR(FALSE)
 
 
 /**
@@ -236,7 +237,7 @@ dnf_rpmts_add_install_filename(rpmts ts,
  * Since: 0.1.0
  **/
 gboolean
-dnf_rpmts_look_for_problems(rpmts ts, GError **error)
+dnf_rpmts_look_for_problems(rpmts ts, GError **error) try
 {
     gboolean ret = TRUE;
     rpmProblem prob;
@@ -283,7 +284,7 @@ dnf_rpmts_look_for_problems(rpmts ts, GError **error)
 out:
     rpmpsFree(probs);
     return ret;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_rpmts_log_handler_cb:
@@ -378,7 +379,7 @@ out:
  * Since: 0.1.0
  **/
 gboolean
-dnf_rpmts_add_remove_pkg(rpmts ts, DnfPackage *pkg, GError **error)
+dnf_rpmts_add_remove_pkg(rpmts ts, DnfPackage *pkg, GError **error) try
 {
     gboolean ret = TRUE;
     gint retval;
@@ -405,4 +406,4 @@ out:
     if (hdr != NULL)
         headerFree(hdr);
     return ret;
-}
+} CATCH_TO_GERROR(FALSE)

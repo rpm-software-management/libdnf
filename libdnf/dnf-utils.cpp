@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <glib/gstdio.h>
 
+#include "catch-error.hpp"
 #include "dnf-types.h"
 #include "dnf-utils.h"
 
@@ -95,7 +96,7 @@ dnf_realpath(const gchar *path)
  * Since: 0.1.7
  **/
 gboolean
-dnf_remove_recursive(const gchar *directory, GError **error)
+dnf_remove_recursive(const gchar *directory, GError **error) try
 {
     const gchar *filename;
     g_autoptr(GDir) dir = NULL;
@@ -136,7 +137,7 @@ dnf_remove_recursive(const gchar *directory, GError **error)
         return FALSE;
     }
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 
 /**
@@ -152,7 +153,7 @@ dnf_remove_recursive(const gchar *directory, GError **error)
  * Since 0.9.4
  **/
 gboolean
-dnf_ensure_file_unlinked(const gchar *src_path, GError **error)
+dnf_ensure_file_unlinked(const gchar *src_path, GError **error) try
 {
     if ((unlink(src_path) != 0) && errno != ENOENT) {
         g_set_error(error,
@@ -163,7 +164,7 @@ dnf_ensure_file_unlinked(const gchar *src_path, GError **error)
     }
 
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_delete_files_matching:
@@ -188,7 +189,7 @@ dnf_ensure_file_unlinked(const gchar *src_path, GError **error)
 gboolean
 dnf_delete_files_matching(const gchar* directory_path,
                           const char* const* patterns,
-                          GError **error)
+                          GError **error) try
 {
     const gchar *filename;
     g_autoptr(GDir) dir = NULL;
@@ -233,7 +234,7 @@ dnf_delete_files_matching(const gchar* directory_path,
     }
 
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_get_file_contents_allow_noent:
@@ -252,7 +253,7 @@ gboolean
 dnf_get_file_contents_allow_noent(const gchar            *path,
                                   gchar                  **out_contents,
                                   gsize                  *out_length,
-                                  GError                 **error)
+                                  GError                 **error) try
 {
     gsize length;
     g_autofree gchar *contents = NULL;
@@ -272,4 +273,4 @@ dnf_get_file_contents_allow_noent(const gchar            *path,
         *out_length = length;
 
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)

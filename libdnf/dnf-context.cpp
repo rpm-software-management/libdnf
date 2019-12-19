@@ -56,6 +56,7 @@
 #include <fnmatch.h>
 #include <unistd.h>
 
+#include "catch-error.hpp"
 #include "log.hpp"
 #include "tinyformat/tinyformat.hpp"
 #include "dnf-lock.h"
@@ -369,7 +370,7 @@ dnf_context_init(DnfContext *context)
  * Since: 0.7.0
  */
 gboolean
-dnf_context_globals_init (GError **error)
+dnf_context_globals_init (GError **error) try
 {
     static gsize initialized = 0;
     gboolean ret = TRUE;
@@ -391,7 +392,7 @@ dnf_context_globals_init (GError **error)
         g_once_init_leave (&initialized, 1);
     }
     return ret;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_context_class_init:
@@ -1538,7 +1539,7 @@ dnf_context_set_cache_age(DnfContext *context, guint cache_age)
  * dnf_context_set_os_release:
  **/
 static gboolean
-dnf_context_set_os_release(DnfContext *context, GError **error)
+dnf_context_set_os_release(DnfContext *context, GError **error) try
 {
     const char *source_root = dnf_context_get_source_root (context);
 
@@ -1622,7 +1623,7 @@ dnf_context_set_os_release(DnfContext *context, GError **error)
         return FALSE;
     dnf_context_set_release_ver(context, version);
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_context_set_user_agent:
@@ -1675,11 +1676,11 @@ have_existing_install(DnfContext *context)
  * Since: 0.1.3
  **/
 gboolean
-dnf_context_setup_sack(DnfContext *context, DnfState *state, GError **error)
+dnf_context_setup_sack(DnfContext *context, DnfState *state, GError **error) try
 {
     return dnf_context_setup_sack_with_flags(context, state,
                                              DNF_CONTEXT_SETUP_SACK_FLAG_NONE, error);
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_context_setup_sack_with_flags:(skip)
@@ -1699,7 +1700,7 @@ gboolean
 dnf_context_setup_sack_with_flags(DnfContext               *context,
                                   DnfState                 *state,
                                   DnfContextSetupSackFlags  flags,
-                                  GError                  **error)
+                                  GError                  **error) try
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     gboolean ret;
@@ -1771,13 +1772,13 @@ dnf_context_setup_sack_with_flags(DnfContext               *context,
         hy_goal_free(priv->goal);
     priv->goal = hy_goal_create(priv->sack);
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_context_ensure_exists:
  **/
 static gboolean
-dnf_context_ensure_exists(const gchar *directory, GError **error)
+dnf_context_ensure_exists(const gchar *directory, GError **error) try
 {
     if (g_file_test(directory, G_FILE_TEST_EXISTS))
         return TRUE;
@@ -1789,13 +1790,13 @@ dnf_context_ensure_exists(const gchar *directory, GError **error)
         return FALSE;
     }
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_utils_copy_files:
  */
 static gboolean
-dnf_utils_copy_files(const gchar *src, const gchar *dest, GError **error)
+dnf_utils_copy_files(const gchar *src, const gchar *dest, GError **error) try
 {
     const gchar *tmp;
     gint rc;
@@ -1836,7 +1837,7 @@ dnf_utils_copy_files(const gchar *src, const gchar *dest, GError **error)
         }
     }
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_context_copy_vendor_cache:
@@ -1846,7 +1847,7 @@ dnf_utils_copy_files(const gchar *src, const gchar *dest, GError **error)
  * /usr/share/PackageKit/metadata/updates/repodata/primary.xml.gz
  **/
 static gboolean
-dnf_context_copy_vendor_cache(DnfContext *context, GError **error)
+dnf_context_copy_vendor_cache(DnfContext *context, GError **error) try
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     DnfRepo *repo;
@@ -1883,7 +1884,7 @@ dnf_context_copy_vendor_cache(DnfContext *context, GError **error)
     }
 
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_context_copy_vendor_solv:
@@ -1893,7 +1894,7 @@ dnf_context_copy_vendor_cache(DnfContext *context, GError **error)
  * /usr/share/PackageKit/hawkey/fedora-filenames.solvx
  **/
 static gboolean
-dnf_context_copy_vendor_solv(DnfContext *context, GError **error)
+dnf_context_copy_vendor_solv(DnfContext *context, GError **error) try
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     g_autofree gchar *system_db = NULL;
@@ -1915,7 +1916,7 @@ dnf_context_copy_vendor_solv(DnfContext *context, GError **error)
         return FALSE;
 
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_context_set_rpm_macro:
@@ -1985,7 +1986,7 @@ dnf_context_set_http_proxy(DnfContext *context, const gchar *proxyurl)
  * Since: 0.2.1
  **/
 gboolean
-dnf_context_setup_enrollments(DnfContext *context, GError **error)
+dnf_context_setup_enrollments(DnfContext *context, GError **error) try
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
 
@@ -2062,7 +2063,7 @@ dnf_context_setup_enrollments(DnfContext *context, GError **error)
 
     priv->enrollment_valid = TRUE;
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_context_setup:
@@ -2083,7 +2084,7 @@ dnf_context_setup_enrollments(DnfContext *context, GError **error)
 gboolean
 dnf_context_setup(DnfContext *context,
            GCancellable *cancellable,
-           GError **error)
+           GError **error) try
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     guint i;
@@ -2210,7 +2211,7 @@ dnf_context_setup(DnfContext *context,
         return FALSE;
 
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_context_run:
@@ -2225,7 +2226,7 @@ dnf_context_setup(DnfContext *context,
  * Since: 0.1.0
  **/
 gboolean
-dnf_context_run(DnfContext *context, GCancellable *cancellable, GError **error)
+dnf_context_run(DnfContext *context, GCancellable *cancellable, GError **error) try
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     DnfState *state_local;
@@ -2287,7 +2288,7 @@ dnf_context_run(DnfContext *context, GCancellable *cancellable, GError **error)
 
     /* this section done */
     return dnf_state_done(priv->state, error);
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_context_install:
@@ -2304,7 +2305,7 @@ dnf_context_run(DnfContext *context, GCancellable *cancellable, GError **error)
  * Since: 0.1.0
  **/
 gboolean
-dnf_context_install (DnfContext *context, const gchar *name, GError **error)
+dnf_context_install (DnfContext *context, const gchar *name, GError **error) try
 {
     DnfContextPrivate *priv = GET_PRIVATE (context);
     g_autoptr(GPtrArray) selector_matches = NULL;
@@ -2331,7 +2332,7 @@ dnf_context_install (DnfContext *context, const gchar *name, GError **error)
         return FALSE;
 
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_context_remove:
@@ -2348,7 +2349,7 @@ dnf_context_install (DnfContext *context, const gchar *name, GError **error)
  * Since: 0.1.0
  **/
 gboolean
-dnf_context_remove(DnfContext *context, const gchar *name, GError **error)
+dnf_context_remove(DnfContext *context, const gchar *name, GError **error) try
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     GPtrArray *pkglist;
@@ -2377,7 +2378,7 @@ dnf_context_remove(DnfContext *context, const gchar *name, GError **error)
     }
     g_ptr_array_unref(pkglist);
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_context_update:
@@ -2394,7 +2395,7 @@ dnf_context_remove(DnfContext *context, const gchar *name, GError **error)
  * Since: 0.1.0
  **/
 gboolean
-dnf_context_update(DnfContext *context, const gchar *name, GError **error)
+dnf_context_update(DnfContext *context, const gchar *name, GError **error) try
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
 
@@ -2421,7 +2422,7 @@ dnf_context_update(DnfContext *context, const gchar *name, GError **error)
         return FALSE;
 
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_context_update_all:
@@ -2436,7 +2437,7 @@ dnf_context_update(DnfContext *context, const gchar *name, GError **error)
  **/
 gboolean
 dnf_context_update_all (DnfContext  *context,
-                        GError     **error)
+                        GError     **error) try
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
 
@@ -2450,7 +2451,7 @@ dnf_context_update_all (DnfContext  *context,
     /* update whole solvables */
     hy_goal_upgrade_all (priv->goal);
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_context_repo_set_data:
@@ -2459,7 +2460,7 @@ static gboolean
 dnf_context_repo_set_data(DnfContext *context,
                           const gchar *repo_id,
                           DnfRepoEnabled enabled,
-                          GError **error)
+                          GError **error) try
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     bool found = false;
@@ -2483,7 +2484,7 @@ dnf_context_repo_set_data(DnfContext *context,
     }
 
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_context_repo_enable:
@@ -2503,12 +2504,12 @@ dnf_context_repo_set_data(DnfContext *context,
 gboolean
 dnf_context_repo_enable(DnfContext *context,
                         const gchar *repo_id,
-                        GError **error)
+                        GError **error) try
 {
     return dnf_context_repo_set_data(context, repo_id,
                                      DNF_REPO_ENABLED_PACKAGES |
                                      DNF_REPO_ENABLED_METADATA, error);
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_context_repo_disable:
@@ -2528,11 +2529,11 @@ dnf_context_repo_enable(DnfContext *context,
 gboolean
 dnf_context_repo_disable(DnfContext *context,
                          const gchar *repo_id,
-                         GError **error)
+                         GError **error) try
 {
     return dnf_context_repo_set_data(context, repo_id,
                                      DNF_REPO_ENABLED_NONE, error);
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_context_commit:(skip)
@@ -2547,7 +2548,7 @@ dnf_context_repo_disable(DnfContext *context,
  * Since: 0.1.0
  **/
 gboolean
-dnf_context_commit(DnfContext *context, DnfState *state, GError **error)
+dnf_context_commit(DnfContext *context, DnfState *state, GError **error) try
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
 
@@ -2559,7 +2560,7 @@ dnf_context_commit(DnfContext *context, DnfState *state, GError **error)
                                   priv->goal,
                                   state,
                                   error);
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_context_invalidate_full:
@@ -2626,7 +2627,7 @@ dnf_context_invalidate(DnfContext *context, const gchar *message)
 gboolean
 dnf_context_clean_cache(DnfContext *context,
                         DnfContextCleanFlags flags,
-                        GError **error)
+                        GError **error) try
 {
     g_autoptr(GPtrArray) suffix_list = g_ptr_array_new();
     const gchar* directory_location;
@@ -2695,7 +2696,7 @@ dnf_context_clean_cache(DnfContext *context,
         if (!dnf_lock_release(priv->lock, lock_id, error))
             return FALSE;
         return ret;
-}
+} CATCH_TO_GERROR(FALSE)
 /**
  * dnf_context_new:
  *
@@ -2881,7 +2882,7 @@ pluginGetContext(DnfPluginInitData * data)
 }
 
 gboolean
-dnf_context_reset_modules(DnfContext * context, DnfSack * sack, const char ** module_names, GError ** error)
+dnf_context_reset_modules(DnfContext * context, DnfSack * sack, const char ** module_names, GError ** error) try
 {
     assert(sack);
     assert(module_names);
@@ -2920,7 +2921,7 @@ dnf_context_reset_modules(DnfContext * context, DnfSack * sack, const char ** mo
         }
     }
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 namespace libdnf {
 

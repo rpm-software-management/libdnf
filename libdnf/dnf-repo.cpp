@@ -47,6 +47,7 @@
 #include <rpm/rpmts.h>
 #include <librepo/yum.h>
 
+#include "catch-error.hpp"
 #include "dnf-keyring.h"
 #include "dnf-package.h"
 #include "dnf-repo.hpp"
@@ -1157,7 +1158,7 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
  * Since: 0.1.0
  **/
 gboolean
-dnf_repo_setup(DnfRepo *repo, GError **error)
+dnf_repo_setup(DnfRepo *repo, GError **error) try
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     DnfRepoEnabled enabled = DNF_REPO_ENABLED_NONE;
@@ -1271,7 +1272,7 @@ dnf_repo_setup(DnfRepo *repo, GError **error)
     dnf_repo_set_enabled(repo, enabled);
 
     return dnf_repo_set_keyfile_data(repo, error);
-}
+} CATCH_TO_GERROR(FALSE)
 
 typedef struct
 {
@@ -1506,7 +1507,7 @@ gboolean
 dnf_repo_check(DnfRepo *repo,
                guint permissible_cache_age,
                DnfState *state,
-               GError **error)
+               GError **error) try
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     g_clear_error(&priv->last_check_error);
@@ -1517,7 +1518,7 @@ dnf_repo_check(DnfRepo *repo,
         return FALSE;
     }
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 
 /**
@@ -1556,7 +1557,7 @@ dnf_repo_get_filename_md(DnfRepo *repo, const gchar *md_kind)
  * Since: 0.1.0
  **/
 gboolean
-dnf_repo_clean(DnfRepo *repo, GError **error)
+dnf_repo_clean(DnfRepo *repo, GError **error) try
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
 
@@ -1570,7 +1571,7 @@ dnf_repo_clean(DnfRepo *repo, GError **error)
     if (!dnf_remove_recursive(priv->location, error))
         return FALSE;
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_repo_add_public_key:
@@ -1689,7 +1690,7 @@ gboolean
 dnf_repo_update(DnfRepo *repo,
                 DnfRepoUpdateFlags flags,
                 DnfState *state,
-                GError **error)
+                GError **error) try
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     DnfState *state_local;
@@ -1949,7 +1950,7 @@ out:
     lr_handle_setopt(priv->repo_handle, NULL, LRO_HMFCB, NULL);
     lr_handle_setopt(priv->repo_handle, NULL, LRO_PROGRESSDATA, 0xdeadbeef);
     return ret;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_repo_set_data:
@@ -1968,12 +1969,12 @@ gboolean
 dnf_repo_set_data(DnfRepo *repo,
                   const gchar *parameter,
                   const gchar *value,
-                  GError **error)
+                  GError **error) try
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     g_key_file_set_string(priv->keyfile, priv->repo->getId().c_str(), parameter, value);
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_repo_commit:
@@ -1987,7 +1988,7 @@ dnf_repo_set_data(DnfRepo *repo,
  * Since: 0.1.4
  **/
 gboolean
-dnf_repo_commit(DnfRepo *repo, GError **error)
+dnf_repo_commit(DnfRepo *repo, GError **error) try
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     g_autofree gchar *data = NULL;
@@ -2006,7 +2007,7 @@ dnf_repo_commit(DnfRepo *repo, GError **error)
     if (data == NULL)
         return FALSE;
     return g_file_set_contents(priv->filename, data, -1, error);
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_repo_checksum_hy_to_lr:
@@ -2141,7 +2142,7 @@ dnf_repo_download_package(DnfRepo *repo,
                           DnfPackage *pkg,
                           const gchar *directory,
                           DnfState *state,
-                          GError **error)
+                          GError **error) try
 {
     g_autoptr(GPtrArray) packages = g_ptr_array_new();
     g_autofree gchar *basename = NULL;
@@ -2154,7 +2155,7 @@ dnf_repo_download_package(DnfRepo *repo,
     /* build return value */
     basename = g_path_get_basename(dnf_package_get_location(pkg));
     return g_build_filename(directory, basename, NULL);
-}
+} CATCH_TO_GERROR(NULL)
 
 /**
  * dnf_repo_download_packages:
@@ -2176,7 +2177,7 @@ dnf_repo_download_packages(DnfRepo *repo,
                            GPtrArray *packages,
                            const gchar *directory,
                            DnfState *state,
-                           GError **error)
+                           GError **error) try
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     gboolean ret = FALSE;
@@ -2276,7 +2277,7 @@ out:
     g_free(global_data.last_mirror_url);
     g_slist_free_full(package_targets, (GDestroyNotify)lr_packagetarget_free);
     return ret;
-}
+} CATCH_TO_GERROR(FALSE)
 
 /**
  * dnf_repo_new:
@@ -2338,7 +2339,7 @@ dnf_repo_add_metadata_type_to_download(DnfRepo * repo, const gchar * metadataTyp
  **/
 gboolean
 dnf_repo_get_metadata_content(DnfRepo * repo, const gchar * metadataType, gpointer * content,
-                              gsize * length, GError ** error)
+                              gsize * length, GError ** error) try
 {
     auto path = dnf_repo_get_filename_md(repo, metadataType);
     if (!path) {
@@ -2364,4 +2365,4 @@ dnf_repo_get_metadata_content(DnfRepo * repo, const gchar * metadataType, gpoint
                     metadataType, dnf_repo_get_id(repo), ex.what());
         return FALSE;
     }
-}
+} CATCH_TO_GERROR(FALSE)
