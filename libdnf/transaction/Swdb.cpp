@@ -96,7 +96,7 @@ Swdb::~Swdb()
     if (autoClose) {
         try {
             closeDatabase();
-        } catch(SQLite3::Exception &){}
+        } catch(const std::exception &){}
     }
 }
 
