@@ -85,6 +85,8 @@ void             dnf_transaction_set_uid                (DnfTransaction *transac
                                                          guint           uid);
 void             dnf_transaction_set_flags              (DnfTransaction *transaction,
                                                          guint64         flags);
+void             dnf_transaction_set_dont_solve_goal    (DnfTransaction *transaction,
+                                                         gboolean        dont_solve_goal);
 
 /* object methods */
 gboolean         dnf_transaction_depsolve               (DnfTransaction *transaction,
