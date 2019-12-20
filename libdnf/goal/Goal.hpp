@@ -23,8 +23,10 @@
 
 #include <memory>
 #include <stdexcept>
+#include <vector>
 
 #include "../dnf-types.h"
+#include "../error.hpp"
 #include "../hy-goal.h"
 #include "../hy-package.h"
 
@@ -32,9 +34,9 @@ namespace libdnf {
 
 struct Goal {
 public:
-    struct Exception : public std::runtime_error {
-        Exception(const std::string & msg, int errCode) : runtime_error(msg), errCode(errCode) {}
-        Exception(const char * msg, int errCode) : runtime_error(msg), errCode(errCode) {}
+    struct Error : public libdnf::Error {
+        Error(const std::string & msg, int errCode) : libdnf::Error(msg), errCode(errCode) {}
+        Error(const char * msg, int errCode) : libdnf::Error(msg), errCode(errCode) {}
         int getErrCode() const noexcept { return errCode; }
     private:
         int errCode;
