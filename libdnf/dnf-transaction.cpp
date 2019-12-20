@@ -80,6 +80,7 @@ typedef struct {
     GPtrArray *pkgs_to_download;
     GHashTable *erased_by_package_hash;
     guint64 flags;
+    gboolean dont_solve_goal;
     libdnf::Swdb *swdb;
 } DnfTransactionPrivate;
 
@@ -248,6 +249,28 @@ dnf_transaction_set_flags(DnfTransaction *transaction, guint64 flags)
 {
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     priv->flags = flags;
+}
+
+/**
+ * dnf_transaction_set_dont_solve_goal:
+ * @transaction: a #DnfTransaction instance.
+ * @dont_solve_goal: disable/enable calling dnf_goal_depsolve
+ *
+ * Enable/disable calling of dnf_goal_depsolve() in the dnf_transaction_depsolve().
+ *
+ * This function fixes the API problem. The dnf_transaction_depsolve() was allways calling
+ * dnf_goal_depsolve() with hardcoded DnfGoalActions = DNF_ALLOW_UNINSTALL. So, solution
+ * prepared by user was allways replaced.
+ * Default behaviour of existing functions was not changed to be sure of non breaking
+ * of existing API users.
+ *
+ * Since: 0.42.0
+ **/
+void
+dnf_transaction_set_dont_solve_goal(DnfTransaction *transaction, gboolean dont_solve_goal)
+{
+    DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
+    priv->dont_solve_goal = dont_solve_goal;
 }
 
 /**
@@ -964,8 +987,11 @@ dnf_transaction_depsolve(DnfTransaction *transaction, HyGoal goal, DnfState *sta
     g_autoptr(GPtrArray) packages = NULL;
 
     /* depsolve */
-    if (!dnf_goal_depsolve(goal, DNF_ALLOW_UNINSTALL, error))
-        return FALSE;
+    if (!priv->dont_solve_goal) {
+        if (!dnf_goal_depsolve(goal, DNF_ALLOW_UNINSTALL, error)) {
+            return FALSE;
+        }
+    }
 
     /* find a list of all the packages we have to download */
     g_ptr_array_set_size(priv->pkgs_to_download, 0);
