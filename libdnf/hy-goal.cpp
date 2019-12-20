@@ -37,6 +37,7 @@ extern "C" {
 }
 
 // hawkey
+#include "catch-error.hpp"
 #include "dnf-types.h"
 #include "hy-goal-private.hpp"
 #include "hy-iutil-private.hpp"
@@ -58,13 +59,6 @@ extern "C" {
 
 #define BLOCK_SIZE 15
 
-// internal functions to translate Selector into libsolv Job
-
-inline static void
-exceptionToGError(GError **error, const libdnf::Goal::Exception & e)
-{
-    g_set_error_literal(error, DNF_ERROR, e.getErrCode(), e.what());
-}
 
 // public functions
 
@@ -111,7 +105,7 @@ hy_goal_distupgrade_selector(HyGoal goal, HySelector sltr)
 {
     try {
         goal->distupgrade(sltr);
-    } catch (libdnf::Goal::Exception & e) {
+    } catch (libdnf::Goal::Error & e) {
         return e.getErrCode();
     }
     return 0;
@@ -143,7 +137,7 @@ hy_goal_erase_selector_flags(HyGoal goal, HySelector sltr, int flags)
 {
     try {
         goal->erase(sltr, flags);
-    } catch (libdnf::Goal::Exception & e) {
+    } catch (libdnf::Goal::Error & e) {
         return e.getErrCode();
     }
     return 0;
@@ -170,28 +164,18 @@ hy_goal_install_optional(HyGoal goal, DnfPackage *new_pkg)
 }
 
 gboolean
-hy_goal_install_selector(HyGoal goal, HySelector sltr, GError **error)
+hy_goal_install_selector(HyGoal goal, HySelector sltr, GError **error) try
 {
-    try {
-        goal->install(sltr, false);
-    } catch (const libdnf::Goal::Exception & e) {
-        exceptionToGError(error, e);
-        return FALSE;
-    }
+    goal->install(sltr, false);
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 gboolean
-hy_goal_install_selector_optional(HyGoal goal, HySelector sltr, GError **error)
+hy_goal_install_selector_optional(HyGoal goal, HySelector sltr, GError **error) try
 {
-    try {
-        goal->install(sltr, true);
-    } catch (const libdnf::Goal::Exception & e) {
-        exceptionToGError(error, e);
-        return FALSE;
-    }
+    goal->install(sltr, true);
     return TRUE;
-}
+} CATCH_TO_GERROR(FALSE)
 
 int
 hy_goal_upgrade_all(HyGoal goal)
@@ -212,7 +196,7 @@ hy_goal_upgrade_selector(HyGoal goal, HySelector sltr)
 {
     try {
         goal->upgrade(sltr);
-    } catch (libdnf::Goal::Exception & e) {
+    } catch (libdnf::Goal::Error & e) {
         return e.getErrCode();
     }
     return 0;
@@ -290,112 +274,67 @@ hy_goal_log_decisions(HyGoal goal)
  * Since: 0.7.0
  */
 bool
-hy_goal_write_debugdata(HyGoal goal, const char *dir, GError **error)
+hy_goal_write_debugdata(HyGoal goal, const char *dir, GError **error) try
 {
-    try {
-        goal->writeDebugdata(dir);
-    } catch (const libdnf::Goal::Exception & e) {
-        exceptionToGError(error, e);
-        return false;
-    }
+    goal->writeDebugdata(dir);
     return true;
-}
+} CATCH_TO_GERROR(false)
 
 GPtrArray *
-hy_goal_list_erasures(HyGoal goal, GError **error)
+hy_goal_list_erasures(HyGoal goal, GError **error) try
 {
-    try {
-        auto pset = goal->listErasures();
-        return packageSet2GPtrArray(&pset);
-    } catch (const libdnf::Goal::Exception & e) {
-        exceptionToGError(error, e);
-        return NULL;
-    }
-}
+    auto pset = goal->listErasures();
+    return packageSet2GPtrArray(&pset);
+} CATCH_TO_GERROR(NULL)
 
 GPtrArray *
-hy_goal_list_installs(HyGoal goal, GError **error)
+hy_goal_list_installs(HyGoal goal, GError **error) try
 {
-    try {
-        auto pset = goal->listInstalls();
-        return packageSet2GPtrArray(&pset);
-    } catch (const libdnf::Goal::Exception & e) {
-        exceptionToGError(error, e);
-        return NULL;
-    }
-}
+    auto pset = goal->listInstalls();
+    return packageSet2GPtrArray(&pset);
+} CATCH_TO_GERROR(NULL)
 
 GPtrArray *
-hy_goal_list_obsoleted(HyGoal goal, GError **error)
+hy_goal_list_obsoleted(HyGoal goal, GError **error) try
 {
-    try {
-        auto pset = goal->listObsoleted();
-        return packageSet2GPtrArray(&pset);
-    } catch (const libdnf::Goal::Exception & e) {
-        exceptionToGError(error, e);
-        return NULL;
-    }
-}
+    auto pset = goal->listObsoleted();
+    return packageSet2GPtrArray(&pset);
+} CATCH_TO_GERROR(NULL)
 
 GPtrArray *
-hy_goal_list_reinstalls(HyGoal goal, GError **error)
+hy_goal_list_reinstalls(HyGoal goal, GError **error) try
 {
-    try {
-        auto pset = goal->listReinstalls();
-        return packageSet2GPtrArray(&pset);
-    } catch (const libdnf::Goal::Exception & e) {
-        exceptionToGError(error, e);
-        return NULL;
-    }
-}
+    auto pset = goal->listReinstalls();
+    return packageSet2GPtrArray(&pset);
+} CATCH_TO_GERROR(NULL)
 
 GPtrArray *
-hy_goal_list_unneeded(HyGoal goal, GError **error)
+hy_goal_list_unneeded(HyGoal goal, GError **error) try
 {
-    try {
-        auto pset = goal->listUnneeded();
-        return packageSet2GPtrArray(&pset);
-    } catch (const libdnf::Goal::Exception & e) {
-        exceptionToGError(error, e);
-        return NULL;
-    }
-}
+    auto pset = goal->listUnneeded();
+    return packageSet2GPtrArray(&pset);
+} CATCH_TO_GERROR(NULL)
 
 GPtrArray *
-hy_goal_list_suggested(HyGoal goal, GError **error)
+hy_goal_list_suggested(HyGoal goal, GError **error) try
 {
-    try {
-        auto pset = goal->listSuggested();
-        return packageSet2GPtrArray(&pset);
-    } catch (const libdnf::Goal::Exception & e) {
-        exceptionToGError(error, e);
-        return NULL;
-    }
-}
+    auto pset = goal->listSuggested();
+    return packageSet2GPtrArray(&pset);
+} CATCH_TO_GERROR(NULL)
 
 GPtrArray *
-hy_goal_list_upgrades(HyGoal goal, GError **error)
+hy_goal_list_upgrades(HyGoal goal, GError **error) try
 {
-    try {
-        auto pset = goal->listUpgrades();
-        return packageSet2GPtrArray(&pset);
-    } catch (const libdnf::Goal::Exception & e) {
-        exceptionToGError(error, e);
-        return NULL;
-    }
-}
+    auto pset = goal->listUpgrades();
+    return packageSet2GPtrArray(&pset);
+} CATCH_TO_GERROR(NULL)
 
 GPtrArray *
-hy_goal_list_downgrades(HyGoal goal, GError **error)
+hy_goal_list_downgrades(HyGoal goal, GError **error) try
 {
-    try {
-        auto pset = goal->listDowngrades();
-        return packageSet2GPtrArray(&pset);
-    } catch (const libdnf::Goal::Exception & e) {
-        exceptionToGError(error, e);
-        return NULL;
-    }
-}
+    auto pset = goal->listDowngrades();
+    return packageSet2GPtrArray(&pset);
+} CATCH_TO_GERROR(NULL)
 
 GPtrArray *
 hy_goal_list_obsoleted_by_package(HyGoal goal, DnfPackage *pkg)

@@ -438,7 +438,7 @@ sltrToJob(const HySelector sltr, Queue *job, int solver_action)
     if (!any_req_filter) {
         if (any_opt_filter) {
             // no name or provides or file in the selector is an error
-            throw Goal::Exception("Ill-formed Selector. No name or"
+            throw Goal::Error("Ill-formed Selector. No name or"
                 "provides or file in the selector.", DNF_ERROR_BAD_SELECTOR);
         }
         goto finish;
@@ -473,7 +473,7 @@ sltrToJob(const HySelector sltr, Queue *job, int solver_action)
 
  finish:
     if (ret > 1) {
-        throw Goal::Exception(TM_(ERROR_DICT[ret], 1), DNF_ERROR_BAD_SELECTOR);
+        throw Goal::Error(TM_(ERROR_DICT[ret], 1), DNF_ERROR_BAD_SELECTOR);
     }
 }
 
@@ -1005,13 +1005,13 @@ Goal::writeDebugdata(const char *dir)
 {
     Solver *solv = pImpl->solv;
     if (!solv) {
-        throw Goal::Exception(_("no solver set"), DNF_ERROR_INTERNAL_ERROR);
+        throw Goal::Error(_("no solver set"), DNF_ERROR_INTERNAL_ERROR);
     }
     int flags = TESTCASE_RESULT_TRANSACTION | TESTCASE_RESULT_PROBLEMS;
     g_autofree char *absdir = abspath(dir);
     if (!absdir) {
         std::string msg = tfm::format(_("failed to make %s absolute"), dir);
-        throw Goal::Exception(msg, DNF_ERROR_FILE_INVALID);
+        throw Goal::Error(msg, DNF_ERROR_FILE_INVALID);
     }
     makeDirPath(dir);
     g_debug("writing solver debugdata to %s", absdir);
@@ -1019,7 +1019,7 @@ Goal::writeDebugdata(const char *dir)
     if (!ret) {
         std::string msg = tfm::format(_("failed writing debugdata to %1$s: %2$s"),
                                       absdir, strerror(errno));
-        throw Goal::Exception(msg, DNF_ERROR_FILE_INVALID);
+        throw Goal::Error(msg, DNF_ERROR_FILE_INVALID);
     }
 }
 
@@ -1029,12 +1029,12 @@ Goal::Impl::listResults(Id type_filter1, Id type_filter2)
     /* no transaction */
     if (!trans) {
         if (!solv) {
-            throw Goal::Exception(_("no solv in the goal"), DNF_ERROR_INTERNAL_ERROR);
+            throw Goal::Error(_("no solv in the goal"), DNF_ERROR_INTERNAL_ERROR);
         } else if (removalOfProtected && removalOfProtected->size()) {
-            throw Goal::Exception(_("no solution, cannot remove protected package"),
+            throw Goal::Error(_("no solution, cannot remove protected package"),
                                           DNF_ERROR_REMOVAL_OF_PROTECTED_PKG);
         }
-        throw Goal::Exception(_("no solution possible"), DNF_ERROR_NO_SOLUTION);
+        throw Goal::Error(_("no solution possible"), DNF_ERROR_NO_SOLUTION);
     }
 
     PackageSet plist(sack);
