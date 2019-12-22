@@ -72,6 +72,23 @@ Tests:
 * use sanitizers
 
 
+Coding style checks
+-------------------
+* clang-format-diff
+* clang-tidy-diff
+* rpmlint
+* cmake-lint - https://github.com/richq/cmake-lint
+* executed on every pull request
+* executed before every merge to master
+* possible to run locally before submitting a PR
+
+
+Soname versioning
+-----------------
+https://github.com/rpm-software-management/microdnf/pull/64#issuecomment-568213701
+Conan-Kudo: We probably should be doing soname bumps instead, or making it so that there are versioned symbol exports similar to to libsolv and glibc so that when you use new functionality, that gets represented in an rpm dependency automatically...
+
+
 Dependencies
 ------------
 * Hide all libsolv internals, libsolv header files should not be necessary to use libdnf
