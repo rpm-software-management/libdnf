@@ -12,18 +12,9 @@
 %include <stdint.i>
 %include <typemaps.i>
 
+%include "catch_error.i"
 
 %rename ("__hash__", fullname=1) "libdnf::TransactionItem::getHash";
-
-
-%exception {
-    try {
-        $action
-    } catch (const std::exception & e) {
-       SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-}
-
 
 %shared_ptr(SQLite3)
 typedef std::shared_ptr< SQLite3 > SQLite3Ptr;

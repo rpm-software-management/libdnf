@@ -33,6 +33,7 @@ function(libdnf_swig_module name)
     install(FILES ${CMAKE_BINARY_DIR}/bindings/python/${name}.py DESTINATION ${PYTHON_INSTALL_DIR}/libdnf)
 endfunction()
 
+libdnf_swig_module(error libdnf ${PYTHON_LIBRARY})
 libdnf_swig_module(common_types libdnf ${PYTHON_LIBRARY})
 libdnf_swig_module(conf libdnf ${PYTHON_LIBRARY})
 libdnf_swig_module(module libdnf ${PYTHON_LIBRARY})
