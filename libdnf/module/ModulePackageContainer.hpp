@@ -30,6 +30,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <stdexcept>
 
 namespace libdnf {
 
