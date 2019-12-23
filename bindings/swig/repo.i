@@ -7,6 +7,8 @@
 %import(module="libdnf.common_types") "common_types.i"
 %import(module="libdnf.conf") "conf.i"
 
+%include "catch_error.i"
+
 %begin %{
     #define SWIG_PYTHON_2_UNICODE
 %}
@@ -15,15 +17,6 @@
     // make SWIG wrap following headers
     #include "libdnf/repo/Repo.hpp"
 %}
-
-%include <exception.i>
-%exception {
-    try {
-        $action
-    } catch (const std::exception & e) {
-       SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-}
 
 // make SWIG look into following headers
 %template(VectorPPackageTarget) std::vector<libdnf::PackageTarget *>;

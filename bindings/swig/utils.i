@@ -4,10 +4,10 @@
 #define SWIG_PYTHON_2_UNICODE
 %}
 
-%include <exception.i>
 %include <std_shared_ptr.i>
 %include <std_string.i>
 
+%include "catch_error.i"
 
 %{
     // make SWIG wrap following headers
@@ -16,15 +16,6 @@
     #include "libdnf/log.hpp"
     #include "libdnf/utils/utils.hpp"
 %}
-
-
-%exception {
-    try {
-        $action
-    } catch (const std::exception & e) {
-       SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-}
 
 %shared_ptr(SQLite3)
 %nocopyctor SQLite3;

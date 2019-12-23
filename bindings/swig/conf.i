@@ -20,12 +20,13 @@
     #include <sstream>
 %}
 
+// Using catch_error.i doesnt work here, because it translates
+// std::out_of_range to SWIG_IndexError and the DNF code seems to be relying on
+// it actually being a SWIG_RuntimeError here, which is obviously very wrong.
 %exception {
     try {
         $action
-    }
-    catch (const std::exception & e)
-    {
+    } catch (const std::exception & e) {
         SWIG_exception(SWIG_RuntimeError, e.what());
     }
 }

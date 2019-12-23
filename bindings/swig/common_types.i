@@ -4,12 +4,26 @@
     #define SWIG_PYTHON_2_UNICODE
 %}
 
+%include <exception.i>
 %include <stdint.i>
 %include <std_map.i>
 %include <std_pair.i>
 %include <std_set.i>
 %include <std_string.i>
 %include <std_vector.i>
+
+// Cant use %include <catch_error.i> here, SWIG includes each file only once,
+// but the exception handler actually doesnt get registered when this file is
+// %imported (as opposed to %included).
+%exception {
+    try {
+        $action
+    } catch (const std::out_of_range & e) {
+        SWIG_exception(SWIG_IndexError, e.what());
+    } catch (const std::exception & e) {
+        SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+}
 
 %template(SetString) std::set<std::string>;
 %template(PairStringString) std::pair<std::string, std::string>;
@@ -21,21 +35,6 @@
 %{
     #include "libdnf/utils/PreserveOrderMap.hpp"
 %}
-
-%include <exception.i>
-%exception {
-    try {
-        $action
-    }
-    catch (const std::out_of_range  & e)
-    {
-        SWIG_exception(SWIG_IndexError, e.what());
-    }
-    catch (const std::exception & e)
-    {
-       SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-}
 
 %ignore libdnf::PreserveOrderMap::MyBidirIterator;
 %ignore libdnf::PreserveOrderMap::MyBidirIterator::operator++;
@@ -165,4 +164,4 @@ EXTEND_TEMPLATE_PreserveOrderMap(T &, std::string, libdnf::PreserveOrderMap<std:
 EXTEND_TEMPLATE_PreserveOrderMapIterator(std::string, std::string)
 EXTEND_TEMPLATE_PreserveOrderMapIterator(std::string, libdnf::PreserveOrderMap<std::string, std::string>)
 
-%exception;
+%exception;  // beware this resets all exception handlers if you import this file after defining any

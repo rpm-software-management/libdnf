@@ -6,20 +6,13 @@
 
 #define DEPRECATED(x)
 
-%include <exception.i>
 %include <std_map.i>
 %include <std_vector.i>
 %include <std_string.i>
 
 %import(module="libdnf.common_types") "common_types.i"
 
-%exception %{
-    try {
-        $action
-    } catch (const std::exception & e) {
-       SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-%}
+%include "catch_error.i"
 
 typedef int Id;
 
