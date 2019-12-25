@@ -89,6 +89,25 @@ https://github.com/rpm-software-management/microdnf/pull/64#issuecomment-5682137
 Conan-Kudo: We probably should be doing soname bumps instead, or making it so that there are versioned symbol exports similar to to libsolv and glibc so that when you use new functionality, that gets represented in an rpm dependency automatically...
 
 
+Queries:
+base.rpm.query <-- existing Query() instance (libdnf::rpm::Query)
+base.comps.group_query (libdnf::generic::Query<libdnf::comps::Group>)
+    .filter(id="base") -> works on libdnf::comps::Group.id
+base.comps.environment_query
+    .filter(id="base") -> works on libdnf::comps::Environment.id
+^^^ just an overall idea; another options would be
+    additional 'Base' objects per content type
+    or package specific Sacks (they are "package" containers)
+
+
+Pointer ownership - clearly document who is reposnsible for deleting
+
+
+Configs:
+conf.d directories, systemd-like overrides
+libeconf or use a custom code for now?
+
+
 Dependencies
 ------------
 * Hide all libsolv internals, libsolv header files should not be necessary to use libdnf
