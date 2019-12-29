@@ -24,7 +24,7 @@ public:
     int get_cache_only_level() const { return cacheOnlyLevel; }
     void set_cache_only_level(int value) { cacheOnlyLevel = value; }
 
-private:
+protected:
     bool allowErasing = false;
     bool best = false;
     int cacheOnlyLevel = 0;

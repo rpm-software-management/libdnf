@@ -62,7 +62,7 @@ public:
     Base(libdnf::Base & dnf_base);
 
 
-private:
+protected:
     const libdnf::Base & dnf_base;
 };
 

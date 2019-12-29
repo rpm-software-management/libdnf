@@ -17,7 +17,6 @@ class PackageSet;
 
 namespace libdnf::rpm {
 
-
 /// @replaces libdnf:libdnf/sack/packageset.hpp:class:PackageSet
 class PackageSet {
 public:
@@ -86,7 +85,7 @@ public:
     // lukash: btw. I'm not entirely sure we want to get as fancy as using these operators. Maybe methods like "union", "intersection" and "difference" are really better?
     // lukash: Personally I think they're kind of neat and I'd probably like them. Just saying it may be less readable to a newcomer.
 
-private:
+protected:
     /// @replaces libdnf:libdnf/hy-packageset.h:function:dnf_packageset_from_bitmap(DnfSack * sack, Map * m)
     PackageSet(const Sack & sack, const Map * m);
 

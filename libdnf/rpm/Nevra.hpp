@@ -69,7 +69,7 @@ public:
     /// @replaces libdnf:libdnf/nevra.hpp:method:Nevra.setArch(std::string && arch)
     void set_arch(std::string && arch);
 
-private:
+protected:
     /// @replaces libdnf:libdnf/nevra.hpp:method:Nevra.getEvr()
     std::string get_evr() const;
 

@@ -22,7 +22,7 @@ public:
     /// Return cached path on cache hit or an empty string on cache miss
     std::string get(const std::string & object_type, const std::string & checksum) const;
 
-private:
+protected:
     std::string cacheDir;
     std::vector<Cache> references;
 };

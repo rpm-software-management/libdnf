@@ -32,7 +32,7 @@ public:
     /// @replaces libdnf:libdnf/dnf-context.h:function:dnf_context_get_goal(DnfContext * context)
     void get_goal();
 
-private:
+protected:
     const libdnf::Base & dnf_base;
 };
 

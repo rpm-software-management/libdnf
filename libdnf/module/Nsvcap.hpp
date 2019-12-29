@@ -77,7 +77,7 @@ public:
     /// @replaces libdnf:libdnf/nsvcap.hpp:method:Nsvcap.setProfile(std::string && profile)
     void set_profile(std::string && profile);
 
-private:
+protected:
     std::string name;
     std::string stream;
     // TODO: shouldn't version be uint64_t?

@@ -143,7 +143,7 @@ public:
     /// @replaces libdnf:libdnf/hy-goal.h:function:hy_goal_list_suggested(HyGoal goal, GError ** error)
     void list_suggested() const;
 
-private:
+protected:
     const Base & rpm_base;
     /// @replaces libdnf:libdnf/hy-goal.h:function:hy_goal_create(DnfSack * sack)
     Goal(Base & rpm_base);

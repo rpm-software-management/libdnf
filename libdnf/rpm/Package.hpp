@@ -172,7 +172,11 @@ public:
 
     /// @replaces libdnf:libdnf/hy-package.h:function:dnf_package_installed(DnfPackage * pkg)
     /// @replaces dnf:dnf/package.py:attribute:Package.installed
-    void is_installed() const;
+    bool is_installed() const;
+
+    /// @replaces dnf:dnf/package.py:method:Package.localPkg(self)
+    /// @replaces libdnf:libdnf/dnf-package.h:function:dnf_package_is_local(DnfPackage * pkg)
+    bool is_local() const;
 
     /// For an installed package, return repoid of repo from the package was installed.
     /// For an available package, return an empty string.
@@ -187,7 +191,9 @@ public:
     /// @replaces libdnf:libdnf/hy-package.h:function:dnf_package_get_installtime(DnfPackage * pkg)
     void get_install_time() const;
 
-private:
+protected:
+    /// @replaces libdnf:libdnf/dnf-package.h:function:dnf_package_get_package_id(DnfPackage * pkg)
+    std::string get_id() const;
 };
 
 

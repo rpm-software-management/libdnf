@@ -26,7 +26,7 @@ public:
     void info(std::string msg);
     void warning(std::string msg);
     void error(std::string msg);
-//private:
+//protected:
 //    friend Base;
     const Base & dnf_base;
     Logger(Base & dnf_base);

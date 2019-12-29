@@ -75,7 +75,7 @@ public:
     /// @replaces libdnf:libdnf/dnf-sack.h:function:dnf_sack_set_use_includes(DnfSack * sack, const char * reponame, gboolean enabled)
     void set_use_includes(bool value);
 
-private:
+protected:
     const Base & rpm_base;
 };
 
