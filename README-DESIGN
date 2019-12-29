@@ -108,6 +108,35 @@ conf.d directories, systemd-like overrides
 libeconf or use a custom code for now?
 
 
+Copyright:
+* cleanup: all @redhat.com personal copyright claims -> (c) Red Hat
+* CLA?
+* PR review - test if license text is present; it must have accurate date?
+
+
+Types:
+* use C++ types unless there's proven impact on performance
+* if performance is an issue, use C types in private API
+
+
+Package support:
+* basic support for loading DEBs - incl. classes inherited from libdnf::rpm classes; shared Sack
+* API for creating packages on fly (for Pulp)
+
+
+Config / demands:
+* Demands are usually related to configuring a goal
+
+
+Advisories:
+* need to be reworked
+* AdvisorySet + queries
+  * Advisory
+    * RPMs
+    * Modules
+    * references
+
+
 Dependencies
 ------------
 * Hide all libsolv internals, libsolv header files should not be necessary to use libdnf
