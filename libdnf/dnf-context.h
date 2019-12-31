@@ -111,6 +111,7 @@ DnfContext      *dnf_context_new                        (void);
 const gchar     *find_base_arch                         (const char *native);
 
 /* getters */
+const gchar     *dnf_context_get_config_file_path       (void);
 const gchar     *dnf_context_get_repo_dir               (DnfContext     *context);
 const gchar * const *dnf_context_get_vars_dir           (DnfContext     *context);
 const gchar     *dnf_context_get_base_arch              (DnfContext     *context);
@@ -152,6 +153,7 @@ const char *     dnf_context_get_user_agent             (DnfContext     *context
 const char *     dnf_context_get_plugins_dir            (DnfContext     *context);
 
 /* setters */
+void             dnf_context_set_config_file_path       (const gchar    *config_file_path);
 void             dnf_context_set_repo_dir               (DnfContext     *context,
                                                          const gchar    *repo_dir);
 void             dnf_context_set_vars_dir               (DnfContext     *context,
