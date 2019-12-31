@@ -185,6 +185,7 @@ enum {
 };
 
 static std::string pluginsDir = DEFAULT_PLUGINS_DIRECTORY;
+static std::unique_ptr<std::string> configFilePath;
 static guint signals [SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfContext, dnf_context, G_TYPE_OBJECT)
@@ -336,6 +337,21 @@ dnf_context_class_init(DnfContextClass *klass)
                   G_STRUCT_OFFSET(DnfContextClass, invalidate),
                   NULL, NULL, g_cclosure_marshal_VOID__STRING,
                   G_TYPE_NONE, 1, G_TYPE_STRING);
+}
+
+/**
+ * dnf_context_get_config_file_path:
+ *
+ * Gets the path to the global configuration file.
+ *
+ * Returns: Path to the global configuration file.
+ *
+ * Since: 0.42.0
+ **/
+const gchar *
+dnf_context_get_config_file_path()
+{
+    return configFilePath ? configFilePath->c_str() : libdnf::CONF_FILENAME;
 }
 
 /**
@@ -961,6 +977,26 @@ dnf_context_get_installonly_limit(DnfContext *context)
 {
     auto & mainConf = libdnf::getGlobalMainConfig();
     return mainConf.installonly_limit().getValue();
+}
+
+/**
+ * dnf_context_set_config_file_path:
+ * @config_file_path: the path, e.g. "/etc/dnf/dnf.conf"
+ *
+ * Sets the path to the global configuration file. The empty string means no read configuration
+ * file. NULL resets the path to the default value. Must be used before
+ * dnf_context_set_*, dnf_context_get_*, and dnf_context_setup functions are called.
+ *
+ * Since: 0.42.0
+ **/
+void
+dnf_context_set_config_file_path(const gchar * config_file_path)
+{
+    if (config_file_path) {
+        configFilePath.reset(new std::string(config_file_path));
+    } else {
+        configFilePath.reset();
+    }
 }
 
 /**
@@ -2654,6 +2690,13 @@ libdnf::ConfigMain & getGlobalMainConfig()
         globalMainConfig.reset(new libdnf::ConfigMain);
         // The gpgcheck was enabled by default in context part of libdnf. We stay "compatible".
         globalMainConfig->gpgcheck().set(libdnf::Option::Priority::DEFAULT, true);
+
+        if (configFilePath) {
+            globalMainConfig->config_file_path().set(libdnf::Option::Priority::RUNTIME, *configFilePath);
+            if (configFilePath->empty()) {
+                return *globalMainConfig;
+            }
+        }
 
         libdnf::ConfigParser parser;
         const std::string cfgPath{globalMainConfig->config_file_path().getValue()};
