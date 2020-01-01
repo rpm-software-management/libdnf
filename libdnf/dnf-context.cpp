@@ -251,11 +251,6 @@ dnf_context_init(DnfContext *context)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
 
-    priv->vars_dir = g_new(gchar*, libdnf::VARS_DIRS.size() + 1);
-    for (size_t i = 0; i < libdnf::VARS_DIRS.size(); ++i)
-        priv->vars_dir[i] = g_strdup(libdnf::VARS_DIRS[i].c_str());
-    priv->vars_dir[libdnf::VARS_DIRS.size()] = NULL;
-
     priv->install_root = g_strdup("/");
     priv->check_disk_space = TRUE;
     priv->check_transaction = TRUE;
@@ -377,7 +372,7 @@ dnf_context_get_repo_dir(DnfContext *context)
  *
  * Gets the repo variables directories.
  *
- * Returns: the directory, e.g. "/etc/dnf/vars"
+ * Returns: the NULL terminated array of directories, e.g. ["/etc/dnf/vars", NULL]
  *
  * Since: 0.28.1
  **/
@@ -385,6 +380,13 @@ const gchar * const *
 dnf_context_get_vars_dir(DnfContext *context)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
+    if (!priv->vars_dir) {
+        auto & varsDir = libdnf::getGlobalMainConfig().varsdir().getValue();
+        priv->vars_dir = g_new(gchar*, varsDir.size() + 1);
+        for (size_t i = 0; i < varsDir.size(); ++i)
+            priv->vars_dir[i] = g_strdup(varsDir[i].c_str());
+        priv->vars_dir[varsDir.size()] = NULL;
+    }
     return priv->vars_dir;
 }
 
@@ -2675,7 +2677,7 @@ dnf_context_load_vars(DnfContext * context)
 {
     auto priv = GET_PRIVATE(context);
     priv->vars->clear();
-    for (auto dir = priv->vars_dir; *dir; ++dir)
+    for (auto dir = dnf_context_get_vars_dir(context); *dir; ++dir)
         ConfigMain::addVarsFromDir(*priv->vars, std::string(priv->install_root) + *dir);
     ConfigMain::addVarsFromEnv(*priv->vars);
     priv->varsCached = true;
