@@ -353,9 +353,9 @@ dnf_context_get_config_file_path()
  * dnf_context_get_repo_dir:
  * @context: a #DnfContext instance.
  *
- * Gets the context ID.
+ * Gets the repo directory.
  *
- * Returns: the context ID, e.g. "fedora-updates"
+ * Returns: the path to repo directory, e.g. "/etc/yum.repos.d"
  *
  * Since: 0.1.0
  **/
@@ -363,6 +363,12 @@ const gchar *
 dnf_context_get_repo_dir(DnfContext *context)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
+    if (!priv->repo_dir) {
+        auto & reposDir = libdnf::getGlobalMainConfig().reposdir().getValue();
+        if (!reposDir.empty()) {
+            priv->repo_dir = g_strdup(reposDir[0].c_str());
+        }
+    }
     return priv->repo_dir;
 }
 
@@ -1882,7 +1888,7 @@ dnf_context_setup_enrollments(DnfContext *context, GError **error)
         return TRUE;
     }
     g_autoptr(RHSMContext) rhsm_ctx = rhsm_context_new ();
-    g_autofree gchar *repofname = g_build_filename (priv->repo_dir,
+    g_autofree gchar *repofname = g_build_filename (dnf_context_get_repo_dir(context),
                                                     "redhat.repo",
                                                     NULL);
     g_autoptr(GKeyFile) repofile = rhsm_utils_yum_repo_from_context (rhsm_ctx);
@@ -1965,8 +1971,9 @@ dnf_context_setup(DnfContext *context,
     }
 
     /* ensure directories exist */
-    if (priv->repo_dir != NULL) {
-        if (!dnf_context_ensure_exists(priv->repo_dir, error))
+    auto repo_dir = dnf_context_get_repo_dir(context);
+    if (repo_dir && repo_dir[0]) {
+        if (!dnf_context_ensure_exists(repo_dir, error))
             return FALSE;
     }
     if (priv->cache_dir != NULL) {
