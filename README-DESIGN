@@ -51,6 +51,19 @@ fix debug/verbose modes
  - make sure the general help is way shorter than in dnf4
 
 
+lukash:
+  - we really really should separate reposync from the actual commands
+    - aptitude does it that way, all the other package managers do it that way
+    - it is annoying
+    - it allows to only sync to the system cache location under root, non-privileged dnf calls can use it as read-only and there should be no user cache under normal circumstances
+      - it basically halves the bandwidth that DNF uses, which is A LOT
+      - the cache isn't stored twice (or more in multi-user environment!) on the harddisk
+      - we can have a special solution for special setups where the user wants to work on non-system repos
+    - it is also very annoying
+
+  - list of user-installed packages and installed groups shouldn't be stored history.sqlite
+
+
 FUTURE:
 lazy evaluation (for modularity)
 
@@ -136,6 +149,10 @@ Advisories:
     * Modules
     * references
 
+Building:
+  lukash:
+    * decide on meson vs CMake? (meson doesn't natively support Swift, although it wouldn't be terribly hard to add that)
+
 
 Dependencies
 ------------
@@ -144,14 +161,30 @@ Dependencies
 
 C++ specifics
 -------------
-* Avoid lambda
+* Avoid lambda (lukash: why, there's nothing inherently wrong with lambdas)
 * use // and /// comments; make block comments available for debugging (commenting out parts of code)
 * Write documentation strings to the header files. They are part of public API.
 * Avoid writing inline method directly to the class headers. They make the headers harder to read.
 
+
+Logging
+-------
+  lukash:
+    * we need to decide if:
+      a) libdnf will log by itself and potentially provide logging functions for the API user to use for logging (we'll probably need that if we want to log to a single file?)
+      b) libdnf should be provided with a log callback and log through that
+    * it would be best to use an established facility for logging, most advanced of which is journald, alternatively the system logger
+    * libdnf shouldn't use the logger to print user-facing output to stderr - those messages need to go through the API
 
 Exceptions
 ----------
 * Reduce number of exception nested in classes
   Group all exceptions in namespace in exceptions.hpp instead
   It's better for portability into other languages
+
+  lukash:
+    * The exception system needs to defferentiate between expected (e.g. file not found) and unexpected (programmer errors, crashes) errors
+    * lets not use the likes of std::runtime_error at all just to keep a clean design
+    * we should either:
+      * set up a way to log exception tracebacks (there are tools for that, albeit they have some drawbacks, it's the best we can do)
+      * do not catch the unexpected exceptions, which results in terminate() and we can get a traceback with gdb
