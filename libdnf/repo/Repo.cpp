@@ -846,27 +846,35 @@ std::vector<Key> Repo::Impl::retrieve(const std::string & url)
     return keyInfos;
 }
 
-static void killGpgAgent(gpgme_ctx_t context, const std::string & gpgDir)
-{
+/*
+ * Creates the '/run/user/$UID' directory if it doesn't exist. If this
+ * directory exists, gpgagent will create its sockets under
+ * '/run/user/$UID/gnupg'.
+ *
+ * If this directory doesn't exist, gpgagent will create its sockets in gpg
+ * home directory, which is under '/var/cache/yum/metadata/' and this was
+ * causing trouble with container images, see [1].
+ *
+ * Previous solution was to send the agent a "KILLAGENT" message, but that
+ * would cause a race condition with calling gpgme_release(), see [2], [3],
+ * [4].
+ *
+ * Since the agent doesn't clean up its sockets properly, by creating this
+ * directory we make sure they are in a place that is not causing trouble with
+ * container images.
+ *
+ * [1] https://bugzilla.redhat.com/show_bug.cgi?id=1650266
+ * [2] https://bugzilla.redhat.com/show_bug.cgi?id=1769831
+ * [3] https://github.com/rpm-software-management/microdnf/issues/50
+ * [4] https://bugzilla.redhat.com/show_bug.cgi?id=1781601
+ */
+static void ensure_socket_dir_exists() {
     auto logger(Log::getLogger());
-
-    auto gpgErr = gpgme_set_protocol(context, GPGME_PROTOCOL_ASSUAN);
-    if (gpgErr != GPG_ERR_NO_ERROR) {
-        auto msg = tfm::format(_("%s: gpgme_set_protocol(): %s"), __func__, gpgme_strerror(gpgErr));
-        logger->warning(msg);
-        return;
-    }
-    std::string gpgAgentSock = gpgDir + "/S.gpg-agent";
-    gpgErr = gpgme_ctx_set_engine_info(context, GPGME_PROTOCOL_ASSUAN, gpgAgentSock.c_str(), gpgDir.c_str());
-    if (gpgErr != GPG_ERR_NO_ERROR) {
-        auto msg = tfm::format(_("%s: gpgme_ctx_set_engine_info(): %s"), __func__, gpgme_strerror(gpgErr));
-        logger->warning(msg);
-        return;
-    }
-    gpgErr = gpgme_op_assuan_transact_ext(context, "KILLAGENT", NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-    if (gpgErr != GPG_ERR_NO_ERROR) {
-        auto msg = tfm::format(_("%s: gpgme_op_assuan_transact_ext(): %s"), __func__, gpgme_strerror(gpgErr));
-        logger->debug(msg);
+    std::string dirname = "/run/user/" + std::to_string(getuid());
+    int res = mkdir(dirname.c_str(), 0700);
+    if (res != 0 && errno != EEXIST) {
+        logger->debug(tfm::format("Failed to create directory \"%s\": %d - %s",
+                                  dirname, errno, strerror(errno)));
     }
 }
 
@@ -876,6 +884,7 @@ void Repo::Impl::importRepoKeys()
 
     auto gpgDir = getCachedir() + "/pubring";
     auto knownKeys = keyidsFromPubring(gpgDir);
+    ensure_socket_dir_exists();
     for (const auto & gpgkeyUrl : conf->gpgkey().getValue()) {
         auto keyInfos = retrieve(gpgkeyUrl);
         for (auto & keyInfo : keyInfos) {
@@ -907,13 +916,6 @@ void Repo::Impl::importRepoKeys()
             }
 
             gpgImportKey(ctx, keyInfo.rawKey);
-
-            // Running gpg-agent kept opened sockets on the system.
-            // It tries to exit gpg-agent. Path to the communication socket is derived from homedir.
-            // The gpg-agent automaticaly removes all its socket before exit.
-            // Newer gpg-agent creates sockets under [/var]/run/user/{pid}/... if directory exists.
-            // In this case gpg-agent will not be exited.
-            killGpgAgent(ctx, gpgDir);
 
             logger->debug(tfm::format(_("repo %s: imported key 0x%s."), id, keyInfo.getId()));
         }
