@@ -43,7 +43,7 @@
 
 typedef struct
 {
-    GFileMonitor    *monitor_repos;
+    GPtrArray       *monitor_repos;
     DnfContext      *context;    /* weak reference */
     GPtrArray       *repos;
     GVolumeMonitor  *volume_monitor;
@@ -72,8 +72,7 @@ dnf_repo_loader_finalize(GObject *object)
     if (priv->context != NULL)
         g_object_remove_weak_pointer(G_OBJECT(priv->context),
                                      (void **) &priv->context);
-    if (priv->monitor_repos != NULL)
-        g_object_unref(priv->monitor_repos);
+    g_ptr_array_unref(priv->monitor_repos);
     g_object_unref(priv->volume_monitor);
     g_ptr_array_unref(priv->repos);
 
@@ -111,6 +110,7 @@ static void
 dnf_repo_loader_init(DnfRepoLoader *self)
 {
     DnfRepoLoaderPrivate *priv = GET_PRIVATE(self);
+    priv->monitor_repos = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
     priv->repos = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
     priv->volume_monitor = g_volume_monitor_get();
     g_signal_connect(priv->volume_monitor, "mount-added",
@@ -412,19 +412,22 @@ dnf_repo_loader_refresh(DnfRepoLoader *self, GError **error)
         return FALSE;
 
     /* open dir */
-    repo_path = dnf_context_get_repo_dir(priv->context);
-    dir = g_dir_open(repo_path, 0, error);
-    if (dir == NULL)
-        return FALSE;
-
-    /* find all the .repo files */
-    while ((file = g_dir_read_name(dir)) != NULL) {
-        g_autofree gchar *path_tmp = NULL;
-        if (!g_str_has_suffix(file, ".repo"))
+    auto repos_dir = dnf_context_get_repos_dir(priv->context);
+    for (auto item = repos_dir; *item; ++item) {
+        repo_path = *item;
+        dir = g_dir_open(repo_path, 0, error);
+        if (dir == NULL)
             continue;
-        path_tmp = g_build_filename(repo_path, file, NULL);
-        if (!dnf_repo_loader_repo_parse(self, path_tmp, error))
-            return FALSE;
+        
+        /* find all the .repo files */
+        while ((file = g_dir_read_name(dir)) != NULL) {
+            g_autofree gchar *path_tmp = NULL;
+            if (!g_str_has_suffix(file, ".repo"))
+                continue;
+            path_tmp = g_build_filename(repo_path, file, NULL);
+            if (!dnf_repo_loader_repo_parse(self, path_tmp, error))
+                return FALSE;
+        }
     }
 
     /* add any DVD repos */
@@ -536,27 +539,29 @@ static void
 dnf_repo_loader_setup_watch(DnfRepoLoader *self)
 {
     DnfRepoLoaderPrivate *priv = GET_PRIVATE(self);
-    const gchar *repo_dir;
-    g_autoptr(GError) error = NULL;
-    g_autoptr(GFile) file_repos = NULL;
 
     /* setup a file monitor on the repos directory */
-    repo_dir = dnf_context_get_repo_dir(priv->context);
-    if (repo_dir == NULL) {
+    auto repos_dir = dnf_context_get_repos_dir(priv->context);
+    if (!repos_dir[0]) {
         g_warning("no repodir set");
         return;
     }
-    file_repos = g_file_new_for_path(repo_dir);
-    priv->monitor_repos = g_file_monitor_directory(file_repos,
-                                                   G_FILE_MONITOR_NONE,
-                                                   NULL,
-                                                   &error);
-    if (priv->monitor_repos != NULL) {
-        g_signal_connect(priv->monitor_repos, "changed",
-                         G_CALLBACK(dnf_repo_loader_directory_changed_cb), self);
-    } else {
-        g_warning("failed to setup monitor: %s",
-                  error->message);
+    for (auto iter = repos_dir; *iter; ++iter) {
+        auto repo_dir = *iter;
+        g_autoptr(GFile) file_repos = g_file_new_for_path(repo_dir);
+        g_autoptr(GError) error = NULL;
+        auto monitor_repos = g_file_monitor_directory(file_repos,
+                                                       G_FILE_MONITOR_NONE,
+                                                       NULL,
+                                                       &error);
+        if (monitor_repos) {
+            g_ptr_array_add(priv->monitor_repos, monitor_repos);
+            g_signal_connect(monitor_repos, "changed",
+                             G_CALLBACK(dnf_repo_loader_directory_changed_cb), self);
+        } else {
+            g_warning("failed to setup monitor: %s",
+                    error->message);
+        }
     }
 }
 

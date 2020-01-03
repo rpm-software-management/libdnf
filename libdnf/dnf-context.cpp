@@ -126,7 +126,7 @@ find_base_arch(const char *native) {
 
 typedef struct
 {
-    gchar            *repo_dir;
+    gchar            **repos_dir;
     gchar            **vars_dir;
     gchar            *base_arch;
     gchar            *release_ver;
@@ -204,7 +204,7 @@ dnf_context_finalize(GObject *object)
     delete priv->plugins;
     delete priv->vars;
 
-    g_free(priv->repo_dir);
+    g_strfreev(priv->repos_dir);
     g_strfreev(priv->vars_dir);
     g_free(priv->base_arch);
     g_free(priv->release_ver);
@@ -350,6 +350,30 @@ dnf_context_get_config_file_path()
 }
 
 /**
+ * dnf_context_get_repos_dir:
+ * @context: a #DnfContext instance.
+ *
+ * Gets NULL terminated array of paths to the repositories directories.
+ *
+ * Returns: the NULL terminated array of paths, e.g. ["/etc/yum.repos.d", NULL]
+ *
+ * Since: 0.42.0
+ **/
+const gchar * const *
+dnf_context_get_repos_dir(DnfContext *context)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    if (!priv->repos_dir) {
+        auto & reposDir = libdnf::getGlobalMainConfig().reposdir().getValue();
+        priv->repos_dir = g_new(gchar*, reposDir.size() + 1);
+        for (size_t i = 0; i < reposDir.size(); ++i)
+            priv->repos_dir[i] = g_strdup(reposDir[i].c_str());
+        priv->repos_dir[reposDir.size()] = NULL;
+    }
+    return priv->repos_dir;
+}
+
+/**
  * dnf_context_get_repo_dir:
  * @context: a #DnfContext instance.
  *
@@ -362,14 +386,11 @@ dnf_context_get_config_file_path()
 const gchar *
 dnf_context_get_repo_dir(DnfContext *context)
 {
+    static std::string reposDirStr;
     DnfContextPrivate *priv = GET_PRIVATE(context);
-    if (!priv->repo_dir) {
-        auto & reposDir = libdnf::getGlobalMainConfig().reposdir().getValue();
-        if (!reposDir.empty()) {
-            priv->repo_dir = g_strdup(reposDir[0].c_str());
-        }
-    }
-    return priv->repo_dir;
+    dnf_context_get_repos_dir(context); // ensure retrieving of the value from the global config
+    reposDirStr = priv->repos_dir[0] ? priv->repos_dir[0] : "";
+    return reposDirStr.c_str();
 }
 
 /**
@@ -1008,6 +1029,34 @@ dnf_context_set_config_file_path(const gchar * config_file_path)
 }
 
 /**
+ * dnf_context_set_repos_dir:
+ * @context: a #DnfContext instance.
+ * @repos_dir: the NULL terminated array of paths, e.g. ["/etc/yum.repos.d", NULL]
+ *
+ * Sets the repositories directories.
+ *
+ * Since: 0.42.0
+ **/
+void
+dnf_context_set_repos_dir(DnfContext *context, const gchar * const *repos_dir)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    g_strfreev(priv->repos_dir);
+    if (repos_dir) {
+        guint len = 1;
+        for (auto iter = repos_dir; *iter; ++iter) {
+            ++len;
+        }
+        priv->repos_dir = g_new(gchar*, len);
+        for (guint i = 0; i < len; ++i) {
+            priv->repos_dir[i] = g_strdup(repos_dir[i]);
+        }
+    } else {
+        priv->repos_dir = NULL;
+    }
+}
+
+/**
  * dnf_context_set_repo_dir:
  * @context: a #DnfContext instance.
  * @repo_dir: the repodir, e.g. "/etc/yum.repos.d"
@@ -1020,8 +1069,13 @@ void
 dnf_context_set_repo_dir(DnfContext *context, const gchar *repo_dir)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
-    g_free(priv->repo_dir);
-    priv->repo_dir = g_strdup(repo_dir);
+    g_strfreev(priv->repos_dir);
+    if (repo_dir) {
+        priv->repos_dir = g_new0(gchar*, 2);
+        priv->repos_dir[0] = g_strdup(repo_dir);
+    } else {
+        priv->repos_dir = NULL;
+    }
 }
 
 /**
@@ -1888,7 +1942,8 @@ dnf_context_setup_enrollments(DnfContext *context, GError **error)
         return TRUE;
     }
     g_autoptr(RHSMContext) rhsm_ctx = rhsm_context_new ();
-    g_autofree gchar *repofname = g_build_filename (dnf_context_get_repo_dir(context),
+    auto repo_dir = dnf_context_get_repo_dir(context);
+    g_autofree gchar *repofname = g_build_filename (repo_dir,
                                                     "redhat.repo",
                                                     NULL);
     g_autoptr(GKeyFile) repofile = rhsm_utils_yum_repo_from_context (rhsm_ctx);
@@ -1972,7 +2027,7 @@ dnf_context_setup(DnfContext *context,
 
     /* ensure directories exist */
     auto repo_dir = dnf_context_get_repo_dir(context);
-    if (repo_dir && repo_dir[0]) {
+    if (repo_dir[0]) {
         if (!dnf_context_ensure_exists(repo_dir, error))
             return FALSE;
     }
