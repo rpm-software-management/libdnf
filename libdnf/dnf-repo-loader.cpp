@@ -415,7 +415,8 @@ dnf_repo_loader_refresh(DnfRepoLoader *self, GError **error)
     auto repos_dir = dnf_context_get_repos_dir(priv->context);
     for (auto item = repos_dir; *item; ++item) {
         repo_path = *item;
-        dir = g_dir_open(repo_path, 0, error);
+        dir = g_dir_open(repo_path, 0, NULL);
+        // existence of repos directories is not mandatory
         if (dir == NULL)
             continue;
         
