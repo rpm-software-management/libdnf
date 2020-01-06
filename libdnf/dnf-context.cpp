@@ -1236,7 +1236,7 @@ void
 dnf_context_set_arch(DnfContext *context, const gchar *arch)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
-    g_free(priv->cache_dir);
+    g_free(priv->arch);
     priv->arch = g_strdup(arch);
 }
 
