@@ -396,9 +396,6 @@ static gboolean
 dnf_repo_loader_refresh(DnfRepoLoader *self, GError **error)
 {
     DnfRepoLoaderPrivate *priv = GET_PRIVATE(self);
-    const gchar *file;
-    const gchar *repo_path;
-    g_autoptr(GDir) dir = NULL;
 
     if (!dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_PRE_REPOS_RELOAD, nullptr, nullptr))
         return FALSE;
@@ -414,14 +411,14 @@ dnf_repo_loader_refresh(DnfRepoLoader *self, GError **error)
     /* open dir */
     auto repos_dir = dnf_context_get_repos_dir(priv->context);
     for (auto item = repos_dir; *item; ++item) {
-        repo_path = *item;
-        dir = g_dir_open(repo_path, 0, NULL);
+        auto repo_path = *item;
+        g_autoptr(GDir) dir = g_dir_open(repo_path, 0, NULL);
         // existence of repos directories is not mandatory
         if (dir == NULL)
             continue;
         
         /* find all the .repo files */
-        while ((file = g_dir_read_name(dir)) != NULL) {
+        while (auto file = g_dir_read_name(dir)) {
             g_autofree gchar *path_tmp = NULL;
             if (!g_str_has_suffix(file, ".repo"))
                 continue;
