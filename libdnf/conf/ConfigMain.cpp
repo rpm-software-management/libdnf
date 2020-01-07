@@ -204,6 +204,7 @@ class ConfigMain::Impl {
     };
 
     OptionStringList tsflags{std::vector<std::string>{}};
+    OptionStringList solverflags{std::vector<std::string>{"allowdowngrade"}};
     OptionBool assumeyes{false};
     OptionBool assumeno{false};
     OptionBool check_config_file_age{true};
@@ -383,7 +384,7 @@ ConfigMain::Impl::Impl(Config & owner)
             optionTListAppend(tsflags, priority, value);
         }, nullptr, true
     );
-
+    owner.optBinds().add("solverflags", solverflags);
     owner.optBinds().add("assumeyes", assumeyes);
     owner.optBinds().add("assumeno", assumeno);
     owner.optBinds().add("check_config_file_age", check_config_file_age);
@@ -513,6 +514,7 @@ OptionStringList & ConfigMain::installonlypkgs() { return pImpl->installonlypkgs
 OptionStringList & ConfigMain::group_package_types() { return pImpl->group_package_types; }
 OptionNumber<std::uint32_t> & ConfigMain::installonly_limit() { return pImpl->installonly_limit; }
 OptionStringList & ConfigMain::tsflags() { return pImpl->tsflags; }
+OptionStringList & ConfigMain::solverflags() { return pImpl->solverflags; }
 OptionBool & ConfigMain::assumeyes() { return pImpl->assumeyes; }
 OptionBool & ConfigMain::assumeno() { return pImpl->assumeno; }
 OptionBool & ConfigMain::check_config_file_age() { return pImpl->check_config_file_age; }

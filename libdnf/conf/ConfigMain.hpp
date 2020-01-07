@@ -77,6 +77,7 @@ public:
     OptionNumber<std::uint32_t> & installonly_limit();
 
     OptionStringList & tsflags();
+    OptionStringList & solverflags();
     OptionBool & assumeyes();
     OptionBool & assumeno();
     OptionBool & check_config_file_age();
