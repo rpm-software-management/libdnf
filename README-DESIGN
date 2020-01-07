@@ -76,6 +76,9 @@ object:
 goal install (sltr) == for name, q in sltr: goal.install(oneof(q))
 
 
+Configurable vendor stickiness (allow_vendor_change=true); rhbz#1788371
+
+
 forward/backward actions -> in/out actions
 
 Must compile with both gcc and clang.
