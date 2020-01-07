@@ -154,6 +154,16 @@ Building:
     * decide on meson vs CMake? (meson doesn't natively support Swift, although it wouldn't be terribly hard to add that)
 
 
+Debugging:
+* run command with debugsolver
+* create archive with
+  * debugsolver data (modular, non-modular, others)
+  * logs
+  * configs
+  * list of plugins
+* Suggest how to upload the data to bugzilla or elsewhere
+
+
 Dependencies
 ------------
 * Hide all libsolv internals, libsolv header files should not be necessary to use libdnf
