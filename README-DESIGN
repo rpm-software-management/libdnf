@@ -105,6 +105,13 @@ https://github.com/rpm-software-management/microdnf/pull/64#issuecomment-5682137
 Conan-Kudo: We probably should be doing soname bumps instead, or making it so that there are versioned symbol exports similar to to libsolv and glibc so that when you use new functionality, that gets represented in an rpm dependency automatically...
 
 
+Workflow:
+* make sure that the functions cannot be called in the wrong order
+* shortcuts for certain types of workflows
+  * initialize the library the same way DNF is initialized (logging, configuration, etc.)
+  * initialize the library for making queries to ad-hoc repos
+
+
 Queries:
 base.rpm.query <-- existing Query() instance (libdnf::rpm::Query)
 base.comps.group_query (libdnf::generic::Query<libdnf::comps::Group>)
