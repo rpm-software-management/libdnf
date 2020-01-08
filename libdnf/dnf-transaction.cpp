@@ -1545,12 +1545,18 @@ dnf_transaction_new(DnfContext *context)
 {
     auto transaction = DNF_TRANSACTION(g_object_new(DNF_TYPE_TRANSACTION, NULL));
     auto priv = GET_PRIVATE(transaction);
-    std::string dbPath = dnf_context_get_write_history(context) ? libdnf::Swdb::defaultPath : ":memory:";
+    auto install_root = dnf_context_get_install_root(context);
+    std::string dbPath;
+    if (dnf_context_get_write_history(context)) {
+        dbPath = g_build_filename(install_root, libdnf::Swdb::defaultPath, NULL);
+    } else {
+        dbPath = ":memory:";
+    }
     priv->swdb = new libdnf::Swdb(dbPath);
     priv->context = context;
     g_object_add_weak_pointer(G_OBJECT(priv->context), (void **)&priv->context);
     priv->ts = rpmtsCreate();
-    rpmtsSetRootDir(priv->ts, dnf_context_get_install_root(context));
+    rpmtsSetRootDir(priv->ts, install_root);
     priv->keyring = rpmtsGetKeyring(priv->ts, 1);
     return transaction;
 }
