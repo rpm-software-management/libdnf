@@ -123,7 +123,36 @@ base.comps.environment_query
     or package specific Sacks (they are "package" containers)
 
 
-Pointer ownership - clearly document who is reposnsible for deleting
+Pointer ownership - clearly document who is responsible for deleting
+
+
+Choose pointer types for related objects (Base, Sack, Package, etc.) and handle their life cycle
+------------------------------------------------------------------------------------------------
+
+Scenario 1: reset sack
+b = Base()
+b.fill_sack()
+pkg = b.sack.query(...)
+b.reset()
+print(pkg.name)
+expected result: throws an exception that underlying data (sack) is no longer available
+
+Scenario 2: free sack / base
+b = Base()
+b.fill_sack()
+pkg = b.sack.query(...)
+delete base
+print(pkg.name)
+expected result: throws an exception that underlying data (sack) is no longer available
+
+Scenario 3: using a package with a different sack
+b1 = Base()
+b1.fill_sack()
+pkg = b1.sack.query(...)
+b2 = Base()
+b2.fill_sack()
+b2.sack.query(pkg=pkg)
+expected result: throws an exception that package is used with a different sack than it comes from
 
 
 Configs:
