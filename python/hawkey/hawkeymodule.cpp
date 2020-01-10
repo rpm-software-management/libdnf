@@ -307,6 +307,7 @@ PYCOMP_MOD_INIT(_hawkey)
     PyModule_AddIntConstant(m, "FORCE_BEST", DNF_FORCE_BEST);
     PyModule_AddIntConstant(m, "VERIFY", DNF_VERIFY);
     PyModule_AddIntConstant(m, "IGNORE_WEAK_DEPS", DNF_IGNORE_WEAK_DEPS);
+    PyModule_AddIntConstant(m, "ALLOW_DOWNGRADE", DNF_ALLOW_DOWNGRADE);
 
     PyModule_AddIntConstant(m, "CHKSUM_MD5", G_CHECKSUM_MD5);
     PyModule_AddIntConstant(m, "CHKSUM_SHA1", G_CHECKSUM_SHA1);

@@ -1,11 +1,11 @@
 %global libsolv_version 0.7.7
 %global libmodulemd_version 1.6.1
 %global librepo_version 1.11.0
-%global dnf_conflict 4.2.13
+%global dnf_conflict 4.2.18
 %global swig_version 3.0.12
 %global libdnf_major_version 0
-%global libdnf_minor_version 43
-%global libdnf_micro_version 1
+%global libdnf_minor_version 44
+%global libdnf_micro_version 0
 
 # set sphinx package name according to distro
 %global requires_python2_sphinx python2-sphinx
