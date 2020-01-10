@@ -1391,7 +1391,11 @@ std::string Repo::Impl::getPersistdir() const
     if (persdir.back() != '/')
         persdir.push_back('/');
     std::string result = persdir + "repos/" + getHash();
-    g_mkdir_with_parents(result.c_str(), 0755);
+    if (g_mkdir_with_parents(result.c_str(), 0755) == -1) {
+        const char * errTxt = strerror(errno);
+        throw std::runtime_error(tfm::format(_("Cannot create persistdir \"%s\": %s"),
+                                             result, errTxt));
+    }
     return result;
 }
 
