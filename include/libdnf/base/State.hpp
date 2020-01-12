@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef LIBDNF_BASE_STATE_HPP
+#define LIBDNF_BASE_STATE_HPP
 
 /*
 // * @DNF_STATE_ACTION_UNKNOWN:                   Unknown status
@@ -37,3 +37,5 @@ enum class State {
 
 
 }  // namespace libdnf
+
+#endif

@@ -1,0 +1,5 @@
+#ifndef LIBDNF_RPM_EXCEPTIONS_HPP
+#define LIBDNF_RPM_EXCEPTIONS_HPP
+
+
+#endif

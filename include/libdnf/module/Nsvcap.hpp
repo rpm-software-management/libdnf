@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef LIBDNF_MODULE_NSVCAP_HPP
+#define LIBDNF_MODULE_NSVCAP_HPP
 
 #include <string>
 
@@ -86,3 +86,5 @@ protected:
     std::string arch;
     std::string profile;
 };
+
+#endif

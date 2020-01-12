@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef LIBDNF_COMPS_CATEGORY_HPP
+#define LIBDNF_COMPS_CATEGORY_HPP
 
 #include <vector>
 #include <string>
@@ -30,3 +30,5 @@ class Category {
 
 
 }  // namespace libdnf::comps
+
+#endif

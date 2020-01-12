@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef LIBDNF_UTILS_NUMBER_HPP
+#define LIBDNF_UTILS_NUMBER_HPP
 
 namespace libdnf::utils::number {
 
@@ -7,3 +7,5 @@ namespace libdnf::utils::number {
 int random_int(int min, int max);
 
 }  // namespace libdnf::utils::number
+
+#endif

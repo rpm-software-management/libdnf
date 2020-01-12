@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LIBDNF_RPM_PACKAGESET_HPP
+#define LIBDNF_RPM_PACKAGESET_HPP
 
 
 // forward declarations
@@ -110,3 +111,5 @@ PackageSet::PackageSet(const Sack & sack)
 
 
 }  // namespace libdnf::rpm
+
+#endif

@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef LIBDNF_REPO_REPOS_HPP
+#define LIBDNF_REPO_REPOS_HPP
 
 #include "Repo.hpp"
 
@@ -41,3 +41,5 @@ dnf:dnf/repodict.py:method:RepoDict.setdefault(self, key, default=None, /)
 dnf:dnf/repodict.py:method:RepoDict.update()
 dnf:dnf/repodict.py:method:RepoDict.values(self)
 */
+
+#endif

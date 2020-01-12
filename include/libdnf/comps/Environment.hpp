@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef LIBDNF_COMPS_ENVIRONMENT_HPP
+#define LIBDNF_COMPS_ENVIRONMENT_HPP
 
 #include <vector>
 #include <string>
@@ -75,3 +75,5 @@ dnf:dnf/db/group.py:method:EnvironmentPersistor.new(self, obj_id, name, translat
 dnf:dnf/db/group.py:method:EnvironmentPersistor.search_by_pattern(self, pattern)
 
 */
+
+#endif

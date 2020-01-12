@@ -1,11 +1,10 @@
-#pragma once
-
+#ifndef LIBDNF_RPM_PACKAGE_HPP
+#define LIBDNF_RPM_PACKAGE_HPP
 
 // forward declarations
 namespace libdnf::rpm {
 class Package;
 }  // namespace libdnf::rpm
-
 
 #include <string>
 
@@ -198,3 +197,5 @@ protected:
 
 
 }  // namespace libdnf::rpm
+
+#endif

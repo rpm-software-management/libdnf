@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef LIBDNF_BASE_TRANSACTIONITEMACTION_HPP
+#define LIBDNF_BASE_TRANSACTIONITEMACTION_HPP
 
 /*
 dnf:dnf/yum/rpmtrans.py:attribute:ErrorTransactionDisplay.PKG_CLEANUP
@@ -64,3 +64,5 @@ enum class TransactionItemAction : int {
 
 
 }  // namespace libdnf
+
+#endif

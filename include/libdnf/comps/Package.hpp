@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef LIBDNF_COMPS_PACKAGE_HPP
+#define LIBDNF_COMPS_PACKAGE_HPP
 
 #include <string>
 
@@ -33,3 +33,5 @@ class Package {
 /*
 dnf:dnf/comps.py:attribute:Package.option_type
 */
+
+#endif

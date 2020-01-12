@@ -1,3 +1,6 @@
+#ifndef LIBDNF_RPM_TRANSACTIONSETCALLBACKBASE_HPP
+#define LIBDNF_RPM_TRANSACTIONSETCALLBACKBASE_HPP
+
 // TODO: how to handle compatibility with existing libraries/programs when a new handle appears;
 // TODO: will this be the same interface as dnf:dnf/yum/rpmtrans.py:class:TransactionDisplay ?
 
@@ -86,3 +89,5 @@ Date:   Mon Dec 7 17:13:26 2015 +0100
 
     RPMCALLBACK_ELEM_PROGRESS<->= (1 << 19),
 */
+
+#endif

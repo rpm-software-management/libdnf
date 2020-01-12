@@ -1,9 +1,9 @@
-#pragma once
-
+#ifndef LIBDNF_MODULE_BASE_HPP
+#define LIBDNF_MODULE_BASE_HPP
 
 #include "Sack.hpp"
 
-#include "../base/base.hpp"
+#include "../base/Base.hpp"
 
 
 
@@ -42,3 +42,5 @@ dnf:dnf/module/module_base.py:method:ModuleBase.remove(self, module_specs)
 dnf:dnf/module/module_base.py:method:ModuleBase.reset(self, module_specs)
 dnf:dnf/module/module_base.py:method:ModuleBase.upgrade(self, module_specs)
 */
+
+#endif

@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef LIBDNF_BASE_CACHE_HPP
+#define LIBDNF_BASE_CACHE_HPP
 
 #include <string>
 #include <vector>
@@ -100,3 +100,5 @@ add("metalink", url_checksum); contains repomd.xml checksums
  // - remove packages after some time period (1d, 1w, etc.)
  - cleanAllOlderThan(seconds, [types])
 */
+
+#endif

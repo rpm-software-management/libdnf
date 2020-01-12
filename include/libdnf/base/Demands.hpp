@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef LIBDNF_BASE_DEMANDS_HPP
+#define LIBDNF_BASE_DEMANDS_HPP
 
 #include <string>
 #include <vector>
@@ -45,3 +45,5 @@ protected:
 };
 
 }  // namespace libdnf
+
+#endif

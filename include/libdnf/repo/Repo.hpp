@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef LIBDNF_REPO_REPO_HPP
+#define LIBDNF_REPO_REPO_HPP
 
 #include <string>
 
@@ -178,3 +178,5 @@ libdnf:libdnf/repo/Repo.hpp:class:Impl
 libdnf:libdnf/repo/Repo.hpp:function:repoGetImpl(libdnf::Repo * repo)
 
 */
+
+#endif

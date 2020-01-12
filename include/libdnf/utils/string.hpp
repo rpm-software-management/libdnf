@@ -1,3 +1,6 @@
+#ifndef LIBDNF_UTILS_STRING_HPP
+#define LIBDNF_UTILS_STRING_HPP
+
 #include <string>
 #include <vector>
 
@@ -40,3 +43,5 @@ std::string remove_suffix(const std::string & str, const std::string & suffix);
 std::string remove_prefix(const std::string & str, const std::string & prefix);
 
 }  // namespace libdnf::utils::string
+
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LIBDNF_RPM_SELECTOR_HPP
+#define LIBDNF_RPM_SELECTOR_HPP
 
 
 namespace libdnf::rpm {
@@ -10,3 +11,5 @@ class Selector {
 
 
 }  // namespace libdnf::rpm
+
+#endif

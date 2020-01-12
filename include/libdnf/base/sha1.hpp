@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LIBDNF_BASE_SHA1_HPP
+#define LIBDNF_BASE_SHA1_HPP
 
 #include <string>
 #include <openssl/sha.h>
@@ -24,3 +25,5 @@ public:
 private:
     SHA_CTX ctx;
 };
+
+#endif

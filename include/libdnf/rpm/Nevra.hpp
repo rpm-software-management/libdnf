@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LIBDNF_RPM_NEVRA_HPP
+#define LIBDNF_RPM_NEVRA_HPP
 
 
 namespace libdnf::rpm {
@@ -82,3 +83,5 @@ protected:
 
 
 }  // namespace libdnf::rpm
+
+#endif

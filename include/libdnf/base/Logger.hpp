@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef LIBDNF_BASE_LOGGER_HPP
+#define LIBDNF_BASE_LOGGER_HPP
 
 // forward declarations
 namespace libdnf {
@@ -40,3 +40,5 @@ Logger::Logger(Base & dnf_base)
 
 
 }  // namespace libdnf
+
+#endif

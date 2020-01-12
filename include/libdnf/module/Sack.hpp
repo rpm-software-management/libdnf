@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef LIBDNF_MODULE_SACK_HPP
+#define LIBDNF_MODULE_SACK_HPP
 
 #include <string>
 
@@ -53,3 +53,5 @@ public:
 
 
 }  // namespace libdnf::module
+
+#endif

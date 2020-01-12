@@ -1,11 +1,10 @@
-#pragma once
-
+#ifndef LIBDNF_RPM_QUERY_HPP
+#define LIBDNF_RPM_QUERY_HPP
 
 // forward declarations
 namespace libdnf::rpm {
 class Query;
 }  // namespace libdnf::rpm
-
 
 #include <string>
 
@@ -21,3 +20,5 @@ public:
 
 
 }  // namespace libdnf::rpm
+
+#endif

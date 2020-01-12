@@ -1,11 +1,10 @@
-#pragma once
-
+#ifndef LIBDNF_RPM_SACK_HPP
+#define LIBDNF_RPM_SACK_HPP
 
 // foward declarations
 namespace libdnf::rpm {
 class Sack;
 }  // namespace libdnf::rpm
-
 
 #include <string>
 
@@ -86,3 +85,5 @@ Sack::Sack(Base & rpm_base)
 }
 
 }  // namespace libdnf::rpm
+
+#endif

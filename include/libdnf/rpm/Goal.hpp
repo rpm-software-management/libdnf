@@ -1,4 +1,6 @@
-#pragma once
+#ifndef LIBDNF_RPM_GOAL_HPP
+#define LIBDNF_RPM_GOAL_HPP
+
 
 // forward declarations
 namespace libdnf::rpm {
@@ -157,3 +159,5 @@ Goal::Goal(Base & rpm_base)
 
 
 }  // namespace libdnf::rpm
+
+#endif

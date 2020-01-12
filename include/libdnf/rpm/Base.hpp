@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef LIBDNF_RPM_BASE_HPP
+#define LIBDNF_RPM_BASE_HPP
 
 // forward declarations
 namespace libdnf::rpm {
@@ -44,3 +44,5 @@ Base::Base(libdnf::Base & dnf_base)
 
 
 }  // namespace libdnf::rpm
+
+#endif

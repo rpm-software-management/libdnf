@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef LIBDNF_BASE_BASE_HPP
+#define LIBDNF_BASE_BASE_HPP
 
 // forward declarations
 namespace libdnf {
@@ -97,3 +97,5 @@ Base::Base()
 
 
 }  // namespace libdnf
+
+#endif

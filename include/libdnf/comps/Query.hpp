@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef LIBDNF_COMPS_QUERY_HPP
+#define LIBDNF_COMPS_QUERY_HPP
 
 #include <string>
 #include <vector>
@@ -75,3 +75,5 @@ dnf:dnf/comps.py:attribute:CompsQuery.ENVIRONMENTS
 dnf:dnf/comps.py:attribute:CompsQuery.GROUPS
 dnf:dnf/comps.py:attribute:CompsQuery.INSTALLED
 */
+
+#endif

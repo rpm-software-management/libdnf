@@ -1,7 +1,8 @@
-#pragma once
+#ifndef LIBDNF_LIBDNF_HPP
+#define LIBDNF_LIBDNF_HPP
 
+#include "base/all.hpp"
+#include "comps/all.hpp"
+#include "rpm/all.hpp"
 
-#include "base/base.hpp"
-#include "comps/comps.hpp"
-#include "rpm/rpm.hpp"
-
+#endif
