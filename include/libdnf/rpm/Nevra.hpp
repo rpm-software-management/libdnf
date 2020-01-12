@@ -1,6 +1,7 @@
 #ifndef LIBDNF_RPM_NEVRA_HPP
 #define LIBDNF_RPM_NEVRA_HPP
 
+#include <string>
 
 namespace libdnf::rpm {
 
@@ -78,7 +79,7 @@ protected:
     bool has_just_name() const;
 
     /// @replaces libdnf:libdnf/nevra.hpp:method:Nevra.compareEvr(const libdnf::Nevra & nevra2, DnfSack * sack)
-    int compare_evr(const Nevra & nevra2, DnfSack *sack) const;
+    int compare_evr(const Nevra & nevra2) const;
 };
 
 

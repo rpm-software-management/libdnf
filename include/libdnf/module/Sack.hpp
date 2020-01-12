@@ -7,6 +7,12 @@
 namespace libdnf::module {
 
 
+// class definitions to mute clang-tidy complaints
+// to be removed / implemented
+class PackageSet;
+class Query;
+
+
 /// @replaces libdnf:libdnf/module/ModulePackageContainer.hpp:class:ModulePackageContainer
 class Sack {
 public:

@@ -12,7 +12,7 @@ class Base;
 #include "Query.hpp"
 #include "Sack.hpp"
 
-#include "../base/base.hpp"
+#include "../base/Base.hpp"
 
 
 
@@ -27,7 +27,7 @@ public:
 
     /// @replaces dnf:dnf/base.py:attribute:Base.sack
     /// @replaces libdnf:libdnf/dnf-context.h:function:dnf_context_get_sack(DnfContext * context)
-    Sack get_sack() { return Sack(*this); }
+    Sack get_sack() const;
 
     /// @replaces libdnf:libdnf/dnf-context.h:function:dnf_context_get_goal(DnfContext * context)
     void get_goal();

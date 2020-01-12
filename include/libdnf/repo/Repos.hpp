@@ -10,12 +10,17 @@
 namespace libdnf::repo {
 
 
+// class definitions to mute clang-tidy complaints
+// to be removed / implemented
+class RepoConf;
+
+
 /// @replaces dnf:dnf/repodict.py:class:RepoDict
 class Repos {
 public:
     /// @replaces dnf:dnf/repodict.py:method:RepoDict.add(self, repo)
     /// @replaces dnf:dnf/repodict.py:method:RepoDict.add_new_repo(self, repoid, conf, baseurl=(), **kwargs)
-    Repo & new_repo(void conf);
+    Repo & new_repo(RepoConf conf);
 
     // TODO: Query() -> get(id), filter(...)
 };

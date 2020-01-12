@@ -1,6 +1,10 @@
 #ifndef LIBDNF_COMPS_QUERY_HPP
 #define LIBDNF_COMPS_QUERY_HPP
 
+#include "Category.hpp"
+#include "Environment.hpp"
+#include "Group.hpp"
+
 #include <string>
 #include <vector>
 

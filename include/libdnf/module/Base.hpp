@@ -15,9 +15,9 @@ class Base {
 public:
     Base(libdnf::Base * dnf_base);
 
-    void get_sack();
+    void get_sack() const;
 
-    void get_goal();
+    void get_goal() const;
 
 protected:
     const libdnf::Base * dnf_base;

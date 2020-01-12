@@ -7,13 +7,13 @@ class Base;
 }  // namespace libdnf::comps
 
 
-#include "../base/base.hpp"
-
 #include "Environment.hpp"
 #include "Goal.hpp"
 #include "Group.hpp"
 #include "Package.hpp"
 #include "Query.hpp"
+
+#include "../base/Base.hpp"
 
 
 namespace libdnf::comps {

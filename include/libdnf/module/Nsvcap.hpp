@@ -7,10 +7,15 @@
 namespace libdnf::module {
 
 
+// class definitions to mute clang-tidy complaints
+// to be removed / implemented
+class ModuleForm;
+
+
 /// @replaces libdnf:libdnf/nsvcap.hpp:class:Nsvcap
 class Nsvcap {
 public:
-    bool parse(const char *nsvcap_str, HyModuleForm form);
+    bool parse(const char *nsvcap_str, ModuleForm form);
     void clear();
 
     // NAME
@@ -86,5 +91,7 @@ protected:
     std::string arch;
     std::string profile;
 };
+
+}  // namespace libdnf::module
 
 #endif

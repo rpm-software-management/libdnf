@@ -15,8 +15,8 @@ class Base;
 #include "Demands.hpp"
 #include "Logger.hpp"
 
-#include "../rpm/rpm.hpp"
-#include "../comps/comps.hpp"
+#include "../rpm/Base.hpp"
+#include "../comps/Base.hpp"
 
 
 namespace libdnf {
