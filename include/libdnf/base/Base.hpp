@@ -15,8 +15,8 @@ class Base;
 #include "Demands.hpp"
 #include "Logger.hpp"
 
-#include "../rpm/Base.hpp"
 #include "../comps/Base.hpp"
+#include "../rpm/Base.hpp"
 
 
 namespace libdnf {
@@ -35,16 +35,7 @@ class Base {
     // lukash: There are many classes containing the same methods (install, remove, upgrade, ...) and I'm not sure what is the purpose.
     // lukash: I'd try to figure out if we can move the methods out of this Base to a more suited class(es) and see what's left here.
 public:
-    Base();
-
-    /// instance of a :class:`libdnf::rpm::Base` class that encapsulates all rpm data and operations.
-    std::unique_ptr<libdnf::rpm::Base> rpm;
-
-    /// instance of a :class:`libdnf::comps::Base` class that encapsulates all comps data and operations.
-    /// @replaces dnf:dnf/base.py:attribute:Base.comps
-    std::unique_ptr<libdnf::comps::Base> comps;
-
-    std::unique_ptr<Logger> logger;
+    explicit Base();
 
     /*
     /// instance of a :class:`libdnf::module::Base` class that encapsulates all comps data and operations.
@@ -69,7 +60,7 @@ public:
     void install(const Demands & demands, std::vector<std::string> patterns, std::vector<std::string> exclude_patterns);
 
     /// @replaces dnf:dnf/base.py:method:Base.reinstall(self, pkg_spec, old_reponame=None, new_reponame=None, new_reponame_neq=None, remove_na=False)
-    // TODO: specify additional args in demands? e.g. limit the operation to old/new repo etc.?
+    // TODO(dmach): specify additional args in demands? e.g. limit the operation to old/new repo etc.?
     void reinstall(const Demands & demands, std::vector<std::string> patterns, std::vector<std::string> exclude_patterns);
 
     /// @replaces dnf:dnf/base.py:method:Base.remove(self, pkg_spec, reponame=None, forms=None)
@@ -85,15 +76,27 @@ public:
     void upgrade_all(const Demands & demands);
 
     // lukash: we should add the shared_ptrs and weak_ptrs as we discussed to see how exactly it's going to work
+
+private:
+    /// instance of a :class:`libdnf::rpm::Base` class that encapsulates all rpm data and operations.
+    std::unique_ptr<libdnf::rpm::Base> rpm;
+
+    /// instance of a :class:`libdnf::comps::Base` class that encapsulates all comps data and operations.
+    /// @replaces dnf:dnf/base.py:attribute:Base.comps
+    std::unique_ptr<libdnf::comps::Base> comps;
+
+    std::unique_ptr<Logger> logger;
 };
 
 
+/*
 Base::Base()
     : rpm(std::make_unique<libdnf::rpm::Base>(*this))
     , comps(std::make_unique<libdnf::comps::Base>(*this))
     , logger(std::make_unique<Logger>(*this))
 {
 }
+*/
 
 
 }  // namespace libdnf

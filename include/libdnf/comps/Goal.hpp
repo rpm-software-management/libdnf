@@ -54,8 +54,8 @@ class Goal {
 
     // RESULTS
 
-    // TODO: consider listResult([TransactionItemAction])
-    // TODO: consider resolve() -> Transaction object
+    // TODO(dmach): consider listResult([TransactionItemAction])
+    // TODO(dmach): consider resolve() -> Transaction object
 
     /// @replaces dnf:dnf/comps.py:attribute:TransactionBunch.install
     /// @replaces dnf:dnf/comps.py:attribute:TransactionBunch.install_opt

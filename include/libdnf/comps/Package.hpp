@@ -7,12 +7,13 @@
 namespace libdnf::comps {
 
 
-// TODO: isn't it more a package dependency rather than a package?
+// TODO(dmach): isn't it more a package dependency rather than a package?
 
 
 /// @replaces dnf:dnf/comps.py:class:Package
 /// @replaces dnf:dnf/comps.py:class:CompsTransPkg
 class Package {
+public:
     // lukash: Why is there Package in comps?
     /// @replaces dnf:dnf/comps.py:attribute:Package.name
     std::string get_name() const;

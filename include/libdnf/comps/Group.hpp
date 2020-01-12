@@ -1,8 +1,8 @@
 #ifndef LIBDNF_COMPS_GROUP_HPP
 #define LIBDNF_COMPS_GROUP_HPP
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "Package.hpp"
 
@@ -14,6 +14,7 @@ namespace libdnf::comps {
 ///
 /// @replaces dnf:dnf/comps.py:class:Group
 class Group {
+public:
     std::string get_id() const;
 
     std::string get_name() const;

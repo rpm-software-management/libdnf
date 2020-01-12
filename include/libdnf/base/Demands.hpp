@@ -24,7 +24,7 @@ public:
     int get_cache_only_level() const { return cacheOnlyLevel; }
     void set_cache_only_level(int value) { cacheOnlyLevel = value; }
 
-protected:
+private:
     bool allowErasing = false;
     bool best = false;
     int cacheOnlyLevel = 0;
@@ -40,7 +40,7 @@ protected:
     freshest_metadata = _BoolDefault(False)
     changelogs = _BoolDefault(False)
 
-    TODO: debugsolver
+    TODO(dmach): debugsolver
     */
 };
 

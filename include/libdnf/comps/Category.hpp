@@ -1,8 +1,8 @@
 #ifndef LIBDNF_COMPS_CATEGORY_HPP
 #define LIBDNF_COMPS_CATEGORY_HPP
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "Group.hpp"
 
@@ -13,6 +13,7 @@ namespace libdnf::comps {
 /// class Category
 ///
 class Category {
+public:
     std::string get_id() const;
 
     std::string get_name() const;

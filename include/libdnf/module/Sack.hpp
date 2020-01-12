@@ -53,8 +53,6 @@ public:
     bool get_use_includes();
 
     void set_use_includes(bool value);
-
-
 };
 
 

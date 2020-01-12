@@ -1,8 +1,8 @@
 #ifndef LIBDNF_COMPS_ENVIRONMENT_HPP
 #define LIBDNF_COMPS_ENVIRONMENT_HPP
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "Group.hpp"
 
@@ -14,6 +14,7 @@ namespace libdnf::comps {
 ///
 /// @replaces dnf:dnf/comps.py:class:Environment
 class Environment {
+public:
     std::string get_id() const;
 
     std::string get_name() const;

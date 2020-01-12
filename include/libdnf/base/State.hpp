@@ -21,7 +21,7 @@
 namespace libdnf {
 
 
-// TODO: consolidate states with plugin callbacks
+// TODO(dmach): consolidate states with plugin callbacks
 enum class State {
     INIT,
     LOAD_CONFIG,

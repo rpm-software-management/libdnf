@@ -20,7 +20,7 @@ namespace libdnf::rpm {
 class Sack {
 public:
     /// @replaces libdnf:libdnf/dnf-sack.h:function:dnf_sack_new()
-    Sack(Base & rpmBase);
+    explicit Sack(Base & rpm_base);
     // lukash: I'm wondering whether we want the constructor to be private and have a friend Base class and a Base::get_sack()? Or a public Sack constructor taking Base? That might be a bit better if we don't run into a unique_ptr<Base> vs Base& mess?
 
     /// @replaces dnf:dnf/sack.py:method:Sack.query(self, flags=0)
@@ -74,15 +74,18 @@ public:
     /// @replaces libdnf:libdnf/dnf-sack.h:function:dnf_sack_set_use_includes(DnfSack * sack, const char * reponame, gboolean enabled)
     void set_use_includes(bool value);
 
-protected:
+private:
     const Base & rpm_base;
 };
 
 
+/*
 Sack::Sack(Base & rpm_base)
     : rpm_base{rpm_base}
 {
 }
+*/
+
 
 }  // namespace libdnf::rpm
 

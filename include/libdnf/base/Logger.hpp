@@ -26,17 +26,19 @@ public:
     void info(std::string msg);
     void warning(std::string msg);
     void error(std::string msg);
-//protected:
-//    friend Base;
+protected:
+    explicit Logger(Base & dnf_base);
+private:
     const Base & dnf_base;
-    Logger(Base & dnf_base);
 };
 
 
+/*
 Logger::Logger(Base & dnf_base)
     : dnf_base{dnf_base}
 {
 }
+*/
 
 
 }  // namespace libdnf

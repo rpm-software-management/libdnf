@@ -59,19 +59,20 @@ public:
 
 //protected:
 //    friend libdnf::Base;
-    Base(libdnf::Base & dnf_base);
+    explicit Base(libdnf::Base & dnf_base);
 
 
-protected:
+private:
     const libdnf::Base & dnf_base;
 };
 
 
+/*
 Base::Base(libdnf::Base & dnf_base)
     : dnf_base{dnf_base}
 {
 }
-
+*/
 
 }  // namespace libdnf::comps
 

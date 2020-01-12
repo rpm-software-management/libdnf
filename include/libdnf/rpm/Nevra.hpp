@@ -9,10 +9,10 @@ namespace libdnf::rpm {
 /// @replaces libdnf:libdnf/nevra.hpp:class:Nevra
 class Nevra {
 public:
-    Nevra();
+    explicit Nevra();
 
     /// @replaces libdnf:libdnf/nevra.hpp:method:Nevra.parse(const char * nevraStr, HyForm form)
-    Nevra(std::string str);
+    explicit Nevra(std::string str);
 
     /// @replaces libdnf:libdnf/nevra.hpp:method:Nevra.compare(const libdnf::Nevra & nevra2)
     bool operator==(const Nevra & other) const;

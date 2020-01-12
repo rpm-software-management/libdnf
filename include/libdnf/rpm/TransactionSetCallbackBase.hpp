@@ -1,42 +1,42 @@
 #ifndef LIBDNF_RPM_TRANSACTIONSETCALLBACKBASE_HPP
 #define LIBDNF_RPM_TRANSACTIONSETCALLBACKBASE_HPP
 
-// TODO: how to handle compatibility with existing libraries/programs when a new handle appears;
-// TODO: will this be the same interface as dnf:dnf/yum/rpmtrans.py:class:TransactionDisplay ?
+// TODO(dmach): how to handle compatibility with existing libraries/programs when a new handle appears;
+// TODO(dmach): will this be the same interface as dnf:dnf/yum/rpmtrans.py:class:TransactionDisplay ?
 
 class TransactionSetCallbackBase {
-    void handle_RPMCALLBACK_UNKNOWN();
+    void handle_rpmcallback_unknown();
 
     // obsolete:
     // RPMCALLBACK_REPACKAGE_START
     // RPMCALLBACK_REPACKAGE_PROGRESS
     // RPMCALLBACK_REPACKAGE_STOP
 
-    void handle_RPMCALLBACK_INST_OPEN_FILE();
-    void handle_RPMCALLBACK_INST_CLOSE_FILE();
+    void handle_rpmcallback_inst_open_file();
+    void handle_rpmcallback_inst_close_file();
 
-    void handle_RPMCALLBACK_UNPACK_ERROR();
-    void handle_RPMCALLBACK_CPIO_ERROR();
+    void handle_rpmcallback_unpack_error();
+    void handle_rpmcallback_cpio_error();
 
-    void handle_RPMCALLBACK_INST_START();
-    void handle_RPMCALLBACK_INST_PROGRESS();
-    void handle_RPMCALLBACK_INST_STOP();
+    void handle_rpmcallback_inst_start();
+    void handle_rpmcallback_inst_progress();
+    void handle_rpmcallback_inst_stop();
 
-    void handle_RPMCALLBACK_UNINST_START();
-    void handle_RPMCALLBACK_UNINST_PROGRESS();
-    void handle_RPMCALLBACK_UNINST_STOP();
+    void handle_rpmcallback_uninst_start();
+    void handle_rpmcallback_uninst_progress();
+    void handle_rpmcallback_uninst_stop();
 
-    void handle_RPMCALLBACK_TRANS_START();
-    void handle_RPMCALLBACK_TRANS_PROGRESS();
-    void handle_RPMCALLBACK_TRANS_STOP();
+    void handle_rpmcallback_trans_start();
+    void handle_rpmcallback_trans_progress();
+    void handle_rpmcallback_trans_stop();
 
-    void handle_RPMCALLBACK_SCRIPT_START();
-    void handle_RPMCALLBACK_SCRIPT_STOP();
-    void handle_RPMCALLBACK_SCRIPT_ERROR();
+    void handle_rpmcallback_script_start();
+    void handle_rpmcallback_script_stop();
+    void handle_rpmcallback_script_error();
 
-    void handle_RPMCALLBACK_VERIFY_START();
-    void handle_RPMCALLBACK_VERIFY_PROGRESS();
-    void handle_RPMCALLBACK_VERIFY_STOP();
+    void handle_rpmcallback_verify_start();
+    void handle_rpmcallback_verify_progress();
+    void handle_rpmcallback_verify_stop();
 
 protected:
     void callback();

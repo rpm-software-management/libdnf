@@ -25,10 +25,11 @@ namespace libdnf::comps {
 /// @replaces dnf:dnf/comps.py:attribute:CompsQuery.GROUPS
 /// @replaces dnf:dnf/comps.py:attribute:CompsQuery.INSTALLED
 class Query {
+public:
     // lukash: Again, Query in comps?
 
 
-    // TODO: string, vector<string> ?
+    // TODO(dmach): string, vector<string> ?
     /// @replaces dnf:dnf/comps.py:method:Comps.categories_by_pattern(self, pattern, case_sensitive=False)
     /// @replaces dnf:dnf/comps.py:method:Comps.category_by_pattern(self, pattern, case_sensitive=False)
     /// @replaces dnf:dnf/comps.py:method:Comps.environment_by_pattern(self, pattern, case_sensitive=False)

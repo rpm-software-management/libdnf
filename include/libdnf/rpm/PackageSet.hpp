@@ -22,7 +22,7 @@ namespace libdnf::rpm {
 class PackageSet {
 public:
     /// @replaces libdnf:libdnf/hy-packageset.h:function:dnf_packageset_new(DnfSack * sack)
-    PackageSet(const Sack & sack);
+    explicit PackageSet(const Sack & sack);
 
     /// @replaces libdnf:libdnf/sack/packageset.hpp:method:PackageSet.getSack()
     Sack & get_stack() const;
@@ -88,9 +88,7 @@ public:
 
 protected:
     /// @replaces libdnf:libdnf/hy-packageset.h:function:dnf_packageset_from_bitmap(DnfSack * sack, Map * m)
-    PackageSet(const Sack & sack, const Map * m);
-
-    const Sack & sack;
+    explicit PackageSet(const Sack & sack, const Map * m);
 
     /// @replaces libdnf:libdnf/sack/packageset.hpp:method:PackageSet.has(Id id)
     bool contains(Id id) const;
@@ -101,13 +99,19 @@ protected:
     /// @replaces libdnf:libdnf/hy-packageset.h:function:dnf_packageset_get_map(DnfPackageSet * pset)
     /// @replaces libdnf:libdnf/sack/packageset.hpp:method:PackageSet.getMap()
     Map * get_map() const;
+
+private:
+    const Sack & sack;
+
 };
 
 
+/*
 PackageSet::PackageSet(const Sack & sack)
     : sack{sack}
 {
 }
+*/
 
 
 }  // namespace libdnf::rpm

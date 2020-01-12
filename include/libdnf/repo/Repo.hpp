@@ -26,9 +26,9 @@ public:
     /// @replaces libdnf:libdnf/dnf-repo.h:function:dnf_repo_set_enabled(DnfRepo * repo, DnfRepoEnabled enabled)
     /// @replaces libdnf:libdnf/dnf-context.h:function:dnf_context_repo_enable(DnfContext * context, const gchar * repo_id, GError ** error)
     /// @replaces libdnf:libdnf/dnf-context.h:function:dnf_context_repo_disable(DnfContext * context, const gchar * repo_id, GError ** error)
-    /// TODO: enable -> load to sack(s) (first time only), enable in sack(s)
-    /// TODO: disable -> must remain in sack(s), disable in sack(s)
-    /// TODO: consider simple integration with rpm/comps/modules/etc.; every enable/disable changes underlying sack data!
+    /// TODO(dmach): enable -> load to sack(s) (first time only), enable in sack(s)
+    /// TODO(dmach): disable -> must remain in sack(s), disable in sack(s)
+    /// TODO(dmach): consider simple integration with rpm/comps/modules/etc.; every enable/disable changes underlying sack data!
     void set_enabled(bool value);
 
     /// @replaces dnf:dnf/repo.py:method:Repo.add_metadata_type_to_download(self, metadata_type)
@@ -42,7 +42,7 @@ public:
 
     /// @replaces dnf:dnf/repo.py:method:Repo.get_metadata_content(self, metadata_type)
     /// @replaces libdnf:libdnf/dnf-repo.h:function:dnf_repo_get_metadata_content(DnfRepo * repo, const gchar * metadataType, gpointer * content, int * length, GError ** error)
-    /// TODO: return a stream
+    /// TODO(dmach): return a stream
     void get_metadata_content(std::string & metadata_type);
 
     /// @replaces dnf:dnf/repo.py:method:Repo.get_http_headers(self)

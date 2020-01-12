@@ -146,16 +146,20 @@ public:
     void list_suggested() const;
 
 protected:
-    const Base & rpm_base;
     /// @replaces libdnf:libdnf/hy-goal.h:function:hy_goal_create(DnfSack * sack)
-    Goal(Base & rpm_base);
+    explicit Goal(Base & rpm_base);
+
+private:
+    const Base & rpm_base;
 };
 
 
+/*
 Goal::Goal(Base & rpm_base)
     : rpm_base{rpm_base}
 {
 }
+*/
 
 
 }  // namespace libdnf::rpm

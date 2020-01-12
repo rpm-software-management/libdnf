@@ -4,7 +4,7 @@
 #include "Repo.hpp"
 
 
-// TODO: include @System and @Commandline repos in Repos
+// TODO(dmach): include @System and @Commandline repos in Repos
 
 
 namespace libdnf::repo {
@@ -22,7 +22,7 @@ public:
     /// @replaces dnf:dnf/repodict.py:method:RepoDict.add_new_repo(self, repoid, conf, baseurl=(), **kwargs)
     Repo & new_repo(RepoConf conf);
 
-    // TODO: Query() -> get(id), filter(...)
+    // TODO(dmach): Query() -> get(id), filter(...)
 };
 
 

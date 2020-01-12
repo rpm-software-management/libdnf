@@ -88,7 +88,7 @@ public:
     /// @replaces dnf:dnf/package.py:attribute:Package.url
     std::string get_url() const;
 
-    // TODO: getBugUrl() not possible due to lack of support in libsolv and metadata?
+    // TODO(dmach): getBugUrl() not possible due to lack of support in libsolv and metadata?
 
     /// @replaces dnf:dnf/package.py:attribute:Package.summary
     /// @replaces libdnf:libdnf/hy-package.h:function:dnf_package_get_summary(DnfPackage * pkg)
@@ -100,7 +100,7 @@ public:
 
     /// @replaces dnf:dnf/package.py:attribute:Package.files
     /// @replaces libdnf:libdnf/hy-package.h:function:dnf_package_get_files(DnfPackage * pkg)
-    /// TODO: files, directories, info about ghost etc. - existing implementation returns incomplete data
+    /// TODO(dmach): files, directories, info about ghost etc. - existing implementation returns incomplete data
     void get_files() const;
 
     /// @replaces dnf:dnf/package.py:attribute:Package.changelogs
