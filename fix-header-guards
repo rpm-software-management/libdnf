@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# Find duplicates in header file names first.
+# All header guard macros are upper case and that confuses clang-tidy.
+
+DUPLICATES=$(find include | sort | uniq -di)
+if [ -n "$DUPLICATES" ]; then
+    echo "ERROR: Header guard collision(s) found."
+    echo "All file names must be case insensitively unique."
+    echo ""
+    echo "Errors found"
+    for path in "$DUPLICATES"; do
+        echo " - $path"
+    done
+    exit 1
+fi
+
+
+# When everything's fine, run clang tidy
+
+clang-tidy -fix-errors -checks='-*,llvm-header-guard' -header-filter='.*' `find include -name '*.hpp'` -- -std=c++17
