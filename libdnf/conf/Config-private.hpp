@@ -34,14 +34,18 @@ static void optionTListAppend(T & option, Option::Priority priority, const std::
     }
     auto addPriority = priority < option.getPriority() ? option.getPriority() : priority;
     auto val = option.fromString(value);
+    bool first = true;
     for (auto & item : val) {
         if (item.empty()) {
-            option.set(priority, item);
+            if (first) {
+                option.set(priority, item);
+            }
         } else {
             auto origValue = option.getValue();
             origValue.push_back(item);
             option.set(addPriority, origValue);
         }
+        first = false;
     }
 }
 
