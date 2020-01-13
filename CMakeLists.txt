@@ -28,12 +28,18 @@ option(WITH_RUBY "Build Ruby bindings" ON)
 include(GNUInstallDirs)
 
 
+# common dependencies
+find_package(PkgConfig REQUIRED)
+
+
 # C++ standard
 add_compile_options(-std=c++17)
 
 # warnings
 add_compile_options(-Wall -Wextra -Werror)
 add_compile_options(-Wcast-align -Wformat-nonliteral -Wmissing-format-attribute -Wredundant-decls -Wsign-compare -Wtype-limits -Wuninitialized -Wwrite-strings)
+# not sure about the conversion warnings being errors; review later
+add_compile_options(-Wconversion)
 
 # linker options
 if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -52,10 +58,10 @@ add_subdirectory("doc")
 
 # build bindings
 if(WITH_GO OR WITH_PERL5 OR WITH_PYTHON3 OR WITH_RUBY)
-    add_subdirectory(bindings)
+    add_subdirectory("bindings")
 endif()
 
 
 # build tests
 enable_testing()
-add_subdirectory(test)
+add_subdirectory("test")
