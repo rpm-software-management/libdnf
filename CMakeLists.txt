@@ -58,4 +58,4 @@ endif()
 
 # build tests
 enable_testing()
-add_subdirectory(tests)
+add_subdirectory(test)
