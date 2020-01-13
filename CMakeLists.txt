@@ -54,3 +54,8 @@ add_subdirectory("doc")
 if(WITH_GO OR WITH_PERL5 OR WITH_PYTHON3 OR WITH_RUBY)
     add_subdirectory(bindings)
 endif()
+
+
+# build tests
+enable_testing()
+add_subdirectory(tests)
