@@ -4,17 +4,36 @@ BasedOnStyle: Google
 Standard: Cpp11
 
 
-# characters per line
-ColumnLimit: 160
+# Characters per line
+ColumnLimit: 120
 
 
-# indentation
+# Do not wrap comments according to ColumnLimit
+ReflowComments: false
+
+
+# Indentation
 IndentWidth: 4
 AccessModifierOffset: -4
 UseTab: false
 
-# keep up to 2 empty lines
+# Keep up to 2 empty lines
 MaxEmptyLinesToKeep: 2
+
+
+# sort and group includes: c++, system, project
+SortIncludes: true
+IncludeBlocks: Regroup
+IncludeCategories:
+  # C++ Standard Library headers
+  - Regex:           '<[[:alnum:]]+>'
+    Priority:        3
+  # system libraries
+  - Regex:           '<.+>'
+    Priority:        2
+  # project includes
+  - Regex:           '".+"'
+    Priority:        1
 
 
 # Always break after an open bracket, if the parameters don't fit on a single line, e.g.:
@@ -167,5 +186,4 @@ BreakConstructorInitializers: BeforeComma
 # #define bar(y, z)        (y + z)
 #
 AlignConsecutiveMacros: true
-
 ...
