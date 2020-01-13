@@ -7,22 +7,26 @@ set -e
 export CC=clang
 export CXX=clang
 
+#export CC=gcc
+#export CXX=c++
+
 rm -rf build
 mkdir build
 pushd build
 
 # configure
-cmake ..
+#BINDINGS_OFF="-DWITH_GO=OFF -DWITH_PYTHON3=OFF -DWITH_PERL5=OFF -DWITH_RUBY=OFF"
+cmake .. $BINDINGS_OFF
 
 # compile
 make
 
 pushd doc
-make doc
+#make doc
 popd
 
 
-./main
+#./main
 
 
 # run tests
