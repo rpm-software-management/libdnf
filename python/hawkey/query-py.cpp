@@ -345,7 +345,13 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
     switch (keyname) {
     case HY_PKG:
     case HY_PKG_OBSOLETES:
-    case HY_PKG_OBSOLETES_BY_PRIORITY: {
+    case HY_PKG_OBSOLETES_BY_PRIORITY:
+    case HY_PKG_CONFLICTS:
+    case HY_PKG_REQUIRES:
+    case HY_PKG_ENHANCES:
+    case HY_PKG_RECOMMENDS:
+    case HY_PKG_SUGGESTS:
+    case HY_PKG_SUPPLEMENTS: {
         // It could be a sequence of packages or reldep/strings. Lets try packages first.
         auto pset = pyseq_to_packageset(match, query->getSack());
         if (!pset) {
@@ -372,13 +378,7 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
 
         break;
     }
-    case HY_PKG_CONFLICTS:
-    case HY_PKG_PROVIDES:
-    case HY_PKG_REQUIRES:
-    case HY_PKG_ENHANCES:
-    case HY_PKG_RECOMMENDS:
-    case HY_PKG_SUGGESTS:
-    case HY_PKG_SUPPLEMENTS: {
+    case HY_PKG_PROVIDES: {
         auto reldeplist = pyseq_to_reldeplist(match, query->getSack(), cmp_type);
         if (reldeplist == NULL)
             return 1;
