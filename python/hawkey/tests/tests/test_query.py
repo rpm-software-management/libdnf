@@ -357,9 +357,15 @@ class TestQueryUpdates(base.TestCase):
         self.assertLength(o, 1)
         self.assertEqual(str(o[0]), "fool-1-5.noarch")
 
-    def test_requires_with_package_list(self):
+    def test_requires_with_query(self):
         q = hawkey.Query(self.sack).filter(name="fool")
         o = hawkey.Query(self.sack).filter(requires=q)
+        self.assertLength(o, 1)
+        self.assertEqual(str(o[0]), "walrus-2-6.noarch")
+
+    def test_requires_with_package_list(self):
+        q = hawkey.Query(self.sack).filter(name="fool")
+        o = hawkey.Query(self.sack).filter(requires=q.run())
         self.assertLength(o, 1)
         self.assertEqual(str(o[0]), "walrus-2-6.noarch")
 
