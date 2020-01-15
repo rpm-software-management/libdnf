@@ -20,6 +20,22 @@
 ######################
 
 ====================
+0.43.1 Release Notes
+====================
+
+- Allow excluding packages with "excludepkgs" and globs
+- Add two new query filters: obsoletes_by_priority, upgrades_by_priority
+- [context] Use installonly_limit from global config (RhBug:1256108)
+- [context] Add API to get/set "install_weak_deps"
+- [context] Add wildcard support for repo_id in dnf_context_repo_enable/disable (RhBug:1781420)
+- [context] Adds support for includepkgs in repository configuration.
+- [context] Adds support for excludepkgs, exclude, includepkgs, and disable_excludes in main configuration.
+- [context] Added function dnf_transaction_set_dont_solve_goal
+- [context] Added functions dnf_context_get/set_config_file_path
+- [context] Respect "plugins" global conf value
+- [context] Add API to disable/enable plugins
+
+====================
 0.39.1 Release Notes
 ====================
 
