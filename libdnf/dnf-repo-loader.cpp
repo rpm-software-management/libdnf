@@ -538,12 +538,43 @@ dnf_repo_loader_directory_changed_cb(GFileMonitor *monitor_,
 }
 
 /**
+ * dnf_repo_loader_setup_monitor:
+ */
+static void
+dnf_repo_loader_setup_monitor(DnfRepoLoader *self, const char * path, bool is_dir)
+{
+    DnfRepoLoaderPrivate *priv = GET_PRIVATE(self);
+    g_autoptr(GFile) file_path = g_file_new_for_path(path);
+    g_autoptr(GError) error = NULL;
+    GFileMonitor * monitor = NULL;
+    if (is_dir) {
+        monitor = g_file_monitor_directory(file_path, G_FILE_MONITOR_NONE, NULL, &error);
+    } else {
+        monitor = g_file_monitor_file(file_path, G_FILE_MONITOR_NONE, NULL, &error);
+    }
+    if (monitor) {
+        g_ptr_array_add(priv->monitor_repos, monitor);
+        g_signal_connect(monitor, "changed",
+                            G_CALLBACK(dnf_repo_loader_directory_changed_cb), self);
+    } else {
+        g_warning("failed to setup monitor: %s",
+                error->message);
+    }
+}
+
+/**
  * dnf_repo_loader_setup_watch:
  */
 static void
 dnf_repo_loader_setup_watch(DnfRepoLoader *self)
 {
     DnfRepoLoaderPrivate *priv = GET_PRIVATE(self);
+
+    /* setup a file monitor on the main configuration file */
+    auto cfg_file_path = dnf_context_get_config_file_path();
+    if (cfg_file_path[0] != '\0' && g_file_test(cfg_file_path, G_FILE_TEST_IS_REGULAR)) {
+        dnf_repo_loader_setup_monitor(self, cfg_file_path, false);       
+    }
 
     /* setup a file monitor on the repos directory */
     auto repos_dir = dnf_context_get_repos_dir(priv->context);
@@ -553,20 +584,7 @@ dnf_repo_loader_setup_watch(DnfRepoLoader *self)
     }
     for (auto iter = repos_dir; *iter; ++iter) {
         auto repo_dir = *iter;
-        g_autoptr(GFile) file_repos = g_file_new_for_path(repo_dir);
-        g_autoptr(GError) error = NULL;
-        auto monitor_repos = g_file_monitor_directory(file_repos,
-                                                       G_FILE_MONITOR_NONE,
-                                                       NULL,
-                                                       &error);
-        if (monitor_repos) {
-            g_ptr_array_add(priv->monitor_repos, monitor_repos);
-            g_signal_connect(monitor_repos, "changed",
-                             G_CALLBACK(dnf_repo_loader_directory_changed_cb), self);
-        } else {
-            g_warning("failed to setup monitor: %s",
-                    error->message);
-        }
+        dnf_repo_loader_setup_monitor(self, repo_dir, true);
     }
 }
 
