@@ -375,14 +375,13 @@ dnf_repo_loader_repo_parse(DnfRepoLoader *self,
         return FALSE;
     }
 
-    /* save all the repos listed in the file */
+    /* save all the repos listed in the file, "main" section is skipped - repoid can't be "main" */
     groups = g_key_file_get_groups(keyfile, NULL);
     for (i = 0; groups[i] != NULL; i++) {
-        ret = dnf_repo_loader_repo_parse_id(self,
-                                            groups[i],
-                                            filename,
-                                            keyfile,
-                                            error);
+        if (strcmp(groups[i], "main") == 0) {
+            continue;
+        }
+        ret = dnf_repo_loader_repo_parse_id(self, groups[i], filename, keyfile, error);
         if (!ret)
             return FALSE;
     }
@@ -408,6 +407,14 @@ dnf_repo_loader_refresh(DnfRepoLoader *self, GError **error)
     if (!dnf_context_setup_enrollments(priv->context, error))
         return FALSE;
 
+    /* load repos defined in main configuration */
+    auto cfg_file_path = dnf_context_get_config_file_path();
+    if (cfg_file_path[0] != '\0' && g_file_test(cfg_file_path, G_FILE_TEST_IS_REGULAR)) {
+        if (!dnf_repo_loader_repo_parse(self, cfg_file_path, error)) {
+            return FALSE;
+        }
+    }
+    
     /* open dir */
     auto repos_dir = dnf_context_get_repos_dir(priv->context);
     for (auto item = repos_dir; *item; ++item) {
