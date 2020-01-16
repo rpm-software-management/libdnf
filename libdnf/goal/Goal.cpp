@@ -1159,14 +1159,13 @@ Goal::Impl::allowUninstallAllButProtected(Queue *job, DnfGoalActions flags)
     } else
         map_grow(protectedPkgs->getMap(), pool->nsolvables);
 
-    Id kernel = dnf_sack_running_kernel(sack);
-    if (kernel > 0)
-        protectedPkgs->set(kernel);
+    Id protected_kernel = protectedRunningKernel();
 
     if (DNF_ALLOW_UNINSTALL & flags)
         for (Id id = 1; id < pool->nsolvables; ++id) {
             Solvable *s = pool_id2solvable(pool, id);
             if (pool->installed == s->repo && !protectedPkgs->has(id) &&
+                id != protected_kernel &&
                 (!pool->considered || MAPTST(pool->considered, id))) {
                 queue_push2(job, SOLVER_ALLOWUNINSTALL|SOLVER_SOLVABLE, id);
             }
@@ -1418,25 +1417,30 @@ Goal::Impl::brokenDependencyPkgs(unsigned i)
     return broken_dependency;
 }
 
+Id
+Goal::Impl::protectedRunningKernel()
+{
+    return dnf_sack_running_kernel(sack);
+}
+
 bool
 Goal::Impl::protectedInRemovals()
 {
     guint i = 0;
     bool ret = false;
-    if (!protectedPkgs || !protectedPkgs->size())
-        return false;
     auto pkgRemoveList = listResults(SOLVER_TRANSACTION_ERASE, 0);
     auto pkgObsoleteList = listResults(SOLVER_TRANSACTION_OBSOLETED, 0);
     map_or(pkgRemoveList.getMap(), pkgObsoleteList.getMap());
 
     removalOfProtected.reset(new PackageSet(pkgRemoveList));
     Id id = -1;
+    Id protected_kernel = protectedRunningKernel();
     while(true) {
         id = removalOfProtected->next(id);
         if (id == -1)
             break;
 
-        if (protectedPkgs->has(id)) {
+        if (protectedPkgs->has(id) || id == protected_kernel) {
             ret = true;
             i++;
         } else {
@@ -1471,9 +1475,10 @@ Goal::Impl::describeProtectedRemoval()
     }
     auto pset = brokenDependencyAllPkgs(DNF_PACKAGE_STATE_INSTALLED);
     Id id = -1;
+    Id protected_kernel = protectedRunningKernel();
     std::vector<const char *> names;
     while((id = pset->next(id)) != -1) {
-        if (protectedPkgs->has(id)) {
+        if (protectedPkgs->has(id) || id == protected_kernel) {
             Solvable * s = pool_id2solvable(pool, id);
             names.push_back(pool_id2str(pool, s->name));
         }
