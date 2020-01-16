@@ -52,6 +52,7 @@ private:
     int limitInstallonlyPackages(Solver *solv, Queue *job);
     std::unique_ptr<IdQueue> conflictPkgs(unsigned i);
     std::unique_ptr<IdQueue> brokenDependencyPkgs(unsigned i);
+    Id protectedRunningKernel();
     bool protectedInRemovals();
     std::string describeProtectedRemoval();
     std::unique_ptr<PackageSet> brokenDependencyAllPkgs(DnfPackageState pkg_type);
