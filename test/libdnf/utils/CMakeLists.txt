@@ -1,3 +1,6 @@
+add_subdirectory(sack)
+
+
 set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/number.cpp
 )
