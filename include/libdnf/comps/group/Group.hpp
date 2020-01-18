@@ -1,5 +1,6 @@
-#ifndef LIBDNF_COMPS_GROUP_HPP
-#define LIBDNF_COMPS_GROUP_HPP
+#ifndef LIBDNF_COMPS_GROUP_GROUP_HPP
+#define LIBDNF_COMPS_GROUP_GROUP_HPP
+
 
 #include <string>
 #include <vector>
@@ -59,7 +60,7 @@ dnf:dnf/db/group.py:method:EnvironmentPersistor.get_group_environments(self, gro
 dnf:dnf/db/group.py:method:EnvironmentPersistor.is_removable_group(self, group_id)
 dnf:dnf/db/group.py:method:EnvironmentPersistor.new(self, obj_id, name, translated_name, pkg_types)
 dnf:dnf/db/group.py:method:EnvironmentPersistor.search_by_pattern(self, pattern)
-
 */
+
 
 #endif

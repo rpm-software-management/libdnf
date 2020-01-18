@@ -1,8 +1,8 @@
 #ifndef LIBDNF_COMPS_GOAL_HPP
 #define LIBDNF_COMPS_GOAL_HPP
 
-#include "Environment.hpp"
-#include "Group.hpp"
+#include "environment/Environment.hpp"
+#include "group/Group.hpp"
 
 
 namespace libdnf::comps {

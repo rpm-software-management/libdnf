@@ -1,10 +1,11 @@
-#ifndef LIBDNF_COMPS_CATEGORY_HPP
-#define LIBDNF_COMPS_CATEGORY_HPP
+#ifndef LIBDNF_COMPS_CATEGORY_CATEGORY_HPP
+#define LIBDNF_COMPS_CATEGORY_CATEGORY_HPP
+
 
 #include <string>
 #include <vector>
 
-#include "Group.hpp"
+#include "../group/Group.hpp"
 
 
 namespace libdnf::comps {
@@ -31,5 +32,6 @@ public:
 
 
 }  // namespace libdnf::comps
+
 
 #endif

@@ -1,10 +1,11 @@
-#ifndef LIBDNF_COMPS_ENVIRONMENT_HPP
-#define LIBDNF_COMPS_ENVIRONMENT_HPP
+#ifndef LIBDNF_COMPS_ENVIRONMENT_ENVIRONMENT_HPP
+#define LIBDNF_COMPS_ENVIRONMENT_ENVIRONMENT_HPP
+
 
 #include <string>
 #include <vector>
 
-#include "Group.hpp"
+#include "../group/Group.hpp"
 
 
 namespace libdnf::comps {
