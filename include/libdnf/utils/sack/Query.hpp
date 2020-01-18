@@ -107,6 +107,9 @@ inline void Query<T>::filter(const std::string & key, QueryCmp cmp, const std::s
             case QueryCmp::EXACT:
                 match = *it_value == value;
                 break;
+            case QueryCmp::NEQ:
+                match = *it_value != value;
+                break;
             case QueryCmp::IEXACT:
                 tolower(*it_value);
                 // tolower(value);
@@ -139,12 +142,15 @@ inline void Query<T>::filter(const std::string & key, QueryCmp cmp, const std::s
                 throw std::runtime_error("Not implemented yet");
                 break;
             case QueryCmp::ISNULL:
-            case QueryCmp::EQ:
             case QueryCmp::LT:
             case QueryCmp::LTE:
             case QueryCmp::GT:
             case QueryCmp::GTE:
                 throw std::runtime_error("Unsupported operator");
+                break;
+            case QueryCmp::NOT:
+            case QueryCmp::ICASE:
+                throw std::runtime_error("Operator flag cannot be used standalone");
                 break;
         }
 
@@ -176,6 +182,9 @@ inline void Query<T>::filter(const std::string & key, QueryCmp cmp, const std::v
             case QueryCmp::EXACT:
                 match = std::find(value.begin(), value.end(), *it_value) != value.end();
                 break;
+            case QueryCmp::NEQ:
+                match = std::find(value.begin(), value.end(), *it_value) == value.end();
+                break;
             case QueryCmp::IEXACT:
                 tolower(*it_value);
                 for (auto i : value) {
@@ -199,12 +208,15 @@ inline void Query<T>::filter(const std::string & key, QueryCmp cmp, const std::v
                 throw std::runtime_error("Not implemented yet");
                 break;
             case QueryCmp::ISNULL:
-            case QueryCmp::EQ:
             case QueryCmp::LT:
             case QueryCmp::LTE:
             case QueryCmp::GT:
             case QueryCmp::GTE:
                 throw std::runtime_error("Unsupported operator");
+                break;
+            case QueryCmp::NOT:
+            case QueryCmp::ICASE:
+                throw std::runtime_error("Operator flag cannot be used standalone");
                 break;
         }
 
