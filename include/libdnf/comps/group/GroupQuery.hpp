@@ -27,16 +27,26 @@ namespace libdnf::comps {
 using GroupQuery = libdnf::utils::sack::Query<Group>;
 
 
+template <>
+enum class GroupQuery::Key {
+    id,
+    name,
+    description,
+    translated_name,
+    translated_description,
+};
+
+
 }  // namespace libdnf::comps
 
 
 template <>
 void libdnf::utils::sack::Query<libdnf::comps::Group>::initialize_filters() {
-    add_filter("id", [](libdnf::comps::Group * obj) { return obj->get_id(); });
-    add_filter("name", [](libdnf::comps::Group * obj) { return obj->get_name(); });
-    add_filter("description", [](libdnf::comps::Group * obj) { return obj->get_description(); });
-    add_filter("translated_name", [](libdnf::comps::Group * obj) { return obj->get_translated_name(); });
-    add_filter("translated_description", [](libdnf::comps::Group * obj) { return obj->get_translated_description(); });
+    add_filter(Key::id, [](libdnf::comps::Group * obj) { return obj->get_id(); });
+    add_filter(Key::name, [](libdnf::comps::Group * obj) { return obj->get_name(); });
+    add_filter(Key::description, [](libdnf::comps::Group * obj) { return obj->get_description(); });
+    add_filter(Key::translated_name, [](libdnf::comps::Group * obj) { return obj->get_translated_name(); });
+    add_filter(Key::translated_description, [](libdnf::comps::Group * obj) { return obj->get_translated_description(); });
 }
 
 

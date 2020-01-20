@@ -26,16 +26,26 @@ namespace libdnf::comps {
 using EnvironmentQuery = libdnf::utils::sack::Query<Environment>;
 
 
+template <>
+enum class EnvironmentQuery::Key {
+    id,
+    name,
+    description,
+    translated_name,
+    translated_description,
+};
+
+
 }  // namespace libdnf::comps
 
 
 template <>
 void libdnf::utils::sack::Query<libdnf::comps::Environment>::initialize_filters() {
-    add_filter("id", [](libdnf::comps::Environment * obj) { return obj->get_id(); });
-    add_filter("name", [](libdnf::comps::Environment * obj) { return obj->get_name(); });
-    add_filter("description", [](libdnf::comps::Environment * obj) { return obj->get_description(); });
-    add_filter("translated_name", [](libdnf::comps::Environment * obj) { return obj->get_translated_name(); });
-    add_filter("translated_description", [](libdnf::comps::Environment * obj) { return obj->get_translated_description(); });
+    add_filter(Key::id, [](libdnf::comps::Environment * obj) { return obj->get_id(); });
+    add_filter(Key::name, [](libdnf::comps::Environment * obj) { return obj->get_name(); });
+    add_filter(Key::description, [](libdnf::comps::Environment * obj) { return obj->get_description(); });
+    add_filter(Key::translated_name, [](libdnf::comps::Environment * obj) { return obj->get_translated_name(); });
+    add_filter(Key::translated_description, [](libdnf::comps::Environment * obj) { return obj->get_translated_description(); });
 }
 
 

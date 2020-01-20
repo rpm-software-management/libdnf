@@ -38,6 +38,8 @@ public:
     using FilterValueTypes = std::variant<std::string, char *, bool, int64_t, int32_t, uint32_t, int16_t, uint16_t>;
     using FilterFunction = std::function<FilterValueTypes(T * obj)>;
 
+    enum class Key;
+
     Query();
 
     /// Get a single object. Raise an exception if none or multiple objects match the query.
@@ -46,38 +48,38 @@ public:
     /// List all objects matching the query.
     std::set<T *> list() { return get_data(); }
 
-    void filter(const std::string & key, QueryCmp cmp, const std::string & value);
-    void filter(const std::string & key, QueryCmp cmp, const std::vector<std::string> & values);
+    void filter(Key key, QueryCmp cmp, const std::string & value);
+    void filter(Key key, QueryCmp cmp, const std::vector<std::string> & values);
 
-    void filter(const std::string & key, QueryCmp cmp, const char * value);
+    void filter(Key key, QueryCmp cmp, const char * value);
 
-//    void filter(const std::string & key, QueryCmp cmp, int32_t value);
-//    void filter(const std::string & key, QueryCmp cmp, std::vector<int32_t> values);
+//    void filter(Key key, QueryCmp cmp, int32_t value);
+//    void filter(Key key, QueryCmp cmp, std::vector<int32_t> values);
 
-    void filter(const std::string & key, QueryCmp cmp, int64_t value);
-    void filter(const std::string & key, QueryCmp cmp, int32_t value);
+    void filter(Key key, QueryCmp cmp, int64_t value);
+    void filter(Key key, QueryCmp cmp, int32_t value);
 
 //     { filter(key, cmp, static_cast<int64_t>(value)); }
-//    void filter(const std::string & key, QueryCmp cmp, uint32_t value) { filter(key, cmp, static_cast<int64_t>(value)); }
-//    void filter(const std::string & key, QueryCmp cmp, int16_t value) { filter(key, cmp, static_cast<int64_t>(value)); }
-//    void filter(const std::string & key, QueryCmp cmp, uint16_t value) { filter(key, cmp, static_cast<int64_t>(value)); }
-//    void filter(const std::string & key, QueryCmp cmp, int8_t value) { filter(key, cmp, static_cast<int64_t>(value)); }
-//    void filter(const std::string & key, QueryCmp cmp, uint8_t value) { filter(key, cmp, static_cast<int64_t>(value)); }
+//    void filter(Key key, QueryCmp cmp, uint32_t value) { filter(key, cmp, static_cast<int64_t>(value)); }
+//    void filter(Key key, QueryCmp cmp, int16_t value) { filter(key, cmp, static_cast<int64_t>(value)); }
+//    void filter(Key key, QueryCmp cmp, uint16_t value) { filter(key, cmp, static_cast<int64_t>(value)); }
+//    void filter(Key key, QueryCmp cmp, int8_t value) { filter(key, cmp, static_cast<int64_t>(value)); }
+//    void filter(Key key, QueryCmp cmp, uint8_t value) { filter(key, cmp, static_cast<int64_t>(value)); }
 
-    // void filter(const std::string & key, QueryCmp cmp, std::vector<int64_t> values);
+    // void filter(Key key, QueryCmp cmp, std::vector<int64_t> values);
 
-    void filter(const std::string & key, QueryCmp cmp, bool value);
+    void filter(Key key, QueryCmp cmp, bool value);
 
     // operators; OR at least
     // copy()
 
 protected:
     void initialize_filters() {}
-    void add_filter(std::string key, FilterFunction func) { filters[key] = func; }
+    void add_filter(Key key, FilterFunction func) { filters[key] = func; }
     using Set<T>::get_data;
 
 private:
-    std::map<std::string, FilterFunction> filters;
+    std::map<Key, FilterFunction> filters;
 };
 
 
@@ -89,7 +91,7 @@ Query<T>::Query() {
 
 
 template <typename T>
-inline void Query<T>::filter(const std::string & key, QueryCmp cmp, const std::string & value) {
+inline void Query<T>::filter(Key key, QueryCmp cmp, const std::string & value) {
     auto getter = filters.at(key);
 
     for (auto it = get_data().begin(); it != get_data().end(); ) {
@@ -164,7 +166,7 @@ inline void Query<T>::filter(const std::string & key, QueryCmp cmp, const std::s
 
 
 template <typename T>
-inline void Query<T>::filter(const std::string & key, QueryCmp cmp, const std::vector<std::string> & value) {
+inline void Query<T>::filter(Key key, QueryCmp cmp, const std::vector<std::string> & value) {
     auto getter = filters.at(key);
 
     for (auto it = get_data().begin(); it != get_data().end(); ) {
@@ -230,14 +232,14 @@ inline void Query<T>::filter(const std::string & key, QueryCmp cmp, const std::v
 
 
 template <typename T>
-inline void Query<T>::filter(const std::string & key, QueryCmp cmp, const char * value) {
+inline void Query<T>::filter(Key key, QueryCmp cmp, const char * value) {
     // TODO(dmach): handle ISNULL
     filter(key, cmp, std::string(value));
 }
 
 
 template <typename T>
-inline void Query<T>::filter(const std::string & key, QueryCmp cmp, int64_t value) {
+inline void Query<T>::filter(Key key, QueryCmp cmp, int64_t value) {
     auto getter = filters.at(key);
 
     for (auto it = get_data().begin(); it != get_data().end(); ) {
@@ -268,7 +270,7 @@ inline void Query<T>::filter(const std::string & key, QueryCmp cmp, int64_t valu
 
 
 template <typename T>
-inline void Query<T>::filter(const std::string & key, QueryCmp cmp, int32_t value) {
+inline void Query<T>::filter(Key key, QueryCmp cmp, int32_t value) {
     auto getter = filters.at(key);
 
     for (auto it = get_data().begin(); it != get_data().end(); ) {
