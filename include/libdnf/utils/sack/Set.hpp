@@ -10,10 +10,6 @@
 namespace libdnf::utils::sack {
 
 
-template <typename T>
-class Sack;
-
-
 /// Set represents set of objects (e.g. packages, or groups)
 /// and implements set operations such as unions or differences.
 template <typename T>
@@ -41,8 +37,7 @@ public:
     // bool subset(const Set<T> & other);
     // bool superset(const Set<T> & other);
 
-protected:
-    friend class Sack<T>;
+    /// Return reference to underlying std::set
     std::set<T *> & get_data() { return data; }
 
 private:

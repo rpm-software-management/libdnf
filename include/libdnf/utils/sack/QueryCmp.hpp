@@ -3,6 +3,7 @@
 
 
 #include <cstdint>
+#include <type_traits>
 
 
 namespace libdnf::utils::sack {
@@ -41,14 +42,14 @@ enum class QueryCmp : uint32_t {
 };
 
 
-QueryCmp operator|(QueryCmp lhs, QueryCmp rhs) {
+inline QueryCmp operator|(QueryCmp lhs, QueryCmp rhs) {
     return static_cast<QueryCmp>(
         static_cast<std::underlying_type<QueryCmp>::type>(lhs) |
         static_cast<std::underlying_type<QueryCmp>::type>(rhs));
 }
 
 
-QueryCmp operator&(QueryCmp lhs, QueryCmp rhs) {
+inline QueryCmp operator&(QueryCmp lhs, QueryCmp rhs) {
     return static_cast<QueryCmp>(
         static_cast<std::underlying_type<QueryCmp>::type>(lhs) &
         static_cast<std::underlying_type<QueryCmp>::type>(rhs));

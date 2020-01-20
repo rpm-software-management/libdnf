@@ -9,25 +9,25 @@
 namespace libdnf::utils::sack {
 
 
-template <typename T>
+template <typename T, typename QueryT>
 class Sack {
 public:
     /// Delete all objects in the data set.
     ~Sack();
 
     /// Create a new query object for filtering the data set.
-    Query<T> new_query();
+    QueryT new_query();
 
     // EXCLUDES
 
-    const Set<T> get_excludes() { return excludes; }
+    Set<T> get_excludes() { return excludes; }
     void add_excludes(const Set<T> & value) { excludes.update(value); }
     void remove_excludes(const Set<T> & value) { excludes.difference(value); }
     void set_excludes(const Set<T> & value) { excludes = value; }
 
     // INCLUDES
 
-    const Set<T> get_includes() const { return includes; }
+    Set<T> get_includes() const { return includes; }
     void add_includes(const Set<T> & value) { includes.update(value); }
     void remove_includes(const Set<T> & value) { includes.difference(value); }
     void set_includes(const Set<T> & value) { includes = value; }
@@ -35,6 +35,7 @@ public:
     void set_use_includes(bool value) { use_includes = value; }
 
 protected:
+//    friend Set<T>;
     Set<T> & get_data() { return data; }
 
 private:
@@ -45,17 +46,17 @@ private:
 };
 
 
-template <typename T>
-Sack<T>::~Sack() {
+template <typename T, typename QueryT>
+Sack<T, QueryT>::~Sack() {
     for (auto & it : data.get_data()) {
         delete it;
     }
 };
 
 
-template <typename T>
-Query<T> Sack<T>::new_query() {
-    Query<T> result;
+template <typename T, typename QueryT>
+QueryT Sack<T, QueryT>::new_query() {
+    QueryT result;
     result.update(data);
 
     // if includes are used, remove everything else from the query

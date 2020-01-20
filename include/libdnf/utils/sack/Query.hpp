@@ -19,12 +19,12 @@
 namespace libdnf::utils::sack {
 
 
-void tolower(std::string & s) {
+inline void tolower(std::string & s) {
     std::for_each(s.begin(), s.end(), [](char & c) { c = static_cast<char>(::tolower(c)); });
 }
 
 
-void toupper(std::string & s) {
+inline void toupper(std::string & s) {
     std::for_each(s.begin(), s.end(), [](char & c) { c = static_cast<char>(::toupper(c)); });
 }
 
@@ -37,10 +37,7 @@ class Query : public Set<T> {
 public:
     using FilterValueTypes = std::variant<std::string, char *, bool, int64_t, int32_t, uint32_t, int16_t, uint16_t>;
     using FilterFunction = std::function<FilterValueTypes(T * obj)>;
-
     enum class Key;
-
-    Query();
 
     /// Get a single object. Raise an exception if none or multiple objects match the query.
     T get();
@@ -49,7 +46,7 @@ public:
     std::set<T *> list() { return get_data(); }
 
     void filter(Key key, QueryCmp cmp, const std::string & value);
-    void filter(Key key, QueryCmp cmp, const std::vector<std::string> & values);
+    void filter(Key key, QueryCmp cmp, const std::vector<std::string> & value);
 
     void filter(Key key, QueryCmp cmp, const char * value);
 
@@ -74,20 +71,12 @@ public:
     // copy()
 
 protected:
-    void initialize_filters() {}
     void add_filter(Key key, FilterFunction func) { filters[key] = func; }
     using Set<T>::get_data;
 
 private:
     std::map<Key, FilterFunction> filters;
 };
-
-
-template <typename T>
-Query<T>::Query() {
-    initialize_filters();
-}
-
 
 
 template <typename T>
