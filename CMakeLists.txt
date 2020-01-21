@@ -9,6 +9,12 @@ cmake_policy(VERSION ${CMAKE_VERSION})
 message("Building ${PROJECT_NAME} version ${PROJECT_VERSION}")
 
 
+# build options - components (sub-packages)
+option(WITH_DNFDAEMON_SERVER "Build DBus dnfdaemon" ON)
+option(WITH_DNFDAEMON_CLIENT "Build command-line interface for dnfdaemon" ON)
+option(WITH_LIBDNF_CLI "Build libdnf-cli library for handling inputs and outputs in the terminal" ON)
+option(WITH_MICRODNF "Build microdnf command-line package manager" ON)
+
 # build options - features
 option(WITH_COMPS "Build with comps groups and environments support" ON)
 option(WITH_MODULEMD "Build with modulemd modules support" ON)
@@ -50,18 +56,20 @@ endif()
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
 
+# libdnf
 add_subdirectory("include")
 add_subdirectory("libdnf")
+add_subdirectory("libdnf-cli")
 add_subdirectory("doc")
-#add_executable(main main.cpp)
-#target_link_libraries(main stdc++)
+add_subdirectory("bindings")
 
-# build bindings
-if(WITH_GO OR WITH_PERL5 OR WITH_PYTHON3 OR WITH_RUBY)
-    add_subdirectory("bindings")
-endif()
+# dnfdaemon
+add_subdirectory("dnfdaemon-server")
+add_subdirectory("dnfdaemon-client")
 
+# microdnf
+add_subdirectory("microdnf")
 
-# build tests
+# tests
 enable_testing()
 add_subdirectory("test")

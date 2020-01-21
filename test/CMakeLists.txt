@@ -1,24 +1,12 @@
 message("Building tests")
 
 
+# libdnf
 add_subdirectory(libdnf)
+add_subdirectory(libdnf-cli)
 
-
-if(WITH_GO)
-    add_subdirectory(go)
-endif()
-
-
-if(WITH_PERL5)
-    add_subdirectory(perl5)
-endif()
-
-
-if(WITH_PYTHON3)
-    add_subdirectory(python3)
-endif()
-
-
-if(WITH_RUBY)
-    add_subdirectory(ruby)
-endif()
+# bindings
+add_subdirectory(go)
+add_subdirectory(perl5)
+add_subdirectory(python3)
+add_subdirectory(ruby)

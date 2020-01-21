@@ -1,3 +1,8 @@
+if(NOT (WITH_GO OR WITH_PERL5 OR WITH_PYTHON3 OR WITH_RUBY))
+    return()
+endif()
+
+
 message("Building bindings")
 
 
