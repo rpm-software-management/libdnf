@@ -32,6 +32,8 @@ void ContextTest::testLoadModules()
     dnf_context_set_arch(context, "x86_64");
     constexpr auto install_root = TESTDATADIR "/modules/";
     dnf_context_set_install_root(context, install_root);
+    g_autoptr(DnfLock) lock = dnf_lock_new();
+    dnf_lock_set_lock_dir(lock, "/tmp");
     constexpr auto repos_dir = TESTDATADIR "/modules/yum.repos.d/";
     dnf_context_set_repo_dir(context, repos_dir);
     dnf_context_set_solv_dir(context, "/tmp");
