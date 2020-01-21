@@ -1,3 +1,8 @@
+if(NOT WITH_GO)
+    return()
+endif()
+
+
 message("Building bindings for go")
 
 

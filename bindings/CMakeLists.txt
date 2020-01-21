@@ -29,29 +29,9 @@ set(SWIG_COMPILE_OPTIONS
     -Wno-unused-function
     -Wno-unused-parameter
 )
-#add_compile_options(-Wno-cast-align)
-#add_compile_options(-Wno-deprecated-declarations)
-#add_compile_options(-Wno-missing-declarations)
-#add_compile_options(-Wno-missing-field-initializers)
-#add_compile_options(-Wno-unused-function)
-#add_compile_options(-Wno-unused-parameter)
 
 
-if(WITH_GO)
-    add_subdirectory(go/libdnf)
-endif()
-
-
-if(WITH_PERL5)
-    add_subdirectory(perl5/libdnf)
-endif()
-
-
-if(WITH_PYTHON3)
-    add_subdirectory(python3/libdnf)
-endif()
-
-
-if(WITH_RUBY)
-    add_subdirectory(ruby/libdnf)
-endif()
+add_subdirectory(go/libdnf)
+add_subdirectory(perl5/libdnf)
+add_subdirectory(python3/libdnf)
+add_subdirectory(ruby/libdnf)

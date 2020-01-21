@@ -1,3 +1,8 @@
+if(NOT WITH_RUBY)
+    return()
+endif()
+
+
 message("Building bindings for ruby")
 
 

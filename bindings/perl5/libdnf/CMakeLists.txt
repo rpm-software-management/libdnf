@@ -1,3 +1,8 @@
+if(NOT WITH_PERL5)
+    return()
+endif()
+
+
 message("Building bindings for perl5")
 
 

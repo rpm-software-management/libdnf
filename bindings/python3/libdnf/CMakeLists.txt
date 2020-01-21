@@ -1,3 +1,8 @@
+if(NOT WITH_PYTHON3)
+    return()
+endif()
+
+
 message("Building bindings for python3")
 
 
