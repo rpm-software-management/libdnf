@@ -21,8 +21,6 @@
 #include <iostream>
 #include <string.h>
 
-#include <modulemd/modulemd.h>
-
 #include "ModuleDefaultsContainer.hpp"
 
 namespace libdnf {

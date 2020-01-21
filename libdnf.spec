@@ -1,5 +1,5 @@
 %global libsolv_version 0.7.7
-%global libmodulemd_version 1.6.1
+%global libmodulemd_version 2.5.0
 %global librepo_version 1.11.0
 %global dnf_conflict 4.2.13
 %global swig_version 3.0.12
@@ -80,7 +80,7 @@ BuildRequires:  pkgconfig(sqlite3)
 BuildRequires:  pkgconfig(json-c)
 BuildRequires:  pkgconfig(cppunit)
 BuildRequires:  pkgconfig(libcrypto)
-BuildRequires:  pkgconfig(modulemd) >= %{libmodulemd_version}
+BuildRequires:  pkgconfig(modulemd-2.0) >= %{libmodulemd_version}
 BuildRequires:  pkgconfig(smartcols)
 BuildRequires:  gettext
 BuildRequires:  gpgme-devel

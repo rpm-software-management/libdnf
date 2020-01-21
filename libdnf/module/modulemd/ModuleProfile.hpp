@@ -26,7 +26,7 @@
 #include <string>
 #include <vector>
 
-#include <modulemd/modulemd.h>
+#include <modulemd-2.0/modulemd.h>
 
 namespace libdnf {
 

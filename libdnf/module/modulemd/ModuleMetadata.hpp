@@ -25,7 +25,7 @@
 #include <map>
 #include <vector>
 
-#include <modulemd/modulemd.h>
+#include <modulemd-2.0/modulemd.h>
 
 #include "ModuleDependencies.hpp"
 #include "ModuleProfile.hpp"
