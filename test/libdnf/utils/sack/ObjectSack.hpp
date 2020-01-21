@@ -6,7 +6,7 @@
 #include "ObjectQuery.hpp"
 
 
-class ObjectSack : public libdnf::utils::sack::Sack<Object> {
+class ObjectSack : public libdnf::utils::sack::Sack<Object, ObjectQuery> {
 public:
-    using libdnf::utils::sack::Sack<Object>::get_data;
+    using libdnf::utils::sack::Sack<Object, ObjectQuery>::get_data;
 };

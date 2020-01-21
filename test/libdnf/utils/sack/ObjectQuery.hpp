@@ -5,11 +5,8 @@
 #include "Object.hpp"
 
 
-using ObjectQuery = libdnf::utils::sack::Query<Object>;
-
-
 template <>
-enum class ObjectQuery::Key {
+enum class libdnf::utils::sack::Query<Object>::Key {
     string,
     cstring,
     boolean,
@@ -18,7 +15,21 @@ enum class ObjectQuery::Key {
 };
 
 
+class ObjectQuery : public libdnf::utils::sack::Query<Object> {
+public:
+    ObjectQuery() {
+        add_filter(Key::string, [](Object * obj) { return obj->string; });
+        add_filter(Key::cstring, [](Object * obj) { return obj->cstring; });
+        add_filter(Key::boolean, [](Object * obj) { return obj->boolean; });
+        add_filter(Key::int32, [](Object * obj) { return obj->int32; });
+        add_filter(Key::int64, [](Object * obj) { return obj->int64; });
+    }
+};
+
+
+/*
 template <>
+void libdnf::utils::sack::Query<Object>::initialize_filters() {
 void libdnf::utils::sack::Query<Object>::initialize_filters() {
     add_filter(Key::string, [](Object * obj) { return obj->string; });
     add_filter(Key::cstring, [](Object * obj) { return obj->cstring; });
@@ -26,3 +37,4 @@ void libdnf::utils::sack::Query<Object>::initialize_filters() {
     add_filter(Key::int32, [](Object * obj) { return obj->int32; });
     add_filter(Key::int64, [](Object * obj) { return obj->int64; });
 }
+*/
