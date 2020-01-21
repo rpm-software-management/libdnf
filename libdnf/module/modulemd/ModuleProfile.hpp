@@ -40,7 +40,7 @@ public:
     std::vector<std::string> getContent() const;
 
 private:
-    friend class ModuleMetadata;
+    friend class ModulePackage;
     explicit ModuleProfile(ModulemdProfile * profile);
     ModulemdProfile *profile;
 };
