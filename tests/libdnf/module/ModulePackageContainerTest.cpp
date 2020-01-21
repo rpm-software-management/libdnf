@@ -16,6 +16,8 @@ void ModulePackageContainerTest::setUp()
     dnf_context_set_arch(context, "x86_64");
     dnf_context_set_platform_module(context, "platform:26");
     dnf_context_set_install_root(context, TESTDATADIR "/modules/");
+    g_autoptr(DnfLock) lock = dnf_lock_new();
+    dnf_lock_set_lock_dir(lock, "/tmp");
     dnf_context_set_repo_dir(context, TESTDATADIR "/modules/yum.repos.d/");
     dnf_context_set_solv_dir(context, "/tmp");
     dnf_context_setup(context, nullptr, &error);
