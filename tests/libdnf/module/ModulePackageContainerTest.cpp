@@ -11,6 +11,7 @@ void ModulePackageContainerTest::setUp()
 {
     g_autoptr(GError) error = nullptr;
 
+    dnf_context_set_config_file_path("");
     context = dnf_context_new();
     dnf_context_set_release_ver(context, "26");
     dnf_context_set_arch(context, "x86_64");

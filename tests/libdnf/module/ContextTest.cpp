@@ -14,6 +14,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ContextTest);
 
 void ContextTest::setUp()
 {
+    dnf_context_set_config_file_path("");
     context = dnf_context_new();
 }
 
