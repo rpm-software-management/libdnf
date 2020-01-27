@@ -966,7 +966,7 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
         dnf_repo_set_cost(repo, cost);
 
     module_hotfixes = g_key_file_get_boolean(priv->keyfile, repoId, "module_hotfixes", NULL);
-    dnf_repo_set_module_hotfixes(repo, module_hotfixes);
+    priv->repo->getConfig()->module_hotfixes().set(libdnf::Option::Priority::REPOCONFIG, module_hotfixes);
 
     /* baseurl is optional; if missing, unset it */
     baseurls = g_key_file_get_string_list(priv->keyfile, repoId, "baseurl", NULL, NULL);
