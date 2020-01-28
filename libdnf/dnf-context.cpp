@@ -427,6 +427,21 @@ dnf_context_get_config_file_path()
 }
 
 /**
+ * dnf_context_is_set_config_file_path:
+ *
+ * Gets state of config_file_path.
+ *
+ * Returns: TRUE if config_file_path is set, FALSE if default is used.
+ *
+ * Since: 0.44.1
+ **/
+gboolean
+dnf_context_is_set_config_file_path()
+{
+    return configFilePath != nullptr;
+}
+
+/**
  * dnf_context_get_repos_dir:
  * @context: a #DnfContext instance.
  *

@@ -112,6 +112,7 @@ const gchar     *find_base_arch                         (const char *native);
 
 /* getters */
 const gchar     *dnf_context_get_config_file_path       (void);
+gboolean         dnf_context_is_set_config_file_path    (void);
 const gchar * const *dnf_context_get_repos_dir          (DnfContext     *context);
 const gchar     *dnf_context_get_repo_dir               (DnfContext     *context);
 const gchar * const *dnf_context_get_vars_dir           (DnfContext     *context);
