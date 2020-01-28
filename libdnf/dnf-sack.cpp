@@ -2093,7 +2093,8 @@ process_excludes(DnfSack *sack, GPtrArray *enabled_repos)
 
     libdnf::PackageSet repoIncludes(sack);
     libdnf::PackageSet repoExcludes(sack);
-    
+    bool includesExist = false;
+
     for (guint i = 0; i < enabled_repos->len; i++) {
         auto dnfRepo = static_cast<DnfRepo *>(enabled_repos->pdata[i]);
         auto repo = dnf_repo_get_repo(dnfRepo);
@@ -2110,6 +2111,7 @@ process_excludes(DnfSack *sack, GPtrArray *enabled_repos)
             auto ret = query.filterSubject(name.c_str(), nullptr, false, true, false, false);
             if (ret.first) {
                 repoIncludes += *query.runSet();
+                includesExist = true;
                 repo->setUseIncludes(true);
             }
         }
@@ -2130,6 +2132,7 @@ process_excludes(DnfSack *sack, GPtrArray *enabled_repos)
             auto ret = query.filterSubject(name.c_str(), nullptr, false, true, false, false);
             if (ret.first) {
                 repoIncludes += *query.runSet();
+                includesExist = true;
                 useGlobalIncludes = true;
             }
         }
@@ -2146,8 +2149,10 @@ process_excludes(DnfSack *sack, GPtrArray *enabled_repos)
             dnf_sack_set_use_includes(sack, nullptr, true);
         }
     }
-    
-    dnf_sack_add_includes(sack, &repoIncludes);
+
+    if (includesExist) {
+        dnf_sack_add_includes(sack, &repoIncludes);
+    }
     dnf_sack_add_excludes(sack, &repoExcludes);
 }
 
