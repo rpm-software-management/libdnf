@@ -3027,6 +3027,12 @@ libdnf::ConfigMain & getGlobalMainConfig()
                     }
                 }
             }
+        } catch (const libdnf::ConfigParser::CantOpenFile & ex) {
+            if (configFilePath) {
+                // Only warning is logged. But error is reported to the caller during loading
+                // repos (in dnf_repo_loader_refresh()).
+                g_warning("Loading \"%s\": %s", cfgPath.c_str(), ex.what());
+            }
         } catch (const std::exception & ex) {
             g_warning("Loading \"%s\": %s", cfgPath.c_str(), ex.what());
         }

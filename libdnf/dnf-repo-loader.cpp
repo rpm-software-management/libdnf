@@ -410,7 +410,8 @@ dnf_repo_loader_refresh(DnfRepoLoader *self, GError **error)
 
     /* load repos defined in main configuration */
     auto cfg_file_path = dnf_context_get_config_file_path();
-    if (cfg_file_path[0] != '\0' && g_file_test(cfg_file_path, G_FILE_TEST_IS_REGULAR)) {
+    if (cfg_file_path[0] != '\0' &&
+        (dnf_context_is_set_config_file_path() || g_file_test(cfg_file_path, G_FILE_TEST_IS_REGULAR))) {
         if (!dnf_repo_loader_repo_parse(self, cfg_file_path, error)) {
             return FALSE;
         }
