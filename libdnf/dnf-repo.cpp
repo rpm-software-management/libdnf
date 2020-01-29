@@ -1470,31 +1470,16 @@ dnf_repo_check_internal(DnfRepo *repo,
         }
     }
 
-    /* init  */
-    repoImpl->detachLibsolvRepo();
-    repoImpl->needs_internalizing = false;
-    repoImpl->state_main = _HY_NEW;
-    repoImpl->state_filelists = _HY_NEW;
-    repoImpl->state_presto = _HY_NEW;
-    repoImpl->state_updateinfo = _HY_NEW;
-    repoImpl->state_other = _HY_NEW;
-    repoImpl->filenames_repodata = 0;
-    repoImpl->presto_repodata = 0;
-    repoImpl->updateinfo_repodata = 0;
-    repoImpl->other_repodata = 0;
-    repoImpl->load_flags = 0;
-    /* the following three elements are needed for repo rewriting */
-    repoImpl->main_nsolvables = 0;
-    repoImpl->main_nrepodata = 0;
-    repoImpl->main_end = 0;
-    priv->repo->setUseIncludes(false);
-
-    repoImpl->repomdFn = yum_repo->repomd;
-    repoImpl->metadataPaths.clear();
+    /* init newRepo */
+    auto newRepo = hy_repo_create(priv->repo->getId().c_str());
+    hy_repo_free(priv->repo);
+    priv->repo = newRepo;
+    auto newRepoImpl = libdnf::repoGetImpl(newRepo);
+    newRepoImpl->repomdFn = yum_repo->repomd;
     for (auto *elem = yum_repo->paths; elem; elem = g_slist_next(elem)) {
         if (elem->data) {
             auto yumrepopath = static_cast<LrYumRepoPath *>(elem->data);
-            repoImpl->metadataPaths[yumrepopath->type] = yumrepopath->path;
+            newRepoImpl->metadataPaths[yumrepopath->type] = yumrepopath->path;
         }
     }
     /* ensure we reset the values from the keyfile */
