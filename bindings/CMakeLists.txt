@@ -31,7 +31,16 @@ set(SWIG_COMPILE_OPTIONS
 )
 
 
-add_subdirectory(go/libdnf)
-add_subdirectory(perl5/libdnf)
-add_subdirectory(python3/libdnf)
-add_subdirectory(ruby/libdnf)
+# list of all modules that will be included in libdnf bindings
+list(APPEND SWIG_LIBDNF_MODULES base)
+list(APPEND SWIG_LIBDNF_MODULES utils)
+
+
+# list of all modules that will be included in libdnf-cli bindings
+list(APPEND SWIG_LIBDNF_CLI_MODULES progressbar)
+
+
+add_subdirectory(go)
+add_subdirectory(perl5)
+add_subdirectory(python3)
+add_subdirectory(ruby)
