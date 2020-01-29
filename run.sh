@@ -11,7 +11,7 @@ export CXX=clang
 #export CXX=c++
 
 rm -rf build
-mkdir build
+mkdir build || :
 pushd build
 
 # configure
