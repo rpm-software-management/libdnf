@@ -10,7 +10,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SetTest);
 
 
 void SetTest::setUp() {
-    ObjectSet s;
 }
 
 
@@ -44,6 +43,9 @@ void SetTest::test_update() {
 
     CPPUNIT_ASSERT(s1.size() == 2);
     CPPUNIT_ASSERT(s2.size() == 2);
+
+    delete o1;
+    delete o2;
 }
 
 
@@ -71,4 +73,7 @@ void SetTest::test_difference() {
 
     CPPUNIT_ASSERT(s1.size() == 0);
     CPPUNIT_ASSERT(s2.size() == 2);
+
+    delete o1;
+    delete o2;
 }

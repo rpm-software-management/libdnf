@@ -24,6 +24,10 @@ option(WITH_ZCHUNK "Build with zchunk delta compression support" ON)
 option(WITH_HTML "Build HTML documentation" ON)
 option(WITH_MAN "Build man pages" ON)
 
+# build options - debugging
+option(WITH_SANITIZERS "Build with address, leak and undefined sanitizers (DEBUG ONLY)" OFF)
+
+# build options - bindings
 option(WITH_GO "Build Go bindings" ON)
 option(WITH_PERL5 "Build Perl 5 bindings" ON)
 option(WITH_PYTHON3 "Build Python 3 bindings" ON)
@@ -50,6 +54,20 @@ add_compile_options(-Wconversion)
 # linker options
 if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wl,--as-needed)
+endif()
+
+
+if(WITH_SANITIZERS)
+    message(WARNING "Building with sanitizers enabled!")
+    set(SANITIZER_FLAGS "-fsanitize=address -fsanitize=leak -fsanitize=undefined")
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        # requires: compiler-rt package on Fedora
+        set(SANITIZER_FLAGS "${SANITIZER_FLAGS} -static-libsan")
+    else()
+        set(SANITIZER_FLAGS "${SANITIZER_FLAGS} -static-libasan -static-liblsan -static-libubsan")
+    endif()
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${SANITIZER_FLAGS}")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${SANITIZER_FLAGS}")
 endif()
 
 
