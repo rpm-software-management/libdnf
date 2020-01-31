@@ -216,6 +216,11 @@ C++ specifics
 * Avoid writing inline method directly to the class headers. They make the headers harder to read.
 
 
+Concurrency
+-----------
+Base should implement a workflow and locking for readers/writers.
+
+
 Logging
 -------
   lukash:
@@ -224,6 +229,7 @@ Logging
       b) libdnf should be provided with a log callback and log through that
     * it would be best to use an established facility for logging, most advanced of which is journald, alternatively the system logger
     * libdnf shouldn't use the logger to print user-facing output to stderr - those messages need to go through the API
+
 
 Exceptions
 ----------
@@ -237,3 +243,39 @@ Exceptions
     * we should either:
       * set up a way to log exception tracebacks (there are tools for that, albeit they have some drawbacks, it's the best we can do)
       * do not catch the unexpected exceptions, which results in terminate() and we can get a traceback with gdb
+
+  jrohel:
+    * consider a single exception class with details inside
+    * it could also work for dbus out of the box
+
+
+THE PLAN
+--------
+* branch master to dnf-4-maint
+* branch master to dnf-5-devel
+* freeze master
+  * if DNF 5 development succeeds, merge dnf-5-devel into master
+  * if DNF 5 development fails, merge dnf-4-maint into master
+* the big bang
+  * all APIs are considered unstable in the dnf-5-devel branch
+  * C context API goes away
+  * hawkey goes away
+  * existing microdnf codebase goes away (glib will be replaced with C++ -> brand new code)
+  * run clang-format on the whole project
+  * run clang-tidy on the whole project
+  * create a config file with revisions to be ignored when running git blame to skip the format changes
+* rewrite
+  * replace existing code with the new classes (new C++ API)
+  * any time an existing public class, method or function gets removed, new code MUST contain a reference to it (@replaces keyword in the doc text)
+  * every change MUST come with a unit test
+* stabilization
+  * create a C++ program that is able to install a package
+    * this will become a base for new microdnf
+    * OUT OF SCOPE: handling command-line arguments
+    * OUT OF SCOPE: printing any outputs
+  * continue rewriting the code in order to make DNF work again (ci-dnf-stack passing)
+    * 2w sprints, make plans according to the critical path towards getting most important functionality back
+* DBus API
+  * Make sure that libdnf-cli library/API works for dnf, microdnf and also DBus command-line client
+    (don't rely on objects, pointers, ... pass data structures to the libdnf-cli API)
+  * Work on DBus API in parallel with the rewrite in order to verify that the APIs were designed correctly
