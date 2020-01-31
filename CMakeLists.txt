@@ -26,6 +26,7 @@ option(WITH_MAN "Build man pages" ON)
 
 # build options - debugging
 option(WITH_SANITIZERS "Build with address, leak and undefined sanitizers (DEBUG ONLY)" OFF)
+option(WITH_DISABLED_TESTS "Disable running tests after build (DEBUG ONLY)" OFF)
 
 # build options - bindings
 option(WITH_GO "Build Go bindings" ON)

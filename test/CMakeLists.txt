@@ -1,3 +1,8 @@
+if(WITH_DISABLED_TESTS)
+    return()
+endif()
+
+
 message("Building tests")
 
 
