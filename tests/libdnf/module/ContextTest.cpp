@@ -8,6 +8,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ContextTest);
 #include "libdnf/nevra.hpp"
 #include "libdnf/utils/File.hpp"
 #include "libdnf/sack/packageset.hpp"
+#include "libdnf/dnf-sack-private.hpp"
 
 #include <memory>
 
@@ -61,24 +62,17 @@ void ContextTest::testLoadModules()
     auto moduleExcludes = std::unique_ptr<libdnf::PackageSet>(dnf_sack_get_module_excludes(sack));
     CPPUNIT_ASSERT(moduleExcludes->size() != 0);
 
-    auto modules_fn = dnf_repo_get_filename_md(repo, "modules");
-
-    auto yaml = libdnf::File::newFile(modules_fn);
-    yaml->open("r");
-    const auto &yamlContent = yaml->getContent();
-    yaml->close();
-
-    auto modules = libdnf::ModuleMetadata::metadataFromString(yamlContent);
-    for (const auto &module : modules) {
-        // default module:stream
-        if ((g_strcmp0(module.getName(), "httpd") == 0) &&
-            (g_strcmp0(module.getStream(), "2.4") == 0))
-            sackHas(sack, module);
-
-        // disabled stream
-        if ((g_strcmp0(module.getName(), "httpd") == 0) &&
-            (g_strcmp0(module.getStream(), "2.2") == 0))
-            sackHasNot(sack, module);
+    libdnf::ModulePackageContainer * c = dnf_sack_get_module_container(sack);
+    std::vector<libdnf::ModulePackage *> packages = c->getModulePackages();
+    for(auto const& package: packages) {
+        if (package->getName() == "httpd"){
+            // disabled stream
+            if (package->getStream() == "2.2")
+                sackHasNot(sack, package);
+            // default module:stream
+            if (package->getStream() == "2.4")
+                sackHas(sack, package);
+        }
     }
 
     {
@@ -125,11 +119,11 @@ void ContextTest::testLoadModules()
     }
 }
 
-void ContextTest::sackHas(DnfSack * sack, const libdnf::ModuleMetadata & module) const
+void ContextTest::sackHas(DnfSack * sack, libdnf::ModulePackage * pkg) const
 {
     libdnf::Query query{sack};
-    auto artifacts = module.getArtifacts();
-    for (auto artifact : artifacts) {
+    auto artifacts = pkg->getArtifacts();
+    for(auto & artifact: artifacts) {
         artifact = artifact.replace(artifact.find("-0:"), 3, "-");
         query.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, artifact.c_str());
 
@@ -140,14 +134,15 @@ void ContextTest::sackHas(DnfSack * sack, const libdnf::ModuleMetadata & module)
         g_object_unref(package);
 
         query.clear();
+
     }
 }
 
-void ContextTest::sackHasNot(DnfSack * sack, const libdnf::ModuleMetadata & module) const
+void ContextTest::sackHasNot(DnfSack * sack, libdnf::ModulePackage * pkg) const
 {
     libdnf::Query query{sack};
-    auto artifacts = module.getArtifacts();
-    for (auto artifact : artifacts) {
+    auto artifacts = pkg->getArtifacts();
+    for(auto & artifact: artifacts) {
         artifact = artifact.replace(artifact.find("-0:"), 3, "-");
         query.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, artifact.c_str());
 
