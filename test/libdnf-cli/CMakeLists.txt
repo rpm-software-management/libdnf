@@ -21,4 +21,4 @@ target_link_libraries(run_tests_cli stdc++ libdnf cppunit)
 
 
 add_test(NAME test_libdnf_cli COMMAND ${CMAKE_CURRENT_BINARY_DIR}/run_tests_cli DEPENDS run_tests_cli COMMENT "Running libdnf-cli C++ tests...")
-set_property(TEST test_libdnf_cli PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/libdnf:${CMAKE_BINARY_DIR}/libdnf-cli")
+#set_property(TEST test_libdnf_cli PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/libdnf:${CMAKE_BINARY_DIR}/libdnf-cli")

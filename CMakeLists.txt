@@ -10,7 +10,7 @@ message("Building ${PROJECT_NAME} version ${PROJECT_VERSION}")
 
 
 # build options - components (sub-packages)
-option(WITH_DNFDAEMON_SERVER "Build DBus dnfdaemon" ON)
+option(WITH_DNFDAEMON_SERVER "Build package management service with a DBus interface" ON)
 option(WITH_DNFDAEMON_CLIENT "Build command-line interface for dnfdaemon" ON)
 option(WITH_LIBDNF_CLI "Build libdnf-cli library for handling inputs and outputs in the terminal" ON)
 option(WITH_MICRODNF "Build microdnf command-line package manager" ON)

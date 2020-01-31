@@ -3,7 +3,7 @@ message("Building bindings for python3: libdnf")
 
 file(REMOVE __init__.py)
 foreach(MODULE_NAME ${SWIG_LIBDNF_MODULES})
-    add_python3_module(${MODULE_NAME} ../../libdnf)
+    add_python3_module(libdnf ${MODULE_NAME})
     file(APPEND __init__.py "from . import ${MODULE_NAME}\n")
 endforeach()
 

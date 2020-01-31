@@ -44,9 +44,9 @@ Project layout
     +-- bindings                # everything related to SWIG bindings goes here
     |   +-- <language>          # go, perl5, python3, ruby
     |   |   +-- libdnf          # language specific bindings for libdnf
-    |   |   +-- libdnf-cli      # language specific bindings for libdnf-cli
+    |   |   +-- libdnf_cli      # language specific bindings for libdnf-cli
     |   +-- libdnf              # SWIG *.i files for libdnf
-    |   +-- libdnf-cli          # SWIG *.i files for libdnf-cli
+    |   +-- libdnf_cli          # SWIG *.i files for libdnf-cli
     +-- doc                     # documentation
     +-- include                 # public headers
     |   +-- libdnf              # libdnf public C++ headers
