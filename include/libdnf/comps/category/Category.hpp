@@ -11,8 +11,6 @@
 namespace libdnf::comps {
 
 
-/// class Category
-///
 class Category {
 public:
     std::string get_id() const;

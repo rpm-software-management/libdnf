@@ -9,6 +9,16 @@
 #include <vector>
 
 
+template <>
+enum class libdnf::utils::sack::Query<libdnf::comps::Group>::Key {
+    id,
+    name,
+    description,
+    translated_name,
+    translated_description,
+};
+
+
 namespace libdnf::comps {
 
 
@@ -24,35 +34,26 @@ namespace libdnf::comps {
 /// @replaces dnf:dnf/comps.py:attribute:Comps.groups
 /// @replaces dnf:dnf/comps.py:method:Comps.groups_iter(self)
 /// @replaces dnf:dnf/comps.py:method:CompsQuery.get(self, *patterns)
-using GroupQuery = libdnf::utils::sack::Query<Group>;
-
-
-template <>
-enum class GroupQuery::Key {
-    id,
-    name,
-    description,
-    translated_name,
-    translated_description,
+class GroupQuery : public libdnf::utils::sack::Query<Group> {
+    GroupQuery();
 };
 
 
-}  // namespace libdnf::comps
-
-
-template <>
-void libdnf::utils::sack::Query<libdnf::comps::Group>::initialize_filters() {
-    add_filter(Key::id, [](libdnf::comps::Group * obj) { return obj->get_id(); });
-    add_filter(Key::name, [](libdnf::comps::Group * obj) { return obj->get_name(); });
-    add_filter(Key::description, [](libdnf::comps::Group * obj) { return obj->get_description(); });
-    add_filter(Key::translated_name, [](libdnf::comps::Group * obj) { return obj->get_translated_name(); });
-    add_filter(Key::translated_description, [](libdnf::comps::Group * obj) { return obj->get_translated_description(); });
+inline GroupQuery::GroupQuery() {
+    register_filter_string(Key::id, [](Group * obj) { return obj->get_id(); });
+    register_filter_string(Key::name, [](Group * obj) { return obj->get_name(); });
+    register_filter_string(Key::description, [](Group * obj) { return obj->get_description(); });
+    register_filter_string(Key::translated_name, [](Group * obj) { return obj->get_translated_name(); });
+    register_filter_string(Key::translated_description, [](Group * obj) { return obj->get_translated_description(); });
 }
 
 
 // TODO(dmach): filter groups by included packages
 /// @replaces dnf:dnf/db/group.py:method:GroupPersistor.get_package_groups(self, pkg_name)
 // FILTER: Group.filter(package_name=...).list()
+
+
+}  // namespace libdnf::comps
 
 
 #endif

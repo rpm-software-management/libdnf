@@ -9,6 +9,16 @@
 #include <vector>
 
 
+template <>
+enum class libdnf::utils::sack::Query<libdnf::comps::Environment>::Key {
+    id,
+    name,
+    description,
+    translated_name,
+    translated_description,
+};
+
+
 namespace libdnf::comps {
 
 
@@ -23,36 +33,26 @@ namespace libdnf::comps {
 /// @replaces dnf:dnf/comps.py:method:Comps.environments_by_pattern(self, pattern, case_sensitive=False)
 /// @replaces dnf:dnf/comps.py:attribute:Comps.environments
 /// @replaces dnf:dnf/comps.py:method:Comps.environments_iter(self)
-using EnvironmentQuery = libdnf::utils::sack::Query<Environment>;
-
-
-template <>
-enum class EnvironmentQuery::Key {
-    id,
-    name,
-    description,
-    translated_name,
-    translated_description,
+class EnvironmentQuery : public libdnf::utils::sack::Query<Environment> {
+    EnvironmentQuery();
 };
 
 
-}  // namespace libdnf::comps
-
-
-template <>
-void libdnf::utils::sack::Query<libdnf::comps::Environment>::initialize_filters() {
-    add_filter(Key::id, [](libdnf::comps::Environment * obj) { return obj->get_id(); });
-    add_filter(Key::name, [](libdnf::comps::Environment * obj) { return obj->get_name(); });
-    add_filter(Key::description, [](libdnf::comps::Environment * obj) { return obj->get_description(); });
-    add_filter(Key::translated_name, [](libdnf::comps::Environment * obj) { return obj->get_translated_name(); });
-    add_filter(Key::translated_description, [](libdnf::comps::Environment * obj) { return obj->get_translated_description(); });
+inline EnvironmentQuery::EnvironmentQuery() {
+    register_filter_string(Key::id, [](Environment * obj) { return obj->get_id(); });
+    register_filter_string(Key::name, [](Environment * obj) { return obj->get_name(); });
+    register_filter_string(Key::description, [](Environment * obj) { return obj->get_description(); });
+    register_filter_string(Key::translated_name, [](Environment * obj) { return obj->get_translated_name(); });
+    register_filter_string(Key::translated_description, [](Environment * obj) { return obj->get_translated_description(); });
 }
 
 
-// TODO(dmach): filter environments by included groups
+// TODO(dmach): filter Environments by included groups
 /// @replaces dnf:dnf/db/group.py:method:EnvironmentPersistor.get_group_environments(self, group_id)
 // FILTER: Environment.filter(group_id=...).list()
 
+
+}  // namespace libdnf::comps
 
 
 #endif

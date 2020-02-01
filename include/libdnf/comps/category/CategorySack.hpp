@@ -4,12 +4,13 @@
 
 #include "../../utils/sack/Sack.hpp"
 #include "Category.hpp"
+#include "CategoryQuery.hpp"
 
 
 namespace libdnf::comps {
 
 
-class CategorySack : public libdnf::utils::sack::Sack<Category> {
+class CategorySack : public libdnf::utils::sack::Sack<Category, CategoryQuery> {
 };
 
 

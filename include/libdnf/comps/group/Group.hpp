@@ -11,8 +11,6 @@
 namespace libdnf::comps {
 
 
-/// class Group
-///
 /// @replaces dnf:dnf/comps.py:class:Group
 class Group {
 public:

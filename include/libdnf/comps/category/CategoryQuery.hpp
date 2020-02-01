@@ -6,14 +6,8 @@
 #include "Category.hpp"
 
 
-namespace libdnf::comps {
-
-
-using CategoryQuery = libdnf::utils::sack::Query<Category>;
-
-
 template <>
-enum class CategoryQuery::Key {
+enum class libdnf::utils::sack::Query<libdnf::comps::Category>::Key {
     id,
     name,
     description,
@@ -22,17 +16,24 @@ enum class CategoryQuery::Key {
 };
 
 
-}  // namespace libdnf::comps
+namespace libdnf::comps {
 
 
-template <>
-void libdnf::utils::sack::Query<libdnf::comps::Category>::initialize_filters() {
-    add_filter(Key::id, [](libdnf::comps::Category * obj) { return obj->get_id(); });
-    add_filter(Key::name, [](libdnf::comps::Category * obj) { return obj->get_name(); });
-    add_filter(Key::description, [](libdnf::comps::Category * obj) { return obj->get_description(); });
-    add_filter(Key::translated_name, [](libdnf::comps::Category * obj) { return obj->get_translated_name(); });
-    add_filter(Key::translated_description, [](libdnf::comps::Category * obj) { return obj->get_translated_description(); });
+class CategoryQuery : public libdnf::utils::sack::Query<Category> {
+    CategoryQuery();
+};
+
+
+inline CategoryQuery::CategoryQuery() {
+    register_filter_string(Key::id, [](Category * obj) { return obj->get_id(); });
+    register_filter_string(Key::name, [](Category * obj) { return obj->get_name(); });
+    register_filter_string(Key::description, [](Category * obj) { return obj->get_description(); });
+    register_filter_string(Key::translated_name, [](Category * obj) { return obj->get_translated_name(); });
+    register_filter_string(Key::translated_description, [](Category * obj) { return obj->get_translated_description(); });
 }
+
+
+}  // namespace libdnf::comps
 
 
 #endif

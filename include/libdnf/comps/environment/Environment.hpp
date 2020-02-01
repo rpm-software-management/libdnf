@@ -11,8 +11,6 @@
 namespace libdnf::comps {
 
 
-/// class Environment
-///
 /// @replaces dnf:dnf/comps.py:class:Environment
 class Environment {
 public:

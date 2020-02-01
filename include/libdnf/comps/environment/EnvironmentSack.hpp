@@ -4,12 +4,13 @@
 
 #include "../../utils/sack/Sack.hpp"
 #include "Environment.hpp"
+#include "EnvironmentQuery.hpp"
 
 
 namespace libdnf::comps {
 
 
-class EnvironmentSack : public libdnf::utils::sack::Sack<libdnf::comps::Environment> {
+class EnvironmentSack : public libdnf::utils::sack::Sack<Environment, EnvironmentQuery> {
 };
 
 
