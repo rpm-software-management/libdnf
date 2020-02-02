@@ -92,7 +92,7 @@ static const struct {
     { "arm",        { "armv5tejl", "armv5tel", "armv5tl", "armv6l", "armv7l", "armv8l", NULL } },
     { "armhfp",     { "armv7hl", "armv7hnl", "armv8hl", "armv8hnl", "armv8hcnl", NULL } },
     { "i386",       { "i386", "athlon", "geode", "i386",
-                      "i486", "i586", "i686", NULL } },
+                      "i486", "i586", "i686", "znver1_32", NULL } },
     { "ia64",       { "ia64", NULL } },
     { "mips",       { "mips", NULL } },
     { "mipsel",     { "mipsel", NULL } },
@@ -109,7 +109,7 @@ static const struct {
     { "sh4",        { "sh4", "sh4a", NULL } },
     { "sparc",      { "sparc", "sparc64", "sparc64v", "sparcv8",
                       "sparcv9", "sparcv9v", NULL } },
-    { "x86_64",     { "x86_64", "amd64", "ia32e", NULL } },
+    { "x86_64",     { "x86_64", "amd64", "ia32e", "znver1", NULL } },
     { NULL,         { NULL } }
 };
 

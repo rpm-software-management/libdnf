@@ -43,6 +43,34 @@
 #ifndef HWCAP_ARM_NEON
 #define HWCAP_ARM_NEON	(1<<12)
 #endif
+#if defined(__x86_64__) || defined(__i386__)
+
+static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx)
+{
+    asm volatile (
+       "cpuid\n"
+    : "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx)
+    : "a" (op));
+}
+
+static bool is_ryzen(void) {
+    uint32_t eax, ebx, ecx, edx;
+    char vendor[13];
+    int family;
+    vendor[12]=0;
+    cpuid(0, &eax, &ebx, &ecx, &edx);
+    memcpy(vendor, &ebx, sizeof(ebx));
+    memcpy(vendor+4, &edx, sizeof(edx));
+    memcpy(vendor+8, &ecx, sizeof(ecx));
+    if (strncmp(vendor, "AuthenticAMD", 12))
+        return false;
+    cpuid(1, &eax, &ebx, &ecx, &edx);
+    family = (eax>>8)&0xf;
+    if(family == 0xf)
+        family += (eax>>20)&0x7f;
+    return family >= 0x17;
+}
+#endif
 
 const char *
 hy_chksum_name(int chksum_type)
@@ -123,6 +151,14 @@ hy_detect_arch(char **arch)
         strcpy(un.machine, "mipsel");
     else if (!strcmp(un.machine, "mips64"))
         strcpy(un.machine, "mips64el");
+#endif
+#if defined(__x86_64__) || defined(__i386__)
+    if (is_ryzen()) {
+        if (!strcmp(un.machine, "x86_64"))
+            strcpy(un.machine, "znver1");
+       else
+            strcpy(un.machine, "znver1_32");
+    }
 #endif
     *arch = g_strdup(un.machine);
     return 0;
