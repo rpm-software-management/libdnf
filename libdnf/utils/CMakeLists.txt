@@ -3,4 +3,7 @@ set(SOURCES
 )
 
 
+add_subdirectory("sack")
+
+
 set(LIBDNF_SOURCES ${LIBDNF_SOURCES} ${SOURCES} PARENT_SCOPE)

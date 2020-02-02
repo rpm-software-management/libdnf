@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ObjectSet.hpp"
 #include "ObjectSack.hpp"
+#include "RelatedObjectSack.hpp"
 
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -22,6 +22,8 @@ class QueryTest : public CppUnit::TestCase {
     CPPUNIT_TEST(test_filter_int32_eq);
     CPPUNIT_TEST(test_filter_int32_lt);
 
+    CPPUNIT_TEST(test_filter_related_object_string);
+
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -40,6 +42,9 @@ public:
     void test_filter_int32_eq();
     void test_filter_int32_lt();
 
+    void test_filter_related_object_string();
+
 private:
     ObjectSack sack;
+    RelatedObjectSack sack_related;
 };

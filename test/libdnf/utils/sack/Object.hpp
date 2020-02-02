@@ -1,6 +1,9 @@
 #pragma once
 
 
+#include "RelatedObject.hpp"
+#include "RelatedObjectSack.hpp"
+
 #include <string>
 #include <cstdint>
 
@@ -15,4 +18,5 @@ public:
     int32_t int32 = 32;
     int64_t int64 = 64;
     uint64_t uint64 = 64;
+    std::vector<std::string> related_objects;
 };

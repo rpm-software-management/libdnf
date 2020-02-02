@@ -1,6 +1,7 @@
 #include "test_query.hpp"
 
 #include "libdnf/utils/sack/QueryCmp.hpp"
+#include "RelatedObject.hpp"
 #include "ObjectQuery.hpp"
 #include "Object.hpp"
 
@@ -23,6 +24,25 @@ void QueryTest::setUp() {
     o2->string = "bar";
     o2->int32 = 20;
     sack.get_data().add(o2);
+
+    auto ro1 = new RelatedObject();
+    ro1->id = "aaa";
+    ro1->value = 100;
+    sack_related.get_data().add(ro1);
+    o1->related_objects.push_back(ro1->id);
+    o2->related_objects.push_back(ro1->id);
+
+    auto ro2 = new RelatedObject();
+    ro2->id = "bbb";
+    ro2->value = 200;
+    sack_related.get_data().add(ro2);
+    o1->related_objects.push_back(ro2->id);
+
+    auto ro3 = new RelatedObject();
+    ro3->id = "ccc";
+    ro3->value = 100;
+    sack_related.get_data().add(ro3);
+    o2->related_objects.push_back(ro3->id);
 }
 
 
@@ -172,5 +192,37 @@ void QueryTest::test_filter_int32_lt() {
     // "int32" field < 11
     q = sack.new_query();
     q.filter(ObjectQuery::Key::int32, QueryCmp::LT, 11);
+    CPPUNIT_ASSERT(q.size() == 1);
+}
+
+
+void QueryTest::test_filter_related_object_string() {
+    auto q_related = sack_related.new_query();
+    CPPUNIT_ASSERT(q_related.size() == 3);
+
+    // there's only 1 RelatedObject with id == "aaa"
+    q_related.filter(RelatedObjectQuery::Key::id, QueryCmp::EXACT, "aaa");
+    CPPUNIT_ASSERT(q_related.size() == 1);
+
+    auto q = sack.new_query();
+    CPPUNIT_ASSERT(q.size() == 2);
+
+    // there are 2 Objects containing "aaa" in related_objects vector
+    q.filter(ObjectQuery::Key::related_object, QueryCmp::EQ, q_related);
+    CPPUNIT_ASSERT(q.size() == 2);
+
+    // reset q_related
+    q_related = sack_related.new_query();
+    CPPUNIT_ASSERT(q_related.size() == 3);
+
+    // there's only 1 RelatedObject with id == "bbb"
+    q_related.filter(RelatedObjectQuery::Key::id, QueryCmp::EXACT, "bbb");
+    CPPUNIT_ASSERT(q_related.size() == 1);
+
+    q = sack.new_query();
+    CPPUNIT_ASSERT(q.size() == 2);
+
+    // there's 1 Object containing "bbb" in related_objects vector
+    q.filter(ObjectQuery::Key::related_object, QueryCmp::EQ, q_related);
     CPPUNIT_ASSERT(q.size() == 1);
 }
