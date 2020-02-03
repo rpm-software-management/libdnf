@@ -1,12 +1,20 @@
 message("Running CMake on libdnf...")
 cmake_minimum_required(VERSION 3.0)
-project(libdnf LANGUAGES CXX VERSION 1.0.0)
 
 
+include(VERSION.cmake)
+project(libdnf LANGUAGES CXX VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH})
 cmake_policy(VERSION ${CMAKE_VERSION})
 
 
 message("Building ${PROJECT_NAME} version ${PROJECT_VERSION}")
+
+
+if(DEFINED PACKAGE_VERSION)
+    if(NOT ${PACKAGE_VERSION} STREQUAL ${PROJECT_VERSION})
+        message(FATAL_ERROR "Variables PROJECT_VERSION and PACKAGE_VERSION differ. Make sure the versions in VERSION.cmake and the value provided via -DPACKAGE_VERSION are in sync.")
+    endif()
+endif()
 
 
 # build options - components (sub-packages)
