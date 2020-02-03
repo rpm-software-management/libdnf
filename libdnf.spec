@@ -70,6 +70,12 @@ BuildRequires:  pkgconfig(zck) >= %{zchunk_version}
 
 BuildRequires:  python3dist(sphinx)
 
+%if %{with sanitizers}
+BuildRequires:  libasan-static
+BuildRequires:  liblsan-static
+BuildRequires:  libubsan-static
+%endif
+
 
 # ========== libdnf ==========
 
