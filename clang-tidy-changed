@@ -21,6 +21,7 @@ UNTRACKED_FILES=`git ls-files --others --exclude-standard | egrep '\.(c|cpp|h|hp
 
 echo -n > "$LOG"
 for FILE in $CHANGED_FILES $UNTRACKED_FILES; do
+    echo "Checking $FILE..."
     CHECKS=""
     if [[ "$FILE" == "test/"* ]]; then
         # exclude several checks failing due to cppunit
