@@ -12,7 +12,7 @@ libdnf
   * updateinfo
 
 
-:warning **The current (dnf-5-devel) branch is subject of a major rewrite. The API/ABI is currently unstable** :warning
+:warning: **The current (dnf-5-devel) branch is subject of a major rewrite. The API/ABI is currently unstable** :warning:
 
 
 Documentation
