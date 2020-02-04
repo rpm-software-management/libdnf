@@ -1,5 +1,5 @@
 Coding style
-------------
+============
 
 Character case:
 
@@ -39,9 +39,8 @@ Python coding style:
 
 
 Project layout
---------------
-::
-
+==============
+```
   <top directory>
     +-- bindings                # everything related to SWIG bindings goes here
     |   +-- <language>          # go, perl5, python3, ruby
@@ -61,3 +60,4 @@ Project layout
     +-- dnfdaemon-server        # DBus package manager service
     +-- microdnf                # microdnf command line package manager
     +-- test                    # tests; similar layout to the bindings
+```
