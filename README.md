@@ -18,7 +18,7 @@ libdnf
 Documentation
 =============
 
-* For HTML documentation see https://dnf.readthedocs.io/
+* For HTML documentation see https://libdnf.readthedocs.io/
 * The header files are documented because documentation is mainly generated from them
 
 
