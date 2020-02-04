@@ -45,19 +45,19 @@ Building
 --------
 To install build requirements, run::
 
-    $ dnf builddep libdnf.spec
+    $ dnf builddep libdnf.spec --define '_with_sanitizers 1' [--define '_without_<option> 1 ...]
 
 To build code, run::
 
     $ mkdir build
     $ cd build
-    $ cmake .. -DWITH_SANITIZERS=ON
+    $ cmake .. -DWITH_SANITIZERS=ON [-DWITH_<OPTION>=<ON|OFF> ...]
     $ make -j4
 
 To build rpms from git, run::
 
     $ PREFIX=$(rpmspec libdnf.spec -q --srpm --qf '%{name}-%{version}') git archive --format=tar.gz --prefix=$PREFIX/ HEAD > $PREFIX.tar.gz
-    $ rpmbuild -ba --define "_sourcedir $(pwd)" libdnf.spec
+    $ rpmbuild -ba --define "_sourcedir $(pwd)" libdnf.spec [--with=<option>|--without=<option> ...]
 
 
 Testing
