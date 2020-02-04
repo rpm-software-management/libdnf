@@ -2,7 +2,7 @@ Name:           libdnf
 Version:        5.0.0
 Release:        1%{?dist}
 Summary:        Package management library
-License:        LGPLv2+
+License:        LGPLv2.1+
 URL:            https://github.com/rpm-software-management/libdnf
 Source0:        %{url}/archive/%{version}/%{name}-%{version}.tar.gz
 
@@ -78,7 +78,6 @@ BuildRequires:  libubsan-static
 
 
 # ========== libdnf ==========
-
 #Requires:       libmodulemd{?_isa} >= {libmodulemd_version}
 Requires:       libsolv%{?_isa} >= %{libsolv_version}
 Requires:       librepo%{?_isa} >= %{librepo_version}
@@ -174,6 +173,7 @@ Python 3 bindings for the libdnf library.
 
 %package -n dnfdaemon-client
 Summary:        Command-line interface for dnfdaemon-server
+License:        GPLv2+
 Requires:       libdnf%{?_isa} = %{version}-%{release}
 Requires:       libdnf-cli%{?_isa} = %{version}-%{release}
 
@@ -188,6 +188,7 @@ Command-line interface for dnfdaemon-server
 
 %package -n dnfdaemon-server
 Summary:        Package management service with a DBus interface
+License:        GPLv2+
 Requires:       libdnf%{?_isa} = %{version}-%{release}
 Requires:       libdnf-cli%{?_isa} = %{version}-%{release}
 Requires:       dnf-data
@@ -203,6 +204,7 @@ Package management service with a DBus interface
 
 %package -n microdnf
 Summary:        Package management service with a DBus interface
+License:        GPLv2+
 Requires:       libdnf%{?_isa} = %{version}-%{release}
 Requires:       libdnf-cli%{?_isa} = %{version}-%{release}
 Requires:       dnf-data
