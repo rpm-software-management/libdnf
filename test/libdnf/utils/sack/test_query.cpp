@@ -57,12 +57,12 @@ void QueryTest::test_filter_string_exact() {
     CPPUNIT_ASSERT(q.size() == 2);
 
     // filter doesn't match anything
-    q.filter(ObjectQuery::Key::string, QueryCmp::EXACT, "no-match");
+    q.filter(ObjectQuery::get_string, QueryCmp::EXACT, "no-match");
     CPPUNIT_ASSERT(q.size() == 0);
 
-    // ObjectQuery::Key::string field == "foo"
+    // ObjectQuery::get_string field == "foo"
     q = sack.new_query();
-    q.filter(ObjectQuery::Key::string, QueryCmp::EXACT, "foo");
+    q.filter(ObjectQuery::get_string, QueryCmp::EXACT, "foo");
     CPPUNIT_ASSERT(q.size() == 1);
 }
 
@@ -73,12 +73,12 @@ void QueryTest::test_filter_string_glob() {
     CPPUNIT_ASSERT(q.size() == 2);
 
     // filter doesn't match anything
-    q.filter(ObjectQuery::Key::string, QueryCmp::GLOB, "no-match");
+    q.filter(ObjectQuery::get_string, QueryCmp::GLOB, "no-match");
     CPPUNIT_ASSERT(q.size() == 0);
 
-    // ObjectQuery::Key::string field == "fo.*"
+    // ObjectQuery::get_string field == "fo.*"
     q = sack.new_query();
-    q.filter(ObjectQuery::Key::string, QueryCmp::GLOB, "fo*");
+    q.filter(ObjectQuery::get_string, QueryCmp::GLOB, "fo*");
     CPPUNIT_ASSERT(q.size() == 1);
 }
 
@@ -89,12 +89,12 @@ void QueryTest::test_filter_string_iglob() {
     CPPUNIT_ASSERT(q.size() == 2);
 
     // filter doesn't match anything
-    q.filter(ObjectQuery::Key::string, QueryCmp::IGLOB, "no-match");
+    q.filter(ObjectQuery::get_string, QueryCmp::IGLOB, "no-match");
     CPPUNIT_ASSERT(q.size() == 0);
 
-    // ObjectQuery::Key::string field == "fo.*"
+    // ObjectQuery::get_string field == "fo.*"
     q = sack.new_query();
-    q.filter(ObjectQuery::Key::string, QueryCmp::IGLOB, "FO*");
+    q.filter(ObjectQuery::get_string, QueryCmp::IGLOB, "FO*");
     CPPUNIT_ASSERT(q.size() == 1);
 }
 
@@ -105,12 +105,12 @@ void QueryTest::test_filter_string_regex() {
     CPPUNIT_ASSERT(q.size() == 2);
 
     // filter doesn't match anything
-    q.filter(ObjectQuery::Key::string, QueryCmp::REGEX, "no-match");
+    q.filter(ObjectQuery::get_string, QueryCmp::REGEX, "no-match");
     CPPUNIT_ASSERT(q.size() == 0);
 
-    // ObjectQuery::Key::string field == "fo.*"
+    // ObjectQuery::get_string field == "fo.*"
     q = sack.new_query();
-    q.filter(ObjectQuery::Key::string, QueryCmp::REGEX, "fo.*");
+    q.filter(ObjectQuery::get_string, QueryCmp::REGEX, "fo.*");
     CPPUNIT_ASSERT(q.size() == 1);
 }
 
@@ -121,12 +121,12 @@ void QueryTest::test_filter_string_iregex() {
     CPPUNIT_ASSERT(q.size() == 2);
 
     // filter doesn't match anything
-    q.filter(ObjectQuery::Key::string, QueryCmp::IREGEX, "no-match");
+    q.filter(ObjectQuery::get_string, QueryCmp::IREGEX, "no-match");
     CPPUNIT_ASSERT(q.size() == 0);
 
-    // ObjectQuery::Key::string field == "fo.*"
+    // ObjectQuery::get_string field == "fo.*"
     q = sack.new_query();
-    q.filter(ObjectQuery::Key::string, QueryCmp::IREGEX, "FO.*");
+    q.filter(ObjectQuery::get_string, QueryCmp::IREGEX, "FO.*");
     CPPUNIT_ASSERT(q.size() == 1);
 }
 
@@ -137,12 +137,12 @@ void QueryTest::test_filter_string_vector_exact() {
     CPPUNIT_ASSERT(q.size() == 2);
 
     // filter doesn't match anything
-    q.filter(ObjectQuery::Key::string, QueryCmp::EXACT, std::vector<std::string>({"no-match"}));
+    q.filter(ObjectQuery::get_string, QueryCmp::EXACT, std::vector<std::string>({"no-match"}));
     CPPUNIT_ASSERT(q.size() == 0);
 
-    // ObjectQuery::Key::string field in ["no-match", "foo"]
+    // ObjectQuery::get_string field in ["no-match", "foo"]
     q = sack.new_query();
-    q.filter(ObjectQuery::Key::string, QueryCmp::EXACT, std::vector<std::string>({"no-match", "foo"}));
+    q.filter(ObjectQuery::get_string, QueryCmp::EXACT, std::vector<std::string>({"no-match", "foo"}));
     CPPUNIT_ASSERT(q.size() == 1);
 }
 
@@ -153,12 +153,12 @@ void QueryTest::test_filter_string_vector_iexact() {
     CPPUNIT_ASSERT(q.size() == 2);
 
     // filter doesn't match anything
-    q.filter(ObjectQuery::Key::string, QueryCmp::IEXACT, std::vector<std::string>({"no-match"}));
+    q.filter(ObjectQuery::get_string, QueryCmp::IEXACT, std::vector<std::string>({"no-match"}));
     CPPUNIT_ASSERT(q.size() == 0);
 
-    // ObjectQuery::Key::string field in ["no-match", "fOo"]
+    // ObjectQuery::get_string field in ["no-match", "fOo"]
     q = sack.new_query();
-    q.filter(ObjectQuery::Key::string, QueryCmp::IEXACT, std::vector<std::string>({"no-match", "fOo"}));
+    q.filter(ObjectQuery::get_string, QueryCmp::IEXACT, std::vector<std::string>({"no-match", "fOo"}));
     CPPUNIT_ASSERT(q.size() == 1);
 }
 
@@ -170,12 +170,12 @@ void QueryTest::test_filter_int32_eq() {
 
     // filter doesn't match anything
     q = sack.new_query();
-    q.filter(ObjectQuery::Key::int32, QueryCmp::EQ, 15);
+    q.filter(ObjectQuery::get_int32, QueryCmp::EQ, 15);
     CPPUNIT_ASSERT(q.size() == 0);
 
     // "int32" field == 10
     q = sack.new_query();
-    q.filter(ObjectQuery::Key::int32, QueryCmp::EQ, 10);
+    q.filter(ObjectQuery::get_int32, QueryCmp::EQ, 10);
     CPPUNIT_ASSERT(q.size() == 1);
 }
 
@@ -187,12 +187,12 @@ void QueryTest::test_filter_int32_lt() {
 
     // filter doesn't match anything
     q = sack.new_query();
-    q.filter(ObjectQuery::Key::int32, QueryCmp::LT, 10);
+    q.filter(ObjectQuery::get_int32, QueryCmp::LT, 10);
     CPPUNIT_ASSERT(q.size() == 0);
 
     // "int32" field < 11
     q = sack.new_query();
-    q.filter(ObjectQuery::Key::int32, QueryCmp::LT, 11);
+    q.filter(ObjectQuery::get_int32, QueryCmp::LT, 11);
     CPPUNIT_ASSERT(q.size() == 1);
 }
 
@@ -202,14 +202,14 @@ void QueryTest::test_filter_related_object_string() {
     CPPUNIT_ASSERT(q_related.size() == 3);
 
     // there's only 1 RelatedObject with id == "aaa"
-    q_related.filter(RelatedObjectQuery::Key::id, QueryCmp::EXACT, "aaa");
+    q_related.filter(RelatedObjectQuery::get_id, QueryCmp::EXACT, "aaa");
     CPPUNIT_ASSERT(q_related.size() == 1);
 
     auto q = sack.new_query();
     CPPUNIT_ASSERT(q.size() == 2);
 
     // there are 2 Objects containing "aaa" in related_objects vector
-    q.filter(ObjectQuery::Key::related_object, QueryCmp::EQ, q_related);
+    q.filter(ObjectQuery::get_related_object, QueryCmp::EQ, q_related);
     CPPUNIT_ASSERT(q.size() == 2);
 
     // reset q_related
@@ -217,13 +217,13 @@ void QueryTest::test_filter_related_object_string() {
     CPPUNIT_ASSERT(q_related.size() == 3);
 
     // there's only 1 RelatedObject with id == "bbb"
-    q_related.filter(RelatedObjectQuery::Key::id, QueryCmp::EXACT, "bbb");
+    q_related.filter(RelatedObjectQuery::get_id, QueryCmp::EXACT, "bbb");
     CPPUNIT_ASSERT(q_related.size() == 1);
 
     q = sack.new_query();
     CPPUNIT_ASSERT(q.size() == 2);
 
     // there's 1 Object containing "bbb" in related_objects vector
-    q.filter(ObjectQuery::Key::related_object, QueryCmp::EQ, q_related);
+    q.filter(ObjectQuery::get_related_object, QueryCmp::EQ, q_related);
     CPPUNIT_ASSERT(q.size() == 1);
 }

@@ -8,32 +8,20 @@
 
 using ObjectWeakPtr = libdnf::utils::WeakPtr<Object, false>;
 
-template <>
-enum class libdnf::utils::sack::Query<ObjectWeakPtr>::Key {
-    string,
-    cstring,
-    boolean,
-    int32,
-    int64,
-    related_object,
-};
-
-
 class ObjectQuery : public libdnf::utils::sack::Query<ObjectWeakPtr> {
 public:
-    ObjectQuery() {
-        register_filter_string(Key::string, [](const ObjectWeakPtr & obj) { return obj->string; });
-        register_filter_string(Key::cstring, [](const ObjectWeakPtr & obj) { return obj->cstring; });
-        register_filter_bool(Key::boolean, [](const ObjectWeakPtr & obj) { return obj->boolean; });
-        register_filter_int64(Key::int32, [](const ObjectWeakPtr & obj) { return obj->int32; });
-        register_filter_int64(Key::int64, [](const ObjectWeakPtr & obj) { return obj->int64; });
-        register_filter_vector_string(Key::related_object, [](const ObjectWeakPtr & obj) { return obj->related_objects; });
-    }
+
+    static std::string get_string(const ObjectWeakPtr & obj) { return obj->string; }
+    static std::string get_cstring(const ObjectWeakPtr & obj) { return std::string(obj->cstring); }
+    static bool get_boolean(const ObjectWeakPtr & obj) { return obj->boolean; }
+    static int64_t get_int32(const ObjectWeakPtr & obj) { return static_cast<int64_t>(obj->int32); }
+    static int64_t get_int64(const ObjectWeakPtr & obj) { return obj->int64; }
+    static std::vector<std::string> get_related_object(const ObjectWeakPtr & obj) { return obj->related_objects; }
 
     using libdnf::utils::sack::Query<ObjectWeakPtr>::filter;
 
-    std::size_t filter(Key key, libdnf::utils::sack::QueryCmp cmp, RelatedObjectQuery q) {
-        if (key != Key::related_object) {
+    std::size_t filter(FilterFunctionVectorString * getter, libdnf::utils::sack::QueryCmp cmp, RelatedObjectQuery q) {
+        if (getter != get_related_object) {
             throw std::runtime_error("Invalid key");
         }
 
@@ -48,6 +36,6 @@ public:
         }
 
         // compare the extracted keys with the related_objects content
-        return this->filter(key, cmp, patterns);
+        return filter(getter, cmp, patterns);
     }
 };
