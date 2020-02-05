@@ -279,3 +279,11 @@ THE PLAN
   * Make sure that libdnf-cli library/API works for dnf, microdnf and also DBus command-line client
     (don't rely on objects, pointers, ... pass data structures to the libdnf-cli API)
   * Work on DBus API in parallel with the rewrite in order to verify that the APIs were designed correctly
+
+IDEAS FROM PRs
+--------------
+
+* WIP Package #667
+  * j-mracek:package
+* WIP Goalclass second part #472
+  * j-mracek:goalclass3
