@@ -56,7 +56,7 @@ To build code, run::
 
 To build rpms from git, run::
 
-    $ PREFIX=$(rpmspec libdnf.spec -q --srpm --qf '%{name}-%{version}') git archive --format=tar.gz --prefix=$PREFIX/ HEAD > $PREFIX.tar.gz
+    $ export PREFIX=$(rpmspec libdnf.spec -q --srpm --qf '%{name}-%{version}'); git archive --format=tar.gz --prefix=$PREFIX/ HEAD > $PREFIX.tar.gz
     $ rpmbuild -ba --define "_sourcedir $(pwd)" libdnf.spec [--with=<option>|--without=<option> ...]
 
 
