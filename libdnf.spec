@@ -87,10 +87,12 @@ Package management library
 
 %files
 %{_libdir}/libdnf.so.*
+%license lgpl-2.1.txt
 
 
 # ========== libdnf-cli ==========
 
+%if %{with libdnf_cli}
 %package -n libdnf-cli
 Summary:        CLI
 BuildRequires:  pkgconfig(smartcols)
@@ -100,6 +102,9 @@ CLI
 
 %files -n libdnf-cli
 %{_libdir}/libdnf-cli.so.*
+%license COPYING.md
+%license lgpl-2.1.txt
+%endif
 
 
 # ========== libdnf-devel ==========
@@ -114,6 +119,9 @@ Development files for libdnf.
 
 %files devel
 %{_libdir}/*.so
+%license COPYING.md
+%license lgpl-2.1.txt
+%doc CODING_STYLE.md
 
 
 # ========== perl5-libdnf ==========
@@ -130,6 +138,8 @@ Perl 5 bindings for the libdnf library.
 
 %files -n perl5-libdnf
 #{perl_vendorarch}/libdnf/*
+%license COPYING.md
+%license lgpl-2.1.txt
 %endif
 
 
@@ -148,6 +158,8 @@ Python 3 bindings for the libdnf library.
 
 %files -n python3-libdnf
 %{python3_sitearch}/libdnf/
+%license COPYING.md
+%license lgpl-2.1.txt
 %endif
 
 
@@ -166,11 +178,14 @@ Python 3 bindings for the libdnf library.
 
 %files -n python3-libdnf-cli
 %{python3_sitearch}/libdnf_cli/
+%license COPYING.md
+%license lgpl-2.1.txt
 %endif
 
 
 # ========== dnfdaemon-client ==========
 
+%if %{with dnfdaemon_client}
 %package -n dnfdaemon-client
 Summary:        Command-line interface for dnfdaemon-server
 License:        GPLv2+
@@ -182,10 +197,14 @@ Command-line interface for dnfdaemon-server
 
 %files -n dnfdaemon-client
 %{_bindir}/dnfdaemon-client
+%license COPYING.md
+%license gpl-2.0.txt
+%endif
 
 
 # ========== dnfdaemon-server ==========
 
+%if %{with dnfdaemon_server}
 %package -n dnfdaemon-server
 Summary:        Package management service with a DBus interface
 License:        GPLv2+
@@ -198,10 +217,14 @@ Package management service with a DBus interface
 
 %files -n dnfdaemon-server
 %{_bindir}/dnfdaemon-server
+%license COPYING.md
+%license gpl-2.0.txt
+%endif
 
 
 # ========== microdnf ==========
 
+%if %{with microdnf}
 %package -n microdnf
 Summary:        Package management service with a DBus interface
 License:        GPLv2+
@@ -214,6 +237,9 @@ Package management service with a DBus interface
 
 %files -n microdnf
 %{_bindir}/microdnf
+%license COPYING.md
+%license gpl-2.0.txt
+%endif
 
 
 # ========== unpack, build, check & install ==========
