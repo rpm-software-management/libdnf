@@ -29,7 +29,6 @@
 #include "hy-util.h"
 #include "dnf-version.h"
 #include "dnf-sack-private.hpp"
-#include "libdnf/module/modulemd/ModuleDefaultsContainer.hpp"
 #include "libdnf/module/ModulePackageContainer.hpp"
 
 // pyhawkey
@@ -632,7 +631,7 @@ filter_modules(_SackObject *self, PyObject *args, PyObject *kwds) try
         PyTuple_SetItem(returnTuple, 0, problemRulesPyConverter(problems.first));
         PyTuple_SetItem(returnTuple, 1, PyLong_FromLong(int(problems.second)));
         return returnTuple;
-    } catch (libdnf::ModuleDefaultsContainer::ConflictException & exception) {
+    } catch (libdnf::ModulePackageContainer::ConflictException & exception) {
         PyErr_SetString(HyExc_Runtime, exception.what());
         return NULL;
     }

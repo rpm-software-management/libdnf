@@ -47,16 +47,6 @@ public:
         explicit Exception(const std::string &what) : std::runtime_error(what) {}
     };
 
-    struct ConflictException : public Exception
-    {
-        explicit ConflictException(const std::string &what) : Exception(what) {}
-    };
-
-    struct ResolveException : public Exception
-    {
-        explicit ResolveException(const std::string &what) : Exception(what) {}
-    };
-
     ModuleDefaultsContainer();
     ~ModuleDefaultsContainer();
 
