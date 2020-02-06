@@ -77,6 +77,16 @@ public:
         explicit EnableMultipleStreamsException(const std::string & moduleName);
     };
 
+    struct ConflictException : public Exception
+    {
+        explicit ConflictException(const std::string &what) : Exception(what) {}
+    };
+
+    struct ResolveException : public Exception
+    {
+        explicit ResolveException(const std::string &what) : Exception(what) {}
+    };
+
     explicit ModulePackageContainer(bool allArch, std::string installRoot, const char * arch,
                                     const char * persistDir = nullptr);
     ~ModulePackageContainer();
@@ -84,13 +94,13 @@ public:
     void add(const std::string & fileContent, const std::string & repoID);
 
     /**
-     * @brief Can raise ModuleDefaultsContainer::ConflictException
+     * @brief Can raise ModulePackageContainer::ConflictException
      *
      */
     void add(DnfSack * sack);
 
     /**
-     * @brief Can raise ModuleDefaultsContainer::ConflictException
+     * @brief Can raise ModulePackageContainer::ConflictException
      *
      */
     void addDefaultsFromDisk();

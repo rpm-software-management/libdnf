@@ -78,7 +78,6 @@ extern "C" {
 #include "conf/OptionBool.hpp"
 #include "module/ModulePackageContainer.hpp"
 #include "module/ModulePackage.hpp"
-#include "module/modulemd/ModuleDefaultsContainer.hpp"
 #include "repo/Repo-private.hpp"
 #include "repo/solvable/DependencyContainer.hpp"
 #include "utils/crypto/sha1.hpp"
@@ -2462,7 +2461,7 @@ std::pair<std::vector<std::vector<std::string>>, libdnf::ModulePackageContainer:
 
         try {
             moduleContainer->moduleDefaultsResolve();
-        } catch (libdnf::ModuleDefaultsContainer::ResolveException & exception) {
+        } catch (libdnf::ModulePackageContainer::ResolveException & exception) {
             auto logger(libdnf::Log::getLogger());
             logger->debug(_("No module defaults found"));
         }

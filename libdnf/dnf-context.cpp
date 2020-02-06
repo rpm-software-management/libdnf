@@ -73,7 +73,6 @@
 #include "dnf-repo.hpp"
 #include "goal/Goal.hpp"
 #include "plugin/plugin-private.hpp"
-#include "module/modulemd/ModuleDefaultsContainer.hpp"
 #include "utils/os-release.hpp"
 
 
@@ -1761,7 +1760,7 @@ dnf_context_setup_sack_with_flags(DnfContext               *context,
         try {
             dnf_sack_filter_modules_v2(sack, nullptr, hotfixRepos.data(), priv->install_root,
                 priv->platform_module, false, false);
-        } catch (libdnf::ModuleDefaultsContainer::ConflictException & exception) {
+        } catch (libdnf::ModulePackageContainer::ConflictException & exception) {
             g_set_error(error, DNF_ERROR, DNF_ERROR_FAILED, "%s", exception.what());
             return FALSE;
         }
@@ -2915,7 +2914,7 @@ dnf_context_reset_modules(DnfContext * context, DnfSack * sack, const char ** mo
         try {
             dnf_sack_filter_modules_v2(sack, nullptr, hotfixRepos.data(), priv->install_root,
                 priv->platform_module, false, false);
-        } catch (libdnf::ModuleDefaultsContainer::ConflictException & exception) {
+        } catch (libdnf::ModulePackageContainer::ConflictException & exception) {
             g_set_error(error, DNF_ERROR, DNF_ERROR_FAILED, "%s", exception.what());
             return FALSE;
         }
