@@ -19,7 +19,9 @@
 
 project = 'libdnf'
 copyright = '2019, Red Hat'
-author = 'Daniel Mach <dmach@redhat.com>'
+author = 'rpm-software-management@lists.fedoraproject.org'
+
+AUTHORS=['See AUTHORS.md in libdnf source distribution.']
 
 
 # -- General configuration ---------------------------------------------------
@@ -55,3 +57,14 @@ html_theme = 'sphinx_rtd_theme'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+
+# -- Options for manual page output --------------------------------------------
+
+# One entry per manual page. List of tuples
+# (source start file, name, description, authors, manual section).
+man_pages = [
+    ('microdnf.8', 'microdnf', 'Microdnf Command-line Package Manager', AUTHORS, 8),
+    ('dnfdaemon_client.8', 'dnfdaemon-client', 'Command-line interface for dnfdaemon', AUTHORS, 8),
+    ('dnfdaemon_server.8', 'dnfdaemon-server', 'Package management service with a DBus interface', AUTHORS, 8),
+]
