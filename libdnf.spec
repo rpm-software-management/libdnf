@@ -118,6 +118,7 @@ Requires:       libsolv-devel%{?_isa} >= %{libsolv_version}
 Development files for libdnf.
 
 %files devel
+%{_includedir}/libdnf/
 %{_libdir}/libdnf.so
 %{_libdir}/pkgconfig/libdnf.pc
 %license COPYING.md
@@ -135,6 +136,7 @@ Requires:       libdnf-cli%{?_isa} = %{version}-%{release}
 Development files for libdnf-cli.
 
 %files cli-devel
+%{_includedir}/libdnf-cli/
 %{_libdir}/libdnf-cli.so
 %{_libdir}/pkgconfig/libdnf-cli.pc
 %license COPYING.md
