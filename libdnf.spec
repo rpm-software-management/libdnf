@@ -123,7 +123,6 @@ Development files for libdnf.
 %{_libdir}/pkgconfig/libdnf.pc
 %license COPYING.md
 %license lgpl-2.1.txt
-%doc CODING_STYLE.md
 
 
 # ========== libdnf-cli-devel ==========
@@ -141,7 +140,6 @@ Development files for libdnf-cli.
 %{_libdir}/pkgconfig/libdnf-cli.pc
 %license COPYING.md
 %license lgpl-2.1.txt
-%doc CODING_STYLE.md
 
 
 # ========== perl5-libdnf ==========
