@@ -12,6 +12,7 @@
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 
 namespace libdnf::utils::sack {
@@ -26,10 +27,15 @@ public:
     enum class Key;
 
     /// Get a single object. Raise an exception if none or multiple objects match the query.
-    T get();
+    const T & get() const {
+        if (get_data().size() == 1) {
+            return *get_data().begin();
+        }
+        throw std::runtime_error("Query must contain exactly one object.");
+    }
 
     /// List all objects matching the query.
-    std::set<T *> list() { return get_data(); }
+    const std::set<T> & list() const noexcept { return get_data(); }
 
     std::size_t filter(Key key, QueryCmp cmp, const std::string & pattern);
     std::size_t filter(Key key, QueryCmp cmp, const std::vector<std::string> & patterns);
@@ -55,12 +61,12 @@ public:
     using Set<T>::get_data;
 
 protected:
-    using FilterFunctionBool = std::function<bool(T * obj)>;
-    using FilterFunctionCString = std::function<char * (T * obj)>;
-    using FilterFunctionInt64 = std::function<int64_t(T * obj)>;
-    using FilterFunctionString = std::function<std::string(T * obj)>;
-    using FilterFunctionVectorInt64 = std::function<std::vector<int64_t>(T * obj)>;
-    using FilterFunctionVectorString = std::function<std::vector<std::string>(T * obj)>;
+    using FilterFunctionBool = std::function<bool(const T & obj)>;
+    using FilterFunctionCString = std::function<char *(const T & obj)>;
+    using FilterFunctionInt64 = std::function<int64_t(const T & obj)>;
+    using FilterFunctionString = std::function<std::string(const T & obj)>;
+    using FilterFunctionVectorInt64 = std::function<std::vector<int64_t>(const T & obj)>;
+    using FilterFunctionVectorString = std::function<std::vector<std::string>(const T & obj)>;
 
     void register_filter_bool(Key key, FilterFunctionBool func) { filters_bool[key] = func; }
     void register_filter_cstring(Key key, FilterFunctionCString func) { filters_cstring[key] = func; }
@@ -90,7 +96,7 @@ inline std::size_t Query<T>::filter(Key key, QueryCmp cmp, const std::string & p
         getter_vector_string = filters_vector_string.at(key);
     }
 
-    for (auto it = get_data().begin(); it != get_data().end(); ) {
+    for (auto it = get_data().begin(); it != get_data().end();) {
         bool match = false;
 
         if (getter_string) {
@@ -123,7 +129,7 @@ inline std::size_t Query<T>::filter(Key key, QueryCmp cmp, const std::vector<std
         getter_vector_string = filters_vector_string.at(key);
     }
 
-    for (auto it = get_data().begin(); it != get_data().end(); ) {
+    for (auto it = get_data().begin(); it != get_data().end();) {
         bool match = false;
 
         if (getter_string) {
@@ -156,7 +162,7 @@ inline std::size_t Query<T>::filter(Key key, QueryCmp cmp, int64_t pattern) {
         getter_vector_int64 = filters_vector_int64.at(key);
     }
 
-    for (auto it = get_data().begin(); it != get_data().end(); ) {
+    for (auto it = get_data().begin(); it != get_data().end();) {
         bool match = false;
 
         if (getter_int64) {
@@ -189,7 +195,7 @@ inline std::size_t Query<T>::filter(Key key, QueryCmp cmp, const std::vector<int
         getter_vector_int64 = filters_vector_int64.at(key);
     }
 
-    for (auto it = get_data().begin(); it != get_data().end(); ) {
+    for (auto it = get_data().begin(); it != get_data().end();) {
         bool match = false;
 
         if (getter_int64) {
