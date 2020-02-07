@@ -199,6 +199,7 @@ Command-line interface for dnfdaemon-server
 %{_bindir}/dnfdaemon-client
 %license COPYING.md
 %license gpl-2.0.txt
+%{_mandir}/man8/dnfdaemon-client.8.gz
 %endif
 
 
@@ -219,6 +220,7 @@ Package management service with a DBus interface
 %{_bindir}/dnfdaemon-server
 %license COPYING.md
 %license gpl-2.0.txt
+%{_mandir}/man8/dnfdaemon-server.8.gz
 %endif
 
 
@@ -239,6 +241,7 @@ Package management service with a DBus interface
 %{_bindir}/microdnf
 %license COPYING.md
 %license gpl-2.0.txt
+%{_mandir}/man8/microdnf.8.gz
 %endif
 
 
@@ -272,6 +275,9 @@ Package management service with a DBus interface
     -DWITH_SANITIZERS=%{?with_sanitizers:ON}%{!?with_sanitizers:OFF} \
     -DWITH_TESTS_DISABLED=%{?with_tests_disabled:ON}%{!?with_tests_disabled:OFF}
 %make_build
+%if %{with man}
+    make doc-man
+%endif
 
 
 %check
