@@ -19,6 +19,7 @@
  */
 
 #include <iostream>
+#include <fnmatch.h>
 #include <numeric>
 #include <sstream>
 #include <utility>
@@ -87,8 +88,8 @@ static std::pair<std::string, std::string> parsePlatform(const std::string & pla
 ModulePackage::~ModulePackage() = default;
 
 ModulePackage::ModulePackage(DnfSack * moduleSack, LibsolvRepo * repo,
-    ModuleMetadata && metadata,  const std::string & repoID)
-        : metadata(std::move(metadata))
+    ModulemdModuleStream * mdStream, const std::string & repoID)
+        : mdStream(mdStream)
         , moduleSack(moduleSack)
         , repoID(repoID)
 {
@@ -155,6 +156,13 @@ void ModulePackage::createDependencies(Solvable *solvable) const
     }
 }
 
+std::string ModulePackage::getYaml() const
+{
+    ModulemdModuleIndex * i = modulemd_module_index_new();
+    modulemd_module_index_add_module_stream(i, mdStream, NULL);
+    return modulemd_module_index_dump_to_string(i, NULL);
+}
+
 /**
  * @brief Return module $name.
  *
@@ -162,12 +170,12 @@ void ModulePackage::createDependencies(Solvable *solvable) const
  */
 const char * ModulePackage::getNameCStr() const
 {
-    return metadata.getName();
+    return modulemd_module_stream_get_module_name(mdStream);
 }
 
 std::string ModulePackage::getName() const
 {
-    auto name = metadata.getName();
+    auto name = modulemd_module_stream_get_module_name(mdStream);
     return name ? name : "";
 }
 
@@ -207,12 +215,12 @@ const std::string & ModulePackage::getRepoID() const
  */
 const char * ModulePackage::getStreamCStr() const
 {
-    return metadata.getStream();
+    return modulemd_module_stream_get_stream_name(mdStream);
 }
 
 std::string ModulePackage::getStream() const
 {
-    auto stream = metadata.getStream();
+    auto stream = modulemd_module_stream_get_stream_name(mdStream);
     return stream ? stream : "";
 }
 
@@ -223,7 +231,7 @@ std::string ModulePackage::getStream() const
  */
 std::string ModulePackage::getVersion() const
 {
-    return std::to_string(metadata.getVersion());
+    return std::to_string(modulemd_module_stream_get_version(mdStream));
 }
 
 /**
@@ -233,7 +241,7 @@ std::string ModulePackage::getVersion() const
  */
 long long ModulePackage::getVersionNum() const
 {
-    return metadata.getVersion();
+    return modulemd_module_stream_get_version(mdStream);
 }
 
 /**
@@ -243,12 +251,12 @@ long long ModulePackage::getVersionNum() const
  */
 const char * ModulePackage::getContextCStr() const
 {
-    return metadata.getContext();
+    return modulemd_module_stream_get_context(mdStream);
 }
 
 std::string ModulePackage::getContext() const
 {
-    auto context = metadata.getContext();
+    auto context = modulemd_module_stream_get_context(mdStream);
     return context ? context : "";
 }
 
@@ -260,12 +268,12 @@ std::string ModulePackage::getContext() const
  */
 const char * ModulePackage::getArchCStr() const
 {
-    return metadata.getArchitecture();
+    return modulemd_module_stream_get_arch(mdStream);
 }
 
 std::string ModulePackage::getArch() const
 {
-    auto arch = metadata.getArchitecture();
+    auto arch = modulemd_module_stream_get_arch(mdStream);
     return arch ? arch : "";
 }
 
@@ -289,7 +297,7 @@ std::string ModulePackage::getFullIdentifier() const
  */
 std::string ModulePackage::getSummary() const
 {
-    return metadata.getSummary();
+    return modulemd_module_stream_v2_get_summary((ModulemdModuleStreamV2 *) mdStream, NULL);
 }
 
 /**
@@ -299,7 +307,7 @@ std::string ModulePackage::getSummary() const
  */
 std::string ModulePackage::getDescription() const
 {
-    return metadata.getDescription();
+    return modulemd_module_stream_v2_get_description((ModulemdModuleStreamV2 *) mdStream, NULL);
 }
 
 /**
@@ -309,13 +317,39 @@ std::string ModulePackage::getDescription() const
  */
 std::vector<std::string> ModulePackage::getArtifacts() const
 {
-    return metadata.getArtifacts();
+    std::vector<std::string> result_rpms;
+    char ** rpms = modulemd_module_stream_v2_get_rpm_artifacts_as_strv((ModulemdModuleStreamV2 *) mdStream);
+
+    for (char **iter = rpms; iter && *iter; iter++) {
+        result_rpms.emplace_back(std::string(*iter));
+    }
+
+    g_strfreev(rpms);
+    return result_rpms;
 }
 
 std::vector<ModuleProfile>
 ModulePackage::getProfiles(const std::string &name) const
 {
-    return metadata.getProfiles(name);
+    std::vector<ModuleProfile> result_profiles;
+
+    //TODO(amatej): replace with
+    //char ** profiles = modulemd_module_stream_v2_search_profiles((ModulemdModuleStreamV2 *) mdStream, profileNameCStr);
+    char ** profiles = modulemd_module_stream_v2_get_profile_names_as_strv((ModulemdModuleStreamV2 *) mdStream);
+
+    auto profileNameCStr = name.c_str();
+    gboolean glob = hy_is_glob_pattern(profileNameCStr);
+    for (char **iter = profiles; iter && *iter; iter++) {
+        std::string keyStr = static_cast<char *>(*iter);
+        if (glob && fnmatch(profileNameCStr, static_cast<char *>(*iter), 0) == 0) {
+            result_profiles.push_back(ModuleProfile(modulemd_module_stream_v2_get_profile((ModulemdModuleStreamV2 *) mdStream, *iter)));
+        } else if (strcmp(profileNameCStr, static_cast<char *>(*iter)) == 0) {
+            result_profiles.push_back(ModuleProfile(modulemd_module_stream_v2_get_profile((ModulemdModuleStreamV2 *) mdStream, *iter)));
+        }
+    }
+
+    g_strfreev(profiles);
+    return result_profiles;
 }
 
 /**
@@ -325,7 +359,15 @@ ModulePackage::getProfiles(const std::string &name) const
  */
 std::vector<ModuleProfile> ModulePackage::getProfiles() const
 {
-    return metadata.getProfiles();
+    std::vector<ModuleProfile> result_profiles;
+    char ** profiles = modulemd_module_stream_v2_get_profile_names_as_strv((ModulemdModuleStreamV2 *) mdStream);
+
+    for (char **iter = profiles; iter && *iter; iter++) {
+        result_profiles.push_back(ModuleProfile(modulemd_module_stream_v2_get_profile((ModulemdModuleStreamV2 *) mdStream, *iter)));
+    }
+
+    g_strfreev(profiles);
+    return result_profiles;
 }
 
 /**
@@ -335,7 +377,15 @@ std::vector<ModuleProfile> ModulePackage::getProfiles() const
  */
 std::vector<ModuleDependencies> ModulePackage::getModuleDependencies() const
 {
-    return metadata.getDependencies();
+    std::vector<ModuleDependencies> dependencies;
+
+    GPtrArray * cDependencies = modulemd_module_stream_v2_get_dependencies((ModulemdModuleStreamV2 *) mdStream);
+
+    for (unsigned int i = 0; i < cDependencies->len; i++) {
+        dependencies.emplace_back(static_cast<ModulemdDependencies *>(g_ptr_array_index(cDependencies, i)));
+    }
+
+    return dependencies;
 }
 
 /**
