@@ -46,7 +46,7 @@ extern "C" {
 
 #include "bgettext/bgettext-lib.h"
 #include "tinyformat/tinyformat.hpp"
-#include "modulemd/ModuleDefaultsContainer.hpp"
+#include "modulemd/ModuleMetadata.hpp"
 #include "modulemd/ModuleProfile.hpp"
 
 namespace std {
@@ -160,7 +160,8 @@ private:
     std::unique_ptr<PackageSet> activatedModules;
     std::string installRoot;
     std::string persistDir;
-    ModuleDefaultsContainer defaultConteiner;
+    ModuleMetadata moduleMetadata;
+
     std::map<std::string, std::string> moduleDefaults;
     bool isEnabled(const std::string &name, const std::string &stream);
 };
@@ -287,9 +288,9 @@ ModulePackageContainer::add(DnfSack * sack)
         add(yamlContent, repoName);
         // update defaults from repo
         try {
-            pImpl->defaultConteiner.fromString(yamlContent, 0);
-        } catch (const ModuleDefaultsContainer::ConflictException & exception) {
-            throw ModuleDefaultsContainer::ConflictException(
+            pImpl->moduleMetadata.addMetadataFromString(yamlContent, 0);
+        } catch (const ModulePackageContainer::ResolveException & exception) {
+            throw ModulePackageContainer::ConflictException(
                 tfm::format(_("Conflicting defaults with repo '%s': %s"), repoName,
                             exception.what()));
         }
@@ -303,21 +304,25 @@ void ModulePackageContainer::addDefaultsFromDisk()
 
     for (const auto &file : filesystem::getDirContent(dirPath)) {
         std::string yamlContent = getFileContent(file);
-        pImpl->defaultConteiner.fromString(yamlContent, 1000);
+        pImpl->moduleMetadata.addMetadataFromString(yamlContent, 1000);
     }
 }
 
 void ModulePackageContainer::moduleDefaultsResolve()
 {
-    pImpl->defaultConteiner.resolve();
-    pImpl->moduleDefaults = pImpl->defaultConteiner.getDefaultStreams();
+    pImpl->moduleMetadata.resolveAddedMetadata();
+    pImpl->moduleDefaults = pImpl->moduleMetadata.getDefaultStreams();
 }
 
 void
 ModulePackageContainer::add(const std::string &fileContent, const std::string & repoID)
 {
     Pool * pool = dnf_sack_get_pool(pImpl->moduleSack);
-    auto metadata = ModuleMetadata::metadataFromString(fileContent);
+
+    ModuleMetadata md;
+    md.addMetadataFromString(fileContent, 0);
+    md.resolveAddedMetadata();
+
     LibsolvRepo * r;
     Id id;
 
@@ -325,13 +330,13 @@ ModulePackageContainer::add(const std::string &fileContent, const std::string & 
         if (strcmp(r->name, "available") == 0) {
             g_autofree gchar * path = g_build_filename(pImpl->installRoot.c_str(),
                                                       "/etc/dnf/modules.d", NULL);
-            for (auto & data : metadata) {
-                std::unique_ptr<ModulePackage> modulePackage(new ModulePackage(pImpl->moduleSack, r
-                    , std::move(data), repoID));
-                auto modulePackagePtr = modulePackage.get();
+            std::vector<ModulePackage *> packages = md.getAllModulePackages(pImpl->moduleSack, r, repoID);
+            for(auto const& modulePackagePtr: packages) {
+                std::unique_ptr<ModulePackage> modulePackage(modulePackagePtr);
                 pImpl->modules.insert(std::make_pair(modulePackage->getId(), std::move(modulePackage)));
                 pImpl->persistor->insert(modulePackagePtr->getName(), path);
             }
+
             return;
         }
     }
@@ -464,7 +469,7 @@ bool ModulePackageContainer::isDisabled(const ModulePackage * module)
 std::vector<std::string> ModulePackageContainer::getDefaultProfiles(std::string moduleName,
     std::string moduleStream)
 {
-    return pImpl->defaultConteiner.getDefaultProfiles(moduleName, moduleStream);
+    return pImpl->moduleMetadata.getDefaultProfiles(moduleName, moduleStream);
 }
 
 const std::string & ModulePackageContainer::getDefaultStream(const std::string &name) const
