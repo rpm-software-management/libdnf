@@ -1,10 +1,10 @@
 #ifndef LIBDNF_UTILS_SACK_SACK_HPP
 #define LIBDNF_UTILS_SACK_SACK_HPP
 
-
-#include "Query.hpp"
 #include "Set.hpp"
+#include "libdnf/utils/WeakPtr.hpp"
 
+#include <vector>
 
 namespace libdnf::utils::sack {
 
@@ -12,60 +12,52 @@ namespace libdnf::utils::sack {
 template <typename T, typename QueryT>
 class Sack {
 public:
-    /// Delete all objects in the data set.
-    ~Sack();
-
-    /// Create a new query object for filtering the data set.
-    QueryT new_query();
+    using DataItemWeakPtr = WeakPtr<T, false>;
 
     // EXCLUDES
 
-    Set<T> get_excludes() { return excludes; }
-    void add_excludes(const Set<T> & value) { excludes.update(value); }
-    void remove_excludes(const Set<T> & value) { excludes.difference(value); }
-    void set_excludes(const Set<T> & value) { excludes = value; }
+    const Set<DataItemWeakPtr> & get_excludes() const noexcept { return excludes; }
+    void add_excludes(const Set<DataItemWeakPtr> & value) { excludes.update(value); }
+    void remove_excludes(const Set<DataItemWeakPtr> & value) { excludes.difference(value); }
+    void set_excludes(const Set<DataItemWeakPtr> & value) { excludes = value; }
 
     // INCLUDES
 
-    Set<T> get_includes() const { return includes; }
-    void add_includes(const Set<T> & value) { includes.update(value); }
-    void remove_includes(const Set<T> & value) { includes.difference(value); }
-    void set_includes(const Set<T> & value) { includes = value; }
-    bool get_use_includes() { return use_includes; }
+    const Set<DataItemWeakPtr> & get_includes() const noexcept { return includes; }
+    void add_includes(const Set<DataItemWeakPtr> & value) { includes.update(value); }
+    void remove_includes(const Set<DataItemWeakPtr> & value) { includes.difference(value); }
+    void set_includes(const Set<DataItemWeakPtr> & value) { includes = value; }
+    bool get_use_includes() const noexcept { return use_includes; }
     void set_use_includes(bool value) { use_includes = value; }
 
+    QueryT new_query();
+
 protected:
-//    friend Set<T>;
-    Set<T> & get_data() { return data; }
+    Sack() = default;
+    WeakPtrGuard<T, false> data_guard;
+    std::vector<T> & get_data() { return data; }
+    Set<DataItemWeakPtr> excludes;
+    Set<DataItemWeakPtr> includes;
+    bool use_includes = false;
 
 private:
-    Set<T> data;  // Owns the data set. Objects get deleted when the Sack is deleted.
-    Set<T> excludes;
-    Set<T> includes;
-    bool use_includes = false;
+    std::vector<T> data;  // Owns the data set. Objects get deleted when the Sack is deleted.
 };
-
-
-template <typename T, typename QueryT>
-Sack<T, QueryT>::~Sack() {
-    for (auto & it : data.get_data()) {
-        delete it;
-    }
-};
-
 
 template <typename T, typename QueryT>
 QueryT Sack<T, QueryT>::new_query() {
     QueryT result;
-    result.update(data);
+    for (auto & it : this->get_data()) {
+        result.add(DataItemWeakPtr(&it, &this->data_guard));
+    }
 
     // if includes are used, remove everything else from the query
-    if (get_use_includes()) {
-        result.intersection(includes);
+    if (this->get_use_includes()) {
+        result.intersection(this->includes);
     }
 
     // apply excludes
-    result.difference(excludes);
+    result.difference(this->excludes);
 
     return result;
 }

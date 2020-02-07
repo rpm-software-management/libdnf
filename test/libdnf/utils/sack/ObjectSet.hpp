@@ -5,4 +5,4 @@
 #include "Object.hpp"
 
 
-class ObjectSet : public libdnf::utils::sack::Set<Object> {};
+class ObjectSet : public libdnf::utils::sack::Set<Object *> {};

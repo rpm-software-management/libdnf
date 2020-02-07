@@ -15,34 +15,35 @@ CPPUNIT_TEST_SUITE_REGISTRATION(QueryTest);
 
 
 void QueryTest::setUp() {
-    auto o1 = new Object();
-    o1->string = "foo";
-    o1->int32 = 10;
-    sack.get_data().add(o1);
+    Object o1;
+    o1.string = "foo";
+    o1.int32 = 10;
 
-    auto o2 = new Object();
-    o2->string = "bar";
-    o2->int32 = 20;
-    sack.get_data().add(o2);
+    Object o2;
+    o2.string = "bar";
+    o2.int32 = 20;
 
-    auto ro1 = new RelatedObject();
-    ro1->id = "aaa";
-    ro1->value = 100;
-    sack_related.get_data().add(ro1);
-    o1->related_objects.push_back(ro1->id);
-    o2->related_objects.push_back(ro1->id);
+    RelatedObject ro1;
+    ro1.id = "aaa";
+    ro1.value = 100;
+    o1.related_objects.push_back(ro1.id);
+    o2.related_objects.push_back(ro1.id);
 
-    auto ro2 = new RelatedObject();
-    ro2->id = "bbb";
-    ro2->value = 200;
-    sack_related.get_data().add(ro2);
-    o1->related_objects.push_back(ro2->id);
+    RelatedObject ro2;
+    ro2.id = "bbb";
+    ro2.value = 200;
+    o1.related_objects.push_back(ro2.id);
 
-    auto ro3 = new RelatedObject();
-    ro3->id = "ccc";
-    ro3->value = 100;
-    sack_related.get_data().add(ro3);
-    o2->related_objects.push_back(ro3->id);
+    RelatedObject ro3;
+    ro3.id = "ccc";
+    ro3.value = 100;
+    o2.related_objects.push_back(ro3.id);
+
+    sack_related.get_data().push_back(std::move(ro1));
+    sack_related.get_data().push_back(std::move(ro2));
+    sack_related.get_data().push_back(std::move(ro3));
+    sack.get_data().push_back(std::move(o1));
+    sack.get_data().push_back(std::move(o2));
 }
 
 
