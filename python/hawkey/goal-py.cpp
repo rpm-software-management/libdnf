@@ -236,6 +236,24 @@ distupgrade(_GoalObject *self, PyObject *args, PyObject *kwds) try
         hy_goal_distupgrade_selector(self->goal, sltr);
     return op_ret2exc(ret);
 } CATCH_TO_PYTHON
+ 
+static PyObject *
+get_protect_running_kernel(_GoalObject *self, void * unused) try
+{
+    return PyBool_FromLong(self->goal->get_protect_running_kernel());
+} CATCH_TO_PYTHON
+
+static int
+set_protect_running_kernel(_GoalObject *self, PyObject * value, void * closure) try
+{
+    if(!PyBool_Check(value)) {
+        PyErr_SetString(PyExc_TypeError, "Only Bool Type accepted");
+        return -1;
+    }
+    int c_value = PyObject_IsTrue(value);
+    self->goal->set_protect_running_kernel(c_value);
+    return 0;
+} CATCH_TO_PYTHON
 
 static PyObject *
 erase(_GoalObject *self, PyObject *args, PyObject *kwds) try
@@ -627,6 +645,8 @@ static struct PyMemberDef goal_members[] = {
 
 static PyGetSetDef goal_getsetters[] = {
     {(char*)"actions",        (getter)get_actions, NULL, NULL, NULL},
+    {"protect_running_kernel", (getter)get_protect_running_kernel,
+        (setter)set_protect_running_kernel, NULL, NULL},
     {NULL}                /* sentinel */
 };
 

@@ -54,6 +54,9 @@ public:
     void addProtected(PackageSet & pset);
     void setProtected(const PackageSet & pset);
 
+    bool get_protect_running_kernel() const noexcept;
+    void set_protect_running_kernel(bool value);
+
     void distupgrade();
     void distupgrade(DnfPackage *new_pkg);
 

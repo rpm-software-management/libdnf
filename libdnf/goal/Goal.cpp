@@ -687,6 +687,18 @@ Goal::addProtected(PackageSet & pset)
     }
 }
 
+bool
+Goal::get_protect_running_kernel() const noexcept
+{
+    return pImpl->protect_running_kernel;
+}
+
+void
+Goal::set_protect_running_kernel(bool value)
+{
+    pImpl->protect_running_kernel = value;
+}
+
 void
 Goal::setProtected(const PackageSet & pset)
 {

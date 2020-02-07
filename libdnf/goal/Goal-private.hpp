@@ -41,6 +41,7 @@ private:
     ::Transaction *trans{nullptr};
     DnfGoalActions actions{DNF_NONE};
     std::unique_ptr<PackageSet> protectedPkgs;
+    bool protect_running_kernel{true};
     std::unique_ptr<PackageSet> removalOfProtected;
 
     PackageSet listResults(Id type_filter1, Id type_filter2);
