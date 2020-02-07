@@ -25,7 +25,8 @@
 #include <string>
 
 #include "libdnf/dnf-types.h"
-#include "modulemd/ModuleMetadata.hpp"
+#include "modulemd/ModuleProfile.hpp"
+#include "modulemd/ModuleDependencies.hpp"
 #include "libdnf/repo/solvable/Package.hpp"
 #include "../goal/IdQueue.hpp"
 
@@ -72,13 +73,14 @@ public:
     void addStreamConflict(const ModulePackage * package);
 
     Id getId() const { return id; };
-    std::string getYaml() const { return metadata.getYaml(); };
+    std::string getYaml() const;
 
 private:
     friend struct ModulePackageContainer;
+    friend struct ModuleMetadata;
 
     ModulePackage(DnfSack * moduleSack, LibsolvRepo * repo,
-        ModuleMetadata && metadata, const std::string & repoID);
+        ModulemdModuleStream * mdStream, const std::string & repoID);
 
     static Id createPlatformSolvable(DnfSack * moduleSack, const std::string &osReleasePath,
         const std::string install_root, const char *  platformModule);
@@ -87,7 +89,7 @@ private:
         const char *  platformModule);
     void createDependencies(Solvable *solvable) const;
 
-    ModuleMetadata metadata;
+    ModulemdModuleStream * mdStream;
 
     // TODO: remove after inheriting from Package
     DnfSack * moduleSack;
