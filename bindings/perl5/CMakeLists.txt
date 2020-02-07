@@ -10,6 +10,18 @@ find_package(Perl REQUIRED)
 find_package(PerlLibs REQUIRED)
 include_directories(${PERL_INCLUDE_PATH})
 
+set(PERL_INSTALLDIRS "site" CACHE STRING
+    "Perl installation directory identifier: core, vendor, site (default is site)")
+if(PERL_INSTALLDIRS STREQUAL "core")
+    set(PERL_INSTALL_PATH "${PERL_ARCHLIB}")
+elseif(PERL_INSTALLDIRS STREQUAL "vendor")
+    set(PERL_INSTALL_PATH "${PERL_VENDORARCH}")
+elseif(PERL_INSTALLDIRS STREQUAL "site")
+    set(PERL_INSTALL_PATH ${PERL_SITEARCH})
+else()
+    message(FATAL_ERROR "Uknown PERL_INSTALLDIRS value: ${PERL_INSTALLDIRS}")
+endif()
+message(STATUS "Perl5 files will be installed to ${PERL_INSTALL_PATH}")
 
 function(add_perl5_module LIBRARY_NAME MODULE_NAME)
     set(TARGET_NAME "perl5_${MODULE_NAME}")
@@ -23,6 +35,9 @@ function(add_perl5_module LIBRARY_NAME MODULE_NAME)
     string(REPLACE "_" "-" C_LIBRARY_NAME ${LIBRARY_NAME})
     swig_link_libraries(${TARGET_NAME} ${C_LIBRARY_NAME})
     swig_link_libraries(${TARGET_NAME} ${PERL_LIBRARY})
+
+    install(TARGETS ${TARGET_NAME} LIBRARY DESTINATION "${PERL_INSTALL_PATH}/auto/${LIBRARY_NAME}/${MODULE_NAME}")
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${MODULE_NAME}.pm" DESTINATION "${PERL_INSTALL_PATH}/${LIBRARY_NAME}")
 endfunction()
 
 
