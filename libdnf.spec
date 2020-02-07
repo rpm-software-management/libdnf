@@ -94,11 +94,11 @@ Package management library
 
 %if %{with libdnf_cli}
 %package -n libdnf-cli
-Summary:        CLI
+Summary:        Library for working with a terminal in a command-line package manager
 BuildRequires:  pkgconfig(smartcols)
 
 %description -n libdnf-cli
-CLI
+Library for working with a terminal in a command-line package manager.
 
 %files -n libdnf-cli
 %{_libdir}/libdnf-cli.so.*
@@ -118,7 +118,25 @@ Requires:       libsolv-devel%{?_isa} >= %{libsolv_version}
 Development files for libdnf.
 
 %files devel
-%{_libdir}/*.so
+%{_libdir}/libdnf.so
+%{_libdir}/pkgconfig/libdnf.pc
+%license COPYING.md
+%license lgpl-2.1.txt
+%doc CODING_STYLE.md
+
+
+# ========== libdnf-cli-devel ==========
+
+%package cli-devel
+Summary:        Development files for libdnf-cli
+Requires:       libdnf-cli%{?_isa} = %{version}-%{release}
+
+%description cli-devel
+Development files for libdnf-cli.
+
+%files cli-devel
+%{_libdir}/libdnf-cli.so
+%{_libdir}/pkgconfig/libdnf-cli.pc
 %license COPYING.md
 %license lgpl-2.1.txt
 %doc CODING_STYLE.md
