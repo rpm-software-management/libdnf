@@ -28,6 +28,18 @@ for each selector:
     goal.install(sel)
 
 
+function to check file permissions and return reasonable exception
+- common code, reusable
+- how to test if it's really writable without destroying it?
+
+
+consolidate dnf.arch with libdnf (move everything to libdnf?)
+
+
+updates policy:
+https://pagure.io/fedora-workstation/issue/107
+
+
 GPG: if a key is distributed in a signed rpm, can we trust it automatically? (chain of trust)
 
 
