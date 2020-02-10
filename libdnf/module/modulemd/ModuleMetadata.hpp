@@ -21,10 +21,26 @@
 #ifndef LIBDNF_MODULEMETADATA_HPP
 #define LIBDNF_MODULEMETADATA_HPP
 
+#include <modulemd-2.0/modulemd.h>
+
+#include "../ModulePackage.hpp"
+
 namespace libdnf {
 
 class ModuleMetadata
 {
+public:
+    ModuleMetadata();
+    void addMetadataFromString(const std::string & yaml, int priority);
+    void resolveAddedMetadata();
+    std::vector<ModulePackage *> getAllModulePackages(DnfSack * moduleSack, LibsolvRepo * repo, const std::string & repoID);
+    std::map<std::string, std::string> getDefaultStreams();
+    std::vector<std::string> getDefaultProfiles(std::string moduleName, std::string moduleStream);
+
+private:
+    static void reportFailures(const GPtrArray *failures);
+    ModulemdModuleIndex * resultingModuleIndex;
+    ModulemdModuleIndexMerger * moduleMerger;
 };
 
 }
