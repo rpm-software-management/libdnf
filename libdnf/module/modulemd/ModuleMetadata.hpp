@@ -21,52 +21,10 @@
 #ifndef LIBDNF_MODULEMETADATA_HPP
 #define LIBDNF_MODULEMETADATA_HPP
 
-#include <string>
-#include <map>
-#include <vector>
-
-#include <modulemd-2.0/modulemd.h>
-
-#include "ModuleDependencies.hpp"
-#include "ModuleProfile.hpp"
-
-namespace std {
-
-template<>
-struct default_delete<ModulemdModule> {
-    void operator()(ModulemdModule * ptr) noexcept { g_object_unref(ptr); }
-};
-
-}
-
 namespace libdnf {
 
 class ModuleMetadata
 {
-public:
-    static std::vector<ModuleMetadata> metadataFromString(const std::string &fileContent);
-
-public:
-    explicit ModuleMetadata(std::unique_ptr<ModulemdModule> && modulemd);
-    ModuleMetadata(ModuleMetadata && src) = default;
-    ~ModuleMetadata();
-    const char * getName() const;
-    const char * getStream() const;
-    long long getVersion() const;
-    const char * getContext() const;
-    const char * getArchitecture() const;
-    std::string getDescription() const;
-    std::string getSummary() const;
-    std::vector<ModuleDependencies> getDependencies() const;
-    std::vector<std::string> getArtifacts() const;
-    std::vector<ModuleProfile> getProfiles(const std::string & profileName = "") const;
-    std::string getYaml() const;
-
-private:
-    static std::vector<ModuleMetadata> wrapModulemdModule(GPtrArray *data);
-
-    std::unique_ptr<ModulemdModule> modulemd;
-    static void reportFailures(const GPtrArray *failures);
 };
 
 }
