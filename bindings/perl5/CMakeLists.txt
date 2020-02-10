@@ -8,7 +8,16 @@ message("Building bindings for perl5")
 
 find_package(Perl REQUIRED)
 find_package(PerlLibs REQUIRED)
+
+# Preprocessor flags (cppflags) are already included in compiler flags
+# (ccflags). Except a path to perl.h that is recorded nowhere.
 include_directories(${PERL_INCLUDE_PATH})
+perl_get_info(PERL_CFLAGS "ccflags")
+separate_arguments(PERL_CFLAGS)
+add_compile_options(${PERL_CFLAGS})
+perl_get_info(PERL_LDFLAGS "ccdlflags")
+separate_arguments(PERL_LDFLAGS)
+add_link_options(${PERL_LDFLAGS})
 
 set(PERL_INSTALLDIRS "site" CACHE STRING
     "Perl installation directory identifier: core, vendor, site (default is site)")
@@ -34,7 +43,6 @@ function(add_perl5_module LIBRARY_NAME MODULE_NAME)
 
     string(REPLACE "_" "-" C_LIBRARY_NAME ${LIBRARY_NAME})
     swig_link_libraries(${TARGET_NAME} ${C_LIBRARY_NAME})
-    swig_link_libraries(${TARGET_NAME} ${PERL_LIBRARY})
 
     install(TARGETS ${TARGET_NAME} LIBRARY DESTINATION "${PERL_INSTALL_PATH}/auto/${LIBRARY_NAME}/${MODULE_NAME}")
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${MODULE_NAME}.pm" DESTINATION "${PERL_INSTALL_PATH}/${LIBRARY_NAME}")
