@@ -79,7 +79,6 @@ extern "C" {
 #include "module/ModulePackageContainer.hpp"
 #include "module/ModulePackage.hpp"
 #include "module/modulemd/ModuleDefaultsContainer.hpp"
-#include "module/modulemd/ModuleMetadata.hpp"
 #include "repo/Repo-private.hpp"
 #include "repo/solvable/DependencyContainer.hpp"
 #include "utils/crypto/sha1.hpp"
