@@ -21,6 +21,6 @@ class TestSack(unittest.TestCase):
         query = osack.new_query()
         self.assertEqual(query.size(), 2)
 
-        removed = query.filter(libdnf.sack.ObjectQuery_get_string, libdnf.sack.QueryCmp_EQ, "Test o2")
+        removed = query.filter(libdnf.sack.ObjectQuery.get_string, libdnf.sack.QueryCmp_EQ, "Test o2")
         self.assertEqual(removed, 1)
         self.assertEqual(query.size(), 1)
