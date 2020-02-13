@@ -9,15 +9,25 @@ message("Building bindings for perl5")
 find_package(Perl REQUIRED)
 find_package(PerlLibs REQUIRED)
 
+
 # Preprocessor flags (cppflags) are already included in compiler flags
 # (ccflags). Except a path to perl.h that is recorded nowhere.
 include_directories(${PERL_INCLUDE_PATH})
 perl_get_info(PERL_CFLAGS "ccflags")
 separate_arguments(PERL_CFLAGS)
+
+# remove options unused by clang
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    list(REMOVE_ITEM PERL_CFLAGS -fstack-clash-protection)
+    list(REMOVE_ITEM PERL_CFLAGS -specs=/usr/lib/rpm/redhat/redhat-hardened-cc1)
+    list(REMOVE_ITEM PERL_CFLAGS -specs=/usr/lib/rpm/redhat/redhat-annobin-cc1)
+endif()
+
 add_compile_options(${PERL_CFLAGS})
 perl_get_info(PERL_LDFLAGS "ccdlflags")
 separate_arguments(PERL_LDFLAGS)
 add_link_options(${PERL_LDFLAGS})
+
 
 set(PERL_INSTALLDIRS "site" CACHE STRING
     "Perl installation directory identifier: core, vendor, site (default is site)")
@@ -31,6 +41,7 @@ else()
     message(FATAL_ERROR "Uknown PERL_INSTALLDIRS value: ${PERL_INSTALLDIRS}")
 endif()
 message(STATUS "Perl5 files will be installed to ${PERL_INSTALL_PATH}")
+
 
 function(add_perl5_module LIBRARY_NAME MODULE_NAME)
     set(TARGET_NAME "perl5_${MODULE_NAME}")
