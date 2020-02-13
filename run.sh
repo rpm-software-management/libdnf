@@ -5,10 +5,10 @@
 set -e
 
 export CC=clang
-export CXX=clang
+export CXX=clang++
 
 #export CC=gcc
-#export CXX=c++
+#export CXX=g++
 
 rm -rf build
 mkdir build || :
