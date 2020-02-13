@@ -28,11 +28,13 @@ set(SWIG_COMPILE_OPTIONS
     -Wno-missing-field-initializers
     -Wno-unused-function
     -Wno-unused-parameter
+    -Wno-sign-compare
 )
 
 
 # list of all modules that will be included in libdnf bindings
 list(APPEND SWIG_LIBDNF_MODULES base)
+list(APPEND SWIG_LIBDNF_MODULES sack)
 list(APPEND SWIG_LIBDNF_MODULES utils)
 
 
