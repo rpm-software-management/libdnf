@@ -22,7 +22,9 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 # SWIG is flooding logs with warnings we can't fix -> turn them off
 set(SWIG_COMPILE_OPTIONS
     -Wno-cast-align
+    -Wno-catch-value
     -Wno-conversion
+    -Wno-deprecated-copy
     -Wno-deprecated-declarations
     -Wno-missing-declarations
     -Wno-missing-field-initializers
