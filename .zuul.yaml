@@ -1,0 +1,5 @@
+- project:
+    check:
+      jobs:
+        - dnf-rpm-build:
+            branches: dnf-4-master
