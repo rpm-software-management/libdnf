@@ -149,6 +149,7 @@ Development files for libdnf-cli.
 Summary:        Perl 5 for the libdnf library.
 Requires:       libdnf%{?_isa} = %{version}-%{release}
 BuildRequires:  perl-devel
+BuildRequires:  perl-Test-Simple
 BuildRequires:  swig >= %{swig_version}
 
 %description -n perl5-libdnf
