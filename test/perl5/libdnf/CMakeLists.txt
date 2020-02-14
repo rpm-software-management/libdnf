@@ -5,6 +5,7 @@ foreach(FILE
         base/load.t
         utils/load.t
         utils/random_int32.t
+        utils/sack.t
         )
     add_perl_test(libdnf "${FILE}")
 endforeach()
