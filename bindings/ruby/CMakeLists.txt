@@ -22,6 +22,8 @@ function(add_ruby_module LIBRARY_NAME MODULE_NAME)
     string(REPLACE "_" "-" C_LIBRARY_NAME ${LIBRARY_NAME})
     swig_link_libraries(${TARGET_NAME} ${C_LIBRARY_NAME})
     swig_link_libraries(${TARGET_NAME} ${RUBY_LIBRARIES})
+
+    install(TARGETS ${TARGET_NAME} LIBRARY DESTINATION "${RUBY_VENDORARCH_DIR}/${LIBRARY_NAME}")
 endfunction()
 
 

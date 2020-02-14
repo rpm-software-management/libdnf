@@ -234,6 +234,45 @@ Python 3 bindings for the libdnf-cli library.
 %endif
 
 
+# ========== ruby-libdnf ==========
+
+%if %{with ruby}
+%package -n ruby-libdnf
+Summary:        Ruby bindings for the libdnf library.
+Requires:       libdnf%{?_isa} = %{version}-%{release}
+Requires:       ruby(release)
+BuildRequires:  pkgconfig(ruby)
+BuildRequires:  swig >= %{swig_version}
+
+%description -n ruby-libdnf
+Ruby bindings for the libdnf library.
+
+%files -n ruby-libdnf
+%{ruby_vendorarchdir}/libdnf/
+%license COPYING.md
+%license lgpl-2.1.txt
+%endif
+
+
+# ========== ruby-libdnf-cli ==========
+
+%if %{with ruby} && %{with libdnf_cli}
+%package -n ruby-libdnf-cli
+Summary:        Ruby bindings for the libdnf-cli library.
+Requires:       libdnf-cli%{?_isa} = %{version}-%{release}
+BuildRequires:  pkgconfig(ruby)
+BuildRequires:  swig >= %{swig_version}
+
+%description -n ruby-libdnf-cli
+Ruby bindings for the libdnf-cli library.
+
+%files -n ruby-libdnf-cli
+%{ruby_vendorarchdir}/libdnf_cli/
+%license COPYING.md
+%license lgpl-2.1.txt
+%endif
+
+
 # ========== dnfdaemon-client ==========
 
 %if %{with dnfdaemon_client}
