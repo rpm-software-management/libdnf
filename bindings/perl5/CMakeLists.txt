@@ -30,13 +30,14 @@ add_link_options(${PERL_LDFLAGS})
 
 
 set(PERL_INSTALLDIRS "site" CACHE STRING
-    "Perl installation directory identifier: core, vendor, site (default is site)")
+    "Perl installation directory identifier: core, vendor, site (default is site)"
+)
 if(PERL_INSTALLDIRS STREQUAL "core")
     set(PERL_INSTALL_PATH "${PERL_ARCHLIB}")
 elseif(PERL_INSTALLDIRS STREQUAL "vendor")
     set(PERL_INSTALL_PATH "${PERL_VENDORARCH}")
 elseif(PERL_INSTALLDIRS STREQUAL "site")
-    set(PERL_INSTALL_PATH ${PERL_SITEARCH})
+    set(PERL_INSTALL_PATH "${PERL_SITEARCH}")
 else()
     message(FATAL_ERROR "Uknown PERL_INSTALLDIRS value: ${PERL_INSTALLDIRS}")
 endif()

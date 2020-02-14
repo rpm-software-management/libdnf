@@ -148,6 +148,7 @@ Development files for libdnf-cli.
 %package -n perl5-libdnf
 Summary:        Perl 5 for the libdnf library.
 Requires:       libdnf%{?_isa} = %{version}-%{release}
+Provides:       perl(libdnf)
 BuildRequires:  perl-devel
 BuildRequires:  swig >= %{swig_version}
 %if ! %{with tests_disabled}
@@ -160,7 +161,34 @@ BuildRequires:  perl(warnings)
 Perl 5 bindings for the libdnf library.
 
 %files -n perl5-libdnf
-#{perl_vendorarch}/libdnf/*
+%{perl_vendorarch}/libdnf
+%{perl_vendorarch}/auto/libdnf
+%license COPYING.md
+%license lgpl-2.1.txt
+%endif
+
+
+# ========== perl5-libdnf-cli ==========
+
+%if %{with perl5} && %{with libdnf_cli}
+%package -n perl5-libdnf-cli
+Summary:        Perl 5 for the libdnf-cli library.
+Requires:       libdnf-cli%{?_isa} = %{version}-%{release}
+Provides:       perl(libdnf_cli)
+BuildRequires:  perl-devel
+BuildRequires:  swig >= %{swig_version}
+%if ! %{with tests_disabled}
+BuildRequires:  perl(strict)
+BuildRequires:  perl(Test::More)
+BuildRequires:  perl(warnings)
+%endif
+
+%description -n perl5-libdnf-cli
+Perl 5 bindings for the libdnf-cli library.
+
+%files -n perl5-libdnf-cli
+%{perl_vendorarch}/libdnf_cli
+%{perl_vendorarch}/auto/libdnf_cli
 %license COPYING.md
 %license lgpl-2.1.txt
 %endif
@@ -276,7 +304,8 @@ Package management service with a DBus interface
 
 %build
 %cmake \
-    -DPACKAGE_VERSION=%{version}\
+    -DPACKAGE_VERSION=%{version} \
+    -DPERL_INSTALLDIRS=vendor \
     \
     -DWITH_DNFDAEMON_CLIENT=%{?with_dnfdaemon_client:ON}%{!?with_dnfdaemon_client:OFF} \
     -DWITH_DNFDAEMON_SERVER=%{?with_dnfdaemon_server:ON}%{!?with_dnfdaemon_server:OFF} \
