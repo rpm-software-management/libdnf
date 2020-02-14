@@ -147,8 +147,8 @@ Development files for libdnf-cli.
 %if %{with perl5}
 %package -n perl5-libdnf
 Summary:        Perl 5 for the libdnf library.
+Provides:       perl(libdnf) = %{version}-%{release}
 Requires:       libdnf%{?_isa} = %{version}-%{release}
-Provides:       perl(libdnf)
 BuildRequires:  perl-devel
 BuildRequires:  swig >= %{swig_version}
 %if ! %{with tests_disabled}
@@ -173,8 +173,8 @@ Perl 5 bindings for the libdnf library.
 %if %{with perl5} && %{with libdnf_cli}
 %package -n perl5-libdnf-cli
 Summary:        Perl 5 for the libdnf-cli library.
+Provides:       perl(libdnf_cli) = %{version}-%{release}
 Requires:       libdnf-cli%{?_isa} = %{version}-%{release}
-Provides:       perl(libdnf_cli)
 BuildRequires:  perl-devel
 BuildRequires:  swig >= %{swig_version}
 %if ! %{with tests_disabled}
@@ -239,6 +239,7 @@ Python 3 bindings for the libdnf-cli library.
 %if %{with ruby}
 %package -n ruby-libdnf
 Summary:        Ruby bindings for the libdnf library.
+Provides:       ruby(libdnf) = %{version}-%{release}
 Requires:       libdnf%{?_isa} = %{version}-%{release}
 Requires:       ruby(release)
 BuildRequires:  pkgconfig(ruby)
@@ -259,6 +260,7 @@ Ruby bindings for the libdnf library.
 %if %{with ruby} && %{with libdnf_cli}
 %package -n ruby-libdnf-cli
 Summary:        Ruby bindings for the libdnf-cli library.
+Provides:       ruby(libdnf_cli) = %{version}-%{release}
 Requires:       libdnf-cli%{?_isa} = %{version}-%{release}
 BuildRequires:  pkgconfig(ruby)
 BuildRequires:  swig >= %{swig_version}
