@@ -27,9 +27,10 @@ set(SWIG_COMPILE_OPTIONS
     -Wno-deprecated-declarations
     -Wno-missing-declarations
     -Wno-missing-field-initializers
+    -Wno-sign-compare
+    -Wno-strict-aliasing
     -Wno-unused-function
     -Wno-unused-parameter
-    -Wno-sign-compare
 )
 
 if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
