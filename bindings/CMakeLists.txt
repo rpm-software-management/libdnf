@@ -21,9 +21,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # SWIG is flooding logs with warnings we can't fix -> turn them off
 set(SWIG_COMPILE_OPTIONS
-    -Wno-unknown-warning-option
     -Wno-cast-align
-    -Wno-catch-value
     -Wno-conversion
     -Wno-deprecated-copy
     -Wno-deprecated-declarations
@@ -33,6 +31,10 @@ set(SWIG_COMPILE_OPTIONS
     -Wno-unused-parameter
     -Wno-sign-compare
 )
+
+if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set(SWIG_COMPILE_OPTIONS ${SWIG_COMPILE_OPTIONS} -Wno-catch-value)
+endif()
 
 
 # list of all modules that will be included in libdnf bindings
