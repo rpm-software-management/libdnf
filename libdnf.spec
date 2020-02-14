@@ -219,13 +219,13 @@ Python 3 bindings for the libdnf library.
 %if %{with python3} && %{with libdnf_cli}
 %package -n python3-libdnf-cli
 %{?python_provide:%python_provide python3-libdnf-cli}
-Summary:        Python 3 bindings for the libdnf library.
-Requires:       libdnf%{?_isa} = %{version}-%{release}
+Summary:        Python 3 bindings for the libdnf-cli library.
+Requires:       libdnf-cli%{?_isa} = %{version}-%{release}
 BuildRequires:  python3-devel
 BuildRequires:  swig >= %{swig_version}
 
 %description -n python3-libdnf-cli
-Python 3 bindings for the libdnf library.
+Python 3 bindings for the libdnf-cli library.
 
 %files -n python3-libdnf-cli
 %{python3_sitearch}/libdnf_cli/
