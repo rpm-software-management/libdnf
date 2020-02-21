@@ -81,6 +81,6 @@ TBD
 License
 =======
 
-* The libraries is licensed under LGPLv2+
+* The libraries is licensed under LGPLv2.1+
 * The standalone programs that are part of this project are licensed under GPLv2+
 * See [COPYING](COPYING.md) for more details
