@@ -32,6 +32,12 @@ Reporting issues
 Contributing
 ============
 
+* By contributing to this project you agree to the Developer Certificate of Origin (DCO).
+  This document is a simple statement that you, as a contributor,
+  have the legal right to submit the contribution. See the [DCO](DCO) file for details.
+* All contributions to this project are licensed under [LGPLv2.1+](lgpl-2.1.txt) or [GPLv2+](gpl-2.0.txt).
+  See the [License](#license) for details.
+
 
 Writing patches
 ---------------
@@ -81,6 +87,6 @@ TBD
 License
 =======
 
-* The libraries is licensed under LGPLv2.1+
-* The standalone programs that are part of this project are licensed under GPLv2+
+* The libraries is licensed under [LGPLv2.1+](lgpl-2.1.txt)
+* The standalone programs that are part of this project are licensed under [GPLv2+](gpl-2.0.txt)
 * See [COPYING](COPYING.md) for more details
