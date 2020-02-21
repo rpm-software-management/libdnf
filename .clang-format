@@ -26,10 +26,16 @@ SortIncludes: true
 IncludeBlocks: Regroup
 IncludeCategories:
   # C++ Standard Library headers
-  - Regex:           '<[[:alnum:]]+>'
-    Priority:        3
+  - Regex:           '<[[:alnum:]_-]+>'
+    Priority:        5
   # system libraries
   - Regex:           '<.+>'
+    Priority:        4
+  # project includes - libdnf absolute paths
+  - Regex:           '"libdnf/.+"'
+    Priority:        3
+  # project includes - libdnf-cli absolute paths
+  - Regex:           '"libdnf-cli/.+"'
     Priority:        2
   # project includes
   - Regex:           '".+"'

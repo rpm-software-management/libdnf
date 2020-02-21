@@ -23,7 +23,14 @@ C++ coding style:
 * -std=c++17
 * Indent by 4 spaces
 * 120 characters per line
-* Includes grouped (project, 3rd party, standard library) and alphabetically ordered
+* Includes grouped and alphabetically ordered within each group
+
+  * project
+  * project - "libdnf-cli/" absolute paths
+  * project - "libdnf/" absolute paths
+  * 3rd party
+  * standard library
+
 * Project includes must use full path in the project or plain file name (includes in the same directory)
 * Use C++ style comments: ``//``
 * Use three forward slashes for docstrings: ``///``
