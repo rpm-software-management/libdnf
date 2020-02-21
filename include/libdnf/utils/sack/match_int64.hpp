@@ -2,7 +2,7 @@
 #define LIBDNF_UTILS_SACK_MATCH_INT64_HPP
 
 
-#include "QueryCmp.hpp"
+#include "query_cmp.hpp"
 
 #include <cstdint>
 #include <vector>

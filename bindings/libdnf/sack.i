@@ -5,30 +5,30 @@
 %include <std_vector.i>
 
 %{
-    #include "libdnf/utils/WeakPtr.hpp"
-    #include "libdnf/utils/sack/Set.hpp"
-    #include "libdnf/utils/sack/Sack.hpp"
-    #include "libdnf/utils/sack/QueryCmp.hpp"
-    #include "libdnf/utils/sack/Query.hpp"
+    #include "libdnf/utils/sack/set.hpp"
+    #include "libdnf/utils/sack/sack.hpp"
+    #include "libdnf/utils/sack/query.hpp"
+    #include "libdnf/utils/sack/query_cmp.hpp"
+    #include "libdnf/utils/weak_ptr.hpp"
 
-    #include "test/Object.hpp"
-    #include "test/ObjectQuery.hpp"
-    #include "test/ObjectSack.hpp"
-    #include "test/RelatedObject.hpp"
-    #include "test/RelatedObjectQuery.hpp"
-    #include "test/RelatedObjectSack.hpp"
+    #include "test/object.hpp"
+    #include "test/object_query.hpp"
+    #include "test/object_sack.hpp"
+    #include "test/related_object.hpp"
+    #include "test/related_object_query.hpp"
+    #include "test/related_object_sack.hpp"
 %}
 
 // SWIG does not support "final" C++ keyword, we ignore all "final" in code
 #define final
 
-%include "libdnf/utils/WeakPtr.hpp"
-%include "libdnf/utils/sack/Set.hpp"
-%include "libdnf/utils/sack/Sack.hpp"
-%include "libdnf/utils/sack/QueryCmp.hpp"
-%include "libdnf/utils/sack/Query.hpp"
+%include "libdnf/utils/sack/set.hpp"
+%include "libdnf/utils/sack/sack.hpp"
+%include "libdnf/utils/sack/query.hpp"
+%include "libdnf/utils/sack/query_cmp.hpp"
+%include "libdnf/utils/weak_ptr.hpp"
 
-%include "test/Object.hpp"
+%include "test/object.hpp"
 %template (ObjectVector) std::vector<Object>;
 %template (ObjectSetX) libdnf::utils::sack::Set<ObjectWeakPtr>;
 %template (ObjectQueryX) libdnf::utils::sack::Query<ObjectWeakPtr>;
@@ -40,12 +40,12 @@
 %callback("%s_cb") ObjectQuery::get_int64;
 %callback("%s_cb") ObjectQuery::get_related_object;
 
-%include "test/ObjectQuery.hpp"
-%include "test/RelatedObject.hpp"
+%include "test/object_query.hpp"
+%include "test/related_object.hpp"
 %template (RelatedObjectSetX) libdnf::utils::sack::Set<RelatedObjectWeakPtr>;
 %template (ObjectRelatedQueryX) libdnf::utils::sack::Query<RelatedObjectWeakPtr>;
-%include "test/RelatedObjectQuery.hpp"
+%include "test/related_object_query.hpp"
 %template (RelatedObjectSackX) libdnf::utils::sack::Sack<RelatedObject, RelatedObjectQuery>;
-%include "test/RelatedObjectSack.hpp"
+%include "test/related_object_sack.hpp"
 %template (ObjectSackX) libdnf::utils::sack::Sack<Object, ObjectQuery>;
-%include "test/ObjectSack.hpp"
+%include "test/object_sack.hpp"

@@ -1,7 +1,7 @@
-#include "ObjectSet.hpp"
-#include "Object.hpp"
-
 #include "test_set.hpp"
+
+#include "object.hpp"
+#include "object_set.hpp"
 
 #include <limits>
 
@@ -9,12 +9,10 @@
 CPPUNIT_TEST_SUITE_REGISTRATION(SetTest);
 
 
-void SetTest::setUp() {
-}
+void SetTest::setUp() {}
 
 
-void SetTest::tearDown() {
-}
+void SetTest::tearDown() {}
 
 
 void SetTest::test_update() {

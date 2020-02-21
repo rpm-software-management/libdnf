@@ -1,9 +1,10 @@
 #include "test_query.hpp"
 
-#include "libdnf/utils/sack/QueryCmp.hpp"
-#include "RelatedObject.hpp"
-#include "ObjectQuery.hpp"
-#include "Object.hpp"
+#include "object.hpp"
+#include "object_query.hpp"
+#include "related_object.hpp"
+
+#include "libdnf/utils/sack/query_cmp.hpp"
 
 #include <limits>
 
@@ -47,8 +48,7 @@ void QueryTest::setUp() {
 }
 
 
-void QueryTest::tearDown() {
-}
+void QueryTest::tearDown() {}
 
 
 void QueryTest::test_filter_string_exact() {

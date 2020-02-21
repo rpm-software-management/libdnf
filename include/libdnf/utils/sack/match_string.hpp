@@ -2,7 +2,7 @@
 #define LIBDNF_UTILS_SACK_MATCH_STRING_HPP
 
 
-#include "QueryCmp.hpp"
+#include "query_cmp.hpp"
 
 #include <string>
 #include <vector>

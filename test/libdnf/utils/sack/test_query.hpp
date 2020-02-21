@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ObjectSack.hpp"
-#include "RelatedObjectSack.hpp"
+#include "object_sack.hpp"
+#include "related_object_sack.hpp"
 
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
