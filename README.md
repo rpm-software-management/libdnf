@@ -36,7 +36,7 @@ Contributing
   This document is a simple statement that you, as a contributor,
   have the legal right to submit the contribution. See the [DCO](DCO) file for details.
 * All contributions to this project are licensed under [LGPLv2.1+](lgpl-2.1.txt) or [GPLv2+](gpl-2.0.txt).
-  See the [License](#license) for details.
+  See the [License](#license) section for details.
 
 
 Writing patches
