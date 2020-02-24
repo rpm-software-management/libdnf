@@ -56,6 +56,7 @@ public:
     uint32_t getUserId() const noexcept { return userId; }
     const std::string &getCmdline() const noexcept { return cmdline; }
     TransactionState getState() const noexcept { return state; }
+    const std::string &getComment() const noexcept { return comment; }
 
     virtual std::vector< TransactionItemPtr > getItems();
     const std::set< std::shared_ptr< RPMItem > > getSoftwarePerformedWith() const;
@@ -79,6 +80,7 @@ protected:
     uint32_t userId = 0;
     std::string cmdline;
     TransactionState state = TransactionState::UNKNOWN;
+    std::string comment;
 };
 
 } // namespace libdnf

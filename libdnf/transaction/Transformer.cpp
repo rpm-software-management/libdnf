@@ -49,10 +49,32 @@ static const char *sql_create_tables =
 #include "sql/create_tables.sql"
     ;
 
+static const char * const sql_migrate_tables_1_2 =
+#include "sql/migrate_tables_1_2.sql"
+    ;
+
 void
 Transformer::createDatabase(SQLite3Ptr conn)
 {
     conn->exec(sql_create_tables);
+    Transformer::migrateSchema(conn);
+}
+
+void
+Transformer::migrateSchema(SQLite3Ptr conn)
+{
+    // read schema version
+    SQLite3::Query query(*conn, "select value from config where key = 'version';");
+    if (query.step() == SQLite3::Statement::StepResult::ROW){
+        auto schemaVersion = query.get<std::string>("value");
+
+        if (schemaVersion == "1.1") {
+            conn->exec(sql_migrate_tables_1_2);
+        }
+    }
+    else {
+        throw Exception(_("Database Corrupted: no row 'version' in table 'config'"));
+    }
 }
 
 /**

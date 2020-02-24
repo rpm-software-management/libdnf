@@ -66,7 +66,8 @@ public:
     int64_t beginTransaction(int64_t dtBegin,
                              std::string rpmdbVersionBegin,
                              std::string cmdline,
-                             uint32_t userId);
+                             uint32_t userId,
+                             std::string comment = std::string());
     int64_t endTransaction(int64_t dtEnd, std::string rpmdbVersionEnd, TransactionState state);
     int64_t closeTransaction();
     // TODO:

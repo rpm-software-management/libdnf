@@ -42,12 +42,14 @@ Swdb::Swdb(SQLite3Ptr conn)
   : conn{conn}
   , autoClose(true)
 {
+    Transformer::migrateSchema(conn);
 }
 
 Swdb::Swdb(SQLite3Ptr conn, bool autoClose)
   : conn{conn}
   , autoClose(autoClose)
 {
+    Transformer::migrateSchema(conn);
 }
 
 Swdb::Swdb(const std::string &path)
@@ -72,6 +74,7 @@ Swdb::Swdb(const std::string &path)
         // writing to an existing file
         conn = std::make_shared< SQLite3 >(path);
     }
+    Transformer::migrateSchema(conn);
 }
 
 void
@@ -115,7 +118,8 @@ int64_t
 Swdb::beginTransaction(int64_t dtBegin,
                        std::string rpmdbVersionBegin,
                        std::string cmdline,
-                       uint32_t userId)
+                       uint32_t userId,
+                       std::string comment)
 {
     if (!transactionInProgress) {
         throw std::logic_error(_("Not in progress"));
@@ -126,6 +130,7 @@ Swdb::beginTransaction(int64_t dtBegin,
     transactionInProgress->setRpmdbVersionBegin(rpmdbVersionBegin);
     transactionInProgress->setCmdline(cmdline);
     transactionInProgress->setUserId(userId);
+    transactionInProgress->setComment(comment);
     transactionInProgress->begin();
 
     // save rpm items to map to resolve RPM callbacks
