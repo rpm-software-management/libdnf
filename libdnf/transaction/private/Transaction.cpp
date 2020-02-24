@@ -77,10 +77,11 @@ swdb_private::Transaction::dbInsert()
         "    user_id, "
         "    cmdline, "
         "    state, "
+        "    comment, "
         "    id "
         "  ) "
         "VALUES "
-        "  (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        "  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     SQLite3::Statement query(*conn.get(), sql);
     query.bindv(getDtBegin(),
                 getDtEnd(),
@@ -89,7 +90,8 @@ swdb_private::Transaction::dbInsert()
                 getReleasever(),
                 getUserId(),
                 getCmdline(),
-                static_cast< int >(getState()));
+                static_cast< int >(getState()),
+                getComment());
     if (getId() > 0) {
         query.bind(9, getId());
     }
@@ -136,7 +138,8 @@ swdb_private::Transaction::dbUpdate()
         "  releasever=?, "
         "  user_id=?, "
         "  cmdline=?, "
-        "  state=? "
+        "  state=?, "
+        "  comment=? "
         "WHERE "
         "  id = ?";
     SQLite3::Statement query(*conn.get(), sql);
@@ -148,6 +151,7 @@ swdb_private::Transaction::dbUpdate()
                 getUserId(),
                 getCmdline(),
                 static_cast< int >(getState()),
+                getComment(),
                 getId());
     query.step();
 }

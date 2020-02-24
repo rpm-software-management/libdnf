@@ -57,8 +57,10 @@ public:
     void transform();
 
     static void createDatabase(SQLite3Ptr conn);
+    static void migrateSchema(SQLite3Ptr conn);
 
     static TransactionItemReason getReason(const std::string &reason);
+    static const char *getVersion() noexcept { return "1.2"; }
 
 protected:
     void transformTrans(SQLite3Ptr swdb, SQLite3Ptr history);

@@ -82,7 +82,8 @@ Transaction::dbSelect(int64_t pk)
         "  releasever, "
         "  user_id, "
         "  cmdline, "
-        "  state "
+        "  state, "
+        "  comment "
         "FROM "
         "  trans "
         "WHERE "
@@ -100,6 +101,7 @@ Transaction::dbSelect(int64_t pk)
     userId = query.get< uint32_t >("user_id");
     cmdline = query.get< std::string >("cmdline");
     state = static_cast< TransactionState >(query.get< int >("state"));
+    comment = query.get< std::string >("comment");
 }
 
 /**

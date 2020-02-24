@@ -8,6 +8,7 @@ set(LIBDNF_TEST_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/WorkflowTest.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TransformerTest.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MergedTransactionTest.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/MigrationTest.cpp
     PARENT_SCOPE
 )
 
@@ -20,5 +21,6 @@ set(LIBDNF_TEST_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/TransactionTest.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/WorkflowTest.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TransformerTest.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/MigrationTest.hpp
     PARENT_SCOPE
 )
