@@ -20,6 +20,20 @@
 ######################
 
 ====================
+0.45.0 Release Notes
+====================
+
+- Config options: only first empty value clears existing (RhBug:1788154)
+- Make parsing of reldeps more strict (RhBug:1788107)
+- [context] Support repositories defined in main configuration file
+- Fix filtering packages by advisory when more versions and arches are available (RhBug:1770125)
+- Add expanding solvable provides for dependency matching (RhBug:1534123)
+- DnfRepo: fix module_hotfixes keyfile priority level
+- Add custom exceptions to libdnf interface
+- [conf] Set useful default colors when color is enabled
+- Port to libmodulemd-2 API (RhBug:1693683)
+
+====================
 0.43.1 Release Notes
 ====================
 
