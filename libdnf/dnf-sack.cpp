@@ -84,6 +84,7 @@ extern "C" {
 #include "utils/File.hpp"
 #include "utils/utils.hpp"
 #include "log.hpp"
+#include "tinyformat/tinyformat.hpp"
 
 
 #define DEFAULT_CACHE_ROOT "/var/cache/hawkey"
@@ -2463,7 +2464,7 @@ std::pair<std::vector<std::vector<std::string>>, libdnf::ModulePackageContainer:
             moduleContainer->moduleDefaultsResolve();
         } catch (libdnf::ModulePackageContainer::ResolveException & exception) {
             auto logger(libdnf::Log::getLogger());
-            logger->debug(_("No module defaults found"));
+            logger->debug(tfm::format(_("No module defaults found: %s"), exception.what()));
         }
     }
 

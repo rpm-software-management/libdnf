@@ -24,6 +24,7 @@
 
 #include "bgettext/bgettext-lib.h"
 #include "tinyformat/tinyformat.hpp"
+#include "../../log.hpp"
 
 namespace libdnf {
 
@@ -63,18 +64,21 @@ void ModuleMetadata::resolveAddedMetadata()
     GError *error = NULL;
 
     resultingModuleIndex = modulemd_module_index_merger_resolve(moduleMerger, &error);
-    if (error || !resultingModuleIndex){
-        if (error)
-            throw ModulePackageContainer::ConflictException( tfm::format(_("Failed to resolve: %s"), error->message));
-        else
-            throw ModulePackageContainer::ResolveException( tfm::format(_("Failed to resolve: %s"), "Unknown Error"));
+    if (error && !resultingModuleIndex){
+        throw ModulePackageContainer::ResolveException(tfm::format(_("Failed to resolve: %s"),
+                                                                    (error->message) ? error->message : "Unknown error"));
     }
+    if (error) {
+        auto logger(libdnf::Log::getLogger());
+        logger->debug(tfm::format(_("There were errors while resolving modular defaults: %s"), error->message));
+    }
+
     modulemd_module_index_upgrade_defaults(resultingModuleIndex, MD_DEFAULTS_VERSION_ONE, &error);
     if (error)
-        throw ModulePackageContainer::ResolveException( tfm::format(_("Failed to upgrade defaults: %s"), error->message));
+        throw ModulePackageContainer::ResolveException(tfm::format(_("Failed to upgrade defaults: %s"), error->message));
     modulemd_module_index_upgrade_streams(resultingModuleIndex, MD_MODULESTREAM_VERSION_TWO, &error);
     if (error)
-        throw ModulePackageContainer::ConflictException( tfm::format(_("Failed to upgrade streams: %s"), error->message));
+        throw ModulePackageContainer::ResolveException(tfm::format(_("Failed to upgrade streams: %s"), error->message));
     g_clear_pointer(&moduleMerger, g_object_unref);
 }
 
