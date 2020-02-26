@@ -164,6 +164,7 @@ match_type_num(int keyname) {
         case HY_PKG_EPOCH:
         case HY_PKG_LATEST:
         case HY_PKG_LATEST_PER_ARCH:
+        case HY_PKG_LATEST_PER_ARCH_BY_PRIORITY:
         case HY_PKG_UPGRADABLE:
         case HY_PKG_UPGRADES:
         case HY_PKG_UPGRADES_BY_PRIORITY:
@@ -448,6 +449,28 @@ filter_latest_sortcmp_byarch(const void *ap, const void *bp, void *dp)
     if (r)
         return r;
     r = sa->arch - sb->arch;
+    if (r)
+        return r;
+    r = pool_evrcmp(pool, sb->evr, sa->evr, EVRCMP_COMPARE);
+    if (r)
+        return r;
+    return *(Id *)ap - *(Id *)bp;
+}
+
+static int
+filter_latest_sortcmp_byarch_bypriority(const void *ap, const void *bp, void *dp)
+{
+    auto pool = static_cast<Pool *>(dp);
+    Solvable *sa = pool->solvables + *(Id *)ap;
+    Solvable *sb = pool->solvables + *(Id *)bp;
+    int r;
+    r = sa->name - sb->name;
+    if (r)
+        return r;
+    r = sa->arch - sb->arch;
+    if (r)
+        return r;
+    r = sb->repo->priority - sa->repo->priority;
     if (r)
         return r;
     r = pool_evrcmp(pool, sb->evr, sa->evr, EVRCMP_COMPARE);
@@ -1759,6 +1782,9 @@ Query::Impl::filterLatest(const Filter & f, Map *m)
         if (keyname == HY_PKG_LATEST_PER_ARCH) {
             solv_sort(samename.elements, samename.count, sizeof(Id),
                       filter_latest_sortcmp_byarch, pool);
+        } else if (keyname == HY_PKG_LATEST_PER_ARCH_BY_PRIORITY) {
+            solv_sort(samename.elements, samename.count, sizeof(Id),
+                      filter_latest_sortcmp_byarch_bypriority, pool);
         } else {
             solv_sort(samename.elements, samename.count, sizeof(Id),
                       filter_latest_sortcmp, pool);
@@ -1770,8 +1796,10 @@ Query::Impl::filterLatest(const Filter & f, Map *m)
         for (i = 0; i < samename.count; ++i) {
             Id p = samename.elements[i];
             considered = pool->solvables + p;
-            if (!highest || highest->name != considered->name ||
-                ((keyname == HY_PKG_LATEST_PER_ARCH) && highest->arch != considered->arch)) {
+            if (!highest ||
+                highest->name != considered->name ||
+                ((keyname == HY_PKG_LATEST_PER_ARCH || keyname == HY_PKG_LATEST_PER_ARCH_BY_PRIORITY) &&
+                highest->arch != considered->arch)) {
                 /* start of a new block */
                 if (start_block == -1) {
                     highest = considered;
@@ -2082,6 +2110,7 @@ Query::Impl::apply()
                 break;
             case HY_PKG_LATEST:
             case HY_PKG_LATEST_PER_ARCH:
+            case HY_PKG_LATEST_PER_ARCH_BY_PRIORITY:
                 filterLatest(f, &m);
                 break;
             case HY_PKG_DOWNGRADABLE:
