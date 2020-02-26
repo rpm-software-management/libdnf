@@ -74,6 +74,7 @@ static const int keyname_int_matches[] = {
     HY_PKG_FILE,
     HY_PKG_LATEST,
     HY_PKG_LATEST_PER_ARCH,
+    HY_PKG_LATEST_PER_ARCH_BY_PRIORITY,
     HY_PKG_LOCATION,
     HY_PKG_NAME,
     HY_PKG_NEVRA,
@@ -115,6 +116,7 @@ static const char * const keyname_char_matches[] = {
     "file",
     "latest",
     "latest_per_arch",
+    "latest_per_arch_by_priority",
     "location",
     "name",
     "nevra",
@@ -276,6 +278,7 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
         keyname == HY_PKG_DOWNGRADES ||
         keyname == HY_PKG_EMPTY ||
         keyname == HY_PKG_LATEST_PER_ARCH ||
+        keyname == HY_PKG_LATEST_PER_ARCH_BY_PRIORITY ||
         keyname == HY_PKG_LATEST ||
         keyname == HY_PKG_UPGRADABLE ||
         keyname == HY_PKG_UPGRADES ||
