@@ -242,14 +242,14 @@ class ConfigMain::Impl {
 
     OptionString color_list_installed_older{"yellow"};
     OptionString color_list_installed_newer{"bold,yellow"};
-    OptionString color_list_installed_reinstall{"dim,cyan"};
+    OptionString color_list_installed_reinstall{"cyan"};
     OptionString color_list_installed_extra{"bold,red"};
     OptionString color_list_available_upgrade{"bold,blue"};
-    OptionString color_list_available_downgrade{"dim,magenta"};
+    OptionString color_list_available_downgrade{"magenta"};
     OptionString color_list_available_reinstall{"bold,underline,green"};
     OptionString color_list_available_install{"bold,cyan"};
-    OptionString color_update_installed{"dim,red"};
-    OptionString color_update_local{"dim,green"};
+    OptionString color_update_installed{"red"};
+    OptionString color_update_local{"green"};
     OptionString color_update_remote{"bold,green"};
     OptionString color_search_match{"bold,magenta"};
     OptionBool history_record{true};
