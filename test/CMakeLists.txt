@@ -1,4 +1,4 @@
-if(WITH_DISABLED_TESTS)
+if(NOT WITH_TESTS)
     return()
 endif()
 

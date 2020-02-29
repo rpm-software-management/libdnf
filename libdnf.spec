@@ -26,8 +26,8 @@ Source0:        %{url}/archive/%{version}/%{name}-%{version}.tar.gz
 %bcond_without python3
 %bcond_without ruby
 
-%bcond_with sanitizers
-%bcond_with disabled_tests
+%bcond_with    sanitizers
+%bcond_without tests
 
 
 # ========== versions of dependencies ==========
@@ -366,7 +366,7 @@ Package management service with a DBus interface
     -DWITH_RUBY=%{?with_ruby:ON}%{!?with_ruby:OFF} \
     \
     -DWITH_SANITIZERS=%{?with_sanitizers:ON}%{!?with_sanitizers:OFF} \
-    -DWITH_TESTS_DISABLED=%{?with_tests_disabled:ON}%{!?with_tests_disabled:OFF}
+    -DWITH_TESTS=%{?with_tests:ON}%{!?with_tests:OFF}
 %make_build
 %if %{with man}
     make doc-man
@@ -374,7 +374,7 @@ Package management service with a DBus interface
 
 
 %check
-%if ! %{with disabled_tests}
+%if %{with tests}
     make ARGS="-V" test
 %endif
 
