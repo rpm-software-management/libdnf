@@ -155,6 +155,7 @@ dnf_package_get_filename(DnfPackage *pkg)
                                basename,
                                NULL);
         }
+        g_assert (priv->filename); /* Pacify static analysis */
     }
 
     /* remove file:// from filename */
