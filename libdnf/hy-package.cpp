@@ -145,32 +145,23 @@ reldeps_for(DnfPackage *pkg, Id type)
 {
     Solvable *s = get_solvable(pkg);
     DnfReldepList *reldeplist;
-    Queue q, q_final;
+    Queue q;
     Id marker = -1;
     Id solv_type = type;
-    Id rel_id;
 
     if (type == SOLVABLE_REQUIRES)
-        marker = 0;
+        marker = -1;
 
     if (type == SOLVABLE_PREREQMARKER) {
         solv_type = SOLVABLE_REQUIRES;
         marker = 1;
     }
     queue_init(&q);
-    queue_init(&q_final);
     solvable_lookup_deparray(s, solv_type, &q, marker);
 
-    for (int i = 0; i < q.count; i++) {
-        rel_id = q.elements[i];
-        if (rel_id != SOLVABLE_PREREQMARKER)
-            queue_push(&q_final, rel_id);
-    }
-
-    reldeplist = new libdnf::DependencyContainer(dnf_package_get_sack(pkg), q_final);
+    reldeplist = new libdnf::DependencyContainer(dnf_package_get_sack(pkg), q);
 
     queue_free(&q);
-    queue_free(&q_final);
     return reldeplist;
 }
 
