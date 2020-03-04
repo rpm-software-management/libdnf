@@ -854,14 +854,19 @@ dnf_package_get_recommends(DnfPackage *pkg)
 DnfReldepList *
 dnf_package_get_requires(DnfPackage *pkg)
 {
-    return reldeps_for(pkg, SOLVABLE_REQUIRES);
+
+    DnfReldepList * l = reldeps_for(pkg, SOLVABLE_REQUIRES);
+    l->extend(reldeps_for(pkg, SOLVABLE_PREREQMARKER));
+    return l;
 }
 
 /**
  * dnf_package_get_requires_pre:
  * @pkg: a #DnfPackage instance.
  *
- * Gets the Requires(pre) for the package.
+ * If the package is not installed gets the Requires(pre) and Requires(post).
+ * If the package is installed it gets Requires(pre), Requires(post),
+ * Requies(preun) and Requires(postun).
  *
  * Returns: A #DnfReldepList
  *
@@ -903,6 +908,42 @@ DnfReldepList *
 dnf_package_get_supplements(DnfPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_SUPPLEMENTS);
+}
+
+/**
+ * dnf_package_get_prereq_ignoreinst
+ * @pkg: a #DnfPackage instance.
+ *
+ * Returns safe to remove Requires(pre) and Requires(post) dependencies
+ * of the package. Safe to remove means that the dependency is not needed by
+ * Requires(preun) nor by Requires(postun).
+ * The package must be installed otherwise empty list is returned.
+ *
+ * Returns: A #DnfReldepList
+ *
+ * Since: 0.45.1
+ */
+DnfReldepList *
+dnf_package_get_prereq_ignoreinst(DnfPackage *pkg)
+{
+    return reldeps_for(pkg, SOLVABLE_PREREQ_IGNOREINST);
+}
+
+/**
+ * dnf_package_get_regular_requires
+ * @pkg: a #DnfPackage instance.
+ *
+ * Get the requires for the package without Requires(pre), Requires(post)
+ * Requires(preun) and Requires(postun).
+ *
+ * Returns: A #DnfReldepList
+ *
+ * Since: 0.45.1
+ */
+DnfReldepList *
+dnf_package_get_regular_requires(DnfPackage *pkg)
+{
+    return reldeps_for(pkg, SOLVABLE_REQUIRES);
 }
 
 /**

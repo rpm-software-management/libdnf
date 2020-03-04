@@ -324,6 +324,10 @@ static PyGetSetDef package_getsetters[] = {
      (void *)dnf_package_get_suggests},
     {(char*)"supplements",  (getter)get_reldep, NULL, NULL,
      (void *)dnf_package_get_supplements},
+    {(char*)"prereq_ignoreinst",  (getter)get_reldep, NULL, NULL,
+     (void *)dnf_package_get_prereq_ignoreinst},
+    {(char*)"regular_requires",  (getter)get_reldep, NULL, NULL,
+     (void *)dnf_package_get_regular_requires},
     {NULL}                        /* sentinel */
 };
 
