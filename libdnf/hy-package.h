@@ -92,6 +92,8 @@ DnfReldepList *dnf_package_get_requires     (DnfPackage *pkg);
 DnfReldepList *dnf_package_get_requires_pre (DnfPackage *pkg);
 DnfReldepList *dnf_package_get_suggests     (DnfPackage *pkg);
 DnfReldepList *dnf_package_get_supplements  (DnfPackage *pkg);
+DnfReldepList *dnf_package_get_prereq_ignoreinst(DnfPackage *pkg);
+DnfReldepList *dnf_package_get_regular_requires(DnfPackage *pkg);
 char       **dnf_package_get_files      (DnfPackage *pkg);
 GPtrArray   *dnf_package_get_advisories (DnfPackage *pkg, int cmp_type);
 
