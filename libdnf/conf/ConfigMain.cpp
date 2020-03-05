@@ -216,6 +216,7 @@ class ConfigMain::Impl {
     OptionBool obsoletes{true};
     OptionBool showdupesfromrepos{false};
     OptionBool exit_on_lock{false};
+    OptionBool allow_vendor_change{true};
     OptionSeconds metadata_timer_sync{60 * 60 * 3}; // 3 hours
     OptionStringList disable_excludes{std::vector<std::string>{}};
     OptionEnum<std::string> multilib_policy{"best", {"best", "all"}}; // :api
@@ -399,6 +400,7 @@ ConfigMain::Impl::Impl(Config & owner)
     owner.optBinds().add("obsoletes", obsoletes);
     owner.optBinds().add("showdupesfromrepos", showdupesfromrepos);
     owner.optBinds().add("exit_on_lock", exit_on_lock);
+    owner.optBinds().add("allow_vendor_change", allow_vendor_change);
     owner.optBinds().add("metadata_timer_sync", metadata_timer_sync);
     owner.optBinds().add("disable_excludes", disable_excludes);
     owner.optBinds().add("multilib_policy", multilib_policy);
@@ -531,6 +533,7 @@ OptionBool & ConfigMain::gpgkey_dns_verification() { return pImpl->gpgkey_dns_ve
 OptionBool & ConfigMain::obsoletes() { return pImpl->obsoletes; }
 OptionBool & ConfigMain::showdupesfromrepos() { return pImpl->showdupesfromrepos; }
 OptionBool & ConfigMain::exit_on_lock() { return pImpl->exit_on_lock; }
+OptionBool & ConfigMain::allow_vendor_change() { return pImpl->allow_vendor_change; }
 OptionSeconds & ConfigMain::metadata_timer_sync() { return pImpl->metadata_timer_sync; }
 OptionStringList & ConfigMain::disable_excludes() { return pImpl->disable_excludes; }
 OptionEnum<std::string> & ConfigMain::multilib_policy() { return pImpl->multilib_policy; }
