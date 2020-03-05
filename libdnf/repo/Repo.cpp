@@ -546,7 +546,6 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir)
     else if (!conf->mirrorlist().empty() && !(tmp=conf->mirrorlist().getValue()).empty())
         source = Source::MIRRORLIST;
     if (source != Source::NONE) {
-        handleSetOpt(h.get(), LRO_HMFCB, static_cast<LrHandleMirrorFailureCb>(mirrorFailureCB));
         handleSetOpt(h.get(), LRO_PROGRESSDATA, callbacks.get());
         if (source == Source::METALINK)
             handleSetOpt(h.get(), LRO_METALINKURL, tmp.c_str());
@@ -563,15 +562,18 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir)
             fastestMirrorCacheDir.push_back('/');
         fastestMirrorCacheDir += "fastestmirror.cache";
         handleSetOpt(h.get(), LRO_FASTESTMIRRORCACHE, fastestMirrorCacheDir.c_str());
-    } else if (!conf->baseurl().getValue().empty()) {
-        handleSetOpt(h.get(), LRO_HMFCB, static_cast<LrHandleMirrorFailureCb>(mirrorFailureCB));
+    }
+
+    if (!conf->baseurl().getValue().empty()) {
         size_t len = conf->baseurl().getValue().size();
         const char * urls[len + 1];
         for (size_t idx = 0; idx < len; ++idx)
             urls[idx] = conf->baseurl().getValue()[idx].c_str();
         urls[len] = nullptr;
         handleSetOpt(h.get(), LRO_URLS, urls);
-    } else
+    }
+
+    if (source == Source::NONE && conf->baseurl().getValue().empty())
         throw std::runtime_error(tfm::format(_("Cannot find a valid baseurl for repo: %s"), id));
 
     // setup username/password if needed
@@ -590,6 +592,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir)
     if (!conf->sslclientkey().getValue().empty())
         handleSetOpt(h.get(), LRO_SSLCLIENTKEY, conf->sslclientkey().getValue().c_str());
 
+    handleSetOpt(h.get(), LRO_HMFCB, static_cast<LrHandleMirrorFailureCb>(mirrorFailureCB));
     handleSetOpt(h.get(), LRO_PROGRESSCB, static_cast<LrProgressCb>(progressCB));
     handleSetOpt(h.get(), LRO_PROGRESSDATA, callbacks.get());
     handleSetOpt(h.get(), LRO_FASTESTMIRRORCB, static_cast<LrFastestMirrorCb>(fastestMirrorCB));
