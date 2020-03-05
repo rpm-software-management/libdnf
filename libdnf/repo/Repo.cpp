@@ -521,7 +521,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitLocal()
     return h;
 }
 
-std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bool mirrorSetup)
+std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir)
 {
     std::unique_ptr<LrHandle> h(lrHandleInitBase());
     handleSetOpt(h.get(), LRO_HTTPHEADER, httpHeaders.get());
@@ -548,26 +548,21 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir, bo
     if (source != Source::NONE) {
         handleSetOpt(h.get(), LRO_HMFCB, static_cast<LrHandleMirrorFailureCb>(mirrorFailureCB));
         handleSetOpt(h.get(), LRO_PROGRESSDATA, callbacks.get());
-        if (mirrorSetup) {
-            if (source == Source::METALINK)
+        if (source == Source::METALINK)
+            handleSetOpt(h.get(), LRO_METALINKURL, tmp.c_str());
+        else {
+            handleSetOpt(h.get(), LRO_MIRRORLISTURL, tmp.c_str());
+            // YUM-DNF compatibility hack. YUM guessed by content of keyword "metalink" if
+            // mirrorlist is really mirrorlist or metalink)
+            if (tmp.find("metalink") != tmp.npos)
                 handleSetOpt(h.get(), LRO_METALINKURL, tmp.c_str());
-            else {
-                handleSetOpt(h.get(), LRO_MIRRORLISTURL, tmp.c_str());
-                // YUM-DNF compatibility hack. YUM guessed by content of keyword "metalink" if
-                // mirrorlist is really mirrorlist or metalink)
-                if (tmp.find("metalink") != tmp.npos)
-                    handleSetOpt(h.get(), LRO_METALINKURL, tmp.c_str());
-            }
-            handleSetOpt(h.get(), LRO_FASTESTMIRROR, conf->fastestmirror().getValue() ? 1L : 0L);
-            auto fastestMirrorCacheDir = conf->basecachedir().getValue();
-            if (fastestMirrorCacheDir.back() != '/')
-                fastestMirrorCacheDir.push_back('/');
-            fastestMirrorCacheDir += "fastestmirror.cache";
-            handleSetOpt(h.get(), LRO_FASTESTMIRRORCACHE, fastestMirrorCacheDir.c_str());
-        } else {
-            // use already resolved mirror list
-            handleSetOpt(h.get(), LRO_URLS, mirrors);
         }
+        handleSetOpt(h.get(), LRO_FASTESTMIRROR, conf->fastestmirror().getValue() ? 1L : 0L);
+        auto fastestMirrorCacheDir = conf->basecachedir().getValue();
+        if (fastestMirrorCacheDir.back() != '/')
+            fastestMirrorCacheDir.push_back('/');
+        fastestMirrorCacheDir += "fastestmirror.cache";
+        handleSetOpt(h.get(), LRO_FASTESTMIRRORCACHE, fastestMirrorCacheDir.c_str());
     } else if (!conf->baseurl().getValue().empty()) {
         handleSetOpt(h.get(), LRO_HMFCB, static_cast<LrHandleMirrorFailureCb>(mirrorFailureCB));
         size_t len = conf->baseurl().getValue().size();

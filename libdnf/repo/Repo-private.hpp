@@ -129,7 +129,7 @@ public:
 
     std::unique_ptr<LrHandle> lrHandleInitBase();
     std::unique_ptr<LrHandle> lrHandleInitLocal();
-    std::unique_ptr<LrHandle> lrHandleInitRemote(const char *destdir, bool mirrorSetup = true);
+    std::unique_ptr<LrHandle> lrHandleInitRemote(const char *destdir);
 
     void attachLibsolvRepo(LibsolvRepo * libsolvRepo);
     void detachLibsolvRepo();
