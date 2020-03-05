@@ -36,6 +36,9 @@ function to check file permissions and return reasonable exception
 consolidate dnf.arch with libdnf (move everything to libdnf?)
 
 
+--enablerepo vs --skip-broken - consolidate options with compound words
+
+
 updates policy:
 https://pagure.io/fedora-workstation/issue/107
 
