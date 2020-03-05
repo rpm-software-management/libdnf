@@ -6,12 +6,15 @@ endif()
 pkg_check_modules(CPPUNIT REQUIRED cppunit)
 
 
+# use any sources found under the current directory
+file(GLOB_RECURSE TEST_DNFDAEMON_SERVER_SOURCES *.cpp)
+
+
 set(TEST_DNFDAEMON_SERVER_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/run_tests.cpp
+    ${TEST_DNFDAEMON_SERVER_SOURCES}
+    # share the test runner code with libdnf
+    ${CMAKE_CURRENT_SOURCE_DIR}/../libdnf/run_tests.cpp
 )
-
-
-#add_subdirectory(...)
 
 
 add_executable(run_tests_dnfdaemon_server ${TEST_DNFDAEMON_SERVER_SOURCES})

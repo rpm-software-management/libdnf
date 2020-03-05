@@ -1,4 +1,5 @@
-add_subdirectory("utils")
+# use any sources found under the current directory
+file(GLOB_RECURSE LIBDNF_SOURCES *.cpp)
 
 
 # gather all pkg-config requires and write them to a .pc file later

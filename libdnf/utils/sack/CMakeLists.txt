@@ -1,7 +1,0 @@
-set(SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/match_int64.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/match_string.cpp
-)
-
-
-set(LIBDNF_SOURCES ${LIBDNF_SOURCES} ${SOURCES} PARENT_SCOPE)

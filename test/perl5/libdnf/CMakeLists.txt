@@ -1,11 +1,7 @@
-# List tests explicitly. Globbing is unreliable according to the CMake
-# documention.
-# We need to define the Perl tests as CMake tests to achieve parallelism.
-foreach(FILE
-        base/load.t
-        utils/load.t
-        utils/random_int32.t
-        utils/sack.t
-        )
+# use any tests found under the current directory
+file(GLOB_RECURSE PERL5_TESTS *.t)
+
+
+foreach(FILE ${PERL5_TESTS})
     add_perl_test(libdnf "${FILE}")
 endforeach()

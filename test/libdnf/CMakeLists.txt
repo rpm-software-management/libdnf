@@ -1,12 +1,8 @@
 pkg_check_modules(CPPUNIT REQUIRED cppunit)
 
 
-set(TEST_LIBDNF_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/run_tests.cpp
-)
-
-
-add_subdirectory(utils)
+# use any sources found under the current directory
+file(GLOB_RECURSE TEST_LIBDNF_SOURCES *.cpp)
 
 
 add_executable(run_tests ${TEST_LIBDNF_SOURCES})
