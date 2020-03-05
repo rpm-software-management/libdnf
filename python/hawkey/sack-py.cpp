@@ -415,10 +415,22 @@ get_module_container(_SackObject *self, void *unused) try
     Py_RETURN_NONE;
 } CATCH_TO_PYTHON
 
+static int
+set_allow_vendor_change(_SackObject *self, PyObject *obj, void *unused) try
+{
+    gboolean vendor = PyObject_IsTrue(obj);
+    if (PyErr_Occurred())
+        return -1;
+    dnf_sack_set_allow_vendor_change(self->sack, vendor);
+    return 0;
+} CATCH_TO_PYTHON_INT
+
 static PyGetSetDef sack_getsetters[] = {
     {(char*)"cache_dir",        (getter)get_cache_dir, NULL, NULL, NULL},
     {(char*)"installonly",        NULL, (setter)set_installonly, NULL, NULL},
     {(char*)"installonly_limit",        NULL, (setter)set_installonly_limit, NULL, NULL},
+    {(char*)"allow_vendor_change", NULL,
+                                    (setter)set_allow_vendor_change, NULL, NULL},
     {(char*)"_moduleContainer",        (getter)get_module_container, (setter)set_module_container,
         NULL, NULL},
     {NULL}                        /* sentinel */

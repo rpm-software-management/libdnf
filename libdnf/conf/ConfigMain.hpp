@@ -89,6 +89,7 @@ public:
     OptionBool & obsoletes();
     OptionBool & showdupesfromrepos();
     OptionBool & exit_on_lock();
+    OptionBool & allow_vendor_change();
     OptionSeconds & metadata_timer_sync();
     OptionStringList & disable_excludes();
     OptionEnum<std::string> & multilib_policy(); // :api

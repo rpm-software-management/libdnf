@@ -107,6 +107,7 @@ typedef struct
     gboolean             have_set_arch;
     gboolean             all_arch;
     gboolean             provides_ready;
+    gboolean             allow_vendor_change;
     gchar               *cache_dir;
     char                *arch;
     dnf_sack_running_kernel_fn_t  running_kernel_fn;
@@ -189,6 +190,7 @@ dnf_sack_init(DnfSack *sack)
     priv->running_kernel_fn = running_kernel;
     priv->considered_uptodate = TRUE;
     priv->cmdline_repo = NULL;
+    priv->allow_vendor_change = TRUE;
     queue_init(&priv->installonly);
 
     /* logging up after this*/
@@ -841,6 +843,46 @@ dnf_sack_get_all_arch (DnfSack *sack)
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     return priv->all_arch;
+}
+
+/*
+ * dnf_sack_set_allow_vendor_change:
+ * @sack: a #DnfSack instance.
+ * @allow_vendor_change is a boolean.
+ *
+ * Sets the value of allow vendor change to use for
+ * SOLVER_FLAG_ALLOW_VENDORCHANGE flag
+ *
+ * Returns: Nothing.
+ *
+ * Since: 0.54.3
+ *
+ * */
+void
+dnf_sack_set_allow_vendor_change(DnfSack *sack, gboolean allow_vendor_change)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    priv->allow_vendor_change = allow_vendor_change;
+}
+
+/*
+ * dnf_sack_get_allow_vendor_change:
+ * @sack: a #DnfSack instance.
+ * @allow_vendor_change is a boolean.
+ *
+ * Gets the value of allow vendor change to use for
+ * SOLVER_FLAG_ALLOW_VENDORCHANGE flag
+ *
+ * Returns: True if flag set to 1, False if set to 0
+ *
+ * Since: 0.54.3
+ *
+ * */
+gboolean
+dnf_sack_get_allow_vendor_change(DnfSack *sack)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    return priv->allow_vendor_change;
 }
 
 /**

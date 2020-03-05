@@ -1224,8 +1224,11 @@ Goal::Impl::initSolver()
         solver_free(solv);
     solv = solvNew;
 
-    /* no vendor locking */
-    solver_set_flag(solv, SOLVER_FLAG_ALLOW_VENDORCHANGE, 1);
+    /* vendor locking */
+    int vendor = dnf_sack_get_allow_vendor_change(sack) ? 1 : 0;
+    solver_set_flag(solv, SOLVER_FLAG_ALLOW_VENDORCHANGE, vendor);
+    solver_set_flag(solv, SOLVER_FLAG_DUP_ALLOW_VENDORCHANGE, vendor);
+
     /* don't erase packages that are no longer in repo during distupgrade */
     solver_set_flag(solv, SOLVER_FLAG_KEEP_ORPHANS, 1);
     /* no arch change for forcebest */

@@ -96,6 +96,9 @@ gboolean     dnf_sack_set_arch              (DnfSack        *sack,
 void         dnf_sack_set_all_arch          (DnfSack        *sack,
                                              gboolean        all_arch);
 gboolean     dnf_sack_get_all_arch          (DnfSack        *sack);
+void         dnf_sack_set_allow_vendor_change(DnfSack       *sack,
+                                             gboolean       allow_vendor_change);
+gboolean     dnf_sack_get_allow_vendor_change(DnfSack       *sack);
 void         dnf_sack_set_rootdir           (DnfSack        *sack,
                                              const gchar    *value);
 gboolean     dnf_sack_setup                 (DnfSack        *sack,
