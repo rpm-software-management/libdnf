@@ -7,6 +7,7 @@
 #define DEPRECATED(x)
 
 %include <std_map.i>
+%include <std_pair.i>
 %include <std_vector.i>
 %include <std_string.i>
 
@@ -43,6 +44,7 @@ typedef int Id;
 // this must follow std_vector_ext.i include, otherwise it returns garbage instead of list of strings
 %template(MapStringVectorString) std::map<std::string, std::vector<std::string>>;
 %template(VectorMapStringVectorString) std::vector<std::map<std::string, std::vector<std::string>>>;
+%template(VectorVectorString) std::vector<std::vector<std::string>>;
 
 // make SWIG wrap following headers
 %nodefaultctor libdnf::ModulePackage;
@@ -58,3 +60,4 @@ typedef int Id;
 %include "libdnf/module/ModulePackageContainer.hpp"
 %include "libdnf/module/modulemd/ModuleProfile.hpp"
 %include "libdnf/module/modulemd/ModuleDependencies.hpp"
+%template(PairVectorVectorStringModuleErrorType) std::pair<std::vector<std::vector<std::string>>, libdnf::ModulePackageContainer::ModuleErrorType>;
