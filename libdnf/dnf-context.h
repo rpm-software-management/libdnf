@@ -276,6 +276,9 @@ gboolean         dnf_context_reset_modules              (DnfContext * context,
                                                          DnfSack * sack,
                                                          const char ** module_names,
                                                          GError ** error);
+gboolean         dnf_context_reset_all_modules          (DnfContext * context,
+                                                         DnfSack * sack,
+                                                         GError ** error);
 
 G_END_DECLS
 
