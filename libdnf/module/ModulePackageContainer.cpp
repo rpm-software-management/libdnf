@@ -606,6 +606,7 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackage *> & m
     bool debugSolver)
 {
     if (modules.empty()) {
+        activatedModules.reset();
         return {};
     }
     dnf_sack_recompute_considered(moduleSack);
