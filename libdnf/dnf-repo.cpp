@@ -1473,9 +1473,14 @@ dnf_repo_check_internal(DnfRepo *repo,
 
     /* init newRepo */
     auto newRepo = hy_repo_create(priv->repo->getId().c_str());
+    auto newRepoImpl = libdnf::repoGetImpl(newRepo);
+
+    // "additionalMetadata" are not part of the config. They are filled during runtime
+    // (eg. by plugins) and must be kept.
+    newRepoImpl->additionalMetadata = repoImpl->additionalMetadata;
+
     hy_repo_free(priv->repo);
     priv->repo = newRepo;
-    auto newRepoImpl = libdnf::repoGetImpl(newRepo);
     newRepoImpl->repomdFn = yum_repo->repomd;
     for (auto *elem = yum_repo->paths; elem; elem = g_slist_next(elem)) {
         if (elem->data) {
