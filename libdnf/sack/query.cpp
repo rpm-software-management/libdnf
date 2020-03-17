@@ -29,6 +29,7 @@ extern "C" {
 #include <solv/bitmap.h>
 #include <solv/evr.h>
 #include <solv/solver.h>
+#include <solv/selection.h>
 }
 
 #include "query.hpp"
@@ -1075,9 +1076,22 @@ Query::Impl::filterDepSolvable(const Filter & f, Map * m)
     Id id = -1;
     while ((id = filter_pset->next(id)) != -1) {
         out.clear();
-        pool_whatmatchessolvable(pool, rco_key, id, out.getQueue(), -1);
 
-        for (int j = 0; j < out.size(); ++j) {
+        queue_init(out.getQueue());
+        // queue_push2 because we are creating a selection, which contains pairs
+        // of <flags, Id>, SOLVER_SOOLVABLE_ALL is a special flag which includes
+        // all packages from specified pool, Id is ignored.
+        queue_push2(out.getQueue(), SOLVER_SOLVABLE_ALL, 0);
+
+        int flags = 0;
+        flags |= SELECTION_FILTER | SELECTION_WITH_ALL;
+        selection_make_matchsolvable(pool, out.getQueue(), id, flags, rco_key, 0);
+
+        // Queue from selection_make_matchsolvable is a selection, which means
+        // it conntains pairs <flags, Id>, flags refers to how was the Id
+        // matched, that is not important here, so skip it and iterate just
+        // over the Ids.
+        for (int j = 1; j < out.size(); j += 2) {
             MAPSET(m, out[j]);
         }
     }
