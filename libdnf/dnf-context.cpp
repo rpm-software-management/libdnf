@@ -2094,6 +2094,15 @@ dnf_context_setup(DnfContext *context,
     g_autoptr(GString) buf = NULL;
     g_autofree char *rpmdb_path = NULL;
     g_autoptr(GFile) file_rpmdb = NULL;
+    const gchar *rpmdb_path_variants[] = { "var/lib/rpm/rpmdb.sqlite",
+                                           "usr/lib/sysimage/rpm/rpmdb.sqlite",
+                                           "var/lib/rpm/Packages.db",
+                                           "usr/lib/sysimage/rpm/Packages.db",
+                                           "var/lib/rpm/Packages",
+                                           "usr/lib/sysimage/rpm/Packages",
+                                           "var/lib/rpm/data.mdb",
+                                           "usr/lib/sysimage/rpm/data.mdb",
+                                           NULL };
 
     if (libdnf::getGlobalMainConfig().plugins().getValue() && !pluginsDir.empty()) {
         priv->plugins->loadPlugins(pluginsDir);
@@ -2177,9 +2186,21 @@ dnf_context_setup(DnfContext *context,
         !dnf_context_set_os_release(context, error))
         return FALSE;
 
+    /* identify correct rpmdb file */
+    for (i = 0; rpmdb_path_variants[i] != NULL; i++) {
+        rpmdb_path = g_build_filename(priv->install_root, rpmdb_path_variants[i], NULL);
+        if (g_file_test(rpmdb_path, G_FILE_TEST_EXISTS))
+            break;
+        rpmdb_path = NULL;
+    }
+
+    /* if we can't identify an rpmdb path for any reason, fallback to legacy value */
+    if (rpmdb_path == NULL) {
+        rpmdb_path = g_build_filename(priv->install_root, "var/lib/rpm/Packages", NULL);
+    }
+
     /* setup a file monitor on the rpmdb, if we're operating on the native / */
     if (g_strcmp0(priv->install_root, "/") == 0) {
-        rpmdb_path = g_build_filename(priv->install_root, "var/lib/rpm/Packages", NULL);
         file_rpmdb = g_file_new_for_path(rpmdb_path);
         priv->monitor_rpmdb = g_file_monitor_file(file_rpmdb,
                                G_FILE_MONITOR_NONE,

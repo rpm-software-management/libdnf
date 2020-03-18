@@ -226,7 +226,14 @@ dnf_sack_new(void)
 static int
 current_rpmdb_checksum(Pool *pool, unsigned char csout[CHKSUM_BYTES])
 {
-    const char *rpmdb_prefix_paths[] = { "/var/lib/rpm/Packages",
+    const char *rpmdb_prefix_paths[] = { "/var/lib/rpm/rpmdb.sqlite",
+                                         "/usr/lib/sysimage/rpm/rpmdb.sqlite",
+                                         "/var/lib/rpm/Packages.db",
+                                         "/usr/lib/sysimage/rpm/Packages.db",
+                                         "/var/lib/rpm/Packages",
+                                         "/usr/lib/sysimage/rpm/Packages",
+                                         "/var/lib/rpm/data.mdb",
+                                         "/usr/lib/sysimage/rpm/data.mdb",
                                          "/usr/share/rpm/Packages" };
     unsigned int i;
     const char *fn;
