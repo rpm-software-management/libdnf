@@ -1791,6 +1791,7 @@ Query::Impl::filterLatest(const Filter & f, Map *m)
         }
 
         Solvable *considered, *highest = 0;
+        bool make_block = 1;
         int start_block = -1;
         int i;
         for (i = 0; i < samename.count; ++i) {
@@ -1806,12 +1807,22 @@ Query::Impl::filterLatest(const Filter & f, Map *m)
                     start_block = i;
                     continue;
                 }
-                add_latest_to_map(pool, m, &samename, start_block, i, latest);
+                if (make_block) {
+                    add_latest_to_map(pool, m, &samename, start_block, i, latest);
+                }
+                else {
+                    make_block = 1;
+                }
                 highest = considered;
                 start_block = i;
+            } else if (keyname == HY_PKG_LATEST_PER_ARCH_BY_PRIORITY &&
+                highest->repo->priority != considered->repo->priority &&
+                make_block) {
+                add_latest_to_map(pool, m, &samename, start_block, i, latest);
+                make_block = 0;
             }
         }
-        if (start_block != -1) {
+        if (start_block != -1 && make_block) {
             add_latest_to_map(pool, m, &samename, start_block, i, latest);
         }
         queue_free(&samename);
