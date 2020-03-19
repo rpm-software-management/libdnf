@@ -36,11 +36,13 @@ public:
     std::vector<ModulePackage *> getAllModulePackages(DnfSack * moduleSack, LibsolvRepo * repo, const std::string & repoID);
     std::map<std::string, std::string> getDefaultStreams();
     std::vector<std::string> getDefaultProfiles(std::string moduleName, std::string moduleStream);
+    void setIntent(const std::string & intent);
 
 private:
     static void reportFailures(const GPtrArray *failures);
     ModulemdModuleIndex * resultingModuleIndex;
     ModulemdModuleIndexMerger * moduleMerger;
+    std::string intent;
 };
 
 }

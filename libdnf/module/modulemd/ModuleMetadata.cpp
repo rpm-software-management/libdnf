@@ -27,7 +27,7 @@
 
 namespace libdnf {
 
-ModuleMetadata::ModuleMetadata(): resultingModuleIndex(NULL), moduleMerger(NULL) {}
+ModuleMetadata::ModuleMetadata(): resultingModuleIndex(NULL), moduleMerger(NULL), intent(NULL) {}
 
 void ModuleMetadata::addMetadataFromString(const std::string & yaml, int priority)
 {
@@ -108,7 +108,7 @@ std::map<std::string, std::string> ModuleMetadata::getDefaultStreams()
     if (!resultingModuleIndex)
         return moduleDefaults;
 
-    GHashTable * table = modulemd_module_index_get_default_streams_as_hash_table(resultingModuleIndex, NULL);
+    GHashTable * table = modulemd_module_index_get_default_streams_as_hash_table(resultingModuleIndex, intent.c_str());
     GHashTableIter iterator;
     gpointer key, value;
     g_hash_table_iter_init(&iterator, table);
@@ -129,7 +129,7 @@ std::vector<std::string> ModuleMetadata::getDefaultProfiles(std::string moduleNa
     ModulemdModule * myModule = modulemd_module_index_get_module(resultingModuleIndex, moduleName.c_str());
     ModulemdDefaultsV1 * myDefaults = (ModulemdDefaultsV1 *) modulemd_module_get_defaults(myModule);
 
-    char ** list = modulemd_defaults_v1_get_default_profiles_for_stream_as_strv(myDefaults, moduleStream.c_str(), NULL);
+    char ** list = modulemd_defaults_v1_get_default_profiles_for_stream_as_strv(myDefaults, moduleStream.c_str(), intent.c_str());
 
     for (char **iter = list; iter && *iter; iter++) {
         output.emplace_back(*iter);
@@ -137,6 +137,11 @@ std::vector<std::string> ModuleMetadata::getDefaultProfiles(std::string moduleNa
 
     g_strfreev(list);
     return output;
+}
+
+void ModuleMetadata::setIntent(const std::string & intent)
+{
+    this->intent = intent;
 }
 
 void ModuleMetadata::reportFailures(const GPtrArray *failures)
