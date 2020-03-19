@@ -122,6 +122,7 @@ public:
     OptionBool & ignorearch();
 
     OptionString & module_platform_id();
+    OptionString & module_intent();
     OptionString & user_agent();
     OptionBool & countme();
 

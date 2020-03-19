@@ -275,6 +275,7 @@ class ConfigMain::Impl {
     OptionBool downloadonly{false}; // runtime only option
     OptionBool ignorearch{false};
     OptionString module_platform_id{nullptr};
+    OptionString module_intent{nullptr};
 
     OptionString user_agent{getUserAgent()};
     OptionBool countme{false};
@@ -427,6 +428,7 @@ ConfigMain::Impl::Impl(Config & owner)
     owner.optBinds().add("comment", comment);
     owner.optBinds().add("ignorearch", ignorearch);
     owner.optBinds().add("module_platform_id", module_platform_id);
+    owner.optBinds().add("module_intent", module_intent);
     owner.optBinds().add("user_agent", user_agent);
     owner.optBinds().add("countme", countme);
 
@@ -558,6 +560,7 @@ OptionBool & ConfigMain::downloadonly() { return pImpl->downloadonly; }
 OptionBool & ConfigMain::ignorearch() { return pImpl->ignorearch; }
 
 OptionString & ConfigMain::module_platform_id() { return pImpl->module_platform_id; }
+OptionString & ConfigMain::module_intent() { return pImpl->module_intent; }
 OptionString & ConfigMain::user_agent() { return pImpl->user_agent; }
 OptionBool & ConfigMain::countme() { return pImpl->countme; }
 
