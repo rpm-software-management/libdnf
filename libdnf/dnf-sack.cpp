@@ -224,43 +224,6 @@ dnf_sack_new(void)
 }
 
 static int
-current_rpmdb_checksum(Pool *pool, unsigned char csout[CHKSUM_BYTES])
-{
-    const char *rpmdb_prefix_paths[] = { "/var/lib/rpm/Packages",
-                                         "/usr/share/rpm/Packages" };
-    unsigned int i;
-    const char *fn;
-    FILE *fp_rpmdb = NULL;
-    int ret = 0;
-
-    for (i = 0; i < sizeof(rpmdb_prefix_paths)/sizeof(*rpmdb_prefix_paths); i++) {
-        fn = pool_prepend_rootdir_tmp(pool, rpmdb_prefix_paths[i]);
-        fp_rpmdb = fopen(fn, "r");
-        if (fp_rpmdb)
-            break;
-    }
-
-    if (!fp_rpmdb || checksum_stat(csout, fp_rpmdb))
-        ret = 1;
-    if (fp_rpmdb)
-        fclose(fp_rpmdb);
-    return ret;
-}
-
-static int
-can_use_rpmdb_cache(FILE *fp_solv, unsigned char cs[CHKSUM_BYTES])
-{
-    unsigned char cs_cache[CHKSUM_BYTES];
-
-    if (fp_solv &&
-        !checksum_read(cs_cache, fp_solv) &&
-        !checksum_cmp(cs_cache, cs))
-        return 1;
-
-    return 0;
-}
-
-static int
 can_use_repomd_cache(FILE *fp_solv, unsigned char cs_repomd[CHKSUM_BYTES])
 {
     unsigned char cs_cache[CHKSUM_BYTES];
@@ -1703,15 +1666,10 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
 {
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     Pool *pool = dnf_sack_get_pool(sack);
-    char *cache_fn = dnf_sack_give_cache_fn(sack, HY_SYSTEM_REPO_NAME, NULL);
-    FILE *cache_fp = fopen(cache_fn, "r");
-    int rc = 1;
     gboolean ret = TRUE;
     HyRepo hrepo = a_hrepo;
     Repo *repo;
-    const int build_cache = flags & DNF_SACK_LOAD_FLAG_BUILD_CACHE;
 
-    g_free(cache_fn);
     if (hrepo) {
         auto repoImpl = libdnf::repoGetImpl(hrepo);
         repoImpl->id = HY_SYSTEM_REPO_NAME;
@@ -1720,30 +1678,16 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
         hrepo = hy_repo_create(HY_SYSTEM_REPO_NAME);
     auto repoImpl = libdnf::repoGetImpl(hrepo);
 
-    repoImpl->load_flags = flags;
-    // no need to calculate anything when libsolv cache is absent
-    if (cache_fp) {
-        rc = current_rpmdb_checksum(pool, repoImpl->checksum);
-        if (rc) {
-            g_warning(_("failed calculating RPMDB checksum"));
-        }
-    }
+    repoImpl->load_flags = flags &= ~DNF_SACK_LOAD_FLAG_BUILD_CACHE;
 
     repo = repo_create(pool, HY_SYSTEM_REPO_NAME);
-    if (rc == 0 && can_use_rpmdb_cache(cache_fp, repoImpl->checksum)) {
-        const char *chksum = pool_checksum_str(pool, repoImpl->checksum);
-        g_debug("using cached rpmdb (0x%s)", chksum);
-        rc = repo_add_solv(repo, cache_fp, 0);
-        if (!rc)
-            repoImpl->state_main = _HY_LOADED_CACHE;
+
+    g_debug("fetching rpmdb");
+    int flagsrpm = REPO_REUSE_REPODATA | RPM_ADD_WITH_HDRID | REPO_USE_ROOTDIR;
+    int rc = repo_add_rpmdb_reffp(repo, NULL, flagsrpm);
+    if (!rc) {
+        repoImpl->state_main = _HY_LOADED_FETCH;
     } else {
-        g_debug("fetching rpmdb");
-        int flagsrpm = REPO_REUSE_REPODATA | RPM_ADD_WITH_HDRID | REPO_USE_ROOTDIR;
-        rc = repo_add_rpmdb_reffp(repo, cache_fp, flagsrpm);
-        if (!rc)
-            repoImpl->state_main = _HY_LOADED_FETCH;
-    }
-    if (rc) {
         repo_free(repo, 1);
         ret = FALSE;
         g_set_error (error,
@@ -1757,20 +1701,12 @@ dnf_sack_load_system_repo(DnfSack *sack, HyRepo a_hrepo, int flags, GError **err
     pool_set_installed(pool, repo);
     priv->provides_ready = 0;
 
-    if (repoImpl->state_main == _HY_LOADED_FETCH && build_cache) {
-        ret = write_main(sack, hrepo, 1, error);
-        if (!ret)
-            goto finish;
-    }
-
     repoImpl->main_nsolvables = repo->nsolvables;
     repoImpl->main_nrepodata = repo->nrepodata;
     repoImpl->main_end = repo->end;
     priv->considered_uptodate = FALSE;
 
  finish:
-    if (cache_fp)
-        fclose(cache_fp);
     if (a_hrepo == NULL)
         hy_repo_free(hrepo);
     return ret;
