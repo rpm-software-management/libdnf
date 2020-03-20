@@ -1,94 +1,113 @@
 /*
- * Copyright (C) 2018 Red Hat, Inc.
- *
- * Licensed under the GNU Lesser General Public License Version 2.1
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- */
+Copyright (C) 2020 Red Hat, Inc.
 
-#ifndef _LIBDNF_OPTION_BOOL_HPP
-#define _LIBDNF_OPTION_BOOL_HPP
+This file is part of libdnf: https://github.com/rpm-software-management/libdnf/
 
-#ifdef LIBDNF_UNSTABLE_API
+Libdnf is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 2 of the License, or
+(at your option) any later version.
 
-#include "Option.hpp"
+Libdnf is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#ifndef LIBDNF_CONF_OPTION_BOOL_HPP
+#define LIBDNF_CONF_OPTION_BOOL_HPP
+
+
+#include "option.hpp"
+
+#include <array>
+#include <memory>
+#include <vector>
 
 namespace libdnf {
 
-constexpr const char * defTrueValues[]{"1", "yes", "true", "on", nullptr};
-constexpr const char * defFalseValues[]{"0", "no", "false", "off", nullptr};
 
 class OptionBool : public Option {
 public:
-    typedef bool ValueType;
+    using ValueType = bool;
 
-    OptionBool(bool defaultValue, const char * const trueVals[], const char * const falseVals[]);
-    OptionBool(bool defaultValue);
+    class InvalidValue : public Option::InvalidValue {
+    public:
+        using Option::InvalidValue::InvalidValue;
+        const char * get_domain_name() const noexcept override { return "libdnf::OptionBool"; }
+    };
+
+    explicit OptionBool(bool default_value);
+    OptionBool(
+        bool default_value, const std::vector<std::string> & true_vals, const std::vector<std::string> & false_vals);
+    OptionBool(const OptionBool & src);
+    OptionBool(OptionBool && src) noexcept = default;
+    ~OptionBool() override = default;
+
+    OptionBool & operator=(const OptionBool & src);
+    OptionBool & operator=(OptionBool && src) noexcept = default;
+
     OptionBool * clone() const override;
-    void test(bool) const;
-    bool fromString(std::string value) const;
+    void test(bool /*unused*/) const;
+    bool from_string(const std::string & value) const;
     void set(Priority priority, bool value);
     void set(Priority priority, const std::string & value) override;
-    bool getValue() const noexcept;
-    bool getDefaultValue() const noexcept;
-    std::string toString(bool value) const;
-    std::string getValueString() const override;
-    const char * const * getTrueValues() const noexcept;
-    const char * const * getFalseValues() const noexcept;
+    bool get_value() const noexcept;
+    bool get_default_value() const noexcept;
+    std::string to_string(bool value) const;
+    std::string get_value_string() const override;
+    static const std::vector<std::string> & get_default_true_values() noexcept;
+    static const std::vector<std::string> & get_default_false_values() noexcept;
+    const std::vector<std::string> & get_true_values() const noexcept;
+    const std::vector<std::string> & get_false_values() const noexcept;
 
-protected:
-    const char * const * const trueValues;
-    const char * const * const falseValues;
-    bool defaultValue;
+private:
+    std::unique_ptr<std::vector<std::string>> true_values;
+    std::unique_ptr<std::vector<std::string>> false_values;
+    bool default_value;
     bool value;
 };
 
-inline OptionBool * OptionBool::clone() const
-{
+
+inline OptionBool * OptionBool::clone() const {
     return new OptionBool(*this);
 }
 
-inline void OptionBool::test(bool) const {}
+inline void OptionBool::test(bool /*unused*/) const {}
 
-inline bool OptionBool::getValue() const noexcept
-{
+inline bool OptionBool::get_value() const noexcept {
     return value;
 }
 
-inline bool OptionBool::getDefaultValue() const noexcept
-{
-    return defaultValue;
+inline bool OptionBool::get_default_value() const noexcept {
+    return default_value;
 }
 
-inline std::string OptionBool::getValueString() const
-{
-    return toString(value);
+inline std::string OptionBool::get_value_string() const {
+    return to_string(value);
 }
 
-inline const char * const * OptionBool::getTrueValues() const noexcept
-{
-    return trueValues ? trueValues : defTrueValues;
+inline const std::vector<std::string> & OptionBool::get_default_true_values() noexcept {
+    static std::vector<std::string> true_values = {"1", "yes", "true", "on"};
+    return true_values;
 }
 
-inline const char * const * OptionBool::getFalseValues() const noexcept
-{
-    return falseValues ? falseValues : defFalseValues; 
+inline const std::vector<std::string> & OptionBool::get_default_false_values() noexcept {
+    static std::vector<std::string> false_values = {"0", "no", "false", "off"};
+    return false_values;
 }
 
+inline const std::vector<std::string> & OptionBool::get_true_values() const noexcept {
+    return true_values ? *true_values : get_default_true_values();
 }
 
-#endif
+inline const std::vector<std::string> & OptionBool::get_false_values() const noexcept {
+    return false_values ? *false_values : get_default_false_values();
+}
+
+}  // namespace libdnf
 
 #endif
