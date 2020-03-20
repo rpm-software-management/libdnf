@@ -1,29 +1,26 @@
 /*
- * Copyright (C) 2018 Red Hat, Inc.
- *
- * Licensed under the GNU Lesser General Public License Version 2.1
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- */
+Copyright (C) 2020 Red Hat, Inc.
 
-#ifndef _LIBDNF_OPTION_SECONDS_HPP
-#define _LIBDNF_OPTION_SECONDS_HPP
+This file is part of libdnf: https://github.com/rpm-software-management/libdnf/
 
-#ifdef LIBDNF_UNSTABLE_API
+Libdnf is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 2 of the License, or
+(at your option) any later version.
 
-#include "OptionNumber.hpp"
+Libdnf is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#ifndef LIBDNF_CONF_OPTION_SECONDS_HPP
+#define LIBDNF_CONF_OPTION_SECONDS_HPP
+
+#include "option_number.hpp"
 
 namespace libdnf {
 
@@ -37,22 +34,38 @@ namespace libdnf {
 */
 class OptionSeconds : public OptionNumber<std::int32_t> {
 public:
-    OptionSeconds(ValueType defaultValue, ValueType min, ValueType max);
-    OptionSeconds(ValueType defaultValue, ValueType min);
-    OptionSeconds(ValueType defaultValue);
+    class InvalidValue : public Option::InvalidValue {
+    public:
+        using Option::InvalidValue::InvalidValue;
+        const char * get_domain_name() const noexcept override { return "libdnf::OptionSeconds"; }
+    };
+
+    class NegativeValue : public InvalidValue {
+    public:
+        using InvalidValue::InvalidValue;
+        const char * get_name() const noexcept override { return "Negative value"; }
+        const char * get_description() const noexcept override { return "Seconds value must not be negative"; };
+    };
+
+    class UnknownUnit : public InvalidValue {
+    public:
+        using InvalidValue::InvalidValue;
+        const char * get_name() const noexcept override { return "UnknownUnit"; }
+    };
+
+    OptionSeconds(ValueType default_value, ValueType min, ValueType max);
+    OptionSeconds(ValueType default_value, ValueType min);
+    explicit OptionSeconds(ValueType default_value);
     OptionSeconds * clone() const override;
-    ValueType fromString(const std::string & value) const;
+    ValueType from_string(const std::string & value) const;
     using OptionNumber<std::int32_t>::set;
     void set(Priority priority, const std::string & value) override;
 };
 
-inline OptionSeconds * OptionSeconds::clone() const
-{
+inline OptionSeconds * OptionSeconds::clone() const {
     return new OptionSeconds(*this);
 }
 
-}
-
-#endif
+}  // namespace libdnf
 
 #endif
