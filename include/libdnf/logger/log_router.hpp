@@ -35,6 +35,7 @@ public:
     void add_logger(std::unique_ptr<Logger> && logger) { loggers.push_back(std::move(logger)); }
     Logger * get_logger(size_t index) { return loggers.at(index).get(); }
     std::unique_ptr<Logger> release_logger(size_t index);
+    void swap_logger(std::unique_ptr<Logger> & logger, size_t index) { loggers.at(index).swap(logger); }
 
     void write(Level level, const std::string & message) noexcept override;
     void write(time_t time, pid_t pid, Level level, const std::string & message) noexcept override;
