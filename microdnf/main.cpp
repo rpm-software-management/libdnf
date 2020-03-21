@@ -17,7 +17,31 @@ You should have received a copy of the GNU General Public License
 along with microdnf.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <libdnf/base/base.hpp>
+#include <libdnf/logger/memory_buffer_logger.hpp>
+#include <libdnf/logger/stream_logger.hpp>
+
+#include <fstream>
 
 int main() {
+    libdnf::Base base;
+
+    auto log_router = base.get_logger();
+
+    // Add circular memory buffer logger
+    const std::size_t max_log_items_to_keep = 10000;
+    const std::size_t prealloc_log_items = 256;
+    log_router->add_logger(std::make_unique<libdnf::MemoryBufferLogger>(max_log_items_to_keep, prealloc_log_items));
+
+    log_router->info("Microdnf start");
+
+    // Swap to destination logger and write messages from memory buffer logger to it
+    auto log_stream = std::make_unique<std::ofstream>("/tmp/microdnf5.log", std::ios::app);
+    std::unique_ptr<libdnf::Logger> logger = std::make_unique<libdnf::StreamLogger>(std::move(log_stream));
+    log_router->swap_logger(logger, 0);
+    dynamic_cast<libdnf::MemoryBufferLogger &>(*logger).write_to_logger(log_router);
+
+    log_router->info("Microdnf end");
+
     return 0;
 }
