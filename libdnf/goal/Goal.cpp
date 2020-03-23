@@ -1420,7 +1420,7 @@ Goal::Impl::brokenDependencyPkgs(unsigned i)
 Id
 Goal::Impl::protectedRunningKernel()
 {
-    return dnf_sack_running_kernel(sack);
+    return protect_running_kernel ? dnf_sack_running_kernel(sack) : 0;
 }
 
 bool
@@ -1428,6 +1428,8 @@ Goal::Impl::protectedInRemovals()
 {
     guint i = 0;
     bool ret = false;
+    if ((!protectedPkgs || !protectedPkgs->size()) && !protect_running_kernel)
+        return false;
     auto pkgRemoveList = listResults(SOLVER_TRANSACTION_ERASE, 0);
     auto pkgObsoleteList = listResults(SOLVER_TRANSACTION_OBSOLETED, 0);
     map_or(pkgRemoveList.getMap(), pkgObsoleteList.getMap());
