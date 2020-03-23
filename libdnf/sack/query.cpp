@@ -479,6 +479,17 @@ filter_latest_sortcmp_byarch_bypriority(const void *ap, const void *bp, void *dp
     return *(Id *)ap - *(Id *)bp;
 }
 
+/**
+* @brief Add packages from given block into a map
+*
+* @param pool: Package pool
+* @param m: Map of query results complying the filter
+* @param samename: Queue containing the block
+* @param start_block: Start of the block
+* @param stop_block: End of the block
+* @param latest: Number of first packages in the block to add into the map.
+*                If negative, it's number of first packages in the block to exclude.
+*/
 static void
 add_latest_to_map(const Pool *pool, Map *m, Queue *samename,
                   int start_block, int stop_block, int latest)
@@ -1790,6 +1801,8 @@ Query::Impl::filterLatest(const Filter & f, Map *m)
                       filter_latest_sortcmp, pool);
         }
 
+        // Create blocks per name, arch and repo priority
+        // But call add_latest_to_map only for the block with highest priority
         Solvable *considered, *highest = 0;
         bool make_block = 1;
         int start_block = -1;
@@ -1822,7 +1835,7 @@ Query::Impl::filterLatest(const Filter & f, Map *m)
                 make_block = 0;
             }
         }
-        if (start_block != -1 && make_block) {
+        if (start_block != -1 && make_block) { // Add last block to the map
             add_latest_to_map(pool, m, &samename, start_block, i, latest);
         }
         queue_free(&samename);
