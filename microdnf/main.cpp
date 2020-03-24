@@ -21,6 +21,7 @@ along with microdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <libdnf/logger/memory_buffer_logger.hpp>
 #include <libdnf/logger/stream_logger.hpp>
 
+#include <filesystem>
 #include <fstream>
 
 int main() {
@@ -34,6 +35,10 @@ int main() {
     log_router->add_logger(std::make_unique<libdnf::MemoryBufferLogger>(max_log_items_to_keep, prealloc_log_items));
 
     log_router->info("Microdnf start");
+
+    // load configuration from file and from directory with drop-in files
+    base.load_config_from_file();
+    base.load_config_from_dir();
 
     // Swap to destination logger and write messages from memory buffer logger to it
     auto log_stream = std::make_unique<std::ofstream>("/tmp/microdnf5.log", std::ios::app);
