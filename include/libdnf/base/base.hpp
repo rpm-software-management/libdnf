@@ -23,6 +23,8 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/conf/config_main.hpp"
 #include "libdnf/logger/log_router.hpp"
 
+#include <filesystem>
+
 namespace libdnf {
 
 
@@ -31,6 +33,11 @@ namespace libdnf {
 /// :class:`.Base` instances are stateful objects owning various data.
 class Base {
 public:
+    void load_config_from_file(const std::filesystem::path & path);
+    void load_config_from_file();
+    void load_config_from_dir(const std::filesystem::path & path);
+    void load_config_from_dir();
+
     ConfigMain * get_config() { return &config_main; }
     LogRouter * get_logger() { return &log_router; }
 
