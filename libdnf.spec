@@ -4,7 +4,7 @@
 %global dnf_conflict 4.2.23
 %global swig_version 3.0.12
 %global libdnf_major_version 0
-%global libdnf_minor_version 50
+%global libdnf_minor_version 51
 %global libdnf_micro_version 0
 
 # set sphinx package name according to distro

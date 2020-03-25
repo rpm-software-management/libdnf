@@ -38,6 +38,7 @@ extern "C" {
 
 // hawkey
 #include "catch-error.hpp"
+#include "dnf-context.hpp"
 #include "dnf-types.h"
 #include "hy-goal-private.hpp"
 #include "hy-iutil-private.hpp"
@@ -65,13 +66,19 @@ extern "C" {
 HyGoal
 hy_goal_clone(HyGoal goal)
 {
-    return new libdnf::Goal(*goal);
+    auto goal_clone = new libdnf::Goal(*goal);
+    goal_clone->set_protect_running_kernel(
+        libdnf::getGlobalMainConfig().protect_running_kernel().getValue());
+    return goal_clone;
 }
 
 HyGoal
 hy_goal_create(DnfSack *sack)
 {
-    return new libdnf::Goal(sack);
+    auto goal = new libdnf::Goal(sack);
+    goal->set_protect_running_kernel(
+        libdnf::getGlobalMainConfig().protect_running_kernel().getValue());
+    return goal;
 }
 
 void
