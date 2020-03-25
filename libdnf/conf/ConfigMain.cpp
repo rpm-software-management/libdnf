@@ -279,6 +279,7 @@ class ConfigMain::Impl {
 
     OptionString user_agent{getUserAgent()};
     OptionBool countme{false};
+    OptionBool protect_running_kernel{true};
 
     // Repo main config
 
@@ -431,6 +432,7 @@ ConfigMain::Impl::Impl(Config & owner)
     owner.optBinds().add("module_platform_id", module_platform_id);
     owner.optBinds().add("user_agent", user_agent);
     owner.optBinds().add("countme", countme);
+    owner.optBinds().add("protect_running_kernel", protect_running_kernel);
 
     // Repo main config
 
@@ -563,6 +565,7 @@ OptionBool & ConfigMain::ignorearch() { return pImpl->ignorearch; }
 OptionString & ConfigMain::module_platform_id() { return pImpl->module_platform_id; }
 OptionString & ConfigMain::user_agent() { return pImpl->user_agent; }
 OptionBool & ConfigMain::countme() { return pImpl->countme; }
+OptionBool & ConfigMain::protect_running_kernel() {return pImpl->protect_running_kernel; }
 
 // Repo main config
 OptionNumber<std::uint32_t> & ConfigMain::retries() { return pImpl->retries; }
