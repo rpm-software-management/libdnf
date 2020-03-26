@@ -39,6 +39,8 @@
 %callback("%s_cb") ObjectQuery::get_int32;
 %callback("%s_cb") ObjectQuery::get_int64;
 %callback("%s_cb") ObjectQuery::get_related_object;
+%callback("%s_cb") ObjectQuery::match_installed;
+%callback("%s_cb") ObjectQuery::match_repoid;
 
 %include "test/object_query.hpp"
 %include "test/related_object.hpp"

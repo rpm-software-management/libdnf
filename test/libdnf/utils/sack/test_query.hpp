@@ -24,6 +24,9 @@ class QueryTest : public CppUnit::TestCase {
 
     CPPUNIT_TEST(test_filter_related_object_string);
 
+    CPPUNIT_TEST(test_match_installed);
+    CPPUNIT_TEST(test_match_repoid);
+
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -43,6 +46,9 @@ public:
     void test_filter_int32_lt();
 
     void test_filter_related_object_string();
+
+    void test_match_installed();
+    void test_match_repoid();
 
 private:
     ObjectSack sack;

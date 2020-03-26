@@ -19,10 +19,12 @@ void QueryTest::setUp() {
     Object o1;
     o1.string = "foo";
     o1.int32 = 10;
+    o1.repoid = "fedora";
 
     Object o2;
     o2.string = "bar";
     o2.int32 = 20;
+    o2.repoid = "@System";
 
     RelatedObject ro1;
     ro1.id = "aaa";
@@ -225,5 +227,37 @@ void QueryTest::test_filter_related_object_string() {
 
     // there's 1 Object containing "bbb" in related_objects vector
     q.filter(ObjectQuery::get_related_object, QueryCmp::EQ, q_related);
+    CPPUNIT_ASSERT(q.size() == 1);
+}
+
+
+void QueryTest::test_match_installed() {
+    // check if initial set has expected size
+    auto q = sack.new_query();
+    CPPUNIT_ASSERT(q.size() == 2);
+
+    // installed
+    q.filter(ObjectQuery::match_installed, true);
+    CPPUNIT_ASSERT(q.size() == 1);
+
+    // not installed
+    q = sack.new_query();
+    q.filter(ObjectQuery::match_installed, false);
+    CPPUNIT_ASSERT(q.size() == 1);
+}
+
+
+void QueryTest::test_match_repoid() {
+    // check if initial set has expected size
+    auto q = sack.new_query();
+    CPPUNIT_ASSERT(q.size() == 2);
+
+    // filter doesn't match anything
+    q.filter(ObjectQuery::match_repoid, QueryCmp::EXACT, "no-match");
+    CPPUNIT_ASSERT(q.size() == 0);
+
+    // repoid == "fedora"
+    q = sack.new_query();
+    q.filter(ObjectQuery::match_repoid, QueryCmp::EXACT, "fedora");
     CPPUNIT_ASSERT(q.size() == 1);
 }

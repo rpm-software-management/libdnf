@@ -18,6 +18,18 @@ public:
     static int64_t get_int64(const ObjectWeakPtr & obj) { return obj->int64; }
     static std::vector<std::string> get_related_object(const ObjectWeakPtr & obj) { return obj->related_objects; }
 
+    static bool match_repoid(const ObjectWeakPtr & obj, libdnf::utils::sack::QueryCmp cmp, const std::string & pattern) {
+        return libdnf::utils::sack::match_string(obj->repoid, cmp, pattern);
+    }
+
+    static bool match_installed(const ObjectWeakPtr & obj, bool value) {
+        if (value) {
+            return libdnf::utils::sack::match_string(obj->repoid, libdnf::utils::sack::QueryCmp::EXACT, "@System");
+        } else {
+            return libdnf::utils::sack::match_string(obj->repoid, libdnf::utils::sack::QueryCmp::NEQ, "@System");
+        }
+    }
+
     using libdnf::utils::sack::Query<ObjectWeakPtr>::filter;
 
     std::size_t filter(FilterFunctionVectorString * getter, libdnf::utils::sack::QueryCmp cmp, RelatedObjectQuery q) {

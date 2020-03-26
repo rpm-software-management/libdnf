@@ -20,4 +20,6 @@ public:
     int64_t int64 = 64;
     uint64_t uint64 = 64;
     std::vector<std::string> related_objects;
+
+    std::string repoid;
 };

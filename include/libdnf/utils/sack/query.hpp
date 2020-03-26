@@ -66,6 +66,9 @@ public:
 
     std::size_t filter(char * (*getter)(const T &), QueryCmp cmp, const std::string & pattern);
 
+    std::size_t filter(bool (*matcher)(const T &, bool), bool pattern);
+    std::size_t filter(bool (*matcher)(const T &, libdnf::utils::sack::QueryCmp, const std::string &), QueryCmp cmp, const std::string & pattern);
+
     /// Get a single object. Raise an exception if none or multiple objects match the query.
     const T & get() const {
         if (get_data().size() == 1) {
@@ -240,6 +243,38 @@ inline std::size_t Query<T>::filter(
     for (auto it = get_data().begin(); it != get_data().end();) {
         auto value = getter(*it);
         if (match_string(value, cmp, pattern)) {
+            ++it;
+        } else {
+            it = get_data().erase(it);
+            ++filtered;
+        }
+    }
+    return filtered;
+}
+
+
+template <typename T>
+inline std::size_t Query<T>::filter(bool (*matcher)(const T &, bool), bool pattern) {
+    std::size_t filtered = 0;
+
+    for (auto it = get_data().begin(); it != get_data().end();) {
+        if (matcher(*it, pattern)) {
+            ++it;
+        } else {
+            it = get_data().erase(it);
+            ++filtered;
+        }
+    }
+    return filtered;
+}
+
+
+template <typename T>
+inline std::size_t Query<T>::filter(bool (*matcher)(const T &, libdnf::utils::sack::QueryCmp, const std::string &), QueryCmp cmp, const std::string & pattern) {
+    std::size_t filtered = 0;
+
+    for (auto it = get_data().begin(); it != get_data().end();) {
+        if (matcher(*it, cmp, pattern)) {
             ++it;
         } else {
             it = get_data().erase(it);
