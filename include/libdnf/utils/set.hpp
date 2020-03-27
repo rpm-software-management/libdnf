@@ -136,6 +136,30 @@ inline Set<T> & Set<T>::operator ^=(const Set<T> & other) {
     return *this;
 }
 
+template <typename T>
+inline Set<T> operator |(const Set<T> & lhs, const Set<T> & rhs) {
+    Set<T> ret(lhs);
+    return ret |= rhs;
+}
+
+template <typename T>
+inline Set<T> operator &(const Set<T> & lhs, const Set<T> & rhs) {
+    Set<T> ret(lhs);
+    return ret &= rhs;
+}
+
+template <typename T>
+inline Set<T> operator -(const Set<T> & lhs, const Set<T> & rhs) {
+    Set<T> ret(lhs);
+    return ret -= rhs;
+}
+
+template <typename T>
+inline Set<T> operator ^(const Set<T> & lhs, const Set<T> & rhs) {
+    Set<T> ret(lhs);
+    return ret ^= rhs;
+}
+
 }  // namespace libdnf
 
 #endif
