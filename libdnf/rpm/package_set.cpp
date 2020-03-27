@@ -20,7 +20,7 @@
 
 #include <assert.h>
 
-#include "packageset.hpp"
+#include "libdnf/rpm/package_set.hpp"
 #include "../dnf-sack.h"
 #include "../hy-util-private.hpp"
 
