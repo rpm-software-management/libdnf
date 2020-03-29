@@ -23,6 +23,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "repo.hpp"
 #include "repo_query.hpp"
 
+#include <filesystem>
 #include "libdnf/common/sack/sack.hpp"
 #include "libdnf/logger/logger.hpp"
 
@@ -37,7 +38,13 @@ namespace libdnf::rpm {
 class RepoSack : public libdnf::sack::Sack<Repo, RepoQuery> {
 public:
     explicit RepoSack(Base & base) : base(&base) {}
+
     RepoWeakPtr new_repo(const std::string & id);
+
+    void new_repos_from_file(const std::filesystem::path & path);
+    void new_repos_from_file();
+    void new_repos_from_dir(const std::filesystem::path & path);
+    void new_repos_from_dirs();
 
 private:
     Base * base;
