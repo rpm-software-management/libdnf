@@ -22,6 +22,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "libdnf/conf/config_main.hpp"
 #include "libdnf/logger/log_router.hpp"
+#include "libdnf/rpm/repo/repo_sack.hpp"
 
 #include <filesystem>
 
@@ -40,10 +41,12 @@ public:
 
     ConfigMain * get_config() { return &config_main; }
     LogRouter * get_logger() { return &log_router; }
+    rpm::RepoSack * get_rpm_repo_sack() { return &rpm_repo_sack; }
 
 private:
     LogRouter log_router;
     ConfigMain config_main;
+    rpm::RepoSack rpm_repo_sack{*this};
 };
 
 
