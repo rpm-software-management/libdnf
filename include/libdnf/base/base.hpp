@@ -25,6 +25,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/rpm/repo/repo_sack.hpp"
 
 #include <filesystem>
+#include <map>
 
 namespace libdnf {
 
@@ -42,10 +43,12 @@ public:
     ConfigMain * get_config() { return &config_main; }
     LogRouter * get_logger() { return &log_router; }
     rpm::RepoSack * get_rpm_repo_sack() { return &rpm_repo_sack; }
+    std::map<std::string, std::string> * get_substitutions() { return &substitutions; }
 
 private:
     LogRouter log_router;
     ConfigMain config_main;
+    std::map<std::string, std::string> substitutions;
     rpm::RepoSack rpm_repo_sack{*this};
 };
 
