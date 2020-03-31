@@ -20,6 +20,26 @@
 ######################
 
 ====================
+0.46.2 Release Notes
+====================
+
+- Add prereq_ignoreinst & regular_requires properties for pkg (RhBug:1543449)
+- Reset active modules when no module enabled or default (RhBug:1767351)
+- Add comment option to transaction (RhBug:1773679)
+- Failing to get module defauls is a recoverable error
+- Baseurl is not exclusive with mirrorlist/metalink (RhBug: 1775184)
+- Add new function to reset all modules in C API (dnf_context_reset_all_modules)
+- [context] Fix to preserve additionalMetadata content (RhBug:1808677)
+- Fix filtering of DepSolvables with source rpms (RhBug:1812596)
+- Add setter for running kernel protection setting
+- Handle situation when an unprivileged user cannot create history database (RhBug:1634385)
+- Add query filter: latest by priority
+- Add DNF_NO_PROTECTED flag to allow empty list of protected packages
+- Remove 'dim' option from terminal colors to make them more readable (RhBug:1807774,1814563)
+- [context] Error when main config file can't be opened (RhBug:1794864)
+- [context] Add function function dnf_context_is_set_config_file_path
+
+====================
 0.45.0 Release Notes
 ====================
 
