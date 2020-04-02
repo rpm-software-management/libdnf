@@ -166,23 +166,6 @@ reldeps_for(DnfPackage *pkg, Id type)
 }
 
 /**
- * dnf_package_get_id: (skip):
- * @pkg: a #DnfPackage instance.
- *
- * Gets the internal ID used to identify the package in the pool.
- *
- * Returns: an integer, or 0 for unknown
- *
- * Since: 0.7.0
- */
-Id
-dnf_package_get_id(DnfPackage *pkg)
-{
-    DnfPackagePrivate *priv = GET_PRIVATE(pkg);
-    return priv->id;
-}
-
-/**
  * dnf_package_get_sack:
  * @pkg: a #DnfPackage instance.
  *
@@ -330,129 +313,6 @@ dnf_package_get_baseurl(DnfPackage *pkg)
 }
 
 /**
- * dnf_package_get_nevra:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the package NEVRA. Note that the returned string has an undefined
- * lifetime and may become invalid at a later time. You should copy the string
- * if storing it into a long-lived data structure.
- *
- * Returns: (transfer none): a string, or %NULL
- *
- * Since: 0.7.0
- */
-const char *
-dnf_package_get_nevra(DnfPackage *pkg)
-{
-    Solvable *s = get_solvable(pkg);
-    return pool_solvable2str(dnf_package_get_pool(pkg), s);
-}
-
-/**
- * dnf_package_get_sourcerpm:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the source RPM for the package.
- *
- * Returns: (transfer none): a string, or %NULL
- *
- * Since: 0.7.0
- */
-const char *
-dnf_package_get_sourcerpm(DnfPackage *pkg)
-{
-    Solvable *s = get_solvable(pkg);
-    repo_internalize_trigger(s->repo);
-    return solvable_lookup_sourcepkg(s);
-}
-
-/**
- * dnf_package_get_version:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the version for the package.
- *
- * Returns: (transfer none): a string, or %NULL
- *
- * Since: 0.7.0
- */
-const char *
-dnf_package_get_version(DnfPackage *pkg)
-{
-    char *e, *v, *r;
-    pool_split_evr(dnf_package_get_pool(pkg), dnf_package_get_evr(pkg), &e, &v, &r);
-    return v;
-}
-
-/**
- * dnf_package_get_release:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the release for the package.
- *
- * Returns: (transfer none): a string, or %NULL
- *
- * Since: 0.7.0
- */
-const char *
-dnf_package_get_release(DnfPackage *pkg)
-{
-    char *e, *v, *r;
-    pool_split_evr(dnf_package_get_pool(pkg), dnf_package_get_evr(pkg), &e, &v, &r);
-    return r;
-}
-
-/**
- * dnf_package_get_name:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the name for the package.
- *
- * Returns: a string, or %NULL
- *
- * Since: 0.7.0
- */
-const char *
-dnf_package_get_name(DnfPackage *pkg)
-{
-    Pool *pool = dnf_package_get_pool(pkg);
-    return pool_id2str(pool, get_solvable(pkg)->name);
-}
-
-/**
- * dnf_package_get_packager:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX for the package.
- *
- * Returns: a string, or %NULL
- *
- * Since: 0.7.0
- */
-const char *
-dnf_package_get_packager(DnfPackage *pkg)
-{
-    return solvable_lookup_str(get_solvable(pkg), SOLVABLE_PACKAGER);
-}
-
-/**
- * dnf_package_get_arch:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the architecture for the package.
- *
- * Returns: a string, or %NULL
- *
- * Since: 0.7.0
- */
-const char *
-dnf_package_get_arch(DnfPackage *pkg)
-{
-    Pool *pool = dnf_package_get_pool(pkg);
-    return pool_id2str(pool, get_solvable(pkg)->arch);
-}
-
-/**
  * dnf_package_get_chksum:
  * @pkg: a #DnfPackage instance.
  *
@@ -500,71 +360,6 @@ dnf_package_get_hdr_chksum(DnfPackage *pkg, int *type)
 }
 
 /**
- * dnf_package_get_description:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the description for the package.
- *
- * Returns: a string, or %NULL
- *
- * Since: 0.7.0
- */
-const char *
-dnf_package_get_description(DnfPackage *pkg)
-{
-    return solvable_lookup_str(get_solvable(pkg), SOLVABLE_DESCRIPTION);
-}
-
-/**
- * dnf_package_get_evr:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the EVR for the package.
- *
- * Returns: a string
- *
- * Since: 0.7.0
- */
-const char *
-dnf_package_get_evr(DnfPackage *pkg)
-{
-    Pool *pool = dnf_package_get_pool(pkg);
-    return pool_id2str(pool, get_solvable(pkg)->evr);
-}
-
-/**
- * dnf_package_get_group:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the group for the package.
- *
- * Returns: a string, or %NULL
- *
- * Since: 0.7.0
- */
-const char *
-dnf_package_get_group(DnfPackage *pkg)
-{
-  return solvable_lookup_str(get_solvable(pkg), SOLVABLE_GROUP);
-}
-
-/**
- * dnf_package_get_license:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the license for the package.
- *
- * Returns: a string, or %NULL
- *
- * Since: 0.7.0
- */
-const char *
-dnf_package_get_license(DnfPackage *pkg)
-{
-    return solvable_lookup_str(get_solvable(pkg), SOLVABLE_LICENSE);
-}
-
-/**
  * dnf_package_get_reponame:
  * @pkg: a #DnfPackage instance.
  *
@@ -582,71 +377,6 @@ dnf_package_get_reponame(DnfPackage *pkg)
 }
 
 /**
- * dnf_package_get_summary:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the summary for the package.
- *
- * Returns: a string, or %NULL
- *
- * Since: 0.7.0
- */
-const char *
-dnf_package_get_summary(DnfPackage *pkg)
-{
-    Solvable *s = get_solvable(pkg);
-    return solvable_lookup_str(s, SOLVABLE_SUMMARY);
-}
-
-/**
- * dnf_package_get_url:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the url for the package.
- *
- * Returns: a string, or %NULL
- *
- * Since: 0.7.0
- */
-const char *
-dnf_package_get_url(DnfPackage *pkg)
-{
-    return solvable_lookup_str(get_solvable(pkg), SOLVABLE_URL);
-}
-
-/**
- * dnf_package_get_downloadsize:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the download size for the package.
- *
- * Returns: %TRUE for success
- *
- * Since: 0.7.0
- */
-guint64
-dnf_package_get_downloadsize(DnfPackage *pkg)
-{
-    return lookup_num(pkg, SOLVABLE_DOWNLOADSIZE);
-}
-
-/**
- * dnf_package_get_epoch:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the epoch for the package.
- *
- * Returns: %TRUE for success
- *
- * Since: 0.7.0
- */
-guint64
-dnf_package_get_epoch(DnfPackage *pkg)
-{
-    return pool_get_epoch(dnf_package_get_pool(pkg), dnf_package_get_evr(pkg));
-}
-
-/**
  * dnf_package_get_hdr_end:
  * @pkg: a #DnfPackage instance.
  *
@@ -660,38 +390,6 @@ guint64
 dnf_package_get_hdr_end(DnfPackage *pkg)
 {
     return lookup_num(pkg, SOLVABLE_HEADEREND);
-}
-
-/**
- * dnf_package_get_installsize:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the installed size for the package.
- *
- * Returns: size in bytes
- *
- * Since: 0.7.0
- */
-guint64
-dnf_package_get_installsize(DnfPackage *pkg)
-{
-    return lookup_num(pkg, SOLVABLE_INSTALLSIZE);
-}
-
-/**
- * dnf_package_get_buildtime:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the build time for the package.
- *
- * Returns: UNIX time
- *
- * Since: 0.7.0
- */
-guint64
-dnf_package_get_buildtime(DnfPackage *pkg)
-{
-    return lookup_num(pkg, SOLVABLE_BUILDTIME);
 }
 
 /**
@@ -741,24 +439,6 @@ dnf_package_get_rpmdbid(DnfPackage *pkg)
 {
     guint64 ret = lookup_num(pkg, RPM_RPMDBID);
     return ret;
-}
-
-/**
- * dnf_package_get_size:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the size for the package.
- *
- * Returns: size in bytes
- *
- * Since: 0.7.0
- */
-guint64
-dnf_package_get_size(DnfPackage *pkg)
-{
-    unsigned type = dnf_package_installed(pkg) ? SOLVABLE_INSTALLSIZE :
-                                                 SOLVABLE_DOWNLOADSIZE;
-    return lookup_num(pkg, type);
 }
 
 /**
@@ -944,36 +624,6 @@ DnfReldepList *
 dnf_package_get_regular_requires(DnfPackage *pkg)
 {
     return reldeps_for(pkg, SOLVABLE_REQUIRES);
-}
-
-/**
- * dnf_package_get_files:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the files contained in the package.
- *
- * Returns: (transfer full): the file list
- *
- * Since: 0.7.0
- */
-gchar **
-dnf_package_get_files(DnfPackage *pkg)
-{
-    DnfPackagePrivate *priv = GET_PRIVATE(pkg);
-    Pool *pool = dnf_package_get_pool(pkg);
-    Solvable *s = get_solvable(pkg);
-    Dataiterator di;
-    GPtrArray *ret = g_ptr_array_new();
-
-    repo_internalize_trigger(s->repo);
-    dataiterator_init(&di, pool, s->repo, priv->id, SOLVABLE_FILELIST, NULL,
-                      SEARCH_FILES | SEARCH_COMPLETE_FILELIST);
-    while (dataiterator_step(&di)) {
-        g_ptr_array_add(ret, g_strdup(di.kv.str));
-    }
-    dataiterator_free(&di);
-    g_ptr_array_add(ret, NULL);
-    return (gchar**)g_ptr_array_free (ret, FALSE);
 }
 
 /**
