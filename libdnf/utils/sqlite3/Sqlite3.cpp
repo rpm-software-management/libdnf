@@ -27,7 +27,6 @@ SQLite3::open()
     if (db == nullptr) {
         auto result = sqlite3_open(path.c_str(), &db);
         if (result != SQLITE_OK) {
-            sqlite3_close(db);
             throw Error(*this, result, "Open failed");
         }
 
