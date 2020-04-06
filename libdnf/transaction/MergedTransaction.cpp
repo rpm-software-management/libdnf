@@ -19,6 +19,7 @@
  */
 
 #include "MergedTransaction.hpp"
+#include <vector>
 
 namespace libdnf {
 
@@ -114,6 +115,17 @@ MergedTransaction::listReleasevers() const
     }
     return result;
 }
+
+std::vector< std::string >
+MergedTransaction::listComments() const
+{
+    std::vector< std::string > result;
+    for (auto t : transactions) {
+        result.push_back(t->getComment());
+    }
+    return result;
+}
+
 
 int64_t
 MergedTransaction::getDtBegin() const noexcept
