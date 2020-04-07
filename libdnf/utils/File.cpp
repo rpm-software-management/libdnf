@@ -37,14 +37,14 @@ File::~File()
 {
     try {
         close();
-    } catch (IOException &) {}
+    } catch (IOError &) {}
 }
 
 void File::open(const char *mode)
 {
     file = fopen(filePath.c_str(), mode);
     if (!file) {
-        throw OpenException(filePath, std::system_category().message(errno));
+        throw OpenError(filePath, std::system_category().message(errno));
     }
 }
 
@@ -54,7 +54,7 @@ void File::close()
         return;
 
     if (fclose(file) != 0) {
-        throw CloseException(filePath);
+        throw CloseError(filePath);
     }
 
     file = nullptr;
@@ -65,7 +65,7 @@ size_t File::read(char *buffer, size_t count)
     size_t ret = fread(buffer, sizeof(char), count, file);
 
     if (ret != count && ferror(file) != 0) {
-        throw ReadException("Error while reading file \"" + filePath + "\".");
+        throw ReadError("Error while reading file \"" + filePath + "\".");
     }
 
     return ret;
@@ -95,7 +95,7 @@ std::string File::getContent()
     fseek(file, 0, SEEK_END);
     auto fileSize = ftell(file);
     if (fileSize == -1)
-        throw IOException(filePath);
+        throw IOError(filePath);
     rewind(file);
     std::string content(fileSize, '\0');
     read(&content.front(), fileSize);
