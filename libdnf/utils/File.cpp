@@ -19,12 +19,12 @@ extern "C" {
 
 namespace libdnf {
 
-std::shared_ptr<File> File::newFile(const std::string &filePath)
+std::unique_ptr<File> File::newFile(const std::string &filePath)
 {
     if (solv_xfopen_iscompressed(filePath.c_str()) == 1) {
-        return std::make_shared<CompressedFile>(filePath);
+        return std::unique_ptr<CompressedFile>(new CompressedFile(filePath));
     } else {
-        return std::make_shared<File>(filePath);
+        return std::unique_ptr<File>(new File(filePath));
     }
 }
 
