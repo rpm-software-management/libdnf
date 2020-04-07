@@ -32,9 +32,9 @@ public:
         explicit NotOpenedException(const std::string &filePath) : IOException("File '" + filePath + "' is not opened.") {}
     };
 
-    struct ShortReadException : IOException
+    struct ReadException : IOException
     {
-        explicit ShortReadException(const std::string &filePath) : IOException("Short read of file: " + filePath) {}
+        explicit ReadException(const std::string & msg) : IOException(msg) {}
     };
 
     static std::unique_ptr<File> newFile(const std::string &filePath);
