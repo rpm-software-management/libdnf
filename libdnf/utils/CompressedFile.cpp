@@ -42,7 +42,11 @@ std::string CompressedFile::getContent()
     size_t bytesRead;
 
     do {
-        bytesRead = read(buffer, bufferSize);
+        try {
+            bytesRead = read(buffer, bufferSize);
+        } catch (const ReadException & e) {
+            throw ReadException(std::string(e.what()) + " Likely the archive is damaged.");
+        }
         ss.write(buffer, bytesRead);
     } while (bytesRead == bufferSize);
 

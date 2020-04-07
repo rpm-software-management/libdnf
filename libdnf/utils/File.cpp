@@ -62,7 +62,13 @@ void File::close()
 
 size_t File::read(char *buffer, size_t count)
 {
-    return fread(buffer, sizeof(char), count, file);
+    size_t ret = fread(buffer, sizeof(char), count, file);
+
+    if (ret != count && ferror(file) != 0) {
+        throw ReadException("Error while reading file \"" + filePath + "\".");
+    }
+
+    return ret;
 }
 
 bool File::readLine(std::string &line)
@@ -92,11 +98,7 @@ std::string File::getContent()
         throw IOException(filePath);
     rewind(file);
     std::string content(fileSize, '\0');
-    auto bytesRead = read(&content.front(), fileSize);
-
-    if (bytesRead != static_cast<size_t>(fileSize)) {
-        throw ShortReadException(filePath);
-    }
+    read(&content.front(), fileSize);
 
     return content;
 }
