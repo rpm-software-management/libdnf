@@ -21,18 +21,18 @@ public:
     {
         explicit OpenError(const std::string &filePath) : IOError("Cannot open file \"" + filePath + "\".") {}
         explicit OpenError(const std::string &filePath, const std::string &detail) :
-            IOError("Cannot open file \"" + filePath + "\". " + detail) {}
+            IOError("Cannot open file \"" + filePath + "\": " + detail) {}
     };
 
     struct CloseError : IOError
     {
-        explicit CloseError(const std::string &filePath) : IOError("Cannot close file: " + filePath) {}
+        explicit CloseError(const std::string &filePath) : IOError("Cannot close file \"" + filePath + "\".") {}
     };
 
     struct NotOpenedException : Exception
     {
         explicit NotOpenedException(const std::string &filePath) :
-            Exception("File '" + filePath + "' is not opened.") {}
+            Exception("File \"" + filePath + "\" is not opened.") {}
     };
 
     struct ReadError : IOError
