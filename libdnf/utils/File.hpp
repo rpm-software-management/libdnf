@@ -1,6 +1,8 @@
 #ifndef LIBDNF_FILE_HPP
 #define LIBDNF_FILE_HPP
 
+#include "../error.hpp"
+
 #include <fstream>
 #include <memory>
 #include <string>
@@ -10,31 +12,32 @@ namespace libdnf {
 class File
 {
 public:
-    struct IOException : std::runtime_error
+    struct IOError : Error
     {
-        explicit IOException(const std::string &what) : std::runtime_error(what) {}
+        explicit IOError(const std::string &what) : Error(what) {}
     };
 
-    struct OpenException : IOException
+    struct OpenError : IOError
     {
-        explicit OpenException(const std::string &filePath) : IOException("Cannot open file \"" + filePath + "\".") {}
-        explicit OpenException(const std::string &filePath, const std::string &detail) :
-            IOException("Cannot open file \"" + filePath + "\". " + detail) {}
+        explicit OpenError(const std::string &filePath) : IOError("Cannot open file \"" + filePath + "\".") {}
+        explicit OpenError(const std::string &filePath, const std::string &detail) :
+            IOError("Cannot open file \"" + filePath + "\". " + detail) {}
     };
 
-    struct CloseException : IOException
+    struct CloseError : IOError
     {
-        explicit CloseException(const std::string &filePath) : IOException("Cannot close file: " + filePath) {}
+        explicit CloseError(const std::string &filePath) : IOError("Cannot close file: " + filePath) {}
     };
 
-    struct NotOpenedException : IOException
+    struct NotOpenedException : Exception
     {
-        explicit NotOpenedException(const std::string &filePath) : IOException("File '" + filePath + "' is not opened.") {}
+        explicit NotOpenedException(const std::string &filePath) :
+            Exception("File '" + filePath + "' is not opened.") {}
     };
 
-    struct ReadException : IOException
+    struct ReadError : IOError
     {
-        explicit ReadException(const std::string & msg) : IOException(msg) {}
+        explicit ReadError(const std::string & msg) : IOError(msg) {}
     };
 
     static std::unique_ptr<File> newFile(const std::string &filePath);

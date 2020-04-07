@@ -24,9 +24,9 @@ void CompressedFile::open(const char *mode)
     file = solv_xfopen(filePath.c_str(), mode);
     if (!file) {
         if (errno) {
-            throw OpenException(filePath, std::system_category().message(errno));
+            throw OpenError(filePath, std::system_category().message(errno));
         }
-        throw OpenException(filePath);
+        throw OpenError(filePath);
     }
 }
 
@@ -44,8 +44,8 @@ std::string CompressedFile::getContent()
     do {
         try {
             bytesRead = read(buffer, bufferSize);
-        } catch (const ReadException & e) {
-            throw ReadException(std::string(e.what()) + " Likely the archive is damaged.");
+        } catch (const ReadError & e) {
+            throw ReadError(std::string(e.what()) + " Likely the archive is damaged.");
         }
         ss.write(buffer, bytesRead);
     } while (bytesRead == bufferSize);
