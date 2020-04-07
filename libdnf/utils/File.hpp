@@ -37,7 +37,7 @@ public:
         explicit ShortReadException(const std::string &filePath) : IOException("Short read of file: " + filePath) {}
     };
 
-    static std::shared_ptr<File> newFile(const std::string &filePath);
+    static std::unique_ptr<File> newFile(const std::string &filePath);
 
     explicit File(const std::string &filePath);
     virtual ~File();
