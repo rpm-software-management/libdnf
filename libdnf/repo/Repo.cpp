@@ -292,7 +292,7 @@ Repo::Repo(const std::string & id, std::unique_ptr<ConfigRepo> && conf, Repo::Ty
         auto idx = verifyId(id);
         if (idx >= 0) {
             std::string msg = tfm::format(_("Bad id for repo: %s, byte = %s %d"), id, id[idx], idx);
-            throw std::runtime_error(msg);
+            throw RepoError(msg);
         }
     }
     pImpl.reset(new Impl(*this, id, type, std::move(conf)));
@@ -316,7 +316,7 @@ void Repo::verify() const
     if (pImpl->conf->baseurl().empty() &&
         (pImpl->conf->metalink().empty() || pImpl->conf->metalink().getValue().empty()) &&
         (pImpl->conf->mirrorlist().empty() || pImpl->conf->mirrorlist().getValue().empty()))
-        throw std::runtime_error(tfm::format(_("Repository %s has no mirror or baseurl set."), pImpl->id));
+        throw RepoError(tfm::format(_("Repository %s has no mirror or baseurl set."), pImpl->id));
 
     const auto & type = pImpl->conf->type().getValue();
     const char * supportedRepoTypes[]{"rpm-md", "rpm", "repomd", "rpmmd", "yum", "YUM"};
@@ -325,8 +325,8 @@ void Repo::verify() const
             if (type == supported)
                 return;
         }
-        throw std::runtime_error(tfm::format(_("Repository '%s' has unsupported type: 'type=%s', skipping."),
-                                             pImpl->id, type));
+        throw RepoError(tfm::format(_("Repository '%s' has unsupported type: 'type=%s', skipping."),
+                                      pImpl->id, type));
     }
 }
 
@@ -531,7 +531,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir)
     }
 
     if (source == Source::NONE && conf->baseurl().getValue().empty())
-        throw std::runtime_error(tfm::format(_("Cannot find a valid baseurl for repo: %s"), id));
+        throw RepoError(tfm::format(_("Cannot find a valid baseurl for repo: %s"), id));
 
     // setup username/password if needed
     auto userpwd = conf->username().getValue();
@@ -568,8 +568,8 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir)
     if (maxspeed > 0 && maxspeed <= 1)
         maxspeed *= conf->bandwidth().getValue();
     if (maxspeed != 0 && maxspeed < minrate)
-        throw std::runtime_error(_("Maximum download speed is lower than minimum. "
-                                   "Please change configuration of minrate or throttle"));
+        throw RepoError(_("Maximum download speed is lower than minimum. "
+                          "Please change configuration of minrate or throttle"));
     handleSetOpt(h.get(), LRO_MAXSPEED, static_cast<int64_t>(maxspeed));
 
     long timeout = conf->timeout().getValue();
@@ -792,7 +792,7 @@ std::vector<Key> Repo::Impl::retrieve(const std::string & url)
     }
     catch (const LrExceptionWithSourceUrl & e) {
         auto msg = tfm::format(_("Failed to retrieve GPG key for repo '%s': %s"), id, e.what());
-        throw std::runtime_error(msg);
+        throw RepoError(msg);
     }
     lseek(fd, SEEK_SET, 0);
     auto keyInfos = rawkey2infos(fd);
@@ -1209,14 +1209,14 @@ void Repo::Impl::fetch(const std::string & destdir, std::unique_ptr<LrHandle> &&
     auto repodir = destdir + "/" + METADATA_RELATIVE_DIR;
     if (g_mkdir_with_parents(destdir.c_str(), 0755) == -1) {
         const char * errTxt = strerror(errno);
-        throw std::runtime_error(tfm::format(_("Cannot create repo destination directory \"%s\": %s"),
-                                             destdir, errTxt));
+        throw RepoError(tfm::format(_("Cannot create repo destination directory \"%s\": %s"),
+                                      destdir, errTxt));
     }
     auto tmpdir = destdir + "/tmpdir.XXXXXX";
     if (!mkdtemp(&tmpdir.front())) {
         const char * errTxt = strerror(errno);
-        throw std::runtime_error(tfm::format(_("Cannot create repo temporary directory \"%s\": %s"),
-                                             tmpdir.c_str(), errTxt));
+        throw RepoError(tfm::format(_("Cannot create repo temporary directory \"%s\": %s"),
+                                      tmpdir.c_str(), errTxt));
     }
     Finalizer tmpDirRemover([&tmpdir](){
         dnf_remove_recursive(tmpdir.c_str(), NULL);
@@ -1229,8 +1229,8 @@ void Repo::Impl::fetch(const std::string & destdir, std::unique_ptr<LrHandle> &&
     dnf_remove_recursive(repodir.c_str(), NULL);
     if (g_mkdir_with_parents(repodir.c_str(), 0755) == -1) {
         const char * errTxt = strerror(errno);
-        throw std::runtime_error(tfm::format(_("Cannot create directory \"%s\": %s"),
-                                             repodir, errTxt));
+        throw RepoError(tfm::format(_("Cannot create directory \"%s\": %s"),
+                                      repodir, errTxt));
     }
     // move all downloaded object from tmpdir to destdir
     if (auto * dir = opendir(tmpdir.c_str())) {
@@ -1255,7 +1255,7 @@ void Repo::Impl::fetch(const std::string & destdir, std::unique_ptr<LrHandle> &&
                     _("Cannot rename directory \"%s\" to \"%s\": %s"),
                     tempElement, targetElement, error->message);
                 g_error_free(error);
-                throw std::runtime_error(errTxt);
+                throw RepoError(errTxt);
             }
         }
     }
@@ -1288,7 +1288,7 @@ bool Repo::Impl::load()
         }
         if (syncStrategy == SyncStrategy::ONLY_CACHE) {
             auto msg = tfm::format(_("Cache-only enabled but no cache for '%s'"), id);
-            throw std::runtime_error(msg);
+            throw RepoError(msg);
         }
 
         logger->debug(tfm::format(_("repo: downloading from remote: %s"), id));
@@ -1298,7 +1298,7 @@ bool Repo::Impl::load()
         loadCache(true);
     } catch (const LrExceptionWithSourceUrl & e) {
         auto msg = tfm::format(_("Failed to download metadata for repo '%s': %s"), id, e.what());
-        throw std::runtime_error(msg);
+        throw RepoError(msg);
     }
     expired = false;
     return true;
@@ -1323,7 +1323,7 @@ std::string Repo::Impl::getHash() const
     static constexpr int USE_CHECKSUM_BYTES = 8;
     if (chksumLen < USE_CHECKSUM_BYTES) {
         solv_chksum_free(chksumObj, nullptr);
-        throw std::runtime_error(_("getCachedir(): Computation of SHA256 failed"));
+        throw Exception(_("getCachedir(): Computation of SHA256 failed"));
     }
     char chksumCStr[USE_CHECKSUM_BYTES * 2 + 1];
     solv_bin2hex(chksum, USE_CHECKSUM_BYTES, chksumCStr);
@@ -1348,8 +1348,8 @@ std::string Repo::Impl::getPersistdir() const
     std::string result = persdir + "repos/" + getHash();
     if (g_mkdir_with_parents(result.c_str(), 0755) == -1) {
         const char * errTxt = strerror(errno);
-        throw std::runtime_error(tfm::format(_("Cannot create persistdir \"%s\": %s"),
-                                             result, errTxt));
+        throw RepoError(tfm::format(_("Cannot create persistdir \"%s\": %s"),
+                                    result, errTxt));
     }
     return result;
 }
@@ -1657,8 +1657,8 @@ static LrHandle * newHandle(ConfigMain * conf)
         if (maxspeed > 0 && maxspeed <= 1)
             maxspeed *= conf->bandwidth().getValue();
         if (maxspeed != 0 && maxspeed < minrate)
-            throw std::runtime_error(_("Maximum download speed is lower than minimum. "
-                                       "Please change configuration of minrate or throttle"));
+            throw RepoError(_("Maximum download speed is lower than minimum. "
+                              "Please change configuration of minrate or throttle"));
         handleSetOpt(h, LRO_MAXSPEED, static_cast<int64_t>(maxspeed));
 
         if (!conf->proxy().empty() && !conf->proxy().getValue().empty())
@@ -1749,7 +1749,7 @@ void PackageTarget::Impl::init(LrHandle * handle, const char * relativeUrl, cons
 
     if (resume && byteRangeStart) {
         auto msg = _("resume cannot be used simultaneously with the byterangestart param");
-        throw std::runtime_error(msg);
+        throw Exception(msg);
     }
 
     GError * errP{nullptr};
@@ -1766,7 +1766,7 @@ void PackageTarget::Impl::init(LrHandle * handle, const char * relativeUrl, cons
 
     if (!lrPkgTarget) {
         auto msg = tfm::format(_("PackageTarget initialization failed: %s"), err->message);
-        throw std::runtime_error(msg);
+        throw Exception(msg);
     }
 }
 
@@ -1882,7 +1882,7 @@ long LibrepoLog::addHandler(const std::string & filePath, bool debug)
     // Open the file
     FILE *fd = fopen(filePath.c_str(), "a");
     if (!fd)
-        throw std::runtime_error(tfm::format(_("Cannot open %s: %s"), filePath, g_strerror(errno)));
+        throw RepoError(tfm::format(_("Cannot open %s: %s"), filePath, g_strerror(errno)));
 
     // Setup user data
     std::unique_ptr<LrHandleLogData> data(new LrHandleLogData);
@@ -1926,7 +1926,7 @@ void LibrepoLog::removeHandler(long uid)
     auto it = lrLogDatas.begin();
     for (; it != lrLogDatas.end() && (*it)->uid != uid; ++it);
     if (it == lrLogDatas.end())
-        throw std::runtime_error(tfm::format(_("Log handler with id %ld doesn't exist"), uid));
+        throw Exception(tfm::format(_("Log handler with id %ld doesn't exist"), uid));
 
     // Remove the handler and free the data
     lrLogDatas.erase(it);

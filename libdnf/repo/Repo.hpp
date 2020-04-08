@@ -24,6 +24,7 @@
 #define MODULEMD
 
 #include "../conf/ConfigRepo.hpp"
+#include "../error.hpp"
 #include "../hy-types.h"
 
 #include <memory>
@@ -372,6 +373,11 @@ public:
     static long addHandler(const std::string & filePath, bool debug = false);
     static void removeHandler(long uid);
     static void removeAllHandlers();
+};
+
+class RepoError : public Error {
+public:
+    RepoError(const std::string & what) : Error(what) {}
 };
 
 }
