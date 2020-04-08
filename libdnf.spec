@@ -127,7 +127,8 @@ BuildRequires:  swig >= %{swig_version}
 
 %description -n python2-%{name}
 Python 2 bindings for the libdnf library.
-%endif # with python2
+%endif
+# endif with python2
 
 %if %{with python3}
 %package -n python3-%{name}
@@ -161,7 +162,8 @@ Conflicts:      python-dnf < %{dnf_conflict}
 
 %description -n python2-hawkey
 Python 2 bindings for the hawkey library.
-%endif # with python2
+%endif
+# endif with python2
 
 %if %{with python3}
 %package -n python3-hawkey
@@ -185,7 +187,7 @@ Python 3 bindings for the hawkey library.
 %autosetup
 %if %{with python2}
 mkdir build-py2
-%endif # with python2
+%endif
 %if %{with python3}
 mkdir build-py3
 %endif
@@ -201,7 +203,8 @@ pushd build-py2
   %cmake -DPYTHON_DESIRED:FILEPATH=%{__python2} -DWITH_MAN=OFF ../ %{!?with_zchunk:-DWITH_ZCHUNK=OFF} %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts} -DLIBDNF_MAJOR_VERSION=%{libdnf_major_version} -DLIBDNF_MINOR_VERSION=%{libdnf_minor_version} -DLIBDNF_MICRO_VERSION=%{libdnf_micro_version}
   %make_build
 popd
-%endif # with python2
+%endif
+# endif with python2
 
 %if %{with python3}
 pushd build-py3
@@ -220,7 +223,7 @@ popd
 pushd build-py2
   make ARGS="-V" test
 popd
-%endif # with python2
+%endif
 %if %{with python3}
 # If we didn't run the general tests yet, do it now.
 %if %{without python2}
@@ -242,7 +245,7 @@ popd
 pushd build-py2
   %make_install
 popd
-%endif # with python2
+%endif
 %if %{with python3}
 pushd build-py3
   %make_install
@@ -275,7 +278,7 @@ popd
 %if %{with python2}
 %files -n python2-%{name}
 %{python2_sitearch}/%{name}/
-%endif # with python2
+%endif
 
 %if %{with python3}
 %files -n python3-%{name}
@@ -285,7 +288,7 @@ popd
 %if %{with python2}
 %files -n python2-hawkey
 %{python2_sitearch}/hawkey/
-%endif # with python2
+%endif
 
 %if %{with python3}
 %files -n python3-hawkey
