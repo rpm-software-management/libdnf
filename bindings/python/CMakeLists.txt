@@ -1,8 +1,5 @@
 find_package(PythonInstDir)
 find_package(SWIG REQUIRED)
-
-cmake_policy(SET CMP0078 OLD)
-cmake_policy(SET CMP0086 OLD)
 include(UseSWIG)
 
 message(STATUS "Building for python${PYTHON_VERSION_MAJOR}")
