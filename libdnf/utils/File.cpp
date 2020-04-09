@@ -54,6 +54,7 @@ void File::close()
         return;
 
     if (fclose(file) != 0) {
+        file = nullptr;
         throw CloseError(filePath);
     }
 
