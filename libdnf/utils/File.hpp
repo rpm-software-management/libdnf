@@ -43,6 +43,8 @@ public:
     static std::unique_ptr<File> newFile(const std::string &filePath);
 
     explicit File(const std::string &filePath);
+    File(const File&) = delete;
+    File & operator=(const File&) = delete;
     virtual ~File();
 
     virtual void open(const char *mode);
