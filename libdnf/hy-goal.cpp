@@ -163,6 +163,20 @@ hy_goal_install_optional(HyGoal goal, DnfPackage *new_pkg)
     return 0;
 }
 
+int
+hy_goal_favor(HyGoal goal, DnfPackage *pkg)
+{
+    goal->favor(pkg);
+    return 0;
+}
+
+int
+hy_goal_disfavor(HyGoal goal, DnfPackage *pkg)
+{
+    goal->disfavor(pkg);
+    return 0;
+}
+
 gboolean
 hy_goal_install_selector(HyGoal goal, HySelector sltr, GError **error) try
 {

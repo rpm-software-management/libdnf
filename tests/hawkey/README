@@ -62,6 +62,9 @@ pigs, tour
 * testing file reqiures
 * tour is available as a command-line .rpm too
 
+dodo, dodo-dep-a, dodo-dep-b
+* testing favor/disfavor
+
 === repos/yum ===
 
 To test loading of yum repos we need an actual yum repo. It currently consists

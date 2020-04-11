@@ -417,7 +417,7 @@ END_TEST
 
 template<const char * (*getCharFromPackage)(DnfPackage*)>
 static void
-assert_list_names(GPtrArray *plist, ...)
+assert_list_names(bool wanted, GPtrArray *plist, ...)
 {
     va_list names;
     char *name;
@@ -437,15 +437,25 @@ assert_list_names(GPtrArray *plist, ...)
         if (i++ >= count) {
             fail("assert_list_names(): list too short");
         }
+        bool found = false;
         for (auto string: stringVector) {
             if (strcmp(string, name) == 0) {
-                goto nextName;
+                found = true;
+                break;
             }
         }
-        fail_unless(false, "assert_list_names(): element '%s' not found '%zu'", name, stringVector.size());
-        nextName:;
+        if ((wanted && !found) || (!wanted && found)) {
+            fail_unless(false, "assert_list_names(): element '%s' %sfound '%zu'",
+                        name, wanted ? "not ": "", stringVector.size());
+        }
     }
-    fail_unless(i == count, "assert_list_names(): too many items in the list");
+    // In the wanted case; we expect all the pkgs in the lists to fully
+    // describe each other. Otherwise, in the !wanted case we just care that
+    // all the passed pkg arguments are *not* found in the list, which is
+    // already checked above.
+    if (wanted) {
+        fail_unless(i == count, "assert_list_names(): too many items in the list (%d vs %d)", i, count);
+    }
     va_end(names);
 }
 
@@ -460,7 +470,7 @@ START_TEST(test_goal_upgrade_all)
     fail_unless(size_and_free(plist) == 0);
 
     plist = hy_goal_list_obsoleted(goal, NULL);
-    assert_list_names<&dnf_package_get_name>(plist, "penny", NULL);
+    assert_list_names<&dnf_package_get_name>(true, plist, "penny", NULL);
     g_ptr_array_unref(plist);
 
     plist = hy_goal_list_upgrades(goal, NULL);
@@ -468,17 +478,17 @@ START_TEST(test_goal_upgrade_all)
     if (implicitobsoleteusescolors) {
         // Fedora, Mageia
         assert_list_names<&dnf_package_get_name>(
-            plist, "dog", "flying", "fool", "pilchard", "pilchard", NULL);
+            true, plist, "dog", "flying", "fool", "pilchard", "pilchard", NULL);
     } else {
         // openSUSE
         assert_list_names<&dnf_package_get_name>(
-            plist, "dog", "flying", "fool", NULL);
+            true, plist, "dog", "flying", "fool", NULL);
     }
 
     // see all obsoletes of fool:
     auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(plist, 1));
     GPtrArray *plist_obs = hy_goal_list_obsoleted_by_package(goal, pkg);
-    assert_list_names<&dnf_package_get_name>(plist_obs, "fool", "penny", NULL);
+    assert_list_names<&dnf_package_get_name>(true, plist_obs, "fool", "penny", NULL);
     g_ptr_array_unref(plist_obs);
     g_ptr_array_unref(plist);
 
@@ -735,6 +745,50 @@ START_TEST(test_goal_forcebest)
 }
 END_TEST
 
+START_TEST(test_goal_favor)
+{
+    DnfSack *sack = test_globals.sack;
+    HyGoal goal = hy_goal_create(sack);
+    HySelector sltr = hy_selector_create(sack);
+
+    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "dodo");
+    hy_goal_install_selector(goal, sltr, NULL);
+    DnfPackage *pkg = get_latest_pkg(sack, "dodo-dep-a");
+    hy_goal_favor(goal, pkg);
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
+    GPtrArray *plist = hy_goal_list_installs(goal, NULL);
+    assert_list_names<&dnf_package_get_name>(true, plist, "dodo", "dodo-dep-a", NULL);
+    assert_list_names<&dnf_package_get_name>(false, plist, "dodo-dep-b", NULL);
+    g_ptr_array_unref(plist);
+
+    g_object_unref(pkg);
+    hy_selector_free(sltr);
+    hy_goal_free(goal);
+}
+END_TEST
+
+START_TEST(test_goal_disfavor)
+{
+    DnfSack *sack = test_globals.sack;
+    HyGoal goal = hy_goal_create(sack);
+    HySelector sltr = hy_selector_create(sack);
+
+    hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "dodo");
+    hy_goal_install_selector(goal, sltr, NULL);
+    DnfPackage *pkg = get_latest_pkg(sack, "dodo-dep-a");
+    hy_goal_disfavor(goal, pkg);
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
+    GPtrArray *plist = hy_goal_list_installs(goal, NULL);
+    assert_list_names<&dnf_package_get_name>(true, plist, "dodo", "dodo-dep-b", NULL);
+    assert_list_names<&dnf_package_get_name>(false, plist, "dodo-dep-a", NULL);
+    g_ptr_array_unref(plist);
+
+    g_object_unref(pkg);
+    hy_selector_free(sltr);
+    hy_goal_free(goal);
+}
+END_TEST
+
 START_TEST(test_goal_installonly)
 {
     const char *installonly[] = {"fool", NULL};
@@ -766,10 +820,10 @@ START_TEST(test_goal_installonly_upgrade_all)
     fail_if(hy_goal_run_flags(goal, DNF_NONE));
 
     GPtrArray *plist = hy_goal_list_erasures(goal, NULL);
-    assert_list_names<&dnf_package_get_name>(plist, "penny", NULL);
+    assert_list_names<&dnf_package_get_name>(true, plist, "penny", NULL);
     g_ptr_array_unref(plist);
     plist = hy_goal_list_installs(goal, NULL);
-    assert_list_names<&dnf_package_get_name>(plist, "fool", NULL);
+    assert_list_names<&dnf_package_get_name>(true, plist, "fool", NULL);
     g_ptr_array_unref(plist);
 
     int implicitobsoleteusescolors = pool_get_flag(pool, POOL_FLAG_IMPLICITOBSOLETEUSESCOLORS);
@@ -920,18 +974,18 @@ START_TEST(test_goal_distupgrade_all_keep_arch)
     if (implicitobsoleteusescolors) {
         // Fedora, Mageia
         assert_iueo(goal, 0, 5, 0, 1);
-        assert_list_names<&dnf_package_get_nevra>(plist, "dog-1-2.x86_64", "fool-1-5.noarch",
+        assert_list_names<&dnf_package_get_nevra>(true, plist, "dog-1-2.x86_64", "fool-1-5.noarch",
             "flying-3.1-0.x86_64", "pilchard-1.2.4-1.x86_64", "pilchard-1.2.4-1.i686", NULL);
     } else {
         // openSUSE
         assert_iueo(goal, 0, 4, 0, 1);
-        assert_list_names<&dnf_package_get_nevra>(plist, "dog-1-2.x86_64", "fool-1-5.noarch",
+        assert_list_names<&dnf_package_get_nevra>(true, plist, "dog-1-2.x86_64", "fool-1-5.noarch",
             "flying-3.1-0.x86_64", "pilchard-1.2.4-2.x86_64", NULL);
     }
     g_ptr_array_unref(plist);
 
     plist = hy_goal_list_obsoleted(goal, NULL);
-    assert_list_names<&dnf_package_get_nevra>(plist, "penny-4-1.noarch", NULL);
+    assert_list_names<&dnf_package_get_nevra>(true, plist, "penny-4-1.noarch", NULL);
     g_ptr_array_unref(plist);
 
     plist = hy_goal_list_downgrades(goal, NULL);
@@ -1275,6 +1329,8 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_protected);
     tcase_add_test(tc, test_goal_erase_clean_deps);
     tcase_add_test(tc, test_goal_forcebest);
+    tcase_add_test(tc, test_goal_favor);
+    tcase_add_test(tc, test_goal_disfavor);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("ModifiesSackState");
