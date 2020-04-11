@@ -74,6 +74,8 @@ public:
     */
     void erase(HySelector sltr, int flags);
     void install(DnfPackage *new_pkg, bool optional);
+    void favor(DnfPackage *new_pkg);
+    void disfavor(DnfPackage *new_pkg);
 
     /**
     * @brief If selector ill formed, it rises std::runtime_error()

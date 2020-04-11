@@ -759,6 +759,18 @@ Goal::install(DnfPackage *new_pkg, bool optional)
 }
 
 void
+Goal::favor(DnfPackage *pkg)
+{
+    queue_push2(&pImpl->staging, SOLVER_SOLVABLE|SOLVER_FAVOR, dnf_package_get_id(pkg));
+}
+
+void
+Goal::disfavor(DnfPackage *pkg)
+{
+    queue_push2(&pImpl->staging, SOLVER_SOLVABLE|SOLVER_DISFAVOR, dnf_package_get_id(pkg));
+}
+
+void
 Goal::install(HySelector sltr, bool optional)
 {
     int solverActions = SOLVER_INSTALL;

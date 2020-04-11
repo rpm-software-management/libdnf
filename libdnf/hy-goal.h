@@ -118,6 +118,24 @@ int hy_goal_install(HyGoal goal, DnfPackage *new_pkg);
 int hy_goal_install_optional(HyGoal goal, DnfPackage *new_pkg);
 
 /**
+* @brief Favor package when considering alternatives. Return value is always 0.
+*
+* @param goal HyGoal
+* @param pkg Package to favor
+* @return int
+*/
+int hy_goal_favor(HyGoal goal, DnfPackage *pkg);
+
+/**
+* @brief Disfavor package when considering alternatives. Return value is always 0.
+*
+* @param goal HyGoal
+* @param pkg Package to disfavor
+* @return int
+*/
+int hy_goal_disfavor(HyGoal goal, DnfPackage *pkg);
+
+/**
 * @brief Mark content of HySelector to install or if installed to downgrade or upgrade. Only one
 * option will be chosen. It allows to downgrade dependencies if needed. If not supported
 * combination in selectort, it triggers assertion raise.
