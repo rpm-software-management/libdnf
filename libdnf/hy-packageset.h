@@ -40,6 +40,8 @@ int                  dnf_packageset_has         (DnfPackageSet *pset, DnfPackage
 DnfPackageSet       *dnf_packageset_from_bitmap (DnfSack *sack, Map *m);
 Map             *dnf_packageset_get_map        (DnfPackageSet *pset);
 
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(DnfPackageSet, dnf_packageset_free)
+
 #ifdef __cplusplus
 }
 #endif
