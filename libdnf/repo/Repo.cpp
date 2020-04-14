@@ -291,7 +291,9 @@ Repo::Repo(const std::string & id, std::unique_ptr<ConfigRepo> && conf, Repo::Ty
     if (type == Type::AVAILABLE) {
         auto idx = verifyId(id);
         if (idx >= 0) {
-            std::string msg = tfm::format(_("Bad id for repo: %s, byte = %s %d"), id, id[idx], idx);
+            std::string msg = tfm::format(
+                ("Invalid repository id \"%s\": invalid character '%s' at position %d."),
+                id, id[idx], idx + 1);
             throw RepoError(msg);
         }
     }
