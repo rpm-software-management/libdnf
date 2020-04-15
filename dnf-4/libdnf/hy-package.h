@@ -46,34 +46,13 @@ struct _DnfPackageClass
         void (*_dnf_reserved8)  (void);
 };
 
-DnfPackage  *dnf_package_new            (DnfSack    *sack, Id id);
-
-gboolean     dnf_package_get_identical  (DnfPackage *pkg1, DnfPackage *pkg2);
-gboolean     dnf_package_installed      (DnfPackage *pkg);
 int          dnf_package_cmp            (DnfPackage *pkg1, DnfPackage *pkg2);
 int          dnf_package_evr_cmp        (DnfPackage *pkg1, DnfPackage *pkg2);
 
-const char  *dnf_package_get_location   (DnfPackage *pkg);
-const char  *dnf_package_get_baseurl    (DnfPackage *pkg);
 const unsigned char *dnf_package_get_chksum(DnfPackage *pkg, int *type);
 const unsigned char *dnf_package_get_hdr_chksum(DnfPackage *pkg, int *type);
 const char  *dnf_package_get_reponame   (DnfPackage *pkg);
-guint64      dnf_package_get_hdr_end    (DnfPackage *pkg);
-guint64      dnf_package_get_medianr    (DnfPackage *pkg);
-guint64      dnf_package_get_rpmdbid    (DnfPackage *pkg);
-guint64      dnf_package_get_installtime(DnfPackage *pkg);
 
-DnfReldepList *dnf_package_get_conflicts    (DnfPackage *pkg);
-DnfReldepList *dnf_package_get_enhances     (DnfPackage *pkg);
-DnfReldepList *dnf_package_get_obsoletes    (DnfPackage *pkg);
-DnfReldepList *dnf_package_get_provides     (DnfPackage *pkg);
-DnfReldepList *dnf_package_get_recommends   (DnfPackage *pkg);
-DnfReldepList *dnf_package_get_requires     (DnfPackage *pkg);
-DnfReldepList *dnf_package_get_requires_pre (DnfPackage *pkg);
-DnfReldepList *dnf_package_get_suggests     (DnfPackage *pkg);
-DnfReldepList *dnf_package_get_supplements  (DnfPackage *pkg);
-DnfReldepList *dnf_package_get_prereq_ignoreinst(DnfPackage *pkg);
-DnfReldepList *dnf_package_get_regular_requires(DnfPackage *pkg);
 GPtrArray   *dnf_package_get_advisories (DnfPackage *pkg, int cmp_type);
 
 DnfPackageDelta *dnf_package_get_delta_from_evr(DnfPackage *pkg, const char *from_evr);
