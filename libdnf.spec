@@ -20,6 +20,8 @@
 
 %bcond_with valgrind
 
+%bcond_with repoconfig_daemon
+
 # Do not build bindings for python3 for RHEL <= 7
 %if 0%{?rhel} && 0%{?rhel} <= 7
 %bcond_with python3
@@ -191,6 +193,16 @@ Obsoletes:      platform-python-hawkey < %{version}-%{release}
 Python 3 bindings for the hawkey library.
 %endif
 
+%if %{with repoconfig_daemon}
+%package -n dnf-repoconfig-daemon
+Summary:        D-bus daemon for repository management
+BuildRequires:  pkgconfig(sdbus-c++)
+BuildRequires:  systemd-rpm-macros
+
+%description -n dnf-repoconfig-daemon
+D-bus daemon for listing, enabling and disabling repositories.
+%endif
+
 %prep
 %autosetup
 %if %{with python2}
@@ -209,7 +221,8 @@ pushd build-py2
     %define __builddir build-py2
   %endif
   %cmake -DPYTHON_DESIRED:FILEPATH=%{__python2} -DWITH_MAN=OFF ../ %{!?with_zchunk:-DWITH_ZCHUNK=OFF} %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts} -DLIBDNF_MAJOR_VERSION=%{libdnf_major_version} -DLIBDNF_MINOR_VERSION=%{libdnf_minor_version} -DLIBDNF_MICRO_VERSION=%{libdnf_micro_version} \
-    -DWITH_SANITIZERS=%{?with_sanitizers:ON}%{!?with_sanitizers:OFF}
+    -DWITH_SANITIZERS=%{?with_sanitizers:ON}%{!?with_sanitizers:OFF} \
+    -DWITH_REPOCONFIG_DAEMON=%{?with_repoconfig_daemon:ON}%{!?with_repoconfig_daemon:OFF}
   %make_build
 popd
 %endif
@@ -223,7 +236,8 @@ pushd build-py3
     %define __builddir build-py3
   %endif
   %cmake -DPYTHON_DESIRED:FILEPATH=%{__python3} -DWITH_GIR=0 -DWITH_MAN=0 -Dgtkdoc=0 ../ %{!?with_zchunk:-DWITH_ZCHUNK=OFF} %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts} -DLIBDNF_MAJOR_VERSION=%{libdnf_major_version} -DLIBDNF_MINOR_VERSION=%{libdnf_minor_version} -DLIBDNF_MICRO_VERSION=%{libdnf_micro_version} \
-    -DWITH_SANITIZERS=%{?with_sanitizers:ON}%{!?with_sanitizers:OFF}
+    -DWITH_SANITIZERS=%{?with_sanitizers:ON}%{!?with_sanitizers:OFF} \
+    -DWITH_REPOCONFIG_DAEMON=%{?with_repoconfig_daemon:ON}%{!?with_repoconfig_daemon:OFF}
   %make_build
 popd
 %endif
@@ -303,6 +317,15 @@ popd
 %if %{with python3}
 %files -n python3-hawkey
 %{python3_sitearch}/hawkey/
+%endif
+
+%if %{with repoconfig_daemon}
+%files -n dnf-repoconfig-daemon
+%{_bindir}/dnf-repoconfig-daemon
+%{_unitdir}/dnf-repoconfig-daemon.service
+%{_sysconfdir}/dbus-1/system.d/org.rpm.dnf.v1.conf
+%{_datadir}/dbus-1/system-services/org.rpm.dnf.v1.rpm.RepoConf.service
+%{_datadir}/polkit-1/actions/org.rpm.dnf.v1.policy
 %endif
 
 %changelog
