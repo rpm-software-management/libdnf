@@ -1,0 +1,5 @@
+[D-BUS Service]
+Name=org.rpm.dnf.v1.rpm.RepoConf
+Exec=/usr/bin/dnf-repoconfig-daemon
+User=root
+SystemdService=dnf-repoconfig-daemon.service

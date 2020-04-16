@@ -12,7 +12,6 @@ cmake_policy(SET CMP0005 OLD)
 cmake_policy(SET CMP0003 NEW)
 include(GNUInstallDirs)
 
-
 # use project specific cmake modules
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 if(${CMAKE_VERSION} VERSION_LESS 3)
@@ -31,6 +30,7 @@ option(WITH_GTKDOC "Enables libdnf GTK-Doc HTML documentation" ON)
 option(WITH_HTML "Enables hawkey HTML generation" ON)
 option(WITH_MAN "Enables hawkey man page generation" ON)
 option(WITH_ZCHUNK "Build with zchunk support" ON)
+option(WITH_REPOCONFIG_DAEMON "Build dnf-repoconfig-daemon" OFF)
 option(ENABLE_RHSM_SUPPORT "Build with Red Hat Subscription Manager support?" OFF)
 option(ENABLE_SOLV_URPMREORDER "Build with support for URPM-like solution reordering?" OFF)
 
@@ -182,4 +182,8 @@ enable_testing()
 add_subdirectory(tests)
 if(WITH_BINDINGS)
     add_subdirectory(python/hawkey)
+endif()
+
+if (WITH_REPOCONFIG_DAEMON)
+    add_subdirectory(dnf-repoconfig-daemon)
 endif()
