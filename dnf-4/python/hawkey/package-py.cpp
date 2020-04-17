@@ -267,9 +267,6 @@ get_changelogs(_PackageObject *self, void *closure) try
 
 static PyGetSetDef package_getsetters[] = {
     {(char*)"changelogs", (getter)get_changelogs, NULL, NULL, NULL},
-    {(char*)"hdr_chksum", (getter)get_chksum, NULL, NULL,
-     (void *)dnf_package_get_hdr_chksum},
-    {(char*)"chksum", (getter)get_chksum, NULL, NULL, (void *)dnf_package_get_chksum},
     {(char*)"reponame",  (getter)get_str, NULL, NULL, (void *)dnf_package_get_reponame},
     {NULL}                        /* sentinel */
 };
