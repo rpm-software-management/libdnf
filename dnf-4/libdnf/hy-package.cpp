@@ -186,53 +186,6 @@ dnf_package_evr_cmp(DnfPackage *pkg1, DnfPackage *pkg2)
 }
 
 /**
- * dnf_package_get_chksum:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the checksum for the package.
- *
- * Returns: raw checksum bytes
- *
- * Since: 0.7.0
- */
-const unsigned char *
-dnf_package_get_chksum(DnfPackage *pkg, int *type)
-{
-    Solvable *s = get_solvable(pkg);
-    const unsigned char* ret;
-
-    repo_internalize_trigger(s->repo);
-    ret = solvable_lookup_bin_checksum(s, SOLVABLE_CHECKSUM, type);
-    if (ret)
-        *type = checksumt_l2h(*type);
-    return ret;
-}
-
-/**
- * dnf_package_get_hdr_chksum:
- * @pkg: a #DnfPackage instance.
- *
- * Gets the SHA1 checksum of the packages header.
- * This is only set for packages in the rpmdb.
- *
- * Returns: raw checksum bytes
- *
- * Since: 0.7.0
- */
-const unsigned char *
-dnf_package_get_hdr_chksum(DnfPackage *pkg, int *type)
-{
-    Solvable *s = get_solvable(pkg);
-    const unsigned char *ret;
-
-    repo_internalize_trigger(s->repo);
-    ret = solvable_lookup_bin_checksum(s, SOLVABLE_HDRID, type);
-    if (ret)
-        *type = checksumt_l2h(*type);
-    return ret;
-}
-
-/**
  * dnf_package_get_reponame:
  * @pkg: a #DnfPackage instance.
  *

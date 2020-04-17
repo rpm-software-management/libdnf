@@ -49,8 +49,6 @@ struct _DnfPackageClass
 int          dnf_package_cmp            (DnfPackage *pkg1, DnfPackage *pkg2);
 int          dnf_package_evr_cmp        (DnfPackage *pkg1, DnfPackage *pkg2);
 
-const unsigned char *dnf_package_get_chksum(DnfPackage *pkg, int *type);
-const unsigned char *dnf_package_get_hdr_chksum(DnfPackage *pkg, int *type);
 const char  *dnf_package_get_reponame   (DnfPackage *pkg);
 
 GPtrArray   *dnf_package_get_advisories (DnfPackage *pkg, int cmp_type);
