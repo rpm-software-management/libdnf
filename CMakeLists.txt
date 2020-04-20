@@ -35,6 +35,10 @@ option(ENABLE_RHSM_SUPPORT "Build with Red Hat Subscription Manager support?" OF
 option(ENABLE_SOLV_URPMREORDER "Build with support for URPM-like solution reordering?" OFF)
 
 
+# build options - debugging
+option(WITH_SANITIZERS "Build with address, leak and undefined sanitizers (DEBUG ONLY)" OFF)
+
+
 # load pkg-config first; it's required by other modules
 find_package(PkgConfig REQUIRED)
 if(APPLE)
@@ -141,6 +145,20 @@ endif()
 # libsolv
 if(ENABLE_SOLV_URPMREORDER)
     add_definitions(-DLIBSOLV_FLAG_URPMREORDER=1)
+endif()
+
+
+if(WITH_SANITIZERS)
+    message(WARNING "Building with sanitizers enabled!")
+    set(SANITIZER_FLAGS "-fsanitize=address -fsanitize=leak -fsanitize=undefined")
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        # requires: compiler-rt package on Fedora
+        set(SANITIZER_FLAGS "${SANITIZER_FLAGS} -static-libsan")
+    else()
+        set(SANITIZER_FLAGS "${SANITIZER_FLAGS} -static-libasan -static-liblsan -static-libubsan")
+    endif()
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${SANITIZER_FLAGS}")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${SANITIZER_FLAGS}")
 endif()
 
 
