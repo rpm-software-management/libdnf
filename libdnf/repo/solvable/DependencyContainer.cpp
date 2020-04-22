@@ -42,11 +42,15 @@ DependencyContainer::DependencyContainer(DnfSack *sack)
     queue_init(&queue);
 }
 
-DependencyContainer::DependencyContainer(DnfSack *sack, Queue queue)
+DependencyContainer::DependencyContainer(DnfSack *sack, const Queue &queue)
         : sack(sack)
 {
     queue_init_clone(&this->queue, &queue);
 }
+
+DependencyContainer::DependencyContainer(DnfSack *sack, Queue &&queue)
+        : sack(sack), queue(queue)
+{}
 
 DependencyContainer::~DependencyContainer()
 {

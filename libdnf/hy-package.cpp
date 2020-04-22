@@ -159,9 +159,8 @@ reldeps_for(DnfPackage *pkg, Id type)
     queue_init(&q);
     solvable_lookup_deparray(s, solv_type, &q, marker);
 
-    reldeplist = new libdnf::DependencyContainer(dnf_package_get_sack(pkg), q);
+    reldeplist = new libdnf::DependencyContainer(dnf_package_get_sack(pkg), std::move(q));
 
-    queue_free(&q);
     return reldeplist;
 }
 
