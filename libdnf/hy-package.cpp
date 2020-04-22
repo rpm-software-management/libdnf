@@ -855,7 +855,9 @@ dnf_package_get_requires(DnfPackage *pkg)
 {
 
     DnfReldepList * l = reldeps_for(pkg, SOLVABLE_REQUIRES);
-    l->extend(reldeps_for(pkg, SOLVABLE_PREREQMARKER));
+    DnfReldepList * prereq_l = reldeps_for(pkg, SOLVABLE_PREREQMARKER);
+    l->extend(prereq_l);
+    delete prereq_l;
     return l;
 }
 
