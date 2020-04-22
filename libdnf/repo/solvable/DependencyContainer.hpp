@@ -35,7 +35,8 @@ struct DependencyContainer
 public:
     DependencyContainer(const DependencyContainer &src);
     explicit DependencyContainer(DnfSack *sack);
-    DependencyContainer(DnfSack *sack, Queue queue);
+    DependencyContainer(DnfSack *sack, const Queue &queue);
+    DependencyContainer(DnfSack *sack, Queue &&queue);
     ~DependencyContainer();
 
     DependencyContainer &operator=(DependencyContainer &&src) noexcept;
