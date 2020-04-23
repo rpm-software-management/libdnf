@@ -143,7 +143,7 @@ typedef struct
     gchar            *install_root;
     gchar            *source_root;
     gchar            *rpm_verbosity;
-    gchar            **native_arches;
+    gchar            **native_arches{NULL};
     gchar            *http_proxy;
     gchar            *user_agent;
     gchar            *arch;
@@ -2177,13 +2177,15 @@ dnf_context_setup(DnfContext *context,
     (void) dnf_context_get_base_arch(context);
 
     /* find all the native archs */
-    priv->native_arches = g_new0(gchar *, MAX_NATIVE_ARCHES);
-    for (i = 0; arch_map[i].base != NULL; i++) {
-        if (g_strcmp0(arch_map[i].base, priv->base_arch) == 0) {
-            for (j = 0; arch_map[i].native[j] != NULL; j++)
-                priv->native_arches[j] = g_strdup(arch_map[i].native[j]);
-            priv->native_arches[j++] = g_strdup("noarch");
-            break;
+    if (!priv->native_arches) {
+        priv->native_arches = g_new0(gchar *, MAX_NATIVE_ARCHES);
+        for (i = 0; arch_map[i].base != NULL; i++) {
+            if (g_strcmp0(arch_map[i].base, priv->base_arch) == 0) {
+                for (j = 0; arch_map[i].native[j] != NULL; j++)
+                    priv->native_arches[j] = g_strdup(arch_map[i].native[j]);
+                priv->native_arches[j++] = g_strdup("noarch");
+                break;
+            }
         }
     }
 
