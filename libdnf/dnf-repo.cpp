@@ -228,7 +228,8 @@ dnf_repo_get_public_keys(DnfRepo *repo)
     for (char **iter = priv->gpgkeys; iter && *iter; iter++) {
         const char *key = *iter;
         g_autofree gchar *key_bn = g_path_get_basename(key);
-        g_ptr_array_add(ret, g_build_filename(priv->location, key_bn, NULL));
+        g_autofree gchar *key_filename = g_build_filename(priv->location, key_bn, NULL);
+        g_ptr_array_add(ret, key_filename);
     }
     g_ptr_array_add(ret, NULL);
     return (gchar**)g_ptr_array_free(static_cast<GPtrArray *>(g_steal_pointer(&ret)), FALSE);
@@ -1044,7 +1045,8 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
 
     cache_path = g_build_filename(dnf_context_get_cache_dir(priv->context), cache_file_name, NULL);
     if (priv->packages == NULL) {
-	    dnf_repo_set_packages(repo, g_build_filename(cache_path, "packages", NULL));
+	    g_autofree gchar *packages_path = g_build_filename(cache_path, "packages", NULL);
+	    dnf_repo_set_packages(repo, packages_path);
     }
     if (priv->location == NULL) {
         dnf_repo_set_location(repo, cache_path);
