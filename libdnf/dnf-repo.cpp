@@ -228,10 +228,11 @@ dnf_repo_get_public_keys(DnfRepo *repo)
     for (char **iter = priv->gpgkeys; iter && *iter; iter++) {
         const char *key = *iter;
         g_autofree gchar *key_bn = g_path_get_basename(key);
-        g_autofree gchar *key_filename = g_build_filename(priv->location, key_bn, NULL);
-        g_ptr_array_add(ret, key_filename);
+        /* transfer ownership to ptrarray */
+        g_ptr_array_add(ret, g_build_filename(priv->location, key_bn, NULL));
     }
     g_ptr_array_add(ret, NULL);
+    /* transfer ownership of container and elements to caller */
     return (gchar**)g_ptr_array_free(static_cast<GPtrArray *>(g_steal_pointer(&ret)), FALSE);
 }
 
