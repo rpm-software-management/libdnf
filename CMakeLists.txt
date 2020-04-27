@@ -109,10 +109,6 @@ if(WITH_BINDINGS)
 endif()
 
 
-# valgrind path
-find_program(VALGRIND_PROGRAM NAMES valgrind PATH /usr/bin /usr/local/bin)
-
-
 # compiler options
 add_compile_options(-Wcast-align -Wno-uninitialized -Wredundant-decls -Wwrite-strings -Wformat-nonliteral -Wmissing-format-attribute -Wsign-compare -Wtype-limits -Wuninitialized -Wall -Wl,--as-needed)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11 -Wmissing-prototypes -Waggregate-return -Wshadow -Werror=implicit-function-declaration")
