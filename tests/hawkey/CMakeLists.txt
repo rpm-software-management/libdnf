@@ -35,15 +35,3 @@ target_link_libraries(test_hawkey_main
 )
 add_test(test_hawkey_main test_hawkey_main "${CMAKE_CURRENT_SOURCE_DIR}/data/tests/hawkey/")
 set_property(TEST test_hawkey_main PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/libdnf")
-if(NOT DISABLE_VALGRIND AND VALGRIND_PROGRAM)
-    add_test(test_hawkey_valgrind ${VALGRIND_PROGRAM} --error-exitcode=1 --leak-check=full
-        --suppressions=${CMAKE_SOURCE_DIR}/tests/glib.supp
-        --suppressions=${CMAKE_SOURCE_DIR}/tests/nss.supp
-        --suppressions=${CMAKE_SOURCE_DIR}/tests/giovfs.supp
-        --suppressions=${CMAKE_SOURCE_DIR}/tests/librepo.supp
-        ${CMAKE_CURRENT_BINARY_DIR}/test_hawkey_main
-        ${CMAKE_CURRENT_SOURCE_DIR}/data/tests/hawkey/
-    )
-    set_tests_properties(test_hawkey_valgrind PROPERTIES ENVIRONMENT "CK_FORK=no")
-    set_property(TEST test_hawkey_valgrind PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/libdnf")
-endif()
