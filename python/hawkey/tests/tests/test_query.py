@@ -298,7 +298,7 @@ class TestQueryAllRepos(base.TestCase):
 
     def test_rco_glob(self):
         q1 = hawkey.Query(self.sack).filter(requires__glob="*")
-        self.assertLength(q1, 9)
+        self.assertLength(q1, 10)
         q2 = hawkey.Query(self.sack).filter(requires="*")
         self.assertLength(q2, 0)
         q3 = hawkey.Query(self.sack).filter(conflicts__glob="cu*")
