@@ -79,7 +79,7 @@ public:
         {
             auto result = sqlite3_prepare_v2(db.db, sql, -1, &stmt, nullptr);
             if (result != SQLITE_OK)
-                throw Error(*this, result, "Statement failed");
+                throw SQLite3::Error(db, result, "Creating statement failed");
         };
 
         Statement(SQLite3 &db, const std::string &sql)
@@ -87,7 +87,7 @@ public:
         {
             auto result = sqlite3_prepare_v2(db.db, sql.c_str(), sql.length() + 1, &stmt, nullptr);
             if (result != SQLITE_OK)
-                throw Error(*this, result, "Statement failed");
+                throw SQLite3::Error(db, result, "Creating statement failed");
         };
 
         void bind(int pos, int val)
