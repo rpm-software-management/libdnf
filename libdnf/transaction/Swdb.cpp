@@ -58,6 +58,8 @@ Swdb::Swdb(const std::string &path)
   : conn(nullptr)
   , autoClose(true)
 {
+    auto logger(libdnf::Log::getLogger());
+
     if (path == ":memory:") {
         // connect to an in-memory database as requested
         conn = std::make_shared<SQLite3>(path);
@@ -71,7 +73,6 @@ Swdb::Swdb(const std::string &path)
                 conn->exec("BEGIN; UPDATE config SET value='test' WHERE key='test'; ROLLBACK;");
             } catch (SQLite3::Error & ex) {
                 // root must have the database writable -> log and re-throw the exception
-                auto logger(libdnf::Log::getLogger());
                 logger->error(tfm::format("History database is not writable: %s", ex.what()));
                 throw;
             }
@@ -85,7 +86,6 @@ Swdb::Swdb(const std::string &path)
                 // unpriviledged user may have insufficient permissions to open the database -> in-memory fallback
                 conn = std::make_shared<SQLite3>(":memory:");
                 Transformer::createDatabase(conn);
-                auto logger(libdnf::Log::getLogger());
                 logger->error(tfm::format("History database is not readable, using in-memory database instead: %s", ex.what()));
             }
         }
@@ -102,7 +102,6 @@ Swdb::Swdb(const std::string &path)
                 conn = std::make_shared<SQLite3>(path);
             } catch (SQLite3::Error & ex) {
                 // root must have the database writable -> log and re-throw the exception
-                auto logger(libdnf::Log::getLogger());
                 logger->error(tfm::format("History database cannot be created: %s", ex.what()));
                 throw;
             }
@@ -116,7 +115,6 @@ Swdb::Swdb(const std::string &path)
                 // unpriviledged user may have insufficient permissions to create the database -> in-memory fallback
                 conn = std::make_shared<SQLite3>(":memory:");
                 Transformer::createDatabase(conn);
-                auto logger(libdnf::Log::getLogger());
                 logger->error(tfm::format("History database cannot be created, using in-memory database instead: %s", ex.what()));
             }
         }
