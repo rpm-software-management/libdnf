@@ -183,8 +183,10 @@ CompsGroupItem::getTransactionItemsByPattern(SQLite3Ptr conn, const std::string 
 
     // HACK: create a private connection to avoid undefined behavior
     // after forking process in Anaconda
-    SQLite3 privateConn(conn->getPath());
-    SQLite3::Query query(privateConn, sql);
+    if (conn->getPath() != ":memory:") {
+        conn = std::make_shared<SQLite3>(conn->getPath());
+    }
+    SQLite3::Query query(*conn, sql);
     std::string pattern_sql = pattern;
     std::replace(pattern_sql.begin(), pattern_sql.end(), '*', '%');
     query.bindv(pattern, pattern, pattern);
