@@ -30,6 +30,14 @@ namespace libdnf {
 bool
 pathExists(const char *path);
 
+/**
+ * Verifies if a path exists. In case of an error, throws an exception.
+ * \param path file or directory path
+ * \return true if path exists
+ */
+bool
+pathExistsOrException(const std::string & path);
+
 void
 makeDirPath(std::string filePath);
 

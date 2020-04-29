@@ -21,8 +21,11 @@
  */
 
 #include <sys/stat.h>
+#include <cerrno>
+#include <cstring>
 
 #include "filesystem.hpp"
+#include "../error.hpp"
 
 namespace libdnf {
 
@@ -37,6 +40,21 @@ pathExists(const char *path)
     struct stat buffer {
     };
     return stat(path, &buffer) == 0;
+}
+
+bool
+pathExistsOrException(const std::string & path)
+{
+    struct stat buffer;
+    if (stat(path.c_str(), &buffer) == 0) {
+        return true;
+    }
+
+    if (errno != ENOENT) {
+        throw Error("Failed to access \"" + path + "\": " + strerror(errno));
+    }
+
+    return false;
 }
 
 /**
