@@ -64,7 +64,25 @@ Swdb::Swdb(const std::string &path)
         // connect to an in-memory database as requested
         conn = std::make_shared<SQLite3>(path);
         Transformer::createDatabase(conn);
-    } else if (pathExists(path.c_str())) {
+        return;
+    }
+
+    bool path_exists;
+    try {
+        path_exists = pathExistsOrException(path.c_str());
+    } catch (Error & e) {
+        // pathExistsOrException() threw an exception, most likely a permission error
+        // -> use an in-memory fallback
+        conn = std::make_shared<SQLite3>(":memory:");
+        Transformer::createDatabase(conn);
+        logger->error(tfm::format(
+            "History database is not readable, using in-memory database instead: %s",
+            e.what())
+        );
+        return;
+    }
+
+    if (path_exists) {
         if (geteuid() == 0) {
             // database exists, running under root
             try {
