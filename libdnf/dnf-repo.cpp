@@ -54,6 +54,7 @@
 #include "dnf-types.h"
 #include "dnf-utils.h"
 #include "utils/File.hpp"
+#include "utils/url-encode.hpp"
 
 #include <set>
 #include <string>
@@ -2240,8 +2241,13 @@ dnf_repo_download_packages(DnfRepo *repo,
         checksum = dnf_package_get_chksum(pkg, &checksum_type);
         checksum_str = hy_chksum_str(checksum, checksum_type);
 
+        std::string encodedUrl = dnf_package_get_location(pkg);
+        if (encodedUrl.find("://") == std::string::npos) {
+            encodedUrl = libdnf::urlEncode(encodedUrl, "/");
+        }
+
         target = lr_packagetarget_new_v2(priv->repo_handle,
-                                         dnf_package_get_location(pkg),
+                                         encodedUrl.c_str(),
                                          directory_slash,
                                          dnf_repo_checksum_hy_to_lr(checksum_type),
                                          checksum_str,

@@ -1753,9 +1753,15 @@ void PackageTarget::Impl::init(LrHandle * handle, const char * relativeUrl, cons
     }
 
     GError * errP{nullptr};
-    lrPkgTarget.reset(lr_packagetarget_new_v3(handle, relativeUrl, dest, lrChksType, chksum,  expectedSize,
-                                              baseUrl, resume, progressCB, callbacks, endCB, mirrorFailureCB,
-                                              byteRangeStart, byteRangeEnd, &errP));
+
+    std::string encodedUrl = relativeUrl;
+    if (encodedUrl.find("://") == std::string::npos) {
+        encodedUrl = urlEncode(encodedUrl, "/");
+    }
+
+    lrPkgTarget.reset(lr_packagetarget_new_v3(handle, encodedUrl.c_str(), dest, lrChksType, chksum,
+                                              expectedSize, baseUrl, resume, progressCB, callbacks, endCB,
+                                              mirrorFailureCB, byteRangeStart, byteRangeEnd, &errP));
     std::unique_ptr<GError> err(errP);
 
     if (!lrPkgTarget) {
