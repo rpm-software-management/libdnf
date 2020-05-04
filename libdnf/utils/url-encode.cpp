@@ -23,10 +23,18 @@
 
 namespace libdnf {
 
-std::string urlEncode(const std::string & src) {
-    auto noEncode = [](char ch)
+std::string urlEncode(const std::string & src, const std::string & exclude) {
+    auto noEncode = [&exclude](char ch)
     {
-        return isalnum(ch) || ch=='-' || ch == '.' || ch == '_' || ch == '~';
+        if (isalnum(ch) || ch=='-' || ch == '.' || ch == '_' || ch == '~') {
+            return true;
+        }
+
+        if (exclude.find(ch) != std::string::npos) {
+            return true;
+        }
+
+        return false;
     };
 
     // compute length of encoded string
