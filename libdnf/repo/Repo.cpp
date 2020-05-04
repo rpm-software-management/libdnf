@@ -36,6 +36,7 @@
 #include "libdnf/utils/File.hpp"
 #include "libdnf/utils/utils.hpp"
 #include "libdnf/utils/os-release.hpp"
+#include "libdnf/utils/url-encode.hpp"
 
 #include "bgettext/bgettext-lib.h"
 #include "tinyformat/tinyformat.hpp"
@@ -254,50 +255,6 @@ int Repo::Impl::mirrorFailureCB(void * data, const char * msg, const char * url,
     return cbObject->handleMirrorFailure(msg, url, metadata);
 };
 
-
-/**
-* @brief Converts the given input string to a URL encoded string
-*
-* All input characters that are not a-z, A-Z, 0-9, '-', '.', '_' or '~' are converted
-* to their "URL escaped" version (%NN where NN is a two-digit hexadecimal number).
-*
-* @param src String to encode
-* @return URL encoded string
-*/
-static std::string urlEncode(const std::string & src)
-{
-    auto noEncode = [](char ch)
-    {
-        return isalnum(ch) || ch=='-' || ch == '.' || ch == '_' || ch == '~';
-    };
-
-    // compute length of encoded string
-    auto len = src.length();
-    for (auto ch : src) {
-        if (!noEncode(ch))
-            len += 2;
-    }
-
-    // encode the input string
-    std::string encoded;
-    encoded.reserve(len);
-    for (auto ch : src) {
-        if (noEncode(ch))
-            encoded.push_back(ch);
-        else {
-            encoded.push_back('%');
-            unsigned char hex;
-            hex = static_cast<unsigned char>(ch) >> 4;
-            hex += hex <= 9 ? '0' : 'a' - 10;
-            encoded.push_back(hex);
-            hex = static_cast<unsigned char>(ch) & 0x0F;
-            hex += hex <= 9 ? '0' : 'a' - 10;
-            encoded.push_back(hex);
-        }
-    }
-
-    return encoded;
-}
 
 /**
 * @brief Format user password string
