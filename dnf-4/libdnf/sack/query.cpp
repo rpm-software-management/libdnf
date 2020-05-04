@@ -61,65 +61,6 @@ struct default_delete<DnfPackage> {
 
 namespace libdnf {
 
-struct NevraID {
-    Id name;
-    Id arch;
-    Id evr;
-    /**
-    * @brief Parsing function for nevra string into name, evr, arch and transforming it into libsolv
-    * Id
-    *
-    * @return bool Returns true if parsing succesful and all elements is known to pool
-    */
-    bool parse(Pool * pool, const char * nevraPattern);
-};
-
-bool
-NevraID::parse(Pool * pool, const char * nevraPattern)
-{
-    const char * evrDelim = nullptr;
-    const char * releaseDelim = nullptr;
-    const char * archDelim = nullptr;
-    const char * end;
-
-    // parse nevra
-    for (end = nevraPattern; *end != '\0'; ++end) {
-        if (*end == '-') {
-            evrDelim = releaseDelim;
-            releaseDelim = end;
-        } else if (*end == '.') {
-            archDelim = end;
-        }
-    }
-
-    // test name presence
-    if (!evrDelim || evrDelim == nevraPattern)
-        return false;
-
-    auto nameLen = evrDelim - nevraPattern;
-
-    // strip epoch "0:"
-    if (evrDelim[1] == '0' && evrDelim[2] == ':')
-        evrDelim += 2;
-
-    // test version and arch presence
-    if (releaseDelim - evrDelim <= 1 ||
-        !archDelim || archDelim <= releaseDelim + 1 || archDelim == end - 1)
-        return false;
-
-    // convert strings to Ids
-    if (!(name = pool_strn2id(pool, nevraPattern, nameLen, 0)))
-        return false;
-    ++evrDelim;
-    if (!(evr = pool_strn2id(pool, evrDelim, archDelim - evrDelim, 0)))
-        return false;
-    ++archDelim;
-    if (!(arch = pool_strn2id(pool, archDelim, end - archDelim, 0)))
-        return false;
-
-    return true;
-}
-
 static bool
 nevraIDSorter(const NevraID & first, const NevraID & second)
 {
@@ -964,66 +905,6 @@ Query::addFilter(HyNevra nevra, bool icase)
 }
 
 void
-Query::Impl::filterNevraStrict(int cmpType, const char **matches)
-{
-    Pool *pool = dnf_sack_get_pool(sack);
-    std::vector<NevraID> compareSet;
-    const unsigned nmatches = g_strv_length((gchar**)matches);
-    compareSet.reserve(nmatches);
-    NevraID nevraId;
-    for (unsigned int i = 0; i < nmatches; ++i) {
-        const char * nevraPattern = matches[i];
-        if (!nevraPattern)
-            throw std::runtime_error("Query can not accept NULL for STR match");
-        if (nevraId.parse(pool, nevraPattern)) {
-            compareSet.push_back(nevraId);
-        }
-    }
-    if (compareSet.empty()) {
-        if (!(cmpType & HY_NOT))
-            map_empty(result->getMap());
-        return;
-    }
-    Map nevraResult;
-    map_init(&nevraResult, pool->nsolvables);
-
-    if (compareSet.size() > 1) {
-        std::sort(compareSet.begin(), compareSet.end(), nevraIDSorter);
-
-        Id id = -1;
-        while (true) {
-            id = result->next(id);
-            if (id == -1)
-                break;
-            Solvable* s = pool_id2solvable(pool, id);
-            auto low = std::lower_bound(compareSet.begin(), compareSet.end(), *s,
-                                        nevraCompareLowerSolvable);
-            if (low != compareSet.end() && low->name == s->name && low->evr == s->evr &&
-                low->arch == s->arch) {
-                MAPSET(&nevraResult, id);
-            }
-        }
-    } else {
-        auto nevraId = compareSet[0];
-        Id id = -1;
-        while (true) {
-            id = result->next(id);
-            if (id == -1)
-                break;
-            Solvable* s = pool_id2solvable(pool, id);
-            if (nevraId.name == s->name && nevraId.evr == s->evr && nevraId.arch == s->arch) {
-                MAPSET(&nevraResult, id);
-            }
-        }
-    }
-    if (cmpType & HY_NOT)
-        map_subtract(result->getMap(), &nevraResult);
-    else
-        map_and(result->getMap(), &nevraResult);
-    map_free(&nevraResult);
-}
-
-void
 Query::Impl::initResult()
 {
     Pool *pool = dnf_sack_get_pool(sack);
@@ -1117,101 +998,6 @@ Query::Impl::filterRcoReldep(const Filter & f, Map *m)
 }
 
 void
-Query::Impl::filterName(const Filter & f, Map *m)
-{
-    Pool *pool = dnf_sack_get_pool(sack);
-    const int cmpType= f.getCmpType();
-    auto resultPset = result.get();
-
-    if ((cmpType & HY_EQ) && !(cmpType & HY_ICASE)) {
-        Id match_name_id = 0;
-        if (f.getMatches().size() < 3) {
-            for (auto match_union : f.getMatches()) {
-                const char *match = match_union.str;
-                match_name_id = pool_str2id(pool, match, 0);
-                if (match_name_id == 0)
-                    continue;
-                Id id = -1;
-                while (true) {
-                    id = resultPset->next(id);
-                    if (id == -1)
-                        break;
-                    Solvable *s = pool_id2solvable(pool, id);
-                    if (match_name_id == s->name)
-                        MAPSET(m, id);
-                    continue;
-                }
-            }
-            return;
-        }
-        std::vector<Id> names;
-        for (auto match_union : f.getMatches()) {
-            const char *match = match_union.str;
-            match_name_id = pool_str2id(pool, match, 0);
-            if (match_name_id == 0)
-                continue;
-            names.push_back(match_name_id);
-        }
-        std::sort(names.begin(), names.end());
-        Id id = -1;
-        while (true) {
-            id = resultPset->next(id);
-            if (id == -1)
-                break;
-            Solvable* s = pool_id2solvable(pool, id);
-            auto low = std::lower_bound(names.begin(), names.end(), s->name);
-            if (low != names.end() && (*low) == s->name) {
-                MAPSET(m, id);
-            }
-        }
-        return;
-    }
-    
-    for (auto match_union : f.getMatches()) {
-        const char *match = match_union.str;
-        Id id = -1;
-        while (true) {
-            id = resultPset->next(id);
-            if (id == -1)
-                break;
-
-            Solvable *s = pool_id2solvable(pool, id);
-            if (cmpType & HY_ICASE) {
-                const char *name = pool_id2str(pool, s->name);
-                if (cmpType & HY_SUBSTR) {
-                    if (strcasestr(name, match) != NULL)
-                        MAPSET(m, id);
-                    continue;
-                }
-                if (cmpType & HY_EQ) {
-                    if (strcasecmp(name, match) == 0)
-                        MAPSET(m, id);
-                    continue;
-                }
-                if (cmpType & HY_GLOB) {
-                    if (fnmatch(match, name, FNM_CASEFOLD) == 0)
-                        MAPSET(m, id);
-                    continue;
-                }
-                continue;
-            }
-
-            const char *name = pool_id2str(pool, s->name);
-            if (cmpType & HY_GLOB) {
-                if (fnmatch(match, name, 0) == 0)
-                    MAPSET(m, id);
-                continue;
-            }
-            if (cmpType & HY_SUBSTR) {
-                if (strstr(name, match) != NULL)
-                    MAPSET(m, id);
-                continue;
-            }
-        }
-    }
-}
-
-void
 Query::Impl::filterEpoch(const Filter & f, Map *m)
 {
     Pool *pool = dnf_sack_get_pool(sack);
@@ -1238,70 +1024,6 @@ Query::Impl::filterEpoch(const Filter & f, Map *m)
                 (pkg_epoch < epoch && cmp_type & HY_LT) ||
                 (pkg_epoch == epoch && cmp_type & HY_EQ))
                 MAPSET(m, id);
-        }
-    }
-}
-
-void
-Query::Impl::filterEvr(const Filter & f, Map *m)
-{
-    Pool *pool = dnf_sack_get_pool(sack);
-    int cmp_type = f.getCmpType();
-    auto resultPset = result.get();
-
-    for (auto match : f.getMatches()) {
-        Id match_evr = pool_str2id(pool, match.str, 1);
-
-        Id id = -1;
-        while (true) {
-            id = resultPset->next(id);
-            if (id == -1)
-                break;
-            Solvable *s = pool_id2solvable(pool, id);
-            int cmp = pool_evrcmp(pool, s->evr, match_evr, EVRCMP_COMPARE);
-
-            if ((cmp > 0 && cmp_type & HY_GT) || (cmp < 0 && cmp_type & HY_LT) ||
-                (cmp == 0 && cmp_type & HY_EQ)) {
-                MAPSET(m, id);
-            }
-        }
-    }
-}
-
-void
-Query::Impl::filterNevra(const Filter & f, Map *m)
-{
-    Pool *pool = dnf_sack_get_pool(sack);
-    int cmp_type = f.getCmpType();
-    int fn_flags = (HY_ICASE & cmp_type) ? FNM_CASEFOLD : 0;
-    auto resultPset = result.get();
-
-    for (auto match : f.getMatches()) {
-        const char *nevra_pattern = match.str;
-        if (strpbrk(nevra_pattern, "(/=<> "))
-            continue;
-
-        gboolean present_epoch = strchr(nevra_pattern, ':') != NULL;
-
-        Id id = -1;
-        while (true) {
-            id = resultPset->next(id);
-            if (id == -1)
-                break;
-            Solvable* s = pool_id2solvable(pool, id);
-
-            char* nevra = pool_solvable_epoch_optional_2str(pool, s, present_epoch);
-            if (!(HY_GLOB & cmp_type)) {
-                if (HY_ICASE & cmp_type) {
-                    if (strcasecmp(nevra_pattern, nevra) == 0)
-                        MAPSET(m, id);
-                } else {
-                    if (strcmp(nevra_pattern, nevra) == 0)
-                        MAPSET(m, id);
-                }
-            } else if (fnmatch(nevra_pattern, nevra, fn_flags) == 0) {
-                MAPSET(m, id);
-            }
         }
     }
 }
@@ -1389,43 +1111,6 @@ Query::Impl::filterRelease(const Filter & f, Map *m)
             }
         }
         solv_free(filter_vr);
-    }
-}
-
-void
-Query::Impl::filterArch(const Filter & f, Map *m)
-{
-    Pool *pool = dnf_sack_get_pool(sack);
-    int cmp_type = f.getCmpType();
-    Id match_arch_id = 0;
-    auto resultPset = result.get();
-
-    for (auto match_in : f.getMatches()) {
-        const char *match = match_in.str;
-        if (cmp_type & HY_EQ) {
-            match_arch_id = pool_str2id(pool, match, 0);
-            if (match_arch_id == 0)
-                continue;
-        }
-
-        Id id = -1;
-        while (true) {
-            id = resultPset->next(id);
-            if (id == -1)
-                break;
-            Solvable *s = pool_id2solvable(pool, id);
-            if (cmp_type & HY_EQ) {
-                if (match_arch_id == s->arch)
-                    MAPSET(m, id);
-                continue;
-            }
-            const char *arch = pool_id2str(pool, s->arch);
-            if (cmp_type & HY_GLOB) {
-                if (fnmatch(match, arch, 0) == 0)
-                    MAPSET(m, id);
-                continue;
-            }
-        }
     }
 }
 
