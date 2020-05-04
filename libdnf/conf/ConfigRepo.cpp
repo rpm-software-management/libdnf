@@ -84,7 +84,20 @@ ConfigRepo::Impl::Impl(Config & owner, ConfigMain & masterConfig)
     owner.optBinds().add("name", name);
     owner.optBinds().add("enabled", enabled);
     owner.optBinds().add("cachedir", basecachedir);
-    owner.optBinds().add("baseurl", baseurl);
+
+    owner.optBinds().add("baseurl", baseurl,
+        [&](Option::Priority priority, const std::string & value) {
+            auto tmpValue = baseurl.fromString(value);
+            for (auto & v : tmpValue) {
+                if (v.substr(0, 1) == "/") {
+                    // a local path, turn it into an URL
+                    v = "file://" + v;
+                }
+            }
+            baseurl.set(priority, tmpValue);
+        }, nullptr, false
+    );
+
     owner.optBinds().add("mirrorlist", mirrorlist);
     owner.optBinds().add("metalink", metalink);
     owner.optBinds().add("type", type);
