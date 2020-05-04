@@ -33,9 +33,10 @@ namespace libdnf {
 * to their "URL escaped" version (%NN where NN is a two-digit hexadecimal number).
 *
 * @param src String to encode
+* @param exclude A list of characters that won't be encoded
 * @return URL encoded string
 */
-std::string urlEncode(const std::string & src);
+std::string urlEncode(const std::string & src, const std::string & exclude = "");
 
 } // namespace libdnf
 
