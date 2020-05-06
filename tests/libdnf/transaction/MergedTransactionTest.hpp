@@ -26,7 +26,8 @@ class MergedTransactionTest : public CppUnit::TestCase {
     CPPUNIT_TEST(test_add_obsoleted_obsoleted);
 
     CPPUNIT_TEST(test_downgrade);
-    CPPUNIT_TEST(test_install_downgrade);
+    CPPUNIT_TEST(test_install_downgrade_upgrade_remove);
+    CPPUNIT_TEST(test_downgrade_upgrade_remove);
 
     CPPUNIT_TEST(test_multilib_identity);
 
@@ -56,7 +57,8 @@ public:
     // END: tests ported from DNF unit tests
 
     void test_downgrade();
-    void test_install_downgrade();
+    void test_install_downgrade_upgrade_remove();
+    void test_downgrade_upgrade_remove();
 
     void test_multilib_identity();
 private:
