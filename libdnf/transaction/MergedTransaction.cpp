@@ -19,6 +19,7 @@
  */
 
 #include "MergedTransaction.hpp"
+#include <algorithm>
 #include <vector>
 
 namespace libdnf {
@@ -171,6 +172,21 @@ MergedTransaction::getConsoleOutput()
     return output;
 }
 
+
+static bool transaction_item_sort_function(const std::shared_ptr<TransactionItemBase> lhs, const std::shared_ptr<TransactionItemBase> rhs) {
+    if (lhs->isForwardAction() && rhs->isForwardAction()) {
+        return false;
+    }
+    if (lhs->isBackwardAction() && rhs->isBackwardAction()) {
+        return false;
+    }
+    if (lhs->isBackwardAction()) {
+        return true;
+    }
+    return false;
+}
+
+
 /**
  * Get list of transaction items involved in the merged transaction
  * Actions are merged using following rules:
@@ -203,6 +219,9 @@ MergedTransaction::getItems()
     // iterate over transaction
     for (auto t : transactions) {
         auto transItems = t->getItems();
+        // sort transaction items by their action type - forward/backward
+        // this fixes behavior of the merging algorithm in several edge cases
+        std::sort(transItems.begin(), transItems.end(), transaction_item_sort_function);
         // iterate over transaction items
         for (auto transItem : transItems) {
             // get item and its type
@@ -383,10 +402,6 @@ MergedTransaction::mergeItem(ItemPairMap &itemPairMap, TransactionItemBasePtr mT
     auto firstState = previousItemPair.first->getAction();
     auto newState = mTransItem->getAction();
 
-    if (firstState == TransactionItemAction::INSTALL && mTransItem->isBackwardAction()) {
-        return;
-    }
-
     switch (firstState) {
         case TransactionItemAction::REMOVE:
         case TransactionItemAction::OBSOLETED:
@@ -398,6 +413,8 @@ MergedTransaction::mergeItem(ItemPairMap &itemPairMap, TransactionItemBasePtr mT
                 newState == TransactionItemAction::OBSOLETED) {
                 // Install -> Remove = (nothing)
                 itemPairMap.erase(name);
+                break;
+            } else if (mTransItem->isBackwardAction()) {
                 break;
             }
             // altered -> transfer install to the altered package

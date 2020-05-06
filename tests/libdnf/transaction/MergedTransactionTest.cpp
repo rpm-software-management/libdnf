@@ -700,7 +700,7 @@ MergedTransactionTest::test_downgrade()
 }
 
 void
-MergedTransactionTest::test_install_downgrade()
+MergedTransactionTest::test_install_downgrade_upgrade_remove()
 {
     auto trans1 = std::make_shared< libdnf::swdb_private::Transaction >(conn);
     trans1->addItem(
@@ -724,18 +724,122 @@ MergedTransactionTest::test_install_downgrade()
         TransactionItemReason::USER
     );
 
+    auto trans3 = std::make_shared< libdnf::swdb_private::Transaction >(conn);
+    trans3->addItem(
+        nevraToRPMItem(conn, "tour-0:4.6-1.noarch"),
+        "repo2",
+        TransactionItemAction::UPGRADED,
+        TransactionItemReason::USER
+    );
+    trans3->addItem(
+        nevraToRPMItem(conn, "tour-0:4.8-1.noarch"),
+        "repo1",
+        TransactionItemAction::UPGRADE,
+        TransactionItemReason::USER
+    );
+
+    auto trans4 = std::make_shared< libdnf::swdb_private::Transaction >(conn);
+    trans4->addItem(
+        nevraToRPMItem(conn, "tour-0:4.8-1.noarch"),
+        "repo1",
+        TransactionItemAction::REMOVE,
+        TransactionItemReason::USER
+    );
+
     MergedTransaction merged(trans1);
+
+    // test merging trans1, trans2
     merged.merge(trans2);
+    auto items2 = merged.getItems();
+    CPPUNIT_ASSERT_EQUAL(1, (int)items2.size());
+    auto item2 = items2.at(0);
+    CPPUNIT_ASSERT_EQUAL(std::string("tour-4.6-1.noarch"), item2->getItem()->toStr());
+    CPPUNIT_ASSERT_EQUAL(std::string("repo2"), item2->getRepoid());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemAction::INSTALL, item2->getAction());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemReason::USER, item2->getReason());
 
-    auto items = merged.getItems();
-    CPPUNIT_ASSERT_EQUAL(1, (int)items.size());
+    // test merging trans1, trans2, trans3
+    merged.merge(trans3);
+    auto items3 = merged.getItems();
+    CPPUNIT_ASSERT_EQUAL(1, (int)items3.size());
+    auto item3 = items3.at(0);
+    CPPUNIT_ASSERT_EQUAL(std::string("tour-4.8-1.noarch"), item3->getItem()->toStr());
+    CPPUNIT_ASSERT_EQUAL(std::string("repo1"), item3->getRepoid());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemAction::INSTALL, item3->getAction());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemReason::USER, item3->getReason());
 
-    auto item = items.at(0);
-    CPPUNIT_ASSERT_EQUAL(std::string("tour-4.6-1.noarch"), item->getItem()->toStr());
-    CPPUNIT_ASSERT_EQUAL(std::string("repo2"), item->getRepoid());
-    CPPUNIT_ASSERT_EQUAL(TransactionItemAction::INSTALL, item->getAction());
-    CPPUNIT_ASSERT_EQUAL(TransactionItemReason::USER, item->getReason());
+    // test merging trans1, trans2, trans3, trans4
+    merged.merge(trans4);
+    auto items4 = merged.getItems();
+    CPPUNIT_ASSERT_EQUAL(0, (int)items4.size());
+    // trans4 removes the package, empty output is expected
 }
+
+
+void
+MergedTransactionTest::test_downgrade_upgrade_remove()
+{
+    auto trans1 = std::make_shared< libdnf::swdb_private::Transaction >(conn);
+    trans1->addItem(
+        nevraToRPMItem(conn, "tour-0:4.6-1.noarch"),
+        "repo2",
+        TransactionItemAction::DOWNGRADE,
+        TransactionItemReason::USER
+    );
+    trans1->addItem(
+        nevraToRPMItem(conn, "tour-0:4.8-1.noarch"),
+        "repo1",
+        TransactionItemAction::DOWNGRADED,
+        TransactionItemReason::USER
+    );
+
+    // items are in reversed order than in test_install_downgrade_upgrade_remove()
+    // fixing this required ordering transaction items by forward/backward action
+    auto trans2 = std::make_shared< libdnf::swdb_private::Transaction >(conn);
+    trans2->addItem(
+        nevraToRPMItem(conn, "tour-0:4.8-1.noarch"),
+        "repo1",
+        TransactionItemAction::UPGRADE,
+        TransactionItemReason::USER
+    );
+    trans2->addItem(
+        nevraToRPMItem(conn, "tour-0:4.6-1.noarch"),
+        "repo2",
+        TransactionItemAction::UPGRADED,
+        TransactionItemReason::USER
+    );
+
+    auto trans3 = std::make_shared< libdnf::swdb_private::Transaction >(conn);
+    trans3->addItem(
+        nevraToRPMItem(conn, "tour-0:4.8-1.noarch"),
+        "repo1",
+        TransactionItemAction::REMOVE,
+        TransactionItemReason::USER
+    );
+
+    MergedTransaction merged(trans1);
+
+    // test merging trans1, trans2
+    merged.merge(trans2);
+    auto items2 = merged.getItems();
+    CPPUNIT_ASSERT_EQUAL(1, (int)items2.size());
+    auto item2 = items2.at(0);
+    CPPUNIT_ASSERT_EQUAL(std::string("tour-4.8-1.noarch"), item2->getItem()->toStr());
+    CPPUNIT_ASSERT_EQUAL(std::string("repo1"), item2->getRepoid());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemAction::REINSTALL, item2->getAction());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemReason::USER, item2->getReason());
+
+    // test merging trans1, trans2, trans3
+    merged.merge(trans3);
+    auto items3 = merged.getItems();
+    CPPUNIT_ASSERT_EQUAL(1, (int)items3.size());
+    auto item3 = items3.at(0);
+    CPPUNIT_ASSERT_EQUAL(std::string("tour-4.8-1.noarch"), item3->getItem()->toStr());
+    CPPUNIT_ASSERT_EQUAL(std::string("repo1"), item3->getRepoid());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemAction::REMOVE, item3->getAction());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemReason::USER, item3->getReason());
+}
+
 
 void
 MergedTransactionTest::test_multilib_identity()
