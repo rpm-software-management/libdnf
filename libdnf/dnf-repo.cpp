@@ -948,7 +948,6 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     g_autofree gchar *mirrorlisturl = NULL;
     g_autofree gchar *metalinkurl = NULL;
     g_autofree gchar *proxy = NULL;
-    g_autofree gchar *tmp_strval = NULL;
     g_autofree gchar *pwd = NULL;
     g_autofree gchar *usr = NULL;
     g_autofree gchar *usr_pwd = NULL;
@@ -974,6 +973,23 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
 
     /* baseurl is optional; if missing, unset it */
     baseurls = g_key_file_get_string_list(priv->keyfile, repoId, "baseurl", NULL, NULL);
+    if (baseurls) {
+        // baseruls can be ['value1', 'value2, value3'] therefore we first join to have 'value1, value2, value3'
+        g_autofree gchar * tmp_strval = g_strjoinv(",", baseurls);
+
+        auto & bindBaseurls = priv->repo->getConfig()->optBinds().at("baseurl");
+        bindBaseurls.newString(libdnf::Option::Priority::REPOCONFIG, tmp_strval);
+
+        auto & repoBaseurls = priv->repo->getConfig()->baseurl();
+        if (!repoBaseurls.getValue().empty()){
+            auto len = repoBaseurls.getValue().size();
+            g_strfreev(baseurls);
+            baseurls = g_new0(char *, len + 1);
+            for (size_t i = 0; i < len; ++i) {
+                baseurls[i] = g_strdup(repoBaseurls.getValue()[i].c_str());
+            }
+        }
+    }
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_URLS, baseurls))
         return FALSE;
 
@@ -1067,13 +1083,28 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     /* gpgkey is optional for gpgcheck=1, but required for repo_gpgcheck=1 */
     g_strfreev(priv->gpgkeys);
     priv->gpgkeys = NULL;
-    tmp_strval = g_key_file_get_string(priv->keyfile, repoId, "gpgkey", NULL);
-    if (tmp_strval) {
-        priv->gpgkeys = g_strsplit_set(tmp_strval, " ,", -1);
-        g_free(g_steal_pointer (&tmp_strval));
-        /* Canonicalize the empty list to NULL for ease of checking elsewhere */
-        if (priv->gpgkeys && !*priv->gpgkeys)
+
+    g_auto(GStrv) gpgkeys;
+    gpgkeys = g_key_file_get_string_list(priv->keyfile, repoId, "gpgkey", NULL, NULL);
+
+    if (gpgkeys) {
+        // gpgkeys can be ['value1', 'value2, value3'] therefore we first join to have 'value1, value2, value3'
+        g_autofree gchar * tmp_strval = g_strjoinv(",", gpgkeys);
+
+        auto & bindGpgkeys = priv->repo->getConfig()->optBinds().at("gpgkey");
+        bindGpgkeys.newString(libdnf::Option::Priority::REPOCONFIG, tmp_strval);
+
+        auto & repoGpgkeys = priv->repo->getConfig()->gpgkey();
+        if (!repoGpgkeys.getValue().empty()){
+            auto len = repoGpgkeys.getValue().size();
+            priv->gpgkeys = g_new0(char *, len + 1);
+            for (size_t i = 0; i < len; ++i) {
+                priv->gpgkeys[i] = g_strdup(repoGpgkeys.getValue()[i].c_str());
+            }
+        } else {
+            /* Canonicalize the empty list to NULL for ease of checking elsewhere */
             g_strfreev(static_cast<gchar **>(g_steal_pointer(&priv->gpgkeys)));
+        }
     }
 
     if (g_key_file_has_key(priv->keyfile, repoId, "gpgcheck", NULL)) {
