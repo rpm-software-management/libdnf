@@ -256,53 +256,6 @@ reldep_keyname2id(int keyname)
     }
 }
 
-static Id
-di_keyname2id(int keyname)
-{
-    switch(keyname) {
-        case HY_PKG_DESCRIPTION:
-            return SOLVABLE_DESCRIPTION;
-        case HY_PKG_NAME:
-            return SOLVABLE_NAME;
-        case HY_PKG_URL:
-            return SOLVABLE_URL;
-        case HY_PKG_ARCH:
-            return SOLVABLE_ARCH;
-        case HY_PKG_EVR:
-            return SOLVABLE_EVR;
-        case HY_PKG_SUMMARY:
-            return SOLVABLE_SUMMARY;
-        case HY_PKG_FILE:
-            return SOLVABLE_FILELIST;
-        default:
-            assert(0);
-            return 0;
-    }
-}
-
-static int
-type2flags(int type, int keyname)
-{
-    int ret = 0;
-    if (keyname == HY_PKG_FILE)
-        ret |= SEARCH_FILES | SEARCH_COMPLETE_FILELIST;
-    if (type & HY_ICASE)
-        ret |= SEARCH_NOCASE;
-
-    type &= ~HY_COMPARISON_FLAG_MASK;
-    switch (type) {
-        case HY_EQ:
-            return ret | SEARCH_STRING;
-        case HY_SUBSTR:
-            return ret | SEARCH_SUBSTRING;
-        case HY_GLOB:
-            return ret | SEARCH_GLOB;
-        default:
-            assert(0); // not implemented
-            return 0;
-    }
-}
-
 static char *
 pool_solvable_epoch_optional_2str(Pool *pool, const Solvable *s, gboolean with_epoch)
 {
@@ -998,68 +951,6 @@ Query::Impl::filterRcoReldep(const Filter & f, Map *m)
 }
 
 void
-Query::Impl::filterEpoch(const Filter & f, Map *m)
-{
-    Pool *pool = dnf_sack_get_pool(sack);
-    int cmp_type = f.getCmpType();
-    auto resultPset = result.get();
-
-    for (auto match : f.getMatches()) {
-        unsigned long epoch = match.num;
-
-        Id id = -1;
-        while (true) {
-            id = resultPset->next(id);
-            if (id == -1)
-                break;
-
-            Solvable *s = pool_id2solvable(pool, id);
-            if (s->evr == ID_EMPTY)
-                continue;
-
-            const char *evr = pool_id2str(pool, s->evr);
-            unsigned long pkg_epoch = pool_get_epoch(pool, evr);
-
-            if ((pkg_epoch > epoch && cmp_type & HY_GT) ||
-                (pkg_epoch < epoch && cmp_type & HY_LT) ||
-                (pkg_epoch == epoch && cmp_type & HY_EQ))
-                MAPSET(m, id);
-        }
-    }
-}
-
-void
-Query::Impl::filterSourcerpm(const Filter & f, Map *m)
-{
-    Pool *pool = dnf_sack_get_pool(sack);
-    auto resultPset = result.get();
-
-    for (auto match_in : f.getMatches()) {
-        const char *match = match_in.str;
-
-        Id id = -1;
-        while (true) {
-            id = resultPset->next(id);
-            if (id == -1)
-                break;
-            Solvable *s = pool_id2solvable(pool, id);
-
-            const char *name = solvable_lookup_str(s, SOLVABLE_SOURCENAME);
-            if (name == NULL)
-                name = pool_id2str(pool, s->name);
-            if (!g_str_has_prefix(match, name)) // early check
-                continue;
-
-            DnfPackage *pkg = dnf_package_new(sack, id);
-            const char *srcrpm = dnf_package_get_sourcerpm(pkg);
-            if (srcrpm && !strcmp(match, srcrpm))
-                MAPSET(m, id);
-            g_object_unref(pkg);
-        }
-    }
-}
-
-void
 Query::Impl::filterObsoletes(const Filter & f, Map *m)
 {
     Pool *pool = dnf_sack_get_pool(sack);
@@ -1166,41 +1057,6 @@ Query::Impl::filterProvidesReldep(const Filter & f, Map *m)
         Id r_id = match_in.reldep;
         FOR_PROVIDES(p, pp, r_id)
             MAPSET(m, p);
-    }
-}
-
-void
-Query::Impl::filterReponame(const Filter & f, Map *m)
-{
-    Pool *pool = dnf_sack_get_pool(sack);
-    Solvable *s;
-    LibsolvRepo *r;
-    Id id;
-    bool ourids[pool->nrepos];
-    auto resultPset = result.get();
-
-    for (id = 0; id < pool->nrepos; ++id)
-        ourids[id] = false;
-    FOR_REPOS(id, r) {
-        for (auto match_in : f.getMatches()) {
-            if (!strcmp(r->name, match_in.str)) {
-                ourids[id] = true;
-                break;
-            }
-        }
-    }
-
-    id = -1;
-    int comparison = f.getCmpType() & ~HY_COMPARISON_FLAG_MASK;
-    if (comparison != HY_EQ)
-        assert(0);
-    while (true) {
-        id = resultPset->next(id);
-        if (id == -1)
-            break;
-        s = pool_id2solvable(pool, id);
-        if (s->repo && ourids[s->repo->repoid])
-            MAPSET(m, id);
     }
 }
 
@@ -1490,34 +1346,6 @@ Query::Impl::filterUpdownAble(const Filter  &f, Map *m)
                 what_upgrades(pool, p);
             if (what != 0 && map_tst(resultMap, what))
                 map_set(m, what);
-        }
-    }
-}
-
-void
-Query::Impl::filterDataiterator(const Filter & f, Map *m)
-{
-    Pool *pool = dnf_sack_get_pool(sack);
-    Dataiterator di;
-    Id keyname = di_keyname2id(f.getKeyname());
-    int flags = type2flags(f.getCmpType(), f.getKeyname());
-    auto resultPset = result.get();
-
-    assert(f.getMatchType() == _HY_STR);
-
-    for (auto match_in : f.getMatches()) {
-        const char *match = match_in.str;
-        Id id = -1;
-        while (true) {
-            id = resultPset->next(id);
-            if (id == -1)
-                break;
-            dataiterator_init(&di, pool, 0, id, keyname, match, flags);
-            while (dataiterator_step(&di)) {
-                MAPSET(m, id);
-                break;
-            }
-            dataiterator_free(&di);
         }
     }
 }
