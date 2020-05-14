@@ -1551,16 +1551,20 @@ dnf_context_set_cache_age(DnfContext *context, guint cache_age)
 }
 
 /**
- * dnf_context_set_os_release:
+ * os_release_from_provide:
+ * @root: install root directory
+ *
+ * Try to find release version in rpmdb using `system-release(releasever)`
+ * provide.
+ *
+ * Returns release version or NULL if there is no package providing it
  **/
-static gboolean
-dnf_context_set_os_release(DnfContext *context, GError **error) try
+const gchar *
+os_release_from_rpmdb(const char *root)
 {
-    const char *source_root = dnf_context_get_source_root (context);
-
-    gboolean found_in_rpmdb = FALSE;
+    const char *retval = NULL;
     rpmts ts = rpmtsCreate ();
-    rpmtsSetRootDir (ts, source_root);
+    rpmtsSetRootDir (ts, root);
     rpmdbMatchIterator mi = rpmtsInitIterator (ts, RPMTAG_PROVIDENAME, RELEASEVER_PROV, 0);
     Header hdr;
     while ((hdr = rpmdbNextIterator (mi)) != NULL) {
@@ -1570,19 +1574,31 @@ dnf_context_set_os_release(DnfContext *context, GError **error) try
             if (strcmp (rpmdsN (ds), RELEASEVER_PROV) == 0 && rpmdsFlags (ds) == RPMSENSE_EQUAL)
                 v = rpmdsEVR (ds);
         }
-        found_in_rpmdb = TRUE;
-        dnf_context_set_release_ver (context, v);
+        retval = strdup(v);
         rpmdsFree (ds);
         break;
     }
     rpmdbFreeIterator (mi);
     rpmtsFree (ts);
-    if (found_in_rpmdb)
+    return retval;
+}
+
+/**
+ * dnf_context_set_os_release:
+ **/
+static gboolean
+dnf_context_set_os_release(DnfContext *context, GError **error) try
+{
+    const char *source_root = dnf_context_get_source_root (context);
+    const gchar *version = os_release_from_rpmdb(source_root);
+
+    if (version) {
+        dnf_context_set_release_ver (context, version);
         return TRUE;
+    }
 
     g_autofree gchar *contents = NULL;
     g_autofree gchar *maybe_quoted_version = NULL;
-    g_autofree gchar *version = NULL;
     g_autofree gchar *os_release = NULL;
     g_autoptr(GString) str = NULL;
     g_autoptr(GKeyFile) key_file = NULL;

@@ -109,6 +109,7 @@ DnfContext      *dnf_context_new                        (void);
 
 /* utils */
 const gchar     *find_base_arch                         (const char *native);
+const gchar     *os_release_from_rpmdb                  (const char *root);
 
 /* getters */
 const gchar     *dnf_context_get_config_file_path       (void);
