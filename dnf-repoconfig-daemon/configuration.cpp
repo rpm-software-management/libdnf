@@ -40,14 +40,22 @@ void Configuration::set_substitutions()
     const char *arch;
     rpmGetArchInfo(&arch, NULL);
     substitutions["arch"] = std::string(arch);
+
     const auto basearch = find_base_arch(arch);
     substitutions["basearch"] = basearch ? std::string(basearch) : "";
-    //TODO do we have reliable way to detect releasever?
-    auto osdata = libdnf::getOsReleaseData();
-    std::string releasever="";
-    if (osdata.count("VERSION_ID")) {
-        releasever = osdata.at("VERSION_ID");
-    substitutions["releasever"] = releasever;
+
+    // find out release version from rpmdb with fallback to config files
+    const char* releasever = os_release_from_rpmdb("/");
+    if (!releasever) {
+        auto osdata = libdnf::getOsReleaseData();
+        std::string releasever = "";
+        if (osdata.count("VERSION_ID")) {
+            releasever = osdata.at("VERSION_ID");
+        }
+    }
+    if (releasever) {
+        substitutions["releasever"] = releasever;
+    }
 }
 
 void Configuration::read_main_config()
