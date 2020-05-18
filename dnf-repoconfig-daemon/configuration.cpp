@@ -21,7 +21,9 @@
 #include "configuration.hpp"
 
 #include "../libdnf/dnf-context.h" // for find_base_arch
+#include "../libdnf/log.hpp"
 #include "../libdnf/utils/os-release.hpp" // for getOsReleaseData
+#include "../libdnf/utils/tinyformat/tinyformat.hpp"
 
 #include <filesystem>
 #include <glob.h>
@@ -60,37 +62,48 @@ void Configuration::set_substitutions()
 
 void Configuration::read_main_config()
 {
+    auto logger(libdnf::Log::getLogger());
     // create new main config parser and read the config file
     std::unique_ptr<libdnf::ConfigParser> main_parser(new libdnf::ConfigParser);
     main_parser->setSubstitutions(substitutions);
     auto main_config_path = cfg_main->config_file_path().getValue();
-    main_parser->read(main_config_path);
-    const auto & cfgParserData = main_parser->getData();
-    // find the [main] section of the main config file
-    const auto cfgParserDataIter = cfgParserData.find("main");
-    if (cfgParserDataIter != cfgParserData.end()) {
-        auto optBinds = cfg_main->optBinds();
-        const auto & cfgParserMainSect = cfgParserDataIter->second;
-        for (const auto &opt : cfgParserMainSect) {
-            auto option_key = opt.first;
-            // find binding for the given key
-            const auto optBindsIter = optBinds.find(option_key);
-            if (optBindsIter != optBinds.end()) {
-                // set config option to value from the file with substituted vars
-                optBindsIter->second.newString(
-                    libdnf::Option::Priority::MAINCONFIG,
-                    main_parser->getSubstitutedValue("main", option_key));
+    try {
+        main_parser->read(main_config_path);
+        const auto & cfgParserData = main_parser->getData();
+        // find the [main] section of the main config file
+        const auto cfgParserDataIter = cfgParserData.find("main");
+        if (cfgParserDataIter != cfgParserData.end()) {
+            auto optBinds = cfg_main->optBinds();
+            const auto & cfgParserMainSect = cfgParserDataIter->second;
+            for (const auto &opt : cfgParserMainSect) {
+                auto option_key = opt.first;
+                // find binding for the given key
+                const auto optBindsIter = optBinds.find(option_key);
+                if (optBindsIter != optBinds.end()) {
+                    // set config option to value from the file with substituted vars
+                    try {
+                        optBindsIter->second.newString(
+                            libdnf::Option::Priority::MAINCONFIG,
+                            main_parser->getSubstitutedValue("main", option_key));
+                    } catch (const std::exception & e) {
+                        logger->warning(tfm::format("Config error in file \"%s\" section \"[main]\" key \"%s\": %s",
+                                                    main_config_path, option_key, e.what()));
+                    }
+                }
             }
         }
+        // read repos possibly configured in the main config file
+        read_repos(main_parser.get(), main_config_path);
+        // store the parser so it can be used for saving the config file later on
+        config_parsers[std::move(main_config_path)] = std::move(main_parser);
+    } catch (libdnf::ConfigParser::ParsingError & e) {
+        logger->warning(tfm::format("Error parsing config file %s: %s", main_config_path, e.what()));
     }
-    // read repos possibly configured in the main config file
-    read_repos(main_parser.get(), main_config_path);
-    // store the parser so it can be used for saving the config file later on
-    config_parsers[std::move(main_config_path)] = std::move(main_parser);
 }
 
 void Configuration::read_repos(const libdnf::ConfigParser *repo_parser, const std::string &file_path)
 {
+    auto logger(libdnf::Log::getLogger());
     const auto & cfgParserData = repo_parser->getData();
     for (const auto & cfgParserDataIter : cfgParserData) {
         if (cfgParserDataIter.first != "main") {
@@ -109,9 +122,14 @@ void Configuration::read_repos(const libdnf::ConfigParser *repo_parser, const st
                 const auto optBindsIter = optBinds.find(option_key);
                 if (optBindsIter != optBinds.end()) {
                     // configure the repo according the value from config file
-                    optBindsIter->second.newString(
-                        libdnf::Option::Priority::REPOCONFIG,
-                        repo_parser->getSubstitutedValue(section, option_key));
+                    try {
+                        optBindsIter->second.newString(
+                            libdnf::Option::Priority::REPOCONFIG,
+                            repo_parser->getSubstitutedValue(section, option_key));
+                    } catch (const std::exception & e) {
+                        logger->warning(tfm::format("Config error in file \"%s\" section \"[%s]\" key \"%s\": %s",
+                                                    file_path, section, option_key, e.what()));
+                    }
                 }
             }
             // save configured repo
@@ -125,16 +143,29 @@ void Configuration::read_repos(const libdnf::ConfigParser *repo_parser, const st
 
 void Configuration::read_repo_configs()
 {
+    auto logger(libdnf::Log::getLogger());
     for (auto reposDir : cfg_main->reposdir().getValue()) {
         // use canonical to resolve symlinks in reposDir
-        const std::string pattern = std::filesystem::canonical(reposDir).string() + "/*.repo";
+        std::string pattern;
+        try {
+            pattern = std::filesystem::canonical(reposDir).string() + "/*.repo";
+        }
+        catch (std::filesystem::filesystem_error & e) {
+            logger->debug(tfm::format("Error reading repository configuration directory %s: %s", reposDir, e.what()));
+            continue;
+        }
         glob_t globResult;
         glob(pattern.c_str(), GLOB_MARK, NULL, &globResult);
         for (size_t i = 0; i < globResult.gl_pathc; ++i) {
             std::unique_ptr<libdnf::ConfigParser> repo_parser(new libdnf::ConfigParser);
             std::string file_path = globResult.gl_pathv[i];
             repo_parser->setSubstitutions(substitutions);
-            repo_parser->read(file_path);
+            try {
+                repo_parser->read(file_path);
+            } catch (libdnf::ConfigParser::ParsingError & e) {
+                logger->warning(tfm::format("Error parsing config file %s: %s", file_path, e.what()));
+                continue;
+            }
             read_repos(repo_parser.get(), file_path);
             config_parsers[std::string(file_path)] = std::move(repo_parser);
         }
