@@ -964,6 +964,12 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
         priv->repo->getConfig()->skip_if_unavailable().set(libdnf::Option::Priority::REPOCONFIG, skip);
     }
 
+    /* priority is optional */
+    g_autofree gchar * priority_str = g_key_file_get_string(priv->keyfile, repoId, "priority", NULL);
+    if (priority_str) {
+        priv->repo->getConfig()->priority().set(libdnf::Option::Priority::REPOCONFIG, priority_str);
+    }
+
     /* cost is optional */
     cost = g_key_file_get_integer(priv->keyfile, repoId, "cost", NULL);
     if (cost != 0)
