@@ -20,6 +20,36 @@
 ######################
 
 ====================
+0.48.0 Release Notes
+====================
+
+- swdb: Catch only SQLite3 exceptions and simplify the messages
+- MergedTransaction list multiple comments (RhBug:1773679)
+- Modify CMake to pull *.po files from weblate
+- Optimize DependencyContainer creation from an existing queue
+- fix a memory leak in dnf_package_get_requires()
+- Fix memory leaks on g_build_filename()
+- Fix memory leak in dnf_context_setup()
+- Add `hy_goal_favor` and `hy_goal_disfavor`
+- Define a cleanup function for `DnfPackageSet`
+- dnf-repo: fix dnf_repo_get_public_keys double-free
+- Do not cache RPMDB
+- Use single-quotes around string literals used in SQL statements
+- SQLite3: Do not close the database if it wasn't opened (RhBug:1761976)
+- Don't create a new history DB connection for in-memory DB
+- transaction/Swdb: Use a single logger variable in constructor
+- utils: Add a safe version of pathExists()
+- swdb: Handle the case when pathExists() fails on e.g. permission
+- Repo: prepend "file://" if a local path is used as baseurl
+- Move urlEncode() to utils
+- utils: Add 'exclude' argument to urlEncode()
+- Encode package URL for downloading through librepo (RhBug:1817130)
+- Replace std::runtime_error with libdnf::RepoError
+- Fixes and error handling improvements of the File class
+- [context] Use ConfigRepo for gpgkey and baseurl (RhBug:1807864)
+- [context] support "priority" option in .repo config file (RhBug:1797265)
+
+====================
 0.47.0 Release Notes
 ====================
 
