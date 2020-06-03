@@ -22,6 +22,7 @@
 #include "TransactionItemReason.hpp"
 
 #include <map>
+#include <stdexcept>
 
 
 namespace libdnf {
@@ -39,6 +40,17 @@ const std::string &
 TransactionItemReasonToString(TransactionItemReason reason)
 {
     return transactionItemReasonName.at(reason);
+}
+
+TransactionItemReason StringToTransactionItemReason(const std::string & str)
+{
+    for (auto it = transactionItemReasonName.begin(); it != transactionItemReasonName.end(); ++it) {
+        if (it->second == str) {
+            return it->first;
+        }
+    }
+
+    throw std::out_of_range("Transaction Item Reason \"" + str + "\" not found.");
 }
 
 } // namespace libdnf
