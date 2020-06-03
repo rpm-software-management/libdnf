@@ -39,6 +39,7 @@ enum class TransactionItemReason : int {
 
 const std::string &
 TransactionItemReasonToString(TransactionItemReason reason);
+TransactionItemReason StringToTransactionItemReason(const std::string & str);
 
 
 inline bool operator<(TransactionItemReason lhs, TransactionItemReason rhs)
