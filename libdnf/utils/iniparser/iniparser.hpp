@@ -113,6 +113,7 @@ private:
     std::string value;
     std::string rawItem;
     std::string line;
+    bool lineReady;
 };
 
 inline const std::string & IniParser::getSection() const noexcept { return section; }

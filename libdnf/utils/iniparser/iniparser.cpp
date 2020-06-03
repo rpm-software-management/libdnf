@@ -69,6 +69,7 @@ IniParser::IniParser(const std::string & filePath)
         throw CantOpenFile();
     is->exceptions(std::ifstream::badbit);
     lineNumber = 0;
+    lineReady = false;
 }
 
 IniParser::IniParser(std::unique_ptr<std::istream> && inputStream)
@@ -78,6 +79,7 @@ IniParser::IniParser(std::unique_ptr<std::istream> && inputStream)
         throw CantOpenFile();
     is->exceptions(std::ifstream::badbit);
     lineNumber = 0;
+    lineReady = false;
 }
 
 void IniParser::trimValue() noexcept {
@@ -96,10 +98,11 @@ IniParser::ItemType IniParser::next()
 {
     bool previousLineWithKeyVal = false;
     rawItem.clear();
-    while (!line.empty() || !is->eof()) {
-        if (line.empty()) {
+    while (lineReady || !is->eof()) {
+        if (!lineReady) {
             std::getline(*is, line, DELIMITER);
             ++lineNumber;
+            lineReady = true;
         }
 
         // remove UTF-8 BOM
@@ -114,10 +117,15 @@ IniParser::ItemType IniParser::next()
                 trimValue();
                 return ItemType::KEY_VAL;
             }
-            if (line.length() == 0)
+            if (line.length() == 0) {
+                if (is->eof())
+                    return ItemType::END_OF_INPUT;
+                lineReady = false;
+                rawItem = DELIMITER;
                 return ItemType::EMPTY_LINE;
+            }
             rawItem = line + DELIMITER;
-            line.clear();
+            lineReady = false;
             return ItemType::COMMENT_LINE;
         }
         auto start = line.find_first_not_of(" \t\r");
@@ -125,11 +133,11 @@ IniParser::ItemType IniParser::next()
             if (previousLineWithKeyVal) {
                 value += DELIMITER;
                 rawItem += line + DELIMITER;
-                line.clear();
+                lineReady = false;
                 continue;
             }
             rawItem = line + DELIMITER;
-            line.clear();
+            lineReady = false;
             return ItemType::EMPTY_LINE;
         }
         auto end = line.find_last_not_of(" \t\r");
@@ -155,7 +163,7 @@ IniParser::ItemType IniParser::next()
             }
             this->section = line.substr(start, endSectPos - start);
             rawItem = line + DELIMITER;
-            line.clear();
+            lineReady = false;
             return ItemType::SECTION;
         }
 
@@ -167,7 +175,7 @@ IniParser::ItemType IniParser::next()
                 throw IllegalContinuationLine(lineNumber);
             value += DELIMITER + line.substr(start, end - start + 1);
             rawItem += line + DELIMITER;
-            line.clear();
+            lineReady = false;
         } else {
             if (line[start] == '=')
                 throw MissingKey(lineNumber);
@@ -183,7 +191,7 @@ IniParser::ItemType IniParser::next()
                 value.clear();
             previousLineWithKeyVal = true;
             rawItem = line + DELIMITER;
-            line.clear();
+            lineReady = false;
         }
     }
     trimValue();
