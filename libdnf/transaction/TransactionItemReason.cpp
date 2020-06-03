@@ -39,7 +39,12 @@ static const std::map<TransactionItemReason, std::string> transactionItemReasonN
 const std::string &
 TransactionItemReasonToString(TransactionItemReason reason)
 {
-    return transactionItemReasonName.at(reason);
+    try {
+        return transactionItemReasonName.at(reason);
+    } catch (std::out_of_range & e) {
+        throw std::out_of_range("Transaction Item Reason ID \"" +
+            std::to_string(static_cast<int>(reason)) + "\" not found.");
+    }
 }
 
 TransactionItemReason StringToTransactionItemReason(const std::string & str)
