@@ -323,9 +323,9 @@ popd
 %files -n dnf-repoconfig-daemon
 %{_bindir}/dnf-repoconfig-daemon
 %{_unitdir}/dnf-repoconfig-daemon.service
-%{_sysconfdir}/dbus-1/system.d/org.rpm.dnf.v1.conf
-%{_datadir}/dbus-1/system-services/org.rpm.dnf.v1.rpm.RepoConf.service
-%{_datadir}/polkit-1/actions/org.rpm.dnf.v1.policy
+%{_sysconfdir}/dbus-1/system.d/org.rpm.dnf.v0.conf
+%{_datadir}/dbus-1/system-services/org.rpm.dnf.v0.rpm.RepoConf.service
+%{_datadir}/polkit-1/actions/org.rpm.dnf.v0.policy
 %endif
 
 %changelog

@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     libdnf::Log::setLogger(&journal_logger);
 
     // Create D-Bus connection to the system bus and requests name on it.
-    const char* serviceName = "org.rpm.dnf.v1.rpm.RepoConf";
+    const char* serviceName = "org.rpm.dnf.v0.rpm.RepoConf";
     std::unique_ptr<sdbus::IConnection> connection = NULL;
     try {
         connection = sdbus::createSystemBusConnection(serviceName);

@@ -7,7 +7,7 @@
   <vendor_url>http://example.com</vendor_url>
 
   <!-- Action id must be lower case -->
-  <action id="org.rpm.dnf.v1.rpm.RepoConf.write">
+  <action id="org.rpm.dnf.v0.rpm.RepoConf.write">
     <description>Write repository configuration file</description>
     <message>The message??</message>
     <defaults>

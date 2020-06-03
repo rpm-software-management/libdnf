@@ -23,7 +23,7 @@
 #include <vector>
 #include <string>
 
-const std::string REPO_CONF_ERROR = "org.rpm.dnf.v1.rpm.RepoConf.Error";
+const std::string REPO_CONF_ERROR = "org.rpm.dnf.v0.rpm.RepoConf.Error";
 
 using KeyValueMap = std::map<std::string, sdbus::Variant>;
 using KeyValueMapList = std::vector<KeyValueMap>;

@@ -9,11 +9,11 @@ install (
 )
 
 install (
-    FILES "org.rpm.dnf.v1.rpm.RepoConf.service"
+    FILES "org.rpm.dnf.v0.rpm.RepoConf.service"
     DESTINATION ${DBUS_SERVICES_DIR}
 )
 
 install (
-    FILES "org.rpm.dnf.v1.conf"
+    FILES "org.rpm.dnf.v0.conf"
     DESTINATION ${DBUS_CONFIG_DIR}
 )

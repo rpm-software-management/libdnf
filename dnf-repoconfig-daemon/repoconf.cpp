@@ -31,8 +31,8 @@ RepoConf::RepoConf(sdbus::IConnection &connection) : connection(connection)
 
 void RepoConf::dbus_register_methods()
 {
-    const std::string objectPath = "/org/rpm/dnf/v1/rpm/RepoConf";
-    const std::string interfaceName = "org.rpm.dnf.v1.rpm.RepoConf";
+    const std::string objectPath = "/org/rpm/dnf/v0/rpm/RepoConf";
+    const std::string interfaceName = "org.rpm.dnf.v0.rpm.RepoConf";
 
     dbus_object = sdbus::createObject(connection, objectPath);
     dbus_object->registerMethod(interfaceName, "list", "as", "aa{sv}", [this](sdbus::MethodCall call) -> void {this->list(call);});
@@ -157,7 +157,7 @@ std::vector<std::string> RepoConf::enable_disable_repos(const std::vector<std::s
 void RepoConf::enable_disable(sdbus::MethodCall call, const bool enable)
 {
     auto sender = call.getSender();
-    auto is_authorized = check_authorization("org.rpm.dnf.v1.rpm.RepoConf.write", sender);
+    auto is_authorized = check_authorization("org.rpm.dnf.v0.rpm.RepoConf.write", sender);
     if (!is_authorized) {
         throw sdbus::Error(REPO_CONF_ERROR, "Not authorised.");
     }

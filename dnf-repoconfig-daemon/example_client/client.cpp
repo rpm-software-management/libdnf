@@ -28,10 +28,10 @@ int main(int argc, char *argv[])
 {
     auto connection = sdbus::createSystemBusConnection();
     std::cout << "Client name: " << connection->getUniqueName() << std::endl;
-    const char* destinationName = "org.rpm.dnf.v1.rpm.RepoConf";
-    const char* objectPath = "/org/rpm/dnf/v1/rpm/RepoConf";
+    const char* destinationName = "org.rpm.dnf.v0.rpm.RepoConf";
+    const char* objectPath = "/org/rpm/dnf/v0/rpm/RepoConf";
     auto repoconf_proxy = sdbus::createProxy(*connection, destinationName, objectPath);
-    const char* interfaceName = "org.rpm.dnf.v1.rpm.RepoConf";
+    const char* interfaceName = "org.rpm.dnf.v0.rpm.RepoConf";
     repoconf_proxy->finishRegistration();
 
     {

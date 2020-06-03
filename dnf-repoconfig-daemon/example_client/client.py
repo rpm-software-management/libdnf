@@ -19,8 +19,8 @@
 import dbus
 
 bus = dbus.SystemBus()
-proxy = bus.get_object('org.rpm.dnf.v1.rpm.RepoConf', '/org/rpm/dnf/v1/rpm/RepoConf')
-iface = dbus.Interface(proxy, dbus_interface='org.rpm.dnf.v1.rpm.RepoConf')
+proxy = bus.get_object('org.rpm.dnf.v0.rpm.RepoConf', '/org/rpm/dnf/v0/rpm/RepoConf')
+iface = dbus.Interface(proxy, dbus_interface='org.rpm.dnf.v0.rpm.RepoConf')
 
 for repo in iface.list([]):
     print(repo['repoid'])
