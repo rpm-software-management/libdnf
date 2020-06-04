@@ -49,6 +49,7 @@ public:
 
     OptionNumber<std::int32_t> & debuglevel();
     OptionNumber<std::int32_t> & errorlevel();
+    OptionNumber<std::int32_t> & logfilelevel();
     OptionString & installroot();
     OptionString & config_file_path();
     OptionBool & plugins();
