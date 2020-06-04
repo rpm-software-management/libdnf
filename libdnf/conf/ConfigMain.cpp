@@ -169,6 +169,7 @@ class ConfigMain::Impl {
 
     OptionNumber<std::int32_t> debuglevel{2, 0, 10};
     OptionNumber<std::int32_t> errorlevel{3, 0, 10};
+    OptionNumber<std::int32_t> logfilelevel{9, 0, 10};
     OptionPath installroot{"/", false, true};
     OptionPath config_file_path{CONF_FILENAME};
     OptionBool plugins{true};
@@ -350,6 +351,7 @@ ConfigMain::Impl::Impl(Config & owner)
 {
     owner.optBinds().add("debuglevel", debuglevel);
     owner.optBinds().add("errorlevel", errorlevel);
+    owner.optBinds().add("logfilelevel", logfilelevel);
     owner.optBinds().add("installroot", installroot);
     owner.optBinds().add("config_file_path", config_file_path);
     owner.optBinds().add("plugins", plugins);
@@ -491,6 +493,7 @@ ConfigMain::~ConfigMain() = default;
 
 OptionNumber<std::int32_t> & ConfigMain::debuglevel() { return pImpl->debuglevel; }
 OptionNumber<std::int32_t> & ConfigMain::errorlevel() { return pImpl->errorlevel; }
+OptionNumber<std::int32_t> & ConfigMain::logfilelevel() { return pImpl->logfilelevel; }
 OptionString & ConfigMain::installroot() { return pImpl->installroot; }
 OptionString & ConfigMain::config_file_path() { return pImpl->config_file_path; }
 OptionBool & ConfigMain::plugins() { return pImpl->plugins; }
