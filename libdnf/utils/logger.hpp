@@ -34,6 +34,8 @@ public:
     enum class Level {CRITICAL, ERROR, WARNING, NOTICE, INFO, DEBUG, TRACE};
     static constexpr const char * levelToCStr(Level level) noexcept { return level<Level::CRITICAL || level>Level::TRACE ? "USER" : levelCStr[static_cast<int>(level)]; }
 
+    enum Source {LOG_SOURCE_LIBDNF = 0, LOG_SOURCE_LIBREPO = 1};
+
     void critical(const std::string & message) { write(Level::CRITICAL, message); }
     void error(const std::string & message) { write(Level::ERROR, message); }
     void warning(const std::string & message) { write(Level::WARNING, message); }
@@ -50,8 +52,8 @@ public:
     void debug(int source, const std::string & message) { write(source, Level::DEBUG, message); }
     void trace(int source, const std::string & message) { write(source, Level::TRACE, message); }
 
-    void write(Level level, const std::string & message) { write(0, level, message); }
-    void write(time_t time, pid_t pid, Level level, const std::string & message) { write(0, time, pid, level, message); }
+    void write(Level level, const std::string & message) { write(LOG_SOURCE_LIBDNF, level, message); }
+    void write(time_t time, pid_t pid, Level level, const std::string & message) { write(LOG_SOURCE_LIBDNF, time, pid, level, message); }
 
     virtual void write(int source, Level level, const std::string & message);
     virtual void write(int source, time_t time, pid_t pid, Level level, const std::string & message) = 0;
