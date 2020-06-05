@@ -1836,45 +1836,34 @@ LrHandleLogData::~LrHandleLogData()
 static std::list<std::unique_ptr<LrHandleLogData>> lrLogDatas;
 static std::mutex lrLogDatasMutex;
 
-static const char * lrLogLevelFlagToCStr(GLogLevelFlags logLevelFlag)
+static const Logger::Level lrLogLevelFlagToLevel(GLogLevelFlags logLevelFlag)
 {
-    if (logLevelFlag & G_LOG_LEVEL_ERROR)
-        return "ERROR";
-    if (logLevelFlag & G_LOG_LEVEL_CRITICAL)
-        return "CRITICAL";
-    if (logLevelFlag & G_LOG_LEVEL_WARNING)
-        return "WARNING";
-    if (logLevelFlag & G_LOG_LEVEL_MESSAGE)
-        return "MESSAGE";
-    if (logLevelFlag & G_LOG_LEVEL_INFO)
-        return "INFO";
-    if (logLevelFlag & G_LOG_LEVEL_DEBUG)
-        return "DEBUG";
-    return "USER";
+    if (logLevelFlag & G_LOG_LEVEL_ERROR) {
+        return Logger::Level::ERROR;
+    }
+    if (logLevelFlag & G_LOG_LEVEL_CRITICAL) {
+        return Logger::Level::WARNING;
+    }
+    if (logLevelFlag & G_LOG_LEVEL_WARNING) {
+        return Logger::Level::WARNING;
+    }
+    if (logLevelFlag & G_LOG_LEVEL_MESSAGE) {
+        return Logger::Level::NOTICE;
+    }
+    if (logLevelFlag & G_LOG_LEVEL_INFO) {
+        return Logger::Level::INFO;
+    }
+    if (logLevelFlag & G_LOG_LEVEL_DEBUG) {
+        return Logger::Level::DEBUG;
+    }
+    return Logger::Level::TRACE;
 }
 
 static void librepoLogCB(G_GNUC_UNUSED const gchar *log_domain, GLogLevelFlags log_level,
                          const char *msg, gpointer user_data) noexcept
 {
-    // Ignore exception during logging. Eg. exception generated during logging of exception is not good.
-    try {
-        auto data = static_cast<LrHandleLogData *>(user_data);
-        auto now = time(NULL);
-        struct tm nowTm;
-        gmtime_r(&now, &nowTm);
-
-        std::ostringstream ss;
-        ss << std::setfill('0');
-        ss << std::setw(4) << nowTm.tm_year+1900 << "-" << std::setw(2) << nowTm.tm_mon+1;
-        ss << "-" << std::setw(2) << nowTm.tm_mday;
-        ss << "T" << std::setw(2) << nowTm.tm_hour << ":" << std::setw(2) << nowTm.tm_min;
-        ss << ":" << std::setw(2) << nowTm.tm_sec << "Z ";
-        ss << lrLogLevelFlagToCStr(log_level) << " " << msg << std::endl;
-        auto str = ss.str();
-        fwrite(str.c_str(), sizeof(char), str.length(), data->fd);
-        fflush(data->fd);
-    } catch (const std::exception &) {
-    }
+    auto logger(Log::getLogger());
+    logger->write(Logger::LOG_SOURCE_LIBREPO, lrLogLevelFlagToLevel(log_level), msg);
 }
 
 long LibrepoLog::addHandler(const std::string & filePath, bool debug)
