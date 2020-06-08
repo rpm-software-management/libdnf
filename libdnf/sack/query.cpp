@@ -64,13 +64,14 @@ namespace libdnf {
 
 struct NevraID {
 public:
-    NevraID();
-    NevraID(const NevraID & src);
-    NevraID(NevraID && src);
-    NevraID & operator=(const NevraID & src);
-    NevraID & operator=(NevraID && src);
-    Id name{0};
-    Id arch{0};
+    NevraID() : name(0), arch(0), evr(0) {};
+    NevraID(const NevraID & src) = default;
+    NevraID(NevraID && src) noexcept = default;
+    NevraID & operator=(const NevraID & src) = default;
+    NevraID & operator=(NevraID && src) = default;
+    Id name;
+    Id arch;
+    Id evr;
     std::string evr_str;
     /**
     * @brief Parsing function for nevra string into name, evr, arch and transforming it into libsolv
@@ -81,39 +82,11 @@ public:
     * @return bool Returns true if parsing succesful and all elements is known to pool
     */
 
-    bool parse(Pool * pool, const char * nevraPattern);
+    bool parse(Pool * pool, const char * nevraPattern, bool createEVRId);
 };
 
-NevraID::NevraID() = default;
-
-NevraID::NevraID(const NevraID & src)
-: name(src.name), arch(src.arch), evr_str(src.evr_str)
-{}
-
-NevraID::NevraID(NevraID && src)
-: name(src.name), arch(src.arch), evr_str(std::move(src.evr_str))
-{}
-
-NevraID &
-NevraID::operator=(const NevraID & src)
-{
-    name = src.name;
-    arch = src.arch;
-    evr_str = src.evr_str;
-    return *this;
-}
-
-NevraID &
-NevraID::operator=(NevraID && src)
-{
-    name = src.name;
-    arch = src.arch;
-    std::swap(evr_str, src.evr_str);
-    return *this;
-}
-
 bool
-NevraID::parse(Pool * pool, const char * nevraPattern)
+NevraID::parse(Pool * pool, const char * nevraPattern, bool createEVRId)
 {
     const char * evrDelim = nullptr;
     const char * releaseDelim = nullptr;
@@ -147,18 +120,44 @@ NevraID::parse(Pool * pool, const char * nevraPattern)
     ++evrDelim;
 
     // evr
-    size_t evr_size = archDelim - evrDelim;
-    if (evr_size == 0) {
-        return false;
+    if (createEVRId) {
+        // strip epoch "0:"
+        if (evrDelim[0] == '0' && evrDelim[1] == ':') {
+            evrDelim += 2;
+        }
+        if (!(evr = pool_strn2id(pool, evrDelim, archDelim - evrDelim, 0))) {
+            return false;
+        }
+    } else {
+        evr_str.clear();
+        evr_str.append(evrDelim, archDelim);
     }
-
-    evr_str = std::string(evrDelim,  evr_size);
 
     ++archDelim;
     if (!(arch = pool_strn2id(pool, archDelim, end - archDelim, 0)))
         return false;
 
     return true;
+}
+
+static bool
+nevraIDSorter(const NevraID & first, const NevraID & second)
+{
+    if (first.name != second.name)
+        return first.name < second.name;
+    if (first.arch != second.arch)
+        return first.arch < second.arch;
+    return first.evr < second.evr;
+}
+
+static bool
+nevraCompareLowerSolvable(const NevraID &first, const Solvable &s)
+{
+    if (first.name != s.name)
+        return first.name < s.name;
+    if (first.arch != s.arch)
+        return first.arch < s.arch;
+    return first.evr < s.evr;
 }
 
 static bool
@@ -1042,12 +1041,17 @@ Query::Impl::filterNevraStrict(int cmpType, const char **matches)
     const unsigned nmatches = g_strv_length((gchar**)matches);
     compareSet.reserve(nmatches);
 
+    bool createEVRId = true;
+    if (cmpType & HY_LT || cmpType & HY_GT) {
+        createEVRId = false;
+    }
+
     for (unsigned int i = 0; i < nmatches; ++i) {
         const char * nevraPattern = matches[i];
         if (!nevraPattern)
             throw std::runtime_error("Query can not accept NULL for STR match");
         NevraID nevraId;
-        if (nevraId.parse(pool, nevraPattern)) {
+        if (nevraId.parse(pool, nevraPattern, createEVRId)) {
             compareSet.push_back(std::move(nevraId));
         }
     }
@@ -1059,42 +1063,76 @@ Query::Impl::filterNevraStrict(int cmpType, const char **matches)
     Map nevraResult;
     map_init(&nevraResult, pool->nsolvables);
 
-    if (compareSet.size() > 1) {
-        std::sort(compareSet.begin(), compareSet.end(), nevraNameArchKey);
+    //  if cmpType == HY_EQ or cmpType == (HY_EQ | HY_NOT) -> performance optimization
+    if (createEVRId) {
+        if (compareSet.size() > 1) {
+            std::sort(compareSet.begin(), compareSet.end(), nevraIDSorter);
 
-        Id id = -1;
-        while (true) {
-            id = result->next(id);
-            if (id == -1)
-                break;
-            Solvable* s = pool_id2solvable(pool, id);
-            auto low = std::lower_bound(compareSet.begin(), compareSet.end(), *s,
-                                        nameArchCompareLowerSolvable);
-            while (low != compareSet.end() && low->name == s->name && low->arch == s->arch) {
-                int cmp = pool_evrcmp_str(
-                    pool, pool_id2str(pool, s->evr), low->evr_str.c_str(), EVRCMP_COMPARE);
-
-                if ((cmp > 0 && cmpType & HY_GT) || (cmp < 0 && cmpType & HY_LT) ||
-                    (cmp == 0 && cmpType & HY_EQ)) {
+            Id id = -1;
+            while (true) {
+                id = result->next(id);
+                if (id == -1)
+                    break;
+                Solvable* s = pool_id2solvable(pool, id);
+                auto low = std::lower_bound(compareSet.begin(), compareSet.end(), *s,
+                                            nevraCompareLowerSolvable);
+                if (low != compareSet.end() && low->name == s->name && low->arch == s->arch
+                    && low->evr == s->evr) {
                     MAPSET(&nevraResult, id);
                 }
-                ++low;
+            }
+        } else {
+            NevraID & nevraId = compareSet[0];
+            Id id = -1;
+            while (true) {
+                id = result->next(id);
+                if (id == -1)
+                    break;
+                Solvable* s = pool_id2solvable(pool, id);
+                if (nevraId.name == s->name && nevraId.arch == s->arch && nevraId.evr == s->evr) {
+                    MAPSET(&nevraResult, id);
+                }
             }
         }
     } else {
-        auto nevraId = compareSet[0];
-        Id id = -1;
-        while (true) {
-            id = result->next(id);
-            if (id == -1)
-                break;
-            Solvable* s = pool_id2solvable(pool, id);
-            if (nevraId.name == s->name && nevraId.arch == s->arch) {
-                int cmp = pool_evrcmp_str(
-                    pool, pool_id2str(pool, s->evr), nevraId.evr_str.c_str(), EVRCMP_COMPARE);
-                if ((cmp > 0 && cmpType & HY_GT) || (cmp < 0 && cmpType & HY_LT) ||
-                    (cmp == 0 && cmpType & HY_EQ)) {
-                    MAPSET(&nevraResult, id);
+        if (compareSet.size() > 1) {
+            std::sort(compareSet.begin(), compareSet.end(), nevraNameArchKey);
+
+            Id id = -1;
+            while (true) {
+                id = result->next(id);
+                if (id == -1)
+                    break;
+                Solvable* s = pool_id2solvable(pool, id);
+                auto low = std::lower_bound(compareSet.begin(), compareSet.end(), *s,
+                                            nameArchCompareLowerSolvable);
+                while (low != compareSet.end() && low->name == s->name && low->arch == s->arch) {
+                    int cmp = pool_evrcmp_str(
+                        pool, pool_id2str(pool, s->evr), low->evr_str.c_str(), EVRCMP_COMPARE);
+
+                    if ((cmp > 0 && cmpType & HY_GT) || (cmp < 0 && cmpType & HY_LT)
+                        || (cmp == 0 && cmpType & HY_EQ)) {
+                        MAPSET(&nevraResult, id);
+                        break;
+                    }
+                    ++low;
+                }
+            }
+        } else {
+            auto & nevraId = compareSet[0];
+            Id id = -1;
+            while (true) {
+                id = result->next(id);
+                if (id == -1)
+                    break;
+                Solvable* s = pool_id2solvable(pool, id);
+                if (nevraId.name == s->name && nevraId.arch == s->arch) {
+                    int cmp = pool_evrcmp_str(
+                        pool, pool_id2str(pool, s->evr), nevraId.evr_str.c_str(), EVRCMP_COMPARE);
+                    if ((cmp > 0 && cmpType & HY_GT) || (cmp < 0 && cmpType & HY_LT) ||
+                        (cmp == 0 && cmpType & HY_EQ)) {
+                        MAPSET(&nevraResult, id);
+                    }
                 }
             }
         }
