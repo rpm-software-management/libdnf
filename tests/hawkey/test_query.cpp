@@ -484,7 +484,7 @@ START_TEST(test_upgrades)
 
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter_upgrades(q, 1);
-    fail_unless(query_count_results(q) == TEST_EXPECT_UPDATES_NSOLVABLES - 5);
+    fail_unless(query_count_results(q) == TEST_EXPECT_UPDATES_NSOLVABLES - 8);
     hy_query_free(q);
 }
 END_TEST
@@ -493,7 +493,7 @@ START_TEST(test_upgradable)
 {
     HyQuery q = hy_query_create(test_globals.sack);
     hy_query_filter_upgradable(q, 1);
-    ck_assert_int_eq(query_count_results(q), 5);
+    ck_assert_int_eq(query_count_results(q), 6);
     hy_query_free(q);
 }
 END_TEST
@@ -893,7 +893,7 @@ START_TEST(test_query_multiple_flags)
     hy_query_filter(q, HY_PKG_NAME, HY_NOT | HY_GLOB, "p*");
     plist = hy_query_run(q);
 
-    ck_assert_int_eq(plist->len, 8);
+    ck_assert_int_eq(plist->len, 9);
     g_ptr_array_unref(plist);
     hy_query_free(q);
 }
@@ -920,7 +920,7 @@ START_TEST(test_query_apply)
     ck_assert_int_eq(_q.getApplied(), 0);
     plist = hy_query_run(q);
 
-    ck_assert_int_eq(plist->len, 6);
+    ck_assert_int_eq(plist->len, 7);
     g_ptr_array_unref(plist);
     hy_query_free(q);
 }

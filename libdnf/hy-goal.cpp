@@ -171,6 +171,13 @@ hy_goal_install_optional(HyGoal goal, DnfPackage *new_pkg)
 }
 
 int
+hy_goal_lock(HyGoal goal, DnfPackage *pkg, GError **error)
+{
+    goal->lock(pkg);
+    return 0;
+}
+
+int
 hy_goal_favor(HyGoal goal, DnfPackage *pkg)
 {
     goal->favor(pkg);

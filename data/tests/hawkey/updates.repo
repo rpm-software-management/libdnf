@@ -28,3 +28,9 @@
 =Prv: dodo-dep
 =Pkg: dodo-dep-b 1.0 1 noarch
 =Prv: dodo-dep
+=Pkg: bloop 1.0 1 noarch
+=Pkg: bloop-ext 1.0 1 noarch
+=Req: bloop = 1.0-1
+=Pkg: bloop 2.0 1 noarch
+=Pkg: bloop-ext 2.0 1 noarch
+=Req: bloop = 2.0-1

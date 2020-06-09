@@ -74,6 +74,7 @@ public:
     */
     void erase(HySelector sltr, int flags);
     void install(DnfPackage *new_pkg, bool optional);
+    void lock(DnfPackage *new_pkg);
     void favor(DnfPackage *new_pkg);
     void disfavor(DnfPackage *new_pkg);
 

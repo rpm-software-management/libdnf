@@ -23,3 +23,4 @@
 =Req: /usr/bin/away
 =Pkg: tour 4 0 noarch
 =Prv: /usr/bin/away
+=Pkg: bloop 1.0 1 noarch

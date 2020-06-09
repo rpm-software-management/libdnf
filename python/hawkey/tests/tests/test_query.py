@@ -212,13 +212,13 @@ class TestQuery(base.TestCase):
     def test_multiple_flags(self):
         q = hawkey.Query(self.sack).filter(name__glob__not=["p*", "j*"])
         self.assertItemsEqual(list(map(lambda p: p.name, q.run())),
-                              ["baby", "dog", "flying", "fool", "gun", "tour"])
+                              ["baby", "bloop", "dog", "flying", "fool", "gun", "tour"])
 
     def test_apply(self):
         q = hawkey.Query(self.sack).filter(name__glob__not="p*").apply()
         res = q.filter(name__glob__not="j*").run()
         self.assertItemsEqual(list(map(lambda p: p.name, res)),
-                              ["baby", "dog", "flying", "fool", "gun", "tour"])
+                              ["baby", "bloop", "dog", "flying", "fool", "gun", "tour"])
 
     def test_provides_glob_should_work(self):
         q1 = hawkey.Query(self.sack).filter(provides__glob="penny*")
@@ -298,7 +298,7 @@ class TestQueryAllRepos(base.TestCase):
 
     def test_rco_glob(self):
         q1 = hawkey.Query(self.sack).filter(requires__glob="*")
-        self.assertLength(q1, 10)
+        self.assertLength(q1, 12)
         q2 = hawkey.Query(self.sack).filter(requires="*")
         self.assertLength(q2, 0)
         q3 = hawkey.Query(self.sack).filter(conflicts__glob="cu*")
@@ -326,9 +326,9 @@ class TestQueryUpdates(base.TestCase):
     def test_upgradable(self):
         query = hawkey.Query(self.sack).filter(upgradable=True)
         self.assertEqual({str(pkg) for pkg in query},
-                         {"dog-1-1.x86_64", "flying-2-9.noarch",
-                          "fool-1-3.noarch", "pilchard-1.2.3-1.i686",
-                          "pilchard-1.2.3-1.x86_64"})
+                         {"bloop-1.0-1.noarch", "dog-1-1.x86_64",
+                          "flying-2-9.noarch", "fool-1-3.noarch",
+                          "pilchard-1.2.3-1.i686", "pilchard-1.2.3-1.x86_64"})
 
     def test_updates_noarch(self):
         q = hawkey.Query(self.sack)

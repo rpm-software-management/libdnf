@@ -478,11 +478,11 @@ START_TEST(test_goal_upgrade_all)
     if (implicitobsoleteusescolors) {
         // Fedora, Mageia
         assert_list_names<&dnf_package_get_name>(
-            true, plist, "dog", "flying", "fool", "pilchard", "pilchard", NULL);
+            true, plist, "bloop", "dog", "flying", "fool", "pilchard", "pilchard", NULL);
     } else {
         // openSUSE
         assert_list_names<&dnf_package_get_name>(
-            true, plist, "dog", "flying", "fool", NULL);
+            true, plist, "bloop", "dog", "flying", "fool", NULL);
     }
 
     // see all obsoletes of fool:
@@ -789,6 +789,92 @@ START_TEST(test_goal_disfavor)
 }
 END_TEST
 
+START_TEST(test_goal_lock)
+{
+    DnfSack *sack = test_globals.sack;
+    HyGoal goal = hy_goal_create(sack);
+
+    // check that installing "bloop-ext" without locking the base works fine
+    // (and auto-updates the base)
+    g_auto(HySubject) subject = hy_subject_create("bloop-ext");
+    g_auto(HySelector) selector = hy_subject_get_best_selector(subject, sack, NULL, FALSE, "updates");
+    fail_if(!hy_goal_install_selector(goal, selector, NULL));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
+
+    assert_iueo(goal, 1, 1, 0, 0);
+
+    GPtrArray *plist = hy_goal_list_installs(goal, NULL);
+    const char *nvra = dnf_package_get_nevra(
+        static_cast<DnfPackage *>(g_ptr_array_index(plist, 0)));
+    ck_assert_str_eq(nvra, "bloop-ext-2.0-1.noarch");
+    g_ptr_array_unref(plist);
+
+    plist = hy_goal_list_upgrades(goal, NULL);
+    nvra = dnf_package_get_nevra(
+        static_cast<DnfPackage *>(g_ptr_array_index(plist, 0)));
+    ck_assert_str_eq(nvra, "bloop-2.0-1.noarch");
+    g_ptr_array_unref(plist);
+
+    hy_goal_free(goal);
+
+    // now redo the same test, but lock the base pkg
+    goal = hy_goal_create(sack);
+
+    g_autoptr(DnfPackage) base_pkg = by_name_repo(sack, "bloop", HY_SYSTEM_REPO_NAME);
+    fail_if(base_pkg == NULL);
+    fail_if(hy_goal_lock(goal, base_pkg, NULL));
+
+    fail_if(!hy_goal_install_selector(goal, selector, NULL));
+    fail_if(hy_goal_run_flags(goal, DNF_NONE));
+
+    assert_iueo(goal, 1, 0, 0, 0);
+
+    plist = hy_goal_list_installs(goal, NULL);
+    nvra = dnf_package_get_nevra(
+        static_cast<DnfPackage *>(g_ptr_array_index(plist, 0)));
+    ck_assert_str_eq(nvra, "bloop-ext-1.0-1.noarch");
+    g_ptr_array_unref(plist);
+
+    hy_goal_free(goal);
+
+    // now purposely exclude the compatible version and check that we get a
+    // sensical error
+    goal = hy_goal_create(sack);
+    fail_if(hy_goal_lock(goal, base_pkg, NULL));
+
+    HyQuery q = hy_query_create(sack);
+    hy_query_filter(q, HY_PKG_NEVRA, HY_EQ, "bloop-ext-1.0-1.noarch");
+    hy_query_filter(q, HY_PKG_REPONAME, HY_EQ, "updates");
+    g_autoptr(DnfPackageSet) pset = hy_query_run_set(q);
+    dnf_sack_add_excludes(sack, pset);
+    hy_query_free(q);
+
+    fail_if(!hy_goal_install_selector(goal, selector, NULL));
+    // notice the ! here; we expect failure
+    fail_if(!hy_goal_run_flags(goal, DNF_NONE));
+
+    g_autoptr(GError) error = NULL;
+    fail_unless(hy_goal_list_installs(goal, &error) == NULL);
+    fail_unless(error->code == DNF_ERROR_NO_SOLUTION);
+    fail_unless(hy_goal_count_problems(goal) > 0);
+
+    auto problems = goal->describeProblemRules(0, true);
+    const char *expected[] = {
+                "package bloop-ext-2.0-1.noarch requires bloop = 2.0-1, but none of the providers can be installed",
+                "cannot install both bloop-2.0-1.noarch and bloop-1.0-1.noarch",
+                "conflicting requests",
+                "package bloop-ext-1.0-1.noarch is filtered out by exclude filtering"
+                };
+    ck_assert_int_eq(problems.size(), 4);
+    ck_assert_str_eq(problems[0].c_str(), expected[0]);
+    ck_assert_str_eq(problems[1].c_str(), expected[1]);
+    ck_assert_str_eq(problems[2].c_str(), expected[2]);
+    ck_assert_str_eq(problems[3].c_str(), expected[3]);
+
+    hy_goal_free(goal);
+}
+END_TEST
+
 START_TEST(test_goal_installonly)
 {
     const char *installonly[] = {"fool", NULL};
@@ -829,10 +915,10 @@ START_TEST(test_goal_installonly_upgrade_all)
     int implicitobsoleteusescolors = pool_get_flag(pool, POOL_FLAG_IMPLICITOBSOLETEUSESCOLORS);
     if (implicitobsoleteusescolors) {
         // Fedora, Mageia
-        assert_iueo(goal, 1, 4, 1, 0);
+        assert_iueo(goal, 1, 5, 1, 0);
     } else {
         // openSUSE
-        assert_iueo(goal, 1, 2, 1, 0);
+        assert_iueo(goal, 1, 3, 1, 0);
     }
 
     hy_goal_free(goal);
@@ -853,7 +939,7 @@ START_TEST(test_goal_upgrade_all_excludes)
     HyGoal goal = hy_goal_create(sack);
     hy_goal_upgrade_all(goal);
     hy_goal_run_flags(goal, DNF_NONE);
-    fail_unless(size_and_free(hy_goal_list_upgrades(goal, NULL)) == 3);
+    fail_unless(size_and_free(hy_goal_list_upgrades(goal, NULL)) == 4);
     hy_goal_free(goal);
 }
 END_TEST
@@ -869,10 +955,10 @@ START_TEST(test_goal_upgrade_disabled_repo)
     int implicitobsoleteusescolors = pool_get_flag(pool, POOL_FLAG_IMPLICITOBSOLETEUSESCOLORS);
     if (implicitobsoleteusescolors) {
         // Fedora, Mageia
-        fail_unless(size_and_free(hy_goal_list_upgrades(goal, NULL)) == 5);
+        fail_unless(size_and_free(hy_goal_list_upgrades(goal, NULL)) == 6);
     } else {
         // openSUSE
-        fail_unless(size_and_free(hy_goal_list_upgrades(goal, NULL)) == 3);
+        fail_unless(size_and_free(hy_goal_list_upgrades(goal, NULL)) == 4);
     }
     hy_goal_free(goal);
 
@@ -973,13 +1059,13 @@ START_TEST(test_goal_distupgrade_all_keep_arch)
     // gun pkg is not upgraded to latest version of different arch
     if (implicitobsoleteusescolors) {
         // Fedora, Mageia
-        assert_iueo(goal, 0, 5, 0, 1);
-        assert_list_names<&dnf_package_get_nevra>(true, plist, "dog-1-2.x86_64", "fool-1-5.noarch",
+        assert_iueo(goal, 0, 6, 0, 1);
+        assert_list_names<&dnf_package_get_nevra>(true, plist, "bloop-2.0-1.noarch", "dog-1-2.x86_64", "fool-1-5.noarch",
             "flying-3.1-0.x86_64", "pilchard-1.2.4-1.x86_64", "pilchard-1.2.4-1.i686", NULL);
     } else {
         // openSUSE
-        assert_iueo(goal, 0, 4, 0, 1);
-        assert_list_names<&dnf_package_get_nevra>(true, plist, "dog-1-2.x86_64", "fool-1-5.noarch",
+        assert_iueo(goal, 0, 5, 0, 1);
+        assert_list_names<&dnf_package_get_nevra>(true, plist, "bloop-2.0-1.noarch", "dog-1-2.x86_64", "fool-1-5.noarch",
             "flying-3.1-0.x86_64", "pilchard-1.2.4-2.x86_64", NULL);
     }
     g_ptr_array_unref(plist);
@@ -1076,6 +1162,7 @@ START_TEST(test_goal_unneeded)
     HyGoal goal = hy_goal_create(sack);
 
     userinstalled(sack, goal, "baby");
+    userinstalled(sack, goal, "bloop");
     userinstalled(sack, goal, "dog");
     userinstalled(sack, goal, "fool");
     userinstalled(sack, goal, "gun");
@@ -1331,6 +1418,7 @@ goal_suite(void)
     tcase_add_test(tc, test_goal_forcebest);
     tcase_add_test(tc, test_goal_favor);
     tcase_add_test(tc, test_goal_disfavor);
+    tcase_add_test(tc, test_goal_lock);
     suite_add_tcase(s, tc);
 
     tc = tcase_create("ModifiesSackState");
