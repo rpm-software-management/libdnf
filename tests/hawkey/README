@@ -65,6 +65,10 @@ pigs, tour
 dodo, dodo-dep-a, dodo-dep-b
 * testing favor/disfavor
 
+bloop, bloop-ext
+* bloop-1.0 installed, bloop-ext-1.0 and *-2.0 in updates
+* for testing package locking
+
 === repos/yum ===
 
 To test loading of yum repos we need an actual yum repo. It currently consists

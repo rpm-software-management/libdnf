@@ -759,6 +759,12 @@ Goal::install(DnfPackage *new_pkg, bool optional)
 }
 
 void
+Goal::lock(DnfPackage *pkg)
+{
+    queue_push2(&pImpl->staging, SOLVER_SOLVABLE|SOLVER_LOCK, dnf_package_get_id(pkg));
+}
+
+void
 Goal::favor(DnfPackage *pkg)
 {
     queue_push2(&pImpl->staging, SOLVER_SOLVABLE|SOLVER_FAVOR, dnf_package_get_id(pkg));

@@ -118,6 +118,16 @@ int hy_goal_install(HyGoal goal, DnfPackage *new_pkg);
 int hy_goal_install_optional(HyGoal goal, DnfPackage *new_pkg);
 
 /**
+* @brief Lock package state. If installed, remains installed. If uninstalled,
+* remains uninstalled. Returns 0 on success.
+*
+* @param goal HyGoal
+* @param pkg Package to lock
+* @return int
+*/
+int hy_goal_lock(HyGoal goal, DnfPackage *pkg, GError **error);
+
+/**
 * @brief Favor package when considering alternatives. Return value is always 0.
 *
 * @param goal HyGoal
