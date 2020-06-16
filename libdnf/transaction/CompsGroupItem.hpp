@@ -21,6 +21,8 @@
 #ifndef LIBDNF_TRANSACTION_COMPSGROUPITEM_HPP
 #define LIBDNF_TRANSACTION_COMPSGROUPITEM_HPP
 
+#include "libdnf/error.hpp"
+
 #include <memory>
 #include <vector>
 
@@ -38,6 +40,37 @@ class CompsGroupPackage;
 
 typedef std::shared_ptr< CompsGroupItem > CompsGroupItemPtr;
 typedef std::shared_ptr< CompsGroupPackage > CompsGroupPackagePtr;
+
+CompsPackageType listToCompsPackageType(const std::vector<std::string> & types);
+CompsPackageType stringToCompsPackageType(const std::string & str);
+std::string compsPackageTypeToString(CompsPackageType type);
+
+inline CompsPackageType operator|(CompsPackageType a, CompsPackageType b)
+{
+    return static_cast<CompsPackageType>(static_cast<int>(a) | static_cast<int>(b));
+}
+
+inline CompsPackageType operator&(CompsPackageType a, CompsPackageType b)
+{
+    return static_cast<CompsPackageType>(static_cast<int>(a) & static_cast<int>(b));
+}
+
+inline CompsPackageType & operator|=(CompsPackageType & a, CompsPackageType b)
+{
+    a = a | b;
+    return a;
+}
+
+inline CompsPackageType & operator&=(CompsPackageType & a, CompsPackageType b)
+{
+    a = a & b;
+    return a;
+}
+
+class InvalidCompsPackageTypeError : public Error {
+public:
+    InvalidCompsPackageTypeError(const std::string & what) : Error(what) {}
+};
 
 }
 

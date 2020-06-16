@@ -23,7 +23,78 @@
 #include "CompsGroupItem.hpp"
 #include "TransactionItem.hpp"
 
+#include "libdnf/utils/utils.hpp"
+
 namespace libdnf {
+
+CompsPackageType listToCompsPackageType(const std::vector<std::string> & types)
+{
+    CompsPackageType res{};
+
+    for (const auto & type : types) {
+        if (type == "conditional") {
+            res |= CompsPackageType::CONDITIONAL;
+        } else if (type == "default") {
+            res |= CompsPackageType::DEFAULT;
+        } else if (type == "mandatory") {
+            res |= CompsPackageType::MANDATORY;
+        } else if (type == "optional") {
+            res |= CompsPackageType::OPTIONAL;
+        } else {
+            throw InvalidCompsPackageTypeError("Invalid comps package type \"" +
+                type + "\".");
+        }
+    }
+
+    return res;
+}
+
+CompsPackageType stringToCompsPackageType(const std::string & str)
+{
+    std::vector<std::string> types;
+
+    if (str.empty()) {
+        return CompsPackageType();
+    }
+
+    for (const auto & type : string::split(str, ",")) {
+        types.push_back(string::trim(type));
+    }
+
+    return listToCompsPackageType(types);
+}
+
+std::string compsPackageTypeToString(CompsPackageType type)
+{
+    std::string res;
+    std::string comma = "";
+
+    auto add = [&](const char * str) {
+        res += comma + str;
+
+        if (comma.empty()) {
+            comma = ", ";
+        }
+    };
+
+    if ((type & CompsPackageType::CONDITIONAL) == CompsPackageType::CONDITIONAL) {
+        add("conditional");
+    }
+
+    if ((type & CompsPackageType::DEFAULT) == CompsPackageType::DEFAULT) {
+        add("default");
+    }
+
+    if ((type & CompsPackageType::MANDATORY) == CompsPackageType::MANDATORY) {
+        add("mandatory");
+    }
+
+    if ((type & CompsPackageType::OPTIONAL) == CompsPackageType::OPTIONAL) {
+        add("optional");
+    }
+
+    return res;
+}
 
 CompsGroupItem::CompsGroupItem(SQLite3Ptr conn)
   : Item{conn}
