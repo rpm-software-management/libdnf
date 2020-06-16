@@ -214,6 +214,8 @@ CompsEnvironmentItem::getTransactionItems(SQLite3Ptr conn, int64_t transactionId
         SELECT
             ti.id,
             ti.state,
+            ti.action,
+            ti.reason,
             i.item_id,
             i.environmentid,
             i.name,
@@ -236,11 +238,13 @@ CompsEnvironmentItem::getTransactionItems(SQLite3Ptr conn, int64_t transactionId
 
         trans_item->setId(query.get< int >(0));
         trans_item->setState(static_cast< TransactionItemState >(query.get< int >(1)));
-        item->setId(query.get< int >(2));
-        item->setEnvironmentId(query.get< std::string >(3));
-        item->setName(query.get< std::string >(4));
-        item->setTranslatedName(query.get< std::string >(5));
-        item->setPackageTypes(static_cast< CompsPackageType >(query.get< int >(6)));
+        trans_item->setAction(static_cast< TransactionItemAction >(query.get< int >(2)));
+        trans_item->setReason(static_cast< TransactionItemReason >(query.get< int >(3)));
+        item->setId(query.get< int >(4));
+        item->setEnvironmentId(query.get< std::string >(5));
+        item->setName(query.get< std::string >(6));
+        item->setTranslatedName(query.get< std::string >(7));
+        item->setPackageTypes(static_cast< CompsPackageType >(query.get< int >(8)));
 
         result.push_back(trans_item);
     }
