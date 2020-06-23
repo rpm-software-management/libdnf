@@ -36,6 +36,9 @@ class ModuleDependencies
 public:
     explicit ModuleDependencies();
     explicit ModuleDependencies(ModulemdDependencies *dependencies);
+    ModuleDependencies(const ModuleDependencies & d);
+    ModuleDependencies & operator=(const ModuleDependencies & d);
+    ~ModuleDependencies();
 
     std::vector<std::map<std::string, std::vector<std::string> > > getRequires() const;
 
