@@ -27,7 +27,36 @@ ModuleDependencies::ModuleDependencies() : dependencies(nullptr) {}
 
 ModuleDependencies::ModuleDependencies(ModulemdDependencies *dependencies)
         : dependencies(dependencies)
-{}
+{
+    g_object_ref(dependencies);
+}
+
+ModuleDependencies::ModuleDependencies(const ModuleDependencies & d)
+        : dependencies(d.dependencies)
+{
+    if (dependencies != nullptr) {
+        g_object_ref(d.dependencies);
+    }
+}
+
+ModuleDependencies & ModuleDependencies::operator=(const ModuleDependencies & d)
+{
+    if (this != &d) {
+        g_object_unref(dependencies);
+        dependencies = d.dependencies;
+        if (dependencies != nullptr) {
+            g_object_ref(dependencies);
+        }
+    }
+    return *this;
+}
+
+ModuleDependencies::~ModuleDependencies()
+{
+    if (dependencies != nullptr) {
+        g_object_unref(dependencies);
+    }
+}
 
 std::vector<std::map<std::string, std::vector<std::string>>> ModuleDependencies::getRequires() const
 {

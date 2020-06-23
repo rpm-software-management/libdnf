@@ -34,7 +34,9 @@ class ModuleProfile
 {
 public:
     ModuleProfile() : profile(nullptr) {}
-    //~ModuleProfile() = default;
+    ModuleProfile(const ModuleProfile & p);
+    ModuleProfile & operator=(const ModuleProfile & p);
+    ~ModuleProfile();
     std::string getName() const;
     std::string getDescription() const;
     std::vector<std::string> getContent() const;

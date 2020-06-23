@@ -30,6 +30,16 @@ namespace libdnf {
 
 ModuleMetadata::ModuleMetadata(): resultingModuleIndex(NULL), moduleMerger(NULL) {}
 
+ModuleMetadata::~ModuleMetadata()
+{
+    if (resultingModuleIndex != nullptr) {
+        g_object_unref(resultingModuleIndex);
+    }
+    if (moduleMerger != nullptr) {
+        g_object_unref(moduleMerger);
+    }
+}
+
 void ModuleMetadata::addMetadataFromString(const std::string & yaml, int priority)
 {
     GError *error = NULL;

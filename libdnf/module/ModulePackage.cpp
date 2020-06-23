@@ -83,9 +83,7 @@ static std::pair<std::string, std::string> parsePlatform(const std::string & pla
         return {};
     }
     return make_pair(platform.substr(0,index), platform.substr(index+1));
-    }
-
-ModulePackage::~ModulePackage() = default;
+}
 
 ModulePackage::ModulePackage(DnfSack * moduleSack, LibsolvRepo * repo,
     ModulemdModuleStream * mdStream, const std::string & repoID)
@@ -93,6 +91,9 @@ ModulePackage::ModulePackage(DnfSack * moduleSack, LibsolvRepo * repo,
         , moduleSack(moduleSack)
         , repoID(repoID)
 {
+    if (mdStream != nullptr) {
+        g_object_ref(mdStream);
+    }
     Pool * pool = dnf_sack_get_pool(moduleSack);
     id = repo_add_solvable(repo);
     Solvable *solvable = pool_id2solvable(pool, id);

@@ -25,6 +25,34 @@ namespace libdnf {
 ModuleProfile::ModuleProfile(ModulemdProfile *profile)
         : profile(profile)
 {
+    g_object_ref(profile);
+}
+
+ModuleProfile::ModuleProfile(const ModuleProfile & p)
+        : profile(p.profile)
+{
+    if (profile != nullptr) {
+        g_object_ref(profile);
+    }
+}
+
+ModuleProfile & ModuleProfile::operator=(const ModuleProfile & p)
+{
+    if (this != &p) {
+        g_object_unref(profile);
+        profile = p.profile;
+        if (profile != nullptr) {
+            g_object_ref(profile);
+        }
+    }
+    return *this;
+}
+
+ModuleProfile::~ModuleProfile()
+{
+    if (profile != nullptr) {
+        g_object_unref(profile);
+    }
 }
 
 std::string ModuleProfile::getName() const

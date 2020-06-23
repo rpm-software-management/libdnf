@@ -31,6 +31,7 @@ class ModuleMetadata
 {
 public:
     ModuleMetadata();
+    ~ModuleMetadata();
     void addMetadataFromString(const std::string & yaml, int priority);
     void resolveAddedMetadata();
     std::vector<ModulePackage *> getAllModulePackages(DnfSack * moduleSack, LibsolvRepo * repo, const std::string & repoID);
