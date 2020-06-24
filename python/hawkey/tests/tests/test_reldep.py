@@ -61,6 +61,11 @@ class Reldep(base.TestCase):
         reldep = hawkey.Reldep(self.sack, "P-lib = 3-3")
         q = hawkey.Query(self.sack).filter(provides=reldep)
         self.assertLength(q, 1)
+        # '==' operator is deprecated and the support will be dropped in future
+        # versions (see bug 1847946)
+        reldep = hawkey.Reldep(self.sack, "P-lib == 3-3")
+        q = hawkey.Query(self.sack).filter(provides=reldep)
+        self.assertLength(q, 1)
         reldep = hawkey.Reldep(self.sack, "P-lib >= 3")
         q = hawkey.Query(self.sack).filter(provides=reldep)
         self.assertLength(q, 1)
