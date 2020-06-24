@@ -20,16 +20,21 @@
 
 #include "DependencySplitter.hpp"
 #include "../dnf-sack.h"
+#include "../log.hpp"
 #include "../utils/regex/regex.hpp"
+
+#include "bgettext/bgettext-lib.h"
+#include "tinyformat/tinyformat.hpp"
 
 namespace libdnf {
 
 static const Regex RELDEP_REGEX = 
-    Regex("^(\\S*)\\s*(<=|>=|<|>|=)?\\s*(\\S*)$", REG_EXTENDED);
+    Regex("^(\\S*)\\s*(<=|>=|<|>|=|==)?\\s*(\\S*)$", REG_EXTENDED);
 
 static bool
 getCmpFlags(int *cmp_type, std::string matchCmpType)
 {
+    auto logger(Log::getLogger());
     int subexpr_len = matchCmpType.size();
     auto match_start = matchCmpType.c_str();
     if (subexpr_len == 2) {
@@ -39,6 +44,13 @@ getCmpFlags(int *cmp_type, std::string matchCmpType)
         }
         else if (strncmp(match_start, ">=", 2) == 0) {
             *cmp_type |= HY_GT;
+            *cmp_type |= HY_EQ;
+        }
+        else if (strncmp(match_start, "==", 2) == 0) {
+            auto msg = tfm::format(_("Using '==' operator in reldeps can result in an undefined "
+                                     "behavior. It is deprecated and the support will be dropped "
+                                     "in future versions. Use '=' operator instead."));
+            logger->warning(msg);
             *cmp_type |= HY_EQ;
         }
         else
