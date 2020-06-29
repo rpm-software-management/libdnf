@@ -1047,20 +1047,6 @@ Query::Impl::filterObsoletesByPriority(const Filter & f, Map *m)
 }
 
 void
-Query::Impl::filterProvidesReldep(const Filter & f, Map *m)
-{
-    Pool *pool = dnf_sack_get_pool(sack);
-    Id p, pp;
-
-    dnf_sack_make_provides_ready(sack);
-    for (auto match_in : f.getMatches()) {
-        Id r_id = match_in.reldep;
-        FOR_PROVIDES(p, pp, r_id)
-            MAPSET(m, p);
-    }
-}
-
-void
 Query::Impl::filterLocation(const Filter & f, Map *m)
 {
     Pool *pool = dnf_sack_get_pool(sack);
