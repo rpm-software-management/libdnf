@@ -23,6 +23,8 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <algorithm>
 #include <fstream>
+#include <stdexcept>
+#include <type_traits>
 
 namespace libdnf {
 

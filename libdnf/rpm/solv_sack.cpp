@@ -52,8 +52,8 @@ namespace libdnf::rpm {
 namespace {
 // Names of special repositories
 constexpr const char * SYSTEM_REPO_NAME = "@System";
-constexpr const char * CMDLINE_REPO_NAME = "@commandline";
-constexpr const char * MODULE_FAIL_SAFE_REPO_NAME = "@modulefailsafe";
+[[maybe_unused]] constexpr const char * CMDLINE_REPO_NAME = "@commandline";
+[[maybe_unused]] constexpr const char * MODULE_FAIL_SAFE_REPO_NAME = "@modulefailsafe";
 
 // Extensions of solv file names
 constexpr const char * SOLV_EXT_FILENAMES = "-filenames";
@@ -400,7 +400,7 @@ SolvSack::Impl::RepodataInfo SolvSack::Impl::load_repo_ext(
     }
     logger.debug(fmt::format("{}: loading: {}", __func__, fn.c_str()));
 
-    int previous_last = libsolv_repo->nrepodata - 1;
+    [[maybe_unused]] int previous_last = libsolv_repo->nrepodata - 1;
     auto ok = cb(libsolv_repo, fp.get());
     if (ok) {
         info.state = RepodataState::LOADED_FETCH;

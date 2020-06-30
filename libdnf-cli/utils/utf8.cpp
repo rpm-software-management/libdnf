@@ -23,6 +23,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <clocale>
 #include <cstring>
 #include <cwchar>
+#include <type_traits>
 
 
 namespace libdnf::cli::utils::utf8 {
@@ -96,7 +97,10 @@ std::size_t width(const std::string & str) {
         }
 
         // increase string width
-        result += wcwidth(wide_char);
+        auto res_part = wcwidth(wide_char);
+        if (res_part >= 0) {
+            result += static_cast<std::make_unsigned<decltype(res_part)>::type>(res_part);
+        }
 
         // move the input string pointer by number of bytes read into the wide_char
         ptr += bytes;
@@ -195,11 +199,15 @@ std::string substr_width(const std::string & str, std::string::size_type pos, st
 
         // increase string width
         if (wid != std::string::npos) {
-            std::size_t char_width = wcwidth(wide_char);
-            if (char_width > wid) {
-                break;
+            auto char_width = wcwidth(wide_char);
+            if (char_width >= 0) {
+                auto new_wid = wid - static_cast<std::make_unsigned<decltype(char_width)>::type>(char_width);
+                if (new_wid > 0) {
+                    break;
+                } else {
+                    wid = static_cast<std::make_unsigned<decltype(new_wid)>::type>(new_wid);
+                }
             }
-            wid -= char_width;
         }
         result.append(ptr, bytes);
 

@@ -26,6 +26,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <fmt/format.h>
 
 #include <filesystem>
+#include <type_traits>
 
 namespace libdnf::rpm {
 
