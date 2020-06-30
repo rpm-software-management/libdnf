@@ -894,63 +894,6 @@ Query::Impl::filterPkg(const Filter & f, Map *m)
 }
 
 void
-Query::Impl::filterDepSolvable(const Filter & f, Map * m)
-{
-    assert(f.getMatchType() == _HY_PKG);
-    assert(f.getMatches().size() == 1);
-
-    dnf_sack_make_provides_ready(sack);
-    Pool * pool = dnf_sack_get_pool(sack);
-    Id rco_key = reldep_keyname2id(f.getKeyname());
-
-    IdQueue out;
-
-    const auto filter_pset = f.getMatches()[0].pset;
-    Id id = -1;
-    while ((id = filter_pset->next(id)) != -1) {
-        out.clear();
-        pool_whatmatchessolvable(pool, rco_key, id, out.getQueue(), -1);
-
-        for (int j = 0; j < out.size(); ++j) {
-            MAPSET(m, out[j]);
-        }
-    }
-}
-
-void
-Query::Impl::filterRcoReldep(const Filter & f, Map *m)
-{
-    assert(f.getMatchType() == _HY_RELDEP);
-
-    Pool *pool = dnf_sack_get_pool(sack);
-    Id rco_key = reldep_keyname2id(f.getKeyname());
-    Queue rco;
-    auto resultPset = result.get();
-
-    queue_init(&rco);
-    Id resultId = -1;
-    while ((resultId = resultPset->next(resultId)) != -1) {
-        Solvable *s = pool_id2solvable(pool, resultId );
-        for (auto match : f.getMatches()) {
-            Id reldepFilterId = match.reldep;
-
-            queue_empty(&rco);
-            solvable_lookup_idarray(s, rco_key, &rco);
-            for (int j = 0; j < rco.count; ++j) {
-                Id reldepIdFromSolvable = rco.elements[j];
-
-                if (pool_match_dep(pool, reldepFilterId, reldepIdFromSolvable )) {
-                    MAPSET(m, resultId );
-                    goto nextId;
-                }
-            }
-        }
-        nextId:;
-    }
-    queue_free(&rco);
-}
-
-void
 Query::Impl::filterObsoletes(const Filter & f, Map *m)
 {
     Pool *pool = dnf_sack_get_pool(sack);
