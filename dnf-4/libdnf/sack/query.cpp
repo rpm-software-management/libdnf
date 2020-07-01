@@ -894,43 +894,6 @@ Query::Impl::filterPkg(const Filter & f, Map *m)
 }
 
 void
-Query::Impl::filterObsoletes(const Filter & f, Map *m)
-{
-    Pool *pool = dnf_sack_get_pool(sack);
-    int obsprovides = pool_get_flag(pool, POOL_FLAG_OBSOLETEUSESPROVIDES);
-    Map *target;
-    auto resultPset = result.get();
-
-    assert(f.getMatchType() == _HY_PKG);
-    assert(f.getMatches().size() == 1);
-    target = dnf_packageset_get_map(f.getMatches()[0].pset);
-    dnf_sack_make_provides_ready(sack);
-    Id id = -1;
-    while (true) {
-        id = resultPset->next(id);
-        if (id == -1)
-            break;
-        Solvable *s = pool_id2solvable(pool, id);
-        if (!s->repo)
-            continue;
-        for (Id *r_id = s->repo->idarraydata + s->obsoletes; *r_id; ++r_id) {
-            Id r, rr;
-
-            FOR_PROVIDES(r, rr, *r_id) {
-                if (!MAPTST(target, r))
-                    continue;
-                assert(r != SYSTEMSOLVABLE);
-                Solvable *so = pool_id2solvable(pool, r);
-                if (!obsprovides && !pool_match_nevr(pool, so, *r_id))
-                    continue; /* only matching pkg names */
-                MAPSET(m, id);
-                break;
-            }
-        }
-    }
-}
-
-void
 Query::Impl::obsoletesByPriority(Pool * pool, Solvable * candidate, Map * m, const Map * target, int obsprovides)
 {
     if (!candidate->repo)
