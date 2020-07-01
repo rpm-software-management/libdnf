@@ -6,6 +6,9 @@ SET(CLIENT_SRCS
 find_package(sdbus-c++ REQUIRED)
 
 add_executable(${CLIENT_BIN} ${CLIENT_SRCS})
+set_property(TARGET ${CLIENT_BIN} PROPERTY CXX_STANDARD 17)
+set_property(TARGET ${CLIENT_BIN} PROPERTY CXX_STANDARD_REQUIRED ON)
+
 target_link_libraries(
     ${CLIENT_BIN}
     PRIVATE

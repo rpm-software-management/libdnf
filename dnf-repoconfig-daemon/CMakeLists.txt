@@ -6,6 +6,7 @@ set(SERVER_SRCS
     logger.cpp
 )
 
+option(WITH_REPOCONFIG_DAEMON_CLIENT "Build dnf-repoconfig-daemon example client" OFF)
 
 find_package(sdbus-c++ REQUIRED)
 pkg_check_modules(Systemd IMPORTED_TARGET GLOBAL libsystemd)
@@ -26,3 +27,6 @@ install(TARGETS ${SERVER_BIN} RUNTIME DESTINATION bin)
 
 add_subdirectory(polkit)
 add_subdirectory(dbus)
+if (WITH_REPOCONFIG_DAEMON_CLIENT)
+    add_subdirectory(example_client)
+endif()
