@@ -31,32 +31,8 @@ namespace libdnf {
 
 struct Nevra {
 public:
-    static constexpr int EPOCH_NOT_SET = -1;
-
-    Nevra();
-
-    bool parse(const char * nevraStr, HyForm form);
-    void clear() noexcept;
-
-    const std::string & getName() const noexcept;
-    int getEpoch() const noexcept;
-    const std::string & getVersion() const noexcept;
-    const std::string & getRelease() const noexcept;
-    const std::string & getArch() const noexcept;
-
-    void setName(const std::string & name);
-    void setEpoch(int epoch);
-    void setVersion(const std::string & version);
-    void setRelease(const std::string & release);
-    void setArch(const std::string & arch);
-
-    void setName(std::string && name);
-    void setVersion(std::string && version);
-    void setRelease(std::string && release);
-    void setArch(std::string && arch);
 
     std::string getEvr() const;
-    bool hasJustName() const;
     int compareEvr(const Nevra & nevra2, DnfSack *sack) const;
     int compare(const Nevra & nevra2) const;
 
@@ -67,78 +43,6 @@ private:
     std::string release;
     std::string arch;
 };
-
-inline Nevra::Nevra()
-: epoch(EPOCH_NOT_SET) {}
-
-inline const std::string & Nevra::getName() const noexcept
-{
-    return name;
-}
-
-inline int Nevra::getEpoch() const noexcept
-{
-    return epoch;
-}
-
-inline const std::string & Nevra::getVersion() const noexcept
-{
-    return version;
-}
-
-inline const std::string & Nevra::getRelease() const noexcept
-{
-    return release;
-}
-
-inline const std::string & Nevra::getArch() const noexcept {
-    return arch;
-}
-
-inline void Nevra::setName(const std::string & name)
-{
-    this->name = name;
-}
-
-inline void Nevra::setEpoch(int epoch)
-{
-    this->epoch = epoch;
-}
-
-inline void Nevra::setVersion(const std::string & version)
-{
-    this->version = version;
-}
-
-inline void Nevra::setRelease(const std::string & release)
-{
-    this->release = release;
-}
-
-inline void Nevra::setArch(const std::string & arch)
-{
-    this->arch = arch;
-}
-
-inline void Nevra::setName(std::string && name)
-{
-    this->name = std::move(name);
-}
-
-inline void Nevra::setVersion(std::string && version)
-{
-    this->version = std::move(version);
-}
-
-inline void Nevra::setRelease(std::string && release)
-{
-    this->release = std::move(release);
-}
-
-inline void Nevra::setArch(std::string && arch)
-{
-    this->arch = std::move(arch);
-}
 
 }
 

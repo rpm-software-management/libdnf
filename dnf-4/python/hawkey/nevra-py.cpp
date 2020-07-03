@@ -109,16 +109,6 @@ set_attr(_NevraObject *self, PyObject *value, void *closure) try
 } CATCH_TO_PYTHON_INT
 
 static PyGetSetDef nevra_getsetters[] = {
-    {(char*)"name", (getter)get_attr<&libdnf::Nevra::getName>,
-        (setter)set_attr<&libdnf::Nevra::setName>, NULL, NULL},
-    {(char*)"epoch", (getter)get_epoch, (setter)set_epoch,
-        NULL, NULL},
-    {(char*)"version", (getter)get_attr<&libdnf::Nevra::getVersion>,
-        (setter)set_attr<&libdnf::Nevra::setVersion>, NULL, NULL},
-    {(char*)"release", (getter)get_attr<&libdnf::Nevra::getRelease>,
-        (setter)set_attr<&libdnf::Nevra::setRelease>, NULL, NULL},
-    {(char*)"arch", (getter)get_attr<&libdnf::Nevra::getArch>,
-        (setter)set_attr<&libdnf::Nevra::setArch>, NULL, NULL},
     {NULL}          /* sentinel */
 };
 
@@ -209,12 +199,6 @@ evr_cmp(_NevraObject *self, PyObject *args) try
 } CATCH_TO_PYTHON
 
 static PyObject *
-has_just_name(_NevraObject *self, PyObject *unused) try
-{
-    return PyBool_FromLong(self->nevra->hasJustName());
-} CATCH_TO_PYTHON
-
-static PyObject *
 to_query(_NevraObject *self, PyObject *args, PyObject *kwds) try
 {
     PyObject *sack;
@@ -236,7 +220,6 @@ to_query(_NevraObject *self, PyObject *args, PyObject *kwds) try
 static struct PyMethodDef nevra_methods[] = {
     {"evr_cmp",     (PyCFunction) evr_cmp, METH_VARARGS, NULL},
     {"evr", (PyCFunction) evr, METH_NOARGS,   NULL},
-    {"has_just_name",     (PyCFunction) has_just_name, METH_NOARGS, NULL},
     {"to_query",     (PyCFunction) to_query, METH_VARARGS | METH_KEYWORDS, NULL},
 
     {NULL}                      /* sentinel */
