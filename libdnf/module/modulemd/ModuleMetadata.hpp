@@ -31,6 +31,8 @@ class ModuleMetadata
 {
 public:
     ModuleMetadata();
+    ModuleMetadata(const ModuleMetadata & m);
+    ModuleMetadata & operator=(const ModuleMetadata & m);
     ~ModuleMetadata();
     void addMetadataFromString(const std::string & yaml, int priority);
     void resolveAddedMetadata();

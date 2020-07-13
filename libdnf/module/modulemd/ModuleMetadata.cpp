@@ -30,6 +30,38 @@ namespace libdnf {
 
 ModuleMetadata::ModuleMetadata(): resultingModuleIndex(NULL), moduleMerger(NULL) {}
 
+ModuleMetadata::ModuleMetadata(const ModuleMetadata & m)
+        : resultingModuleIndex(m.resultingModuleIndex), moduleMerger(m.moduleMerger)
+{
+    if (resultingModuleIndex != nullptr) {
+        g_object_ref(resultingModuleIndex);
+    }
+    if (moduleMerger != nullptr) {
+        g_object_ref(moduleMerger);
+    }
+}
+
+ModuleMetadata & ModuleMetadata::operator=(const ModuleMetadata & m)
+{
+    if (this != &m) {
+        if (resultingModuleIndex != nullptr) {
+            g_object_unref(resultingModuleIndex);
+        }
+        if (moduleMerger != nullptr) {
+            g_object_unref(moduleMerger);
+        }
+        resultingModuleIndex = m.resultingModuleIndex;
+        moduleMerger = m.moduleMerger;
+        if (resultingModuleIndex != nullptr) {
+            g_object_ref(resultingModuleIndex);
+        }
+        if (moduleMerger != nullptr) {
+            g_object_ref(moduleMerger);
+        }
+    }
+    return *this;
+}
+
 ModuleMetadata::~ModuleMetadata()
 {
     if (resultingModuleIndex != nullptr) {

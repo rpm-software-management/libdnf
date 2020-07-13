@@ -82,6 +82,9 @@ private:
     ModulePackage(DnfSack * moduleSack, LibsolvRepo * repo,
         ModulemdModuleStream * mdStream, const std::string & repoID);
 
+    ModulePackage(const ModulePackage & mpkg);
+    ModulePackage & operator=(const ModulePackage & mpkg);
+
     static Id createPlatformSolvable(DnfSack * moduleSack, const std::string &osReleasePath,
         const std::string install_root, const char *  platformModule);
     static Id createPlatformSolvable(DnfSack * sack, DnfSack * moduleSack,
