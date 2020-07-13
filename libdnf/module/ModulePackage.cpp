@@ -106,6 +106,41 @@ ModulePackage::ModulePackage(DnfSack * moduleSack, LibsolvRepo * repo,
     dnf_sack_set_considered_to_update(moduleSack);
 }
 
+ModulePackage::ModulePackage(const ModulePackage & mpkg)
+        : mdStream(mpkg.mdStream)
+        , moduleSack(mpkg.moduleSack)
+        , repoID(mpkg.repoID)
+        , id(mpkg.id)
+{
+    if (mdStream != nullptr) {
+        g_object_ref(mdStream);
+    }
+}
+
+ModulePackage & ModulePackage::operator=(const ModulePackage & mpkg)
+{
+    if (this != &mpkg) {
+        if (mdStream != nullptr) {
+            g_object_unref(mdStream);
+        }
+        mdStream = mpkg.mdStream;
+        if (mdStream != nullptr) {
+            g_object_ref(mdStream);
+        }
+        moduleSack = mpkg.moduleSack;
+        repoID = mpkg.repoID;
+        id = mpkg.id;
+    }
+    return *this;
+}
+
+ModulePackage::~ModulePackage()
+{
+    if (mdStream != nullptr) {
+        g_object_unref(mdStream);
+    }
+}
+
 /**
  * @brief Create stream dependencies based on modulemd metadata.
  */
