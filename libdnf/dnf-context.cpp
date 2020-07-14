@@ -337,7 +337,7 @@ dnf_context_init(DnfContext *context)
     priv->check_disk_space = TRUE;
     priv->check_transaction = TRUE;
     priv->enable_filelists = TRUE;
-    priv->zchunk = TRUE;
+    priv->zchunk = libdnf::getGlobalMainConfig().zchunk().getValue();
     priv->write_history = TRUE;
     priv->state = dnf_state_new();
     priv->lock = dnf_lock_new();
