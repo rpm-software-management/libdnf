@@ -44,9 +44,10 @@ list(APPEND LIBDNF_PC_REQUIRES "${RPM_MODULE_NAME}")
 target_link_libraries(libdnf ${RPM_LIBRARIES})
 
 if(WITH_COMPS)
-    pkg_check_modules(LIBCOMPS REQUIRED libcomps)
-    list(APPEND LIBDNF_PC_REQUIRES_PRIVATE "${LIBCOMPS_MODULE_NAME}")
-    target_link_libraries(libdnf ${LIBCOMPS_LIBRARIES})
+    pkg_check_modules(LIBXML2 REQUIRED libxml-2.0)
+    list(APPEND LIBDNF_PC_REQUIRES_PRIVATE "${LIBXML2_MODULE_NAME}")
+    include_directories(${LIBXML2_INCLUDE_DIRS})
+    target_link_libraries(libdnf ${LIBXML2_LIBRARIES})
 endif()
 
 if (WITH_ZCHUNK)
