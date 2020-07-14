@@ -2991,6 +2991,10 @@ dnf_context_load_vars(DnfContext * context)
     priv->varsCached = true;
 }
 
+/* Context part of libdnf (microdnf, packagekit) needs to support global configuration
+ * because of options such as best, zchunk.. This static std::unique_ptr is a hacky way
+ * to do it without touching packagekit.
+ */
 static std::unique_ptr<libdnf::ConfigMain> globalMainConfig;
 static std::atomic_flag cfgMainLoaded = ATOMIC_FLAG_INIT;
 
