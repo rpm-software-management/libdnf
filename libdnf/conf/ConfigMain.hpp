@@ -65,6 +65,7 @@ public:
     OptionString & logdir();
     OptionNumber<std::int32_t> & log_size();
     OptionNumber<std::int32_t> & log_rotate();
+    OptionBool & log_compress();
     OptionStringList & varsdir();
     OptionStringList & reposdir();
     OptionBool & debug_solver();
