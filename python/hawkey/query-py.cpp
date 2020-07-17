@@ -724,7 +724,9 @@ filter_userinstalled(PyObject *self, PyObject *args, PyObject *kwds) try
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", (char **)kwlist, &pySwdb)) {
         return NULL;
     }
-    auto swigSwdb = reinterpret_cast< SwdbSwigPyObject * >(PyObject_GetAttrString(pySwdb, "this"));
+
+    UniquePtrPyObject thisPySwdb(PyObject_GetAttrString(pySwdb, "this"));
+    auto swigSwdb = reinterpret_cast< SwdbSwigPyObject * >(thisPySwdb.get());
 
     if (swigSwdb == nullptr) {
         PyErr_SetString(PyExc_SystemError, "Unable to parse SwigPyObject");
@@ -756,7 +758,9 @@ filter_unneeded_or_safe_to_remove(PyObject *self, PyObject *args, PyObject *kwds
             args, kwds, "O|O!", (char **)kwlist, &pySwdb, &PyBool_Type, &debug_solver)) {
         return NULL;
     }
-    auto swigSwdb = reinterpret_cast< SwdbSwigPyObject * >(PyObject_GetAttrString(pySwdb, "this"));
+
+    UniquePtrPyObject thisPySwdb(PyObject_GetAttrString(pySwdb, "this"));
+    auto swigSwdb = reinterpret_cast< SwdbSwigPyObject * >(thisPySwdb.get());
 
     if (swigSwdb == nullptr) {
         PyErr_SetString(PyExc_SystemError, "Unable to parse SwigPyObject");
