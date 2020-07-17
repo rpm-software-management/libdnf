@@ -44,9 +44,9 @@ class Test(base.TestCase):
 
     def setUp(self):
         """Prepare the test fixture."""
-        sack = base.TestSack(repo_dir=self.repo_dir)
-        sack.load_repo(load_updateinfo=True)
-        self.apackage = find_apackage(sack, 'tour.noarch.rpm')
+        self.sack = base.TestSack(repo_dir=self.repo_dir)
+        self.sack.load_repo(load_updateinfo=True)
+        self.apackage = find_apackage(self.sack, 'tour.noarch.rpm')
 
     def test_name(self):
         self.assertEqual(self.apackage.name, 'tour')

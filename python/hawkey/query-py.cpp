@@ -866,7 +866,6 @@ query_iter(PyObject *self) try
     if (!list)
         return NULL;
     PyObject *iter = PyObject_GetIter(list.get());
-    Py_INCREF(iter);
     return iter;
 } CATCH_TO_PYTHON
 
