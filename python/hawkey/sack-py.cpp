@@ -383,8 +383,8 @@ set_installonly_limit(_SackObject *self, PyObject *obj, void *unused) try
 static int
 set_module_container(_SackObject *self, PyObject *obj, void *unused) try
 {
-    auto swigContainer = reinterpret_cast< ModulePackageContainerPyObject * >(
-        PyObject_GetAttrString(obj, "this"));
+    UniquePtrPyObject thisPyContainer(PyObject_GetAttrString(obj, "this"));
+    auto swigContainer = reinterpret_cast< ModulePackageContainerPyObject * >(thisPyContainer.get());
     if (swigContainer == nullptr) {
         PyErr_SetString(PyExc_SystemError, "Unable to parse ModuleContainer object");
         return -1;
@@ -608,8 +608,8 @@ filter_modules(_SackObject *self, PyObject *args, PyObject *kwds) try
         return 0;
     bool updateOnly = pyUpdateOnly == NULL || PyObject_IsTrue(pyUpdateOnly);
     bool debugSolver = pyDebugSolver != NULL && PyObject_IsTrue(pyDebugSolver);
-    auto swigContainer = reinterpret_cast< ModulePackageContainerPyObject * >(
-        PyObject_GetAttrString(pyModuleContainer, "this"));
+    UniquePtrPyObject thisPyModuleContainer(PyObject_GetAttrString(pyModuleContainer, "this"));
+    auto swigContainer = reinterpret_cast< ModulePackageContainerPyObject * >(thisPyModuleContainer.get());
     auto moduleContainer = swigContainer->ptr;
     std::vector<std::string> hotfixRepos;
     try {
@@ -653,8 +653,8 @@ set_modules_enabled_by_pkgset(_SackObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     }
 
-    auto swigContainer = reinterpret_cast< ModulePackageContainerPyObject * >(
-        PyObject_GetAttrString(pyModuleContainer, "this"));
+    UniquePtrPyObject thisPyModuleContainer(PyObject_GetAttrString(pyModuleContainer, "this"));
+    auto swigContainer = reinterpret_cast< ModulePackageContainerPyObject * >(thisPyModuleContainer.get());
     auto moduleContainer = swigContainer->ptr;
     auto modules = moduleContainer->requiresModuleEnablement(*pset.get());
     moduleContainer->enableDependencyTree(modules);
@@ -691,7 +691,8 @@ load_system_repo(_SackObject *self, PyObject *args, PyObject *kwds)
 
         // Or is it swig object?
         if (!crepo) {
-            auto repoSwigPyObj = reinterpret_cast<RepoSwigPyObject *>(PyObject_GetAttrString(repoPyObj, "this"));
+            UniquePtrPyObject thisRepoPyObj(PyObject_GetAttrString(repoPyObj, "this"));
+            auto repoSwigPyObj = reinterpret_cast<RepoSwigPyObject *>(thisRepoPyObj.get());
             if (!repoSwigPyObj) {
                 PyErr_SetString(PyExc_SystemError, "Unable to parse repoSwigPyObject");
                 return NULL;
@@ -734,7 +735,8 @@ load_repo(_SackObject *self, PyObject *args, PyObject *kwds) try
 
     // Or is it swig object?
     if (!crepo) {
-        auto repoSwigPyObj = reinterpret_cast<RepoSwigPyObject *>(PyObject_GetAttrString(repoPyObj, "this"));
+        UniquePtrPyObject thisRepoPyObj(PyObject_GetAttrString(repoPyObj, "this"));
+        auto repoSwigPyObj = reinterpret_cast<RepoSwigPyObject *>(thisRepoPyObj.get());
         if (!repoSwigPyObj) {
             PyErr_SetString(PyExc_SystemError, "Unable to parse repoSwigPyObject");
             return NULL;
