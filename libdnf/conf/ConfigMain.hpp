@@ -126,6 +126,7 @@ public:
 
     OptionString & module_platform_id();
     OptionBool & module_stream_switch();
+    OptionBool & module_obsoletes();
     OptionString & user_agent();
     OptionBool & countme();
     OptionBool & protect_running_kernel();

@@ -279,6 +279,7 @@ class ConfigMain::Impl {
     OptionBool ignorearch{false};
     OptionString module_platform_id{nullptr};
     OptionBool module_stream_switch{false};
+    OptionBool module_obsoletes{false};
 
     OptionString user_agent{getUserAgent()};
     OptionBool countme{false};
@@ -436,6 +437,7 @@ ConfigMain::Impl::Impl(Config & owner)
     owner.optBinds().add("ignorearch", ignorearch);
     owner.optBinds().add("module_platform_id", module_platform_id);
     owner.optBinds().add("module_stream_switch", module_stream_switch);
+    owner.optBinds().add("module_obsoletes", module_obsoletes);
     owner.optBinds().add("user_agent", user_agent);
     owner.optBinds().add("countme", countme);
     owner.optBinds().add("protect_running_kernel", protect_running_kernel);
@@ -572,6 +574,7 @@ OptionBool & ConfigMain::ignorearch() { return pImpl->ignorearch; }
 
 OptionString & ConfigMain::module_platform_id() { return pImpl->module_platform_id; }
 OptionBool & ConfigMain::module_stream_switch() { return pImpl->module_stream_switch; }
+OptionBool & ConfigMain::module_obsoletes() { return pImpl->module_obsoletes; }
 OptionString & ConfigMain::user_agent() { return pImpl->user_agent; }
 OptionBool & ConfigMain::countme() { return pImpl->countme; }
 OptionBool & ConfigMain::protect_running_kernel() {return pImpl->protect_running_kernel; }
