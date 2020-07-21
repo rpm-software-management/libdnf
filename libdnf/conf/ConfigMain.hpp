@@ -125,6 +125,7 @@ public:
     OptionBool & ignorearch();
 
     OptionString & module_platform_id();
+    OptionBool & module_stream_switch();
     OptionString & user_agent();
     OptionBool & countme();
     OptionBool & protect_running_kernel();
