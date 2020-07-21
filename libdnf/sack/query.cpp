@@ -1205,7 +1205,7 @@ Query::Impl::filterDepSolvable(const Filter & f, Map * m)
         // queue_push2 because we are creating a selection, which contains pairs
         // of <flags, Id>, SOLVER_SOOLVABLE_ALL is a special flag which includes
         // all packages from specified pool, Id is ignored.
-        queue_push2(out.getQueue(), SOLVER_SOLVABLE_ALL, 0);
+        out.pushBack(SOLVER_SOLVABLE_ALL, 0);
 
         int flags = 0;
         flags |= SELECTION_FILTER | SELECTION_WITH_ALL;
