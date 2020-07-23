@@ -193,4 +193,32 @@ void ModuleMetadata::reportFailures(const GPtrArray *failures)
     }
 }
 
+ModulemdObsoletes * ModuleMetadata::getNewestActiveObsolete(ModulePackage *modulePkg)
+{
+    ModulemdModule * myModule = modulemd_module_index_get_module(resultingModuleIndex, modulePkg->getNameCStr());
+    if (myModule == nullptr) {
+        return nullptr;
+    }
+
+    GError *error = NULL;
+    ModulemdModuleStream * myStream = modulemd_module_get_stream_by_NSVCA(myModule,
+                                                                          modulePkg->getStreamCStr(),
+                                                                          modulePkg->getVersionNum(),
+                                                                          modulePkg->getContextCStr(),
+                                                                          modulePkg->getArchCStr(),
+                                                                          &error);
+    if (error) {
+        auto logger(libdnf::Log::getLogger());
+        logger->debug(tfm::format(_("Cannot retrieve module obsoletes because no stream matching %s: %s"),
+                                  modulePkg->getFullIdentifier(), error->message));
+        return nullptr;
+    }
+
+    if (myStream == nullptr) {
+        return nullptr;
+    }
+
+    return modulemd_module_stream_v2_get_obsoletes_resolved(MODULEMD_MODULE_STREAM_V2(myStream));
+}
+
 }

@@ -39,6 +39,7 @@ public:
     std::vector<ModulePackage *> getAllModulePackages(DnfSack * moduleSack, LibsolvRepo * repo, const std::string & repoID);
     std::map<std::string, std::string> getDefaultStreams();
     std::vector<std::string> getDefaultProfiles(std::string moduleName, std::string moduleStream);
+    ModulemdObsoletes * getNewestActiveObsolete(ModulePackage *p);
 
 private:
     static void reportFailures(const GPtrArray *failures);
