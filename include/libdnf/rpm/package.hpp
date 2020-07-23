@@ -25,12 +25,15 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "reldep_list.hpp"
 #include "solv_sack.hpp"
 
+#include <map>
 #include <string>
+#include <variant>
 #include <vector>
 
 
 namespace libdnf::rpm {
 
+typedef std::map< std::string, std::variant <std::string, std::vector<std::string>, Checksum, PackageId, ReldepList, bool, unsigned long, unsigned long long > > DnfVariant;
 
 class PackageSetIterator;
 
@@ -248,6 +251,9 @@ public:
     /// @replaces dnf:dnf/package.py:attribute:Package.rpmdbid
     /// @replaces libdnf:libdnf/hy-package.h:function:dnf_package_get_rpmdbid(DnfPackage * pkg)
     unsigned long long get_rpmdbid() noexcept;
+
+    /// serializer
+    DnfVariant serialize();
 
     /// TODO get_repo - requires Repo
     /// @replaces dnf:dnf/package.py:attribute:Package.repo

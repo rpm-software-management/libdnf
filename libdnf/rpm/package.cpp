@@ -23,6 +23,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "reldep_list_impl.hpp"
 #include "solv/package_private.hpp"
 #include "solv_sack_impl.hpp"
+#include <string>
 
 
 inline static std::string cstring2string(const char * input) {
@@ -282,6 +283,59 @@ unsigned long long Package::get_media_number() noexcept {
 unsigned long long Package::get_rpmdbid() noexcept {
     Pool * pool = sack->pImpl->pool;
     return solv::get_rpmdbid(pool, id);
+}
+
+DnfVariant Package::serialize() {
+    DnfVariant s_pkg = {
+        { "id", this->get_id() },
+        { "name", this->get_name() },
+        { "epoch", this->get_epoch() },
+        { "version", this->get_version() },
+        { "release", this->get_release() },
+        { "arch", this->get_arch() },
+        { "evr", this->get_evr() },
+        { "nevra", this->get_nevra() },
+        { "full_nevra", this->get_full_nevra() },
+        { "group", this->get_group() },
+        { "size", this->get_size() },
+        { "download_size", this->get_download_size() },
+        { "install_size", this->get_install_size() },
+        { "license", this->get_license() },
+        { "sourcerpm", this->get_sourcerpm() },
+        { "build_time", this->get_build_time() },
+        { "build_host", this->get_build_host() },
+        { "packager", this->get_packager() },
+        { "vendor", this->get_vendor() },
+        { "url", this->get_url() },
+        { "summary", this->get_summary() },
+        { "description", this->get_description() },
+        { "files", this->get_files() },
+        // dependencies
+        { "provides", this->get_provides() },
+        { "requires", this->get_requires() },
+        { "requires_pre", this->get_requires_pre() },
+        { "conflicts", this->get_conflicts() },
+        { "obsoletes", this->get_obsoletes() },
+        { "prereq_ignoreinst", this->get_prereq_ignoreinst() },
+        { "regular_requires", this->get_regular_requires() },
+        // weak dependencies
+        { "recommends", this->get_recommends() },
+        { "suggests", this->get_suggests() },
+        { "enhances", this->get_enhances() },
+        { "supplements", this->get_supplements() },
+        // repodata
+        { "baseurl", this->get_baseurl() },
+        { "location", this->get_location() },
+        { "checksum", this->get_checksum() },
+        { "hdr_checksum", this->get_hdr_checksum() },
+        //system
+        { "is_installed", this->is_installed() },
+        { "hdr_end", this->get_hdr_end() },
+        { "install time", this->get_install_time() },
+        { "media_number", this->get_media_number() },
+        { "rpmdbid", this->get_rpmdbid() }
+    };
+    return s_pkg;
 }
 
 Checksum Package::get_checksum() {
