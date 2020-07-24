@@ -205,6 +205,7 @@ private:
         std::vector<std::string> profiles;
         ModuleState state;
         bool locked;
+        int streamChangesNum;
     };
     std::pair<ConfigParser, struct Config> & getEntry(const std::string & moduleName);
     bool update(const std::string &name);
@@ -490,8 +491,11 @@ const std::string & ModulePackageContainer::getEnabledStream(const std::string &
  * @brief Mark ModulePackage as part of an enabled stream.
  */
 bool
-ModulePackageContainer::enable(const std::string &name, const std::string & stream)
+ModulePackageContainer::enable(const std::string &name, const std::string & stream, const bool count)
 {
+    if (count) {
+        pImpl->persistor->getEntry(name).second.streamChangesNum++;
+    }
     bool changed = pImpl->persistor->changeStream(name, stream);
     if (pImpl->persistor->changeState(name, ModuleState::ENABLED)) {
         changed = true;
@@ -504,41 +508,49 @@ ModulePackageContainer::enable(const std::string &name, const std::string & stre
 }
 
 bool
-ModulePackageContainer::enable(const ModulePackage * module)
+ModulePackageContainer::enable(const ModulePackage * module, const bool count)
 {
-    return enable(module->getName(), module->getStream());
+    return enable(module->getName(), module->getStream(), count);
 }
 
 /**
  * @brief Mark module as not part of an enabled stream.
  */
-void ModulePackageContainer::disable(const std::string & name)
+void ModulePackageContainer::disable(const std::string & name, const bool count)
 {
+    if (count) {
+        pImpl->persistor->getEntry(name).second.streamChangesNum++;
+    }
+
     pImpl->persistor->changeState(name, ModuleState::DISABLED);
     pImpl->persistor->changeStream(name, "");
     auto & profiles = pImpl->persistor->getEntry(name).second.profiles;
     profiles.clear();
 }
 
-void ModulePackageContainer::disable(const ModulePackage * module)
+void ModulePackageContainer::disable(const ModulePackage * module, const bool count)
 {
-    disable(module->getName());
+    disable(module->getName(), count);
 }
 
 /**
  * @brief Reset module state so it's no longer enabled or disabled.
  */
-void ModulePackageContainer::reset(const std::string & name)
+void ModulePackageContainer::reset(const std::string & name, const bool count)
 {
+    if (count) {
+        pImpl->persistor->getEntry(name).second.streamChangesNum++;
+    }
     pImpl->persistor->changeState(name, ModuleState::UNKNOWN);
+
     pImpl->persistor->changeStream(name, "");
     auto & profiles = pImpl->persistor->getEntry(name).second.profiles;
     profiles.clear();
 }
 
-void ModulePackageContainer::reset(const ModulePackage * module)
+void ModulePackageContainer::reset(const ModulePackage * module, const bool count)
 {
-    reset(module->getName());
+    reset(module->getName(), count);
 }
 
 /**
@@ -1178,7 +1190,7 @@ ModulePackageContainer::Impl::ModulePersistor::changeStream(const std::string &n
     if (updatedValue == stream)
         return false;
     const auto &originValue = configs.at(name).first.getValue(name, "stream");
-    if (originValue != updatedValue) {
+    if (originValue != updatedValue && configs.at(name).second.streamChangesNum > 1) {
         throw EnableMultipleStreamsException(name);
     }
     getEntry(name).second.stream = stream;
@@ -1298,6 +1310,7 @@ bool ModulePackageContainer::Impl::ModulePersistor::insert(
 
     newConfig.state = fromString(parser.getValue(moduleName, "state"));
     newConfig.stream = parser.getValue(moduleName, "stream");
+    newConfig.streamChangesNum = 0;
 
     return true;
 }
@@ -1727,9 +1740,9 @@ void ModulePackageContainer::applyObsoletes(){
 
             if (moduleName && moduleStream) {
                 if (!isDisabled(moduleName)) {
-                    enable(moduleName, moduleStream);
+                    enable(moduleName, moduleStream, false);
                     if (std::string(moduleName) != modulePkg->getName()) {
-                        reset(modulePkg);
+                        reset(modulePkg, false);
                     }
                 } else {
                     auto logger(Log::getLogger());
@@ -1738,7 +1751,7 @@ void ModulePackageContainer::applyObsoletes(){
                         modulePkg->getName(), modulePkg->getStream(), moduleName));
                 }
             } else {
-                reset(modulePkg);
+                reset(modulePkg, false);
             }
         }
     }
