@@ -172,8 +172,7 @@ Swdb::initTransaction()
     if (transactionInProgress) {
         throw std::logic_error(_("In progress"));
     }
-    transactionInProgress = std::unique_ptr< swdb_private::Transaction >(
-        new swdb_private::Transaction(conn));
+    transactionInProgress = std::make_shared< swdb_private::Transaction >(conn);
     itemsInProgress.clear();
 }
 
