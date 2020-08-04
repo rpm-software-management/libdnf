@@ -77,6 +77,8 @@ public:
     std::vector< TransactionPtr >
     listTransactions(); // std::vector<long long> transactionIds);
 
+    TransactionPtr getCurrent() { return std::dynamic_pointer_cast<Transaction>(transactionInProgress); }
+
     // TransactionItems
     TransactionItemPtr addItem(ItemPtr item,
                                const std::string &repoid,
@@ -125,7 +127,7 @@ protected:
     explicit Swdb(SQLite3Ptr conn, bool autoClose);
     SQLite3Ptr conn;
     bool autoClose;
-    std::unique_ptr< swdb_private::Transaction > transactionInProgress = nullptr;
+    std::shared_ptr< swdb_private::Transaction > transactionInProgress = nullptr;
     std::map< std::string, TransactionItemPtr > itemsInProgress;
 
 private:
