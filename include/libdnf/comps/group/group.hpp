@@ -47,7 +47,7 @@ public:
     void set_name(const std::string & value) { name = value; }
 
     /// Get group description
-    std::string get_description() const;
+    std::string get_description() const { return description; }
 
     /// Set group description
     void set_description(const std::string & value) { description = value; }

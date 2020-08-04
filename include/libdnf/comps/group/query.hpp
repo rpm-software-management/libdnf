@@ -36,7 +36,7 @@ using GroupWeakPtr = libdnf::WeakPtr<Group, false>;
 
 class GroupQuery : public libdnf::sack::Query<GroupWeakPtr> {
 public:
-    using Query<GroupWeakPtr>::Query;
+    using libdnf::sack::Query<GroupWeakPtr>::Query;
 
     GroupQuery & ifilter_id(sack::QueryCmp cmp, const std::string & pattern);
     GroupQuery & ifilter_id(sack::QueryCmp cmp, const std::vector<std::string> & patterns);

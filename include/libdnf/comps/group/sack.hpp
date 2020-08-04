@@ -40,7 +40,6 @@ class Comps;
 class GroupSack : public libdnf::sack::Sack<Group, GroupQuery> {
 public:
     explicit GroupSack(Comps & comps) : comps(&comps) {}
-    void add_comps_xml(const std::string & path);
 
     /// Create a new Group and store in in the GroupSack
     GroupWeakPtr new_group();
