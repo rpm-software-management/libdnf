@@ -253,7 +253,7 @@ set_protect_running_kernel(_GoalObject *self, PyObject * value, void * closure) 
     int c_value = PyObject_IsTrue(value);
     self->goal->set_protect_running_kernel(c_value);
     return 0;
-} CATCH_TO_PYTHON
+} CATCH_TO_PYTHON_INT
 
 static PyObject *
 erase(_GoalObject *self, PyObject *args, PyObject *kwds) try
