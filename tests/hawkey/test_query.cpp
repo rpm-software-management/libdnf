@@ -306,7 +306,7 @@ START_TEST(test_query_pkg)
     hy_query_filter(q, HY_PKG_NAME, HY_EQ, "jay");
     pset = hy_query_run_set(q);
     hy_query_free(q);
-    fail_unless(dnf_packageset_count(pset), 2);
+    fail_unless(dnf_packageset_count(pset) == 2);
 
     // use hy_query_filter_package_in():
     q = hy_query_create(test_globals.sack);
