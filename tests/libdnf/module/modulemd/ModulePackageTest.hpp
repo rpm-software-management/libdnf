@@ -27,7 +27,7 @@ public:
     void testGetModuleDependencies();
 
 private:
-    DnfContext *context;
+    DnfContext * context{nullptr};
     std::vector<libdnf::ModulePackage *> packages;
 };
 
