@@ -645,7 +645,7 @@ static struct PyMemberDef goal_members[] = {
 
 static PyGetSetDef goal_getsetters[] = {
     {(char*)"actions",        (getter)get_actions, NULL, NULL, NULL},
-    {"protect_running_kernel", (getter)get_protect_running_kernel,
+    {(char*)"protect_running_kernel", (getter)get_protect_running_kernel,
         (setter)set_protect_running_kernel, NULL, NULL},
     {NULL}                /* sentinel */
 };
