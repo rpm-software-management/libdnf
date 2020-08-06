@@ -7,6 +7,8 @@
 %global libdnf_minor_version 52
 %global libdnf_micro_version 0
 
+%define __cmake_in_source_build 1
+
 # set sphinx package name according to distro
 %global requires_python2_sphinx python2-sphinx
 %global requires_python3_sphinx python3-sphinx
