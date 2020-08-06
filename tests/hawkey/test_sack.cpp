@@ -83,7 +83,7 @@ START_TEST(test_list_arches)
     const char ** arches = dnf_sack_list_arches(sack);
 
     /* noarch, x86_64, athlon, i686, i586, i486, i386 */
-    fail_unless(g_strv_length((gchar**)arches), 7);
+    fail_unless(g_strv_length((gchar**)arches) == 7);
 
     if (strcmp(arches[2], "athlon") == 0) {
         // Fedora, Mageia
