@@ -459,6 +459,27 @@ pool_tmpdup(Pool *pool, const char *s)
     return strcpy(dup, s);
 }
 
+static Id
+running_kernel_check_path(DnfSack *sack, const char *fn)
+{
+    if (access(fn, F_OK))
+        g_debug("running_kernel_check_path(): no matching file: %s.", fn);
+
+    HyQuery q = hy_query_create_flags(sack, HY_IGNORE_EXCLUDES);
+    dnf_sack_make_provides_ready(sack);
+    q->installed();
+    hy_query_filter(q, HY_PKG_FILE, HY_EQ, fn);
+    DnfPackageSet *pset = hy_query_run_set(q);
+
+    Id id = -1;
+    id = pset->next(id);
+
+    delete pset;
+    hy_query_free(q);
+
+    return id;
+}
+
 Id
 running_kernel(DnfSack *sack)
 {
@@ -470,18 +491,8 @@ running_kernel(DnfSack *sack)
         return -1;
     }
     char *fn = pool_tmpjoin(pool, "/boot/vmlinuz-", un.release, NULL);
-    if (access(fn, F_OK))
-        g_debug("running_kernel(): no matching file: %s.", fn);
 
-    Id kernel_id = -1;
-    HyQuery q = hy_query_create_flags(sack, HY_IGNORE_EXCLUDES);
-    dnf_sack_make_provides_ready(sack);
-    hy_query_filter(q, HY_PKG_FILE, HY_EQ, fn);
-    q->installed();
-    DnfPackageSet *pset = hy_query_run_set(q);
-    kernel_id = pset->next(kernel_id);
-    delete pset;
-    hy_query_free(q);
+    Id kernel_id = running_kernel_check_path(sack, fn);
 
     if (kernel_id >= 0)
         g_debug("running_kernel(): %s.", id2nevra(pool, kernel_id));
