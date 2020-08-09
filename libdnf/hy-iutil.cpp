@@ -490,9 +490,14 @@ running_kernel(DnfSack *sack)
         g_debug("uname(): %s", g_strerror(errno));
         return -1;
     }
-    char *fn = pool_tmpjoin(pool, "/boot/vmlinuz-", un.release, NULL);
 
+    char *fn = pool_tmpjoin(pool, "/boot/vmlinuz-", un.release, NULL);
     Id kernel_id = running_kernel_check_path(sack, fn);
+
+    if (kernel_id < 0) {
+        fn = pool_tmpjoin(pool, "/lib/modules/", un.release, NULL);
+        kernel_id = running_kernel_check_path(sack, fn);
+    }
 
     if (kernel_id >= 0)
         g_debug("running_kernel(): %s.", id2nevra(pool, kernel_id));
