@@ -155,7 +155,6 @@ typedef struct
     gboolean         enable_filelists;
     gboolean         keep_cache;
     gboolean         enrollment_valid;
-    gboolean         zchunk;
     gboolean         write_history;
     DnfLock         *lock;
     DnfTransaction  *transaction;
@@ -337,7 +336,6 @@ dnf_context_init(DnfContext *context)
     priv->check_disk_space = TRUE;
     priv->check_transaction = TRUE;
     priv->enable_filelists = TRUE;
-    priv->zchunk = libdnf::getGlobalMainConfig().zchunk().getValue();
     priv->write_history = TRUE;
     priv->state = dnf_state_new();
     priv->lock = dnf_lock_new();
@@ -999,7 +997,7 @@ dnf_context_get_only_trusted(DnfContext *context)
 
 /**
  * dnf_context_get_zchunk
- * @context: a #DnfContext instance.
+ * @context: a #DnfContext instance is not used. It is global option.
  *
  * Gets whether zchunk is enabled
  *
@@ -1010,8 +1008,8 @@ dnf_context_get_only_trusted(DnfContext *context)
 gboolean
 dnf_context_get_zchunk(DnfContext *context)
 {
-    DnfContextPrivate *priv = GET_PRIVATE(context);
-    return priv->zchunk;
+    auto & mainConf = libdnf::getGlobalMainConfig();
+    return mainConf.zchunk().getValue();
 }
 
 /**
@@ -1504,7 +1502,7 @@ dnf_context_set_only_trusted(DnfContext *context, gboolean only_trusted)
 
 /**
  * dnf_context_set_zchunk:
- * @context: a #DnfContext instance.
+ * @context: a #DnfContext instance is not used. It is global option.
  * @only_trusted: %TRUE use zchunk metadata if available
  *
  * Enables or disables the use of zchunk metadata if available.
@@ -1514,8 +1512,8 @@ dnf_context_set_only_trusted(DnfContext *context, gboolean only_trusted)
 void
 dnf_context_set_zchunk(DnfContext *context, gboolean zchunk)
 {
-    DnfContextPrivate *priv = GET_PRIVATE(context);
-    priv->zchunk = zchunk;
+    auto & mainConf = libdnf::getGlobalMainConfig();
+    mainConf.zchunk().set(libdnf::Option::Priority::RUNTIME, zchunk);
 }
 
 /**
