@@ -1708,4 +1708,40 @@ void ModulePackageContainer::updateFailSafeData()
     map_free(&map);
 }
 
+void ModulePackageContainer::applyObsoletes(){
+    for (const auto &iter : pImpl->modules) {
+        auto modulePkg = iter.second.get();
+        if (!isEnabled(modulePkg)) {
+            continue;
+        }
+        /* We cannot access the eol through the ModulemdModuleStream which is
+         * wrapped in modulePkg because it was created with metedata from only
+         * one repository but other repositories can have new eols which affect
+         * this module stream. We have to use merged modular metadata from all
+         * available repositories.
+         */
+        ModulemdObsoletes *modulePkgObsoletes = pImpl->moduleMetadata.getNewestActiveObsolete(modulePkg);
+        if (modulePkgObsoletes) {
+            auto moduleName = modulemd_obsoletes_get_obsoleted_by_module_name(modulePkgObsoletes);
+            auto moduleStream = modulemd_obsoletes_get_obsoleted_by_module_stream(modulePkgObsoletes);
+
+            if (moduleName && moduleStream) {
+                if (!isDisabled(moduleName)) {
+                    enable(moduleName, moduleStream);
+                    if (std::string(moduleName) != modulePkg->getName()) {
+                        reset(modulePkg);
+                    }
+                } else {
+                    auto logger(Log::getLogger());
+                    logger->debug(tfm::format(
+                        _("Unable to apply modular obsoletes to '%s:%s' because target module '%s' is disabled"),
+                        modulePkg->getName(), modulePkg->getStream(), moduleName));
+                }
+            } else {
+                reset(modulePkg);
+            }
+        }
+    }
+}
+
 }

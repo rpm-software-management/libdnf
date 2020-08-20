@@ -276,6 +276,7 @@ public:
     bool isModuleActive(const ModulePackage * modulePackage);
     void loadFailSafeData();
     void updateFailSafeData();
+    void applyObsoletes();
 
 private:
     class Impl;
