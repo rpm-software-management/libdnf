@@ -199,6 +199,11 @@ std::string ModulePackage::getYaml() const
     return modulemd_module_index_dump_to_string(i, NULL);
 }
 
+bool ModulePackage::getStaticContext() const
+{
+    return modulemd_module_stream_v2_is_static_context((ModulemdModuleStreamV2 *) mdStream);
+}
+
 /**
  * @brief Return module $name.
  *

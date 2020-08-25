@@ -75,6 +75,13 @@ public:
     Id getId() const { return id; };
     std::string getYaml() const;
 
+    /**
+     * @brief Return whether context string is static. It is important for proper behaviour of modular solver
+     *
+     * @return bool
+     */
+    bool getStaticContext() const;
+
 private:
     friend struct ModulePackageContainer;
     friend struct ModuleMetadata;
