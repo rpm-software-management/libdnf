@@ -192,6 +192,49 @@ void ModulePackage::createDependencies(Solvable *solvable) const
     }
 }
 
+std::vector<std::string> ModulePackage::getRequires(ModulemdModuleStream * mdStream, bool removePlatform)
+{
+    std::vector<std::string> dependencies_result;
+
+    GPtrArray * cDependencies = modulemd_module_stream_v2_get_dependencies((ModulemdModuleStreamV2 *) mdStream);
+
+    for (unsigned int i = 0; i < cDependencies->len; i++) {
+        auto dependencies = static_cast<ModulemdDependencies *>(g_ptr_array_index(cDependencies, i));
+        if (!dependencies) {
+            continue;
+        }
+        char** runtimeReqModules = modulemd_dependencies_get_runtime_modules_as_strv(dependencies);
+
+        for (char **iterModule = runtimeReqModules; iterModule && *iterModule; iterModule++) {
+            char ** runtimeReqStreams = modulemd_dependencies_get_runtime_streams_as_strv(dependencies, *iterModule);
+            auto moduleName = static_cast<char *>(*iterModule);
+            if (removePlatform && strcmp(moduleName, "platform") == 0) {
+                continue;
+            }
+            std::ostringstream ss;
+            std::vector<std::string> requiredStreams;
+            for (char **iterStream = runtimeReqStreams; iterStream && *iterStream; iterStream++) {
+                requiredStreams.push_back(*iterStream);
+            }
+            if (requiredStreams.empty()) {
+                dependencies_result.emplace_back(moduleName);
+            } else {
+                std::sort(requiredStreams.begin(), requiredStreams.end());
+                ss << moduleName << ":" << "[" << *requiredStreams.begin();
+                for (auto iter = std::next(requiredStreams.begin()); iter != requiredStreams.end(); ++iter) {
+                    ss << "," << *iter;
+                }
+                ss << "]";
+                dependencies_result.emplace_back(std::move(ss.str()));
+            }
+            g_strfreev(runtimeReqStreams);
+        }
+        g_strfreev(runtimeReqModules);
+    }
+
+    return dependencies_result;
+}
+
 std::string ModulePackage::getYaml() const
 {
     ModulemdModuleIndex * i = modulemd_module_index_new();
