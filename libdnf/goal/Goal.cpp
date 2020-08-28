@@ -47,6 +47,29 @@ extern "C" {
 #include "IdQueue.hpp"
 #include "../utils/filesystem.hpp"
 
+namespace {
+
+std::string pkgSolvid2str(Pool * pool, Id source)
+{
+    return pool_solvid2str(pool, source);
+}
+
+std::string moduleSolvid2str(Pool * pool, Id source)
+{
+    std::ostringstream ss;
+    auto * solvable = pool_id2solvable(pool, source);
+    // Add name:stream
+    ss << solvable_lookup_str(solvable, SOLVABLE_DESCRIPTION);
+    //Add version
+    ss << ":" << pool_id2str(pool, solvable->evr);
+    // Add original context
+    ss << ":" << solvable_lookup_str(solvable, SOLVABLE_SUMMARY);
+    ss << "." << pool_id2str(pool, solvable->arch);
+    return ss.str();
+}
+
+}
+
 namespace libdnf {
 
 enum {NO_MATCH=1, MULTIPLE_MATCH_OBJECTS, INCORECT_COMPARISON_TYPE};
@@ -119,17 +142,27 @@ static const std::map<int, const char *> MODULE_PROBLEMS_DICT = {
 
 static std::string
 libdnf_problemruleinfo2str(libdnf::PackageSet * modularExclude, Solver *solv, SolverRuleinfo type, Id source, Id target,
-    Id dep, std::map<int, const char *> problemDict)
+    Id dep, bool pkgs)
 {
+    std::map<int, const char *> problemDict;
+    std::function<std::string(Pool *, Id)> solvid2str;
+    if (pkgs) {
+        problemDict = PKG_PROBLEMS_DICT;
+        solvid2str = pkgSolvid2str;
+    } else {
+        problemDict = MODULE_PROBLEMS_DICT;
+        solvid2str = moduleSolvid2str;
+    }
+
     Pool *pool = solv->pool;
     Solvable *ss;
     switch (type) {
         case SOLVER_RULE_DISTUPGRADE:
-            return std::string(pool_solvid2str(pool, source)) + problemDict[RULE_DISTUPGRADE];
+            return solvid2str(pool, source) + problemDict[RULE_DISTUPGRADE];
         case SOLVER_RULE_INFARCH:
-            return std::string(pool_solvid2str(pool, source)) + problemDict[RULE_INFARCH];
+            return solvid2str(pool, source) + problemDict[RULE_INFARCH];
         case SOLVER_RULE_UPDATE:
-            return std::string(problemDict[RULE_UPDATE]) + pool_solvid2str(pool, source);
+            return std::string(problemDict[RULE_UPDATE]) + solvid2str(pool, source);
         case SOLVER_RULE_JOB:
             return std::string(problemDict[RULE_JOB]);
         case SOLVER_RULE_JOB_UNSUPPORTED:
@@ -145,52 +178,50 @@ libdnf_problemruleinfo2str(libdnf::PackageSet * modularExclude, Solver *solv, So
             return std::string(problemDict[RULE_PKG]);
         case SOLVER_RULE_BEST:
             if (source > 0)
-                return std::string(problemDict[RULE_BEST_1]) + pool_solvid2str(pool, source);
+                return std::string(problemDict[RULE_BEST_1]) + solvid2str(pool, source);
             return std::string(problemDict[RULE_BEST_2]);
         case SOLVER_RULE_PKG_NOT_INSTALLABLE:
             ss = pool->solvables + source;
             if (pool_disabled_solvable(pool, ss)) {
                 if (modularExclude && modularExclude->has(source)) {
-                    return tfm::format(problemDict[RULE_PKG_NOT_INSTALLABLE_1], pool_solvid2str(
-                        pool, source));
+                    return tfm::format(problemDict[RULE_PKG_NOT_INSTALLABLE_1], solvid2str(pool, source).c_str());
                 } else {
-                    return tfm::format(problemDict[RULE_PKG_NOT_INSTALLABLE_4], pool_solvid2str(
-                        pool, source));
+                    return tfm::format(problemDict[RULE_PKG_NOT_INSTALLABLE_4], solvid2str(pool, source).c_str());
                 }
             }
             if (ss->arch && ss->arch != ARCH_SRC && ss->arch != ARCH_NOSRC &&
                 pool->id2arch && (ss->arch > pool->lastarch || !pool->id2arch[ss->arch]))
-                return tfm::format(problemDict[RULE_PKG_NOT_INSTALLABLE_2], pool_solvid2str(pool, source));
-            return tfm::format(problemDict[RULE_PKG_NOT_INSTALLABLE_3], pool_solvid2str(pool, source));
+                return tfm::format(problemDict[RULE_PKG_NOT_INSTALLABLE_2], solvid2str(pool, source).c_str());
+            return tfm::format(problemDict[RULE_PKG_NOT_INSTALLABLE_3], solvid2str(pool, source).c_str());
         case SOLVER_RULE_PKG_NOTHING_PROVIDES_DEP:
             return tfm::format(problemDict[RULE_PKG_NOTHING_PROVIDES_DEP], pool_dep2str(pool, dep),
-                               pool_solvid2str(pool, source));
+                               solvid2str(pool, source).c_str());
         case SOLVER_RULE_PKG_SAME_NAME:
-            return tfm::format(problemDict[RULE_PKG_SAME_NAME], pool_solvid2str(pool, source),
-                               pool_solvid2str(pool, target));
+            return tfm::format(problemDict[RULE_PKG_SAME_NAME], solvid2str(pool, source).c_str(),
+                               solvid2str(pool, target).c_str());
         case SOLVER_RULE_PKG_CONFLICTS:
-            return tfm::format(problemDict[RULE_PKG_CONFLICTS], pool_solvid2str(pool, source),
-                               pool_dep2str(pool, dep), pool_solvid2str(pool, target));
+            return tfm::format(problemDict[RULE_PKG_CONFLICTS], solvid2str(pool, source).c_str(),
+                               pool_dep2str(pool, dep), solvid2str(pool, target).c_str());
         case SOLVER_RULE_PKG_OBSOLETES:
-            return tfm::format(problemDict[RULE_PKG_OBSOLETES], pool_solvid2str(pool, source),
-                               pool_dep2str(pool, dep), pool_solvid2str(pool, target));
+            return tfm::format(problemDict[RULE_PKG_OBSOLETES], solvid2str(pool, source).c_str(),
+                               pool_dep2str(pool, dep), solvid2str(pool, target).c_str());
         case SOLVER_RULE_PKG_INSTALLED_OBSOLETES:
             return tfm::format(problemDict[RULE_PKG_INSTALLED_OBSOLETES],
-                               pool_solvid2str(pool, source), pool_dep2str(pool, dep),
-                               pool_solvid2str(pool, target));
+                               solvid2str(pool, source).c_str(), pool_dep2str(pool, dep),
+                               solvid2str(pool, target).c_str());
         case SOLVER_RULE_PKG_IMPLICIT_OBSOLETES:
             return tfm::format(problemDict[RULE_PKG_IMPLICIT_OBSOLETES],
-                               pool_solvid2str(pool, source), pool_dep2str(pool, dep),
-                               pool_solvid2str(pool, target));
+                               solvid2str(pool, source).c_str(), pool_dep2str(pool, dep),
+                               solvid2str(pool, target).c_str());
         case SOLVER_RULE_PKG_REQUIRES:
-            return tfm::format(problemDict[RULE_PKG_REQUIRES], pool_solvid2str(pool, source),
+            return tfm::format(problemDict[RULE_PKG_REQUIRES], solvid2str(pool, source).c_str(),
                                pool_dep2str(pool, dep));
         case SOLVER_RULE_PKG_SELF_CONFLICT:
-            return tfm::format(problemDict[RULE_PKG_SELF_CONFLICT], pool_solvid2str(pool, source),
+            return tfm::format(problemDict[RULE_PKG_SELF_CONFLICT], solvid2str(pool, source).c_str(),
                                pool_dep2str(pool, dep));
         case SOLVER_RULE_YUMOBS:
-            return tfm::format(problemDict[RULE_YUMOBS], pool_solvid2str(pool, source),
-                               pool_solvid2str(pool, target), pool_dep2str(pool, dep));
+            return tfm::format(problemDict[RULE_YUMOBS], solvid2str(pool, source).c_str(),
+                               solvid2str(pool, target).c_str(), pool_dep2str(pool, dep));
         default:
             return solver_problemruleinfo2str(solv, type, source, target, dep);
     }
@@ -989,7 +1020,7 @@ Goal::describeProblemRules(unsigned i, bool pkgs)
                 target = rq[ir + 2];
                 dep = rq[ir + 3];
                 auto problem_str = libdnf_problemruleinfo2str(modularExcludes.get(), solv, type,
-                                                              source, target, dep, problemDict);
+                                                              source, target, dep, pkgs);
                 unique = true;
                 for (auto & item: output) {
                     if (problem_str == item) {
