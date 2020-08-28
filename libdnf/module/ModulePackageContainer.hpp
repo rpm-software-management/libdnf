@@ -270,7 +270,7 @@ public:
     */
     std::vector<ModulePackage *> query(libdnf::Nsvcap & moduleNevra);
     /**
-    * @brief Requiers subject in format <name>, <name>:<stream>, or <name>:<stream>:<version>
+    * @brief Requiers subject in format <name>, <name>:<stream>, or <name>:<stream>:<contex>
     *
     * @param subject p_subject:...
     * @return std::vector<ModulePackage *>
