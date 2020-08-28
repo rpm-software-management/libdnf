@@ -107,6 +107,7 @@ private:
     void createDependencies(Solvable *solvable) const;
     /// return vector with string requires like "nodejs:11", "nodejs", or "nodejs:-11"
     static std::vector<std::string> getRequires(ModulemdModuleStream * mdStream, bool removePlatform);
+    static std::string getNameStream(ModulemdModuleStream * mdStream);
 
     ModulemdModuleStream * mdStream;
 
@@ -124,6 +125,16 @@ inline bool ModulePackage::operator==(const ModulePackage &r) const
 inline std::vector<std::string> ModulePackage::getRequires(bool removePlatform)
 {
     return getRequires(mdStream, removePlatform);
+}
+
+/**
+ * @brief Return module $name:$stream.
+ *
+ * @return std::string
+ */
+inline std::string ModulePackage::getNameStream() const
+{
+    return getNameStream(mdStream);
 }
 
 }
