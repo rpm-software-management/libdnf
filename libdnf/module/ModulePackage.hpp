@@ -94,7 +94,7 @@ private:
     friend struct ModuleMetadata;
 
     ModulePackage(DnfSack * moduleSack, LibsolvRepo * repo,
-        ModulemdModuleStream * mdStream, const std::string & repoID);
+        ModulemdModuleStream * mdStream, const std::string & repoID, const std::string & context = {});
 
     ModulePackage(const ModulePackage & mpkg);
     ModulePackage & operator=(const ModulePackage & mpkg);
