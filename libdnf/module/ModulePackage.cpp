@@ -264,18 +264,6 @@ std::string ModulePackage::getName() const
 }
 
 /**
- * @brief Return module $name:$stream.
- *
- * @return std::string
- */
-std::string ModulePackage::getNameStream() const
-{
-    std::ostringstream ss;
-    ss << getName() << ":" << getStream();
-    return ss.str();
-}
-
-/**
  * @brief Return module $name:$stream:$version.
  *
  * @return std::string
@@ -633,6 +621,15 @@ ModulePackage::createPlatformSolvable(DnfSack * sack, DnfSack * moduleSack,
     dnf_sack_set_considered_to_update(moduleSack);
     pool_set_installed(pool, repo);
     return id;
+}
+
+std::string ModulePackage::getNameStream(ModulemdModuleStream * mdStream)
+{
+    std::ostringstream ss;
+    auto name = modulemd_module_stream_get_module_name(mdStream);
+    auto stream = modulemd_module_stream_get_stream_name(mdStream);
+    ss << (name ? name : "") << ":" << (stream ? stream : "");
+    return ss.str();
 }
 
 }
