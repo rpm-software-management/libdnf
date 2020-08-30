@@ -346,7 +346,6 @@ ModulePackageContainer::add(DnfSack * sack)
                             exception.what()));
         }
     }
-    pImpl->addVersion2Modules();
 }
 
 void ModulePackageContainer::addDefaultsFromDisk()
@@ -428,6 +427,7 @@ void ModulePackageContainer::createConflictsBetweenStreams()
 
 bool ModulePackageContainer::empty() const noexcept
 {
+    pImpl->addVersion2Modules();
     return pImpl->modules.empty();
 }
 
@@ -521,11 +521,13 @@ bool ModulePackageContainer::isDisabled(const ModulePackage * module)
 std::vector<std::string> ModulePackageContainer::getDefaultProfiles(std::string moduleName,
     std::string moduleStream)
 {
+    pImpl->addVersion2Modules();
     return pImpl->moduleMetadata.getDefaultProfiles(moduleName, moduleStream);
 }
 
 const std::string & ModulePackageContainer::getDefaultStream(const std::string &name) const
 {
+    pImpl->addVersion2Modules();
     auto it = pImpl->moduleDefaults.find(name);
     if (it == pImpl->moduleDefaults.end()) {
         return EMPTY_RESULT;
@@ -535,6 +537,7 @@ const std::string & ModulePackageContainer::getDefaultStream(const std::string &
 
 const std::string & ModulePackageContainer::getEnabledStream(const std::string &name)
 {
+    pImpl->addVersion2Modules();
     return pImpl->persistor->getStream(name);
 }
 
@@ -544,6 +547,7 @@ const std::string & ModulePackageContainer::getEnabledStream(const std::string &
 bool
 ModulePackageContainer::enable(const std::string &name, const std::string & stream, const bool count)
 {
+    pImpl->addVersion2Modules();
     if (count) {
         pImpl->persistor->getEntry(name).second.streamChangesNum++;
     }
@@ -569,6 +573,7 @@ ModulePackageContainer::enable(const ModulePackage * module, const bool count)
  */
 void ModulePackageContainer::disable(const std::string & name, const bool count)
 {
+    pImpl->addVersion2Modules();
     if (count) {
         pImpl->persistor->getEntry(name).second.streamChangesNum++;
     }
@@ -589,11 +594,11 @@ void ModulePackageContainer::disable(const ModulePackage * module, const bool co
  */
 void ModulePackageContainer::reset(const std::string & name, const bool count)
 {
+    pImpl->addVersion2Modules();
     if (count) {
         pImpl->persistor->getEntry(name).second.streamChangesNum++;
     }
     pImpl->persistor->changeState(name, ModuleState::UNKNOWN);
-
     pImpl->persistor->changeStream(name, "");
     auto & profiles = pImpl->persistor->getEntry(name).second.profiles;
     profiles.clear();
@@ -633,6 +638,7 @@ bool ModulePackageContainer::isChanged()
 void ModulePackageContainer::install(const std::string &name, const std::string &stream,
     const std::string &profile)
 {
+    pImpl->addVersion2Modules();
     for (const auto &iter : pImpl->modules) {
         auto modulePackage = iter.second.get();
         if (modulePackage->getName() == name && modulePackage->getStream() == stream) {
@@ -650,6 +656,7 @@ void ModulePackageContainer::install(const ModulePackage * module, const std::st
 void ModulePackageContainer::uninstall(const std::string &name, const std::string &stream,
     const std::string &profile)
 {
+    pImpl->addVersion2Modules();
     for (const auto &iter : pImpl->modules) {
         auto modulePackage = iter.second.get();
         if (modulePackage->getName() == name && modulePackage->getStream() == stream) {
@@ -737,6 +744,7 @@ ModulePackageContainer::query(Nsvcap& moduleNevra)
 std::vector<ModulePackage *>
 ModulePackageContainer::query(std::string subject)
 {
+    pImpl->addVersion2Modules();
     // Alternatively a search using module provides could be performed
     std::vector<ModulePackage *> result;
     Query query(pImpl->moduleSack, Query::ExcludeFlags::IGNORE_EXCLUDES);
@@ -757,6 +765,7 @@ std::vector<ModulePackage *>
 ModulePackageContainer::query(std::string name, std::string stream, std::string version,
     std::string context, std::string arch)
 {
+    pImpl->addVersion2Modules();
     // Alternatively a search using module provides could be performed
     std::vector<ModulePackage *> result;
     Query query(pImpl->moduleSack, Query::ExcludeFlags::IGNORE_EXCLUDES);
@@ -838,6 +847,7 @@ ModulePackageContainer::getModuleState(const std::string& name)
 
 std::set<std::string> ModulePackageContainer::getInstalledPkgNames()
 {
+    pImpl->addVersion2Modules();
     auto moduleNames = pImpl->persistor->getAllModuleNames();
     std::set<std::string> pkgNames;
     for (auto & moduleName: moduleNames) {
@@ -1019,6 +1029,7 @@ std::vector<std::vector<std::vector<ModulePackage *>>>
 ModulePackageContainer::getLatestModulesPerRepo(ModuleState moduleFilter,
     std::vector<ModulePackage *> modulePackages)
 {
+    pImpl->addVersion2Modules();
     if (modulePackages.empty()) {
         return {};
     }
@@ -1102,6 +1113,7 @@ ModulePackageContainer::getLatestModulesPerRepo(ModuleState moduleFilter,
 std::pair<std::vector<std::vector<std::string>>, ModulePackageContainer::ModuleErrorType>
 ModulePackageContainer::resolveActiveModulePackages(bool debugSolver)
 {
+    pImpl->addVersion2Modules();
     dnf_sack_reset_excludes(pImpl->moduleSack);
     std::vector<ModulePackage *> packages;
 
@@ -1152,6 +1164,7 @@ bool ModulePackageContainer::isModuleActive(const ModulePackage * modulePackage)
 
 std::vector<ModulePackage *> ModulePackageContainer::getModulePackages()
 {
+    pImpl->addVersion2Modules();
     std::vector<ModulePackage *> values;
     const auto & modules = pImpl->modules;
     std::transform(
@@ -1173,47 +1186,56 @@ void ModulePackageContainer::rollback()
 
 std::map<std::string, std::string> ModulePackageContainer::getEnabledStreams()
 {
+    pImpl->addVersion2Modules();
     return pImpl->persistor->getEnabledStreams();
 }
 
 std::vector<std::string> ModulePackageContainer::getDisabledModules()
 {
+    pImpl->addVersion2Modules();
     return pImpl->persistor->getDisabledModules();
 }
 
 std::map<std::string, std::string> ModulePackageContainer::getDisabledStreams()
 {
+    pImpl->addVersion2Modules();
     return pImpl->persistor->getDisabledStreams();
 }
 
 std::vector<std::string> ModulePackageContainer::getResetModules()
 {
+    pImpl->addVersion2Modules();
     return pImpl->persistor->getResetModules();
 }
 
 std::map<std::string, std::string> ModulePackageContainer::getResetStreams()
 {
+    pImpl->addVersion2Modules();
     return pImpl->persistor->getResetStreams();
 }
 
 std::map<std::string, std::pair<std::string, std::string>>
 ModulePackageContainer::getSwitchedStreams()
 {
+    pImpl->addVersion2Modules();
     return pImpl->persistor->getSwitchedStreams();
 }
 
 std::map<std::string, std::vector<std::string>> ModulePackageContainer::getInstalledProfiles()
 {
+    pImpl->addVersion2Modules();
     return pImpl->persistor->getInstalledProfiles();
 }
 
 std::vector<std::string> ModulePackageContainer::getInstalledProfiles(std::string moduleName)
 {
+    pImpl->addVersion2Modules();
     return pImpl->persistor->getProfiles(moduleName);
 }
 
 std::map<std::string, std::vector<std::string>> ModulePackageContainer::getRemovedProfiles()
 {
+    pImpl->addVersion2Modules();
     return pImpl->persistor->getRemovedProfiles();
 }
 const std::string &
@@ -1619,7 +1641,7 @@ ModulePackageContainer::Impl::ModulePersistor::getRemovedProfiles()
 void ModulePackageContainer::loadFailSafeData()
 {
     auto persistor = pImpl->persistor->configs;
-    
+
     std::map<std::string, std::pair<std::string, bool>> enabledStreams;
     for (auto & nameConfig: persistor) {
         if (nameConfig.second.second.state == ModuleState::ENABLED) {
