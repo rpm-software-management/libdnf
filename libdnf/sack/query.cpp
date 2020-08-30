@@ -2143,6 +2143,7 @@ Query::Impl::apply()
         return;
 
     Pool *pool = dnf_sack_get_pool(sack);
+    repo_internalize_all_trigger(pool);
     Map m;
     if (!result)
         initResult();
