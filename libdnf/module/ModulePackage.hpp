@@ -70,6 +70,7 @@ public:
 
     std::vector<ModuleDependencies> getModuleDependencies() const;
 
+    ///DEPRECATED
     void addStreamConflict(const ModulePackage * package);
 
     Id getId() const { return id; };
