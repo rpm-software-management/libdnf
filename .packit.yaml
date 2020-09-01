@@ -6,8 +6,6 @@ jobs:
   trigger: pull_request
   metadata:
     targets:
-    - fedora-rawhide-x86_64
-    - fedora-31-x86_64
-    - fedora-30-x86_64
+    - fedora-all-x86_64
     - mageia-cauldron-x86_64
 #    - opensuse-tumbleweed-x86_64
