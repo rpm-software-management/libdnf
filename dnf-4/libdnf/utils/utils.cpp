@@ -128,18 +128,6 @@ std::string trim(const std::string &source)
     return source.substr(first, (last - first + 1));
 }
 
-bool startsWith(const std::string & source, const std::string & toMatch)
-{
-    return source.compare(0, toMatch.size(), toMatch) == 0;
-}
-
-bool endsWith(const std::string & source, const std::string & toMatch)
-{
-    auto toMatchSize = toMatch.size();
-    return source.size() >= toMatchSize && source.compare(
-        source.size() - toMatchSize, toMatchSize, toMatch) == 0;
-}
-
 }
 
 bool haveFilesSameContent(const char * filePath1, const char * filePath2)
