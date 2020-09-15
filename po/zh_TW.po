@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-21 09:18-0400\n"
-"PO-Revision-Date: 2020-05-25 14:40+0000\n"
+"POT-Creation-Date: 2020-09-14 09:18-0400\n"
+"PO-Revision-Date: 2020-08-28 12:29+0000\n"
 "Last-Translator: Yi-Jyun Pan <pan93412@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://translate.fedoraproject.org/projects/dnf/libdnf-dnf-4-master/zh_TW/>\n"
 "Language: zh_TW\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.0.4\n"
+"X-Generator: Weblate 4.2.1\n"
 
 #: libdnf/conf/ConfigMain.cpp:62 libdnf/conf/OptionSeconds.cpp:40
 msgid "no value specified"
@@ -396,7 +396,7 @@ msgstr " 由系統提供"
 
 #: libdnf/goal/Goal.cpp:75 libdnf/goal/Goal.cpp:102
 msgid "some dependency problem"
-msgstr "部分依賴關係問題"
+msgstr "有一些依賴關係問題"
 
 #: libdnf/goal/Goal.cpp:76
 msgid "cannot install the best update candidate for package "
@@ -544,33 +544,33 @@ msgstr "%s 模組與自身提供的 %s 衝突"
 msgid "both module %s and %s obsolete %s"
 msgstr "%s 和 %s 兩個模組棄用了 %s"
 
-#: libdnf/goal/Goal.cpp:1032
+#: libdnf/goal/Goal.cpp:1038
 msgid "no solver set"
 msgstr "未設定解析器"
 
-#: libdnf/goal/Goal.cpp:1037
+#: libdnf/goal/Goal.cpp:1043
 #, c-format
 msgid "failed to make %s absolute"
 msgstr "無法使 %s 絕對"
 
-#: libdnf/goal/Goal.cpp:1044
+#: libdnf/goal/Goal.cpp:1050
 #, c-format
 msgid "failed writing debugdata to %1$s: %2$s"
 msgstr "無法將除錯資料寫入 %1$s：%2$s"
 
-#: libdnf/goal/Goal.cpp:1056
+#: libdnf/goal/Goal.cpp:1062
 msgid "no solv in the goal"
 msgstr "goal 中沒有 solv"
 
-#: libdnf/goal/Goal.cpp:1058
+#: libdnf/goal/Goal.cpp:1064
 msgid "no solution, cannot remove protected package"
 msgstr "沒有解決方案，無法移除受保護的軟體包"
 
-#: libdnf/goal/Goal.cpp:1061
+#: libdnf/goal/Goal.cpp:1067
 msgid "no solution possible"
 msgstr "沒有可行的解決方案"
 
-#: libdnf/goal/Goal.cpp:1473
+#: libdnf/goal/Goal.cpp:1479
 msgid ""
 "The operation would result in removing the following protected packages: "
 msgstr "此動作可能會導致移除以下受保護的軟體包： "
