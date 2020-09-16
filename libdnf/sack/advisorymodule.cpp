@@ -73,6 +73,20 @@ AdvisoryModule::nsvcaEQ(AdvisoryModule & other)
         other.pImpl->arch == pImpl->arch;
 }
 
+bool
+AdvisoryModule::isApplicable() const {
+    auto moduleContainer = dnf_sack_get_module_container(pImpl->sack);
+    if (!moduleContainer) {
+        return true;
+    }
+
+    if (!moduleContainer->isEnabled(getName(), getStream())) {
+        return false;
+    }
+
+    return true;
+}
+
 Advisory * AdvisoryModule::getAdvisory() const
 {
     return new Advisory(pImpl->sack, pImpl->advisory);

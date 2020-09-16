@@ -155,6 +155,58 @@ std::vector<AdvisoryModule> Advisory::getModules() const
 }
 
 void
+Advisory::getApplicablePackages(std::vector<AdvisoryPkg> & pkglist, bool withFilemanes) const
+{
+    Dataiterator di;
+    Dataiterator di_inner;
+    Pool *pool = dnf_sack_get_pool(sack);
+
+    dataiterator_init(&di, pool, 0, advisory, UPDATE_COLLECTIONLIST, 0, 0);
+    while (dataiterator_step(&di)) {
+        dataiterator_setpos(&di);
+
+        bool isModuleCollectionApplicable = true;
+        dataiterator_init(&di_inner, pool, 0, SOLVID_POS, UPDATE_MODULE, 0, 0);
+        while (dataiterator_step(&di_inner)) {
+            dataiterator_setpos(&di_inner);
+            Id name = pool_lookup_id(pool, SOLVID_POS, UPDATE_MODULE_NAME);
+            Id stream = pool_lookup_id(pool, SOLVID_POS, UPDATE_MODULE_STREAM);
+            Id version = pool_lookup_id(pool, SOLVID_POS, UPDATE_MODULE_VERSION);
+            Id context = pool_lookup_id(pool, SOLVID_POS, UPDATE_MODULE_CONTEXT);
+            Id arch = pool_lookup_id(pool, SOLVID_POS, UPDATE_MODULE_ARCH);
+            AdvisoryModule moduleAdvisory(sack, advisory, name, stream, version, context, arch);
+            if (moduleAdvisory.isApplicable()) {
+                isModuleCollectionApplicable = true;
+                break;
+            } else {
+                isModuleCollectionApplicable = false;
+            }
+        }
+        dataiterator_free(&di_inner);
+
+        if (isModuleCollectionApplicable) {
+            const char * filename = nullptr;
+            dataiterator_setpos(&di);
+
+            dataiterator_init(&di_inner, pool, 0, SOLVID_POS, UPDATE_COLLECTION, 0, 0);
+            while (dataiterator_step(&di_inner)) {
+                dataiterator_setpos(&di_inner);
+                Id name = pool_lookup_id(pool, SOLVID_POS, UPDATE_COLLECTION_NAME);
+                Id evr = pool_lookup_id(pool, SOLVID_POS, UPDATE_COLLECTION_EVR);
+                Id arch = pool_lookup_id(pool, SOLVID_POS, UPDATE_COLLECTION_ARCH);
+                if (withFilemanes) {
+                    filename = pool_lookup_str(pool, SOLVID_POS, UPDATE_COLLECTION_FILENAME);
+                }
+                pkglist.emplace_back(sack, advisory, name, evr, arch, filename);
+            }
+            dataiterator_free(&di_inner);
+        }
+    }
+
+    dataiterator_free(&di);
+}
+
+void
 Advisory::getReferences(std::vector<AdvisoryRef> & reflist) const
 {
     Dataiterator di;

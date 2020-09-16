@@ -41,6 +41,7 @@ public:
     AdvisoryModule & operator=(const AdvisoryModule & src);
     AdvisoryModule & operator=(AdvisoryModule && src) noexcept;
     bool nsvcaEQ(AdvisoryModule & other);
+    bool isApplicable() const;
     Advisory * getAdvisory() const;
     const char * getName() const;
     const char * getStream() const;
