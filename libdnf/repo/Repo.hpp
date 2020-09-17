@@ -152,6 +152,14 @@ public:
     bool isEnabled() const;
     bool isLocal() const;
     /**
+     * @brief if the repository is local, returns the baseurl in form of a
+     * local filesystem path ("file://" is stripped from it and the URL is
+     * decoded).
+     *
+     * @return A local filesystem path
+     */
+    std::string getLocalBaseurl() const;
+    /**
     * @brief Initialize the repo with metadata
     *
     * Fetches new metadata from the origin or just reuses local cache if still valid.
