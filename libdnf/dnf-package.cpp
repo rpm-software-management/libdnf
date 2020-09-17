@@ -47,6 +47,7 @@
 #include "hy-util.h"
 #include "repo/solvable/Dependency.hpp"
 #include "repo/solvable/DependencyContainer.hpp"
+#include "utils/url-encode.hpp"
 
 typedef struct {
     char            *checksum_str;
@@ -112,6 +113,33 @@ dnf_package_is_local(DnfPackage *pkg)
      
     const gchar *url_location = dnf_package_get_baseurl(pkg);
     return (!url_location  || (url_location && g_str_has_prefix(url_location, "file:/")));
+}
+
+/**
+ * dnf_package_get_local_baseurl:
+ * @pkg: a #DnfPackage *instance.
+ *
+ * Returns package baseurl converted to a local filesystem path (i.e. "file://"
+ * is stripped and the URL is decoded). In case the URL is not local, returns
+ * %NULL.
+ *
+ * The returned string is newly allocated and ownership is transferred to the
+ * caller.
+ *
+ * Returns: local filesystem baseurl or %NULL
+ *
+ * Since: 0.54.0
+ **/
+gchar *
+dnf_package_get_local_baseurl(DnfPackage *pkg, GError **error)
+{
+    const gchar *baseurl = dnf_package_get_baseurl(pkg);
+
+    if (!baseurl || !g_str_has_prefix(baseurl, "file://")) {
+        return nullptr;
+    }
+
+    return g_strdup(libdnf::urlDecode(baseurl + 7).c_str());
 }
 
 /**
