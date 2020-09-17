@@ -65,4 +65,21 @@ std::string urlEncode(const std::string & src, const std::string & exclude) {
     return encoded;
 }
 
+std::string urlDecode(const std::string & src) {
+    std::string out;
+
+    for (size_t i = 0; i < src.length(); ++i) {
+        char ch = src[i];
+
+        if (ch == '%') {
+            out.push_back(stoi(src.substr(i + 1, 2), nullptr, 16));
+            i += 2;
+        } else {
+            out.push_back(ch);
+        }
+    }
+
+    return out;
+}
+
 } // namespace libdnf
