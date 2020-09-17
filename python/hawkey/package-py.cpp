@@ -28,6 +28,7 @@
 #include "hy-iutil.h"
 #include "hy-package.h"
 #include "hy-package-private.hpp"
+#include "dnf-package.h"
 #include "dnf-reldep.h"
 #include "dnf-types.h"
 #include "libdnf/sack/packageset.hpp"
@@ -265,6 +266,26 @@ get_changelogs(_PackageObject *self, void *closure) try
     return changelogslist_to_pylist(dnf_package_get_changelogs(self->package));
 } CATCH_TO_PYTHON
 
+static PyObject *
+get_local_baseurl(_PackageObject *self) try
+{
+    g_autoptr(GError) error = nullptr;
+    gchar *local_baseurl = dnf_package_get_local_baseurl(self->package, &error);
+
+    if (error != nullptr) {
+        op_error2exc(error);
+        return nullptr;
+    }
+
+    if (local_baseurl == nullptr) {
+        return nullptr;
+    }
+
+    PyObject *ret = PyString_FromString(local_baseurl);
+    g_free(local_baseurl);
+    return ret;
+} CATCH_TO_PYTHON
+
 static PyGetSetDef package_getsetters[] = {
     {(char*)"baseurl",        (getter)get_str, NULL, NULL,
      (void *)dnf_package_get_baseurl},
@@ -391,6 +412,7 @@ static struct PyMethodDef package_methods[] = {
     {"get_delta_from_evr", (PyCFunction)get_delta_from_evr, METH_O, NULL},
     {"get_advisories", (PyCFunction)get_advisories, METH_VARARGS, NULL},
     {"_is_in_active_module", (PyCFunction)is_in_active_module, METH_NOARGS, NULL},
+    {"get_local_baseurl", (PyCFunction)get_local_baseurl, METH_NOARGS, NULL},
     {NULL}                      /* sentinel */
 };
 
