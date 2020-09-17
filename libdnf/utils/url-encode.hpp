@@ -38,6 +38,17 @@ namespace libdnf {
 */
 std::string urlEncode(const std::string & src, const std::string & exclude = "");
 
+/**
+* @brief URL-decodes the input string
+*
+* All percent signs followed by two hex digits are decoded to the characters
+* they represent.
+*
+* @param src The string to decode
+* @return URL-decoded string
+*/
+std::string urlDecode(const std::string & src);
+
 } // namespace libdnf
 
 #endif
