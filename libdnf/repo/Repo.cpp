@@ -368,6 +368,16 @@ bool Repo::isLocal() const
     return false;
 }
 
+std::string Repo::getLocalBaseurl() const
+{
+    if (!isLocal()) {
+        throw Exception("Invalid call getLocalBaseurl() on a non-local repository.");
+    }
+
+    // isLocal() already ensured the first item in the list starts with "file://"
+    return urlDecode(pImpl->conf->baseurl().getValue()[0].substr(7));
+}
+
 bool Repo::load() { return pImpl->load(); }
 bool Repo::loadCache(bool throwExcept) { return pImpl->loadCache(throwExcept); }
 void Repo::downloadMetadata(const std::string & destdir) { pImpl->downloadMetadata(destdir); }
