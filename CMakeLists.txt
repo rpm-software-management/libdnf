@@ -17,6 +17,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 if(${CMAKE_VERSION} VERSION_LESS 3)
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}/cmake/modules-cmake-2)
 endif()
+# On Ubuntu et al. CMake is configured differently and needs to be told where to find libsolv,
+# otherwise the build fails
+LIST (APPEND CMAKE_MODULE_PATH "${CMAKE_INSTALL_PREFIX}/share/cmake/libsolv/")
 
 
 # print exact name and version of the compiled project
