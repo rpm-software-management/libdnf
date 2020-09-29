@@ -167,6 +167,12 @@ START_TEST(test_version_split)
     // disttype to RPM. Set this explicitly as DNF's purpose is handling RPMs.
     fail_if(-1 == pool_setdisttype(pool, DISTTYPE_RPM));
 
+    // On "foreign" systems (non-RPM, like Ubuntu), libsolv turns off the
+    // implicitobsoleteusescolors flag by default.
+    // Given DNF's primary purpose is to manage RPMs on Fedora/CentOS and
+    // derivatives, enable it by default.
+    pool_set_flag(pool, POOL_FLAG_IMPLICITOBSOLETEUSESCOLORS, 1);
+
     char evr[] = "1:5.9.3-8";
     char *epoch, *version, *release;
 
