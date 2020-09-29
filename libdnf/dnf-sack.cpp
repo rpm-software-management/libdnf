@@ -186,6 +186,10 @@ dnf_sack_init(DnfSack *sack)
     priv->pool = pool_create();
     pool_set_flag(priv->pool, POOL_FLAG_WHATPROVIDESWITHDISABLED, 1);
 
+    // On "foreign" systems (non-RPM, like Ubuntu), libsolv does not default
+    // disttype to RPM. Set this explicitly as DNF's purpose is handling RPMs.
+    pool_setdisttype(priv->pool, DISTTYPE_RPM);
+
     priv->running_kernel_id = -1;
     priv->running_kernel_fn = running_kernel;
     priv->considered_uptodate = TRUE;
