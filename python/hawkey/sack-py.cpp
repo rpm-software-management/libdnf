@@ -196,13 +196,12 @@ log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *mess
 {
     time_t t = time(NULL);
     struct tm tm;
-    char timestr[26];
+    char timestr[32];
 
     FILE *log_out = (FILE*) user_data;
     localtime_r(&t, &tm);
-    strftime(timestr, 26, "%b-%d %H:%M:%S ", &tm);
-    gchar *msg = g_strjoin("", log_level_name(log_level), " ",
-                           timestr, message, "\n", NULL);
+    strftime(timestr, sizeof(timestr), "%Y-%m-%dT%H:%M:%S%z ", &tm);
+    gchar *msg = g_strjoin("", timestr, log_level_name(log_level), " ", message, "\n", NULL);
     fwrite(msg, strlen(msg), 1, log_out);
     fflush(log_out);
     g_free(msg);
