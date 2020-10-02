@@ -341,6 +341,8 @@ public:
     /// @replaces libdnf:repo/Repo.hpp:method:Repo.setSubstitutions(const std::map<std::string, std::string> & substitutions)
     void set_substitutions(const std::map<std::string, std::string> & substitutions);
 
+    std::string get_name() { return std::string(""); }
+
     ~Repo();
 
 private:
