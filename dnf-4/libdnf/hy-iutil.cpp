@@ -258,19 +258,6 @@ is_package(const Pool *pool, const Solvable *s)
     return !g_str_has_prefix(pool_id2str(pool, s->name), SOLVABLE_NAME_ADVISORY_PREFIX);
 }
 
-int
-is_readable_rpm(const char *fn)
-{
-    int len = strlen(fn);
-
-    if (access(fn, R_OK))
-        return 0;
-    if (len <= 4 || strcmp(fn + len - 4, ".rpm"))
-        return 0;
-
-    return 1;
-}
-
 /**
  * Recursively create directory.
  *

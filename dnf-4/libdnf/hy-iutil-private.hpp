@@ -38,7 +38,6 @@ const char *id2nevra(Pool *pool, Id id);
 
 /* filesystem utils */
 char *abspath(const char *path);
-int is_readable_rpm(const char *fn);
 int mkcachedir(char *path);
 gboolean mv(const char *old_path, const char *new_path, GError **error);
 gboolean dnf_remove_recursive_v2(const gchar *path, GError **error);
