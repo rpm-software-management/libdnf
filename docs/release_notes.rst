@@ -20,6 +20,26 @@
 ######################
 
 ====================
+0.54.2 Release Notes
+====================
+
+- history: Fix dnf history rollback when a package was removed (RhBug:1683134)
+- Add support for HY_GT, HY_LT in query nevra_strict
+- Fix parsing empty lines in config files
+- Accept '==' as an operator in reldeps (RhBug:1847946)
+- Add log file level main config option (RhBug:1802074)
+- Add protect_running_kernel configuration option (RhBug:1698145)
+- Context part of libdnf cannot assume zchunk is on (RhBug:1851841,1779104)
+- Fix memory leak of resultingModuleIndex and handle g_object refs
+- Redirect librepo logs to libdnf logs with different source
+- Introduce changelog metadata in commit messages
+- Add hy_goal_lock
+- Update Copr targets for packit and use alias
+- Enum/String conversions for Transaction Store/Replay
+- utils: Add a method to decode URLs
+- Unify hawkey.log line format with the rest of the logs
+
+====================
 0.48.0 Release Notes
 ====================
 
