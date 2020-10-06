@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-14 09:18-0400\n"
+"POT-Creation-Date: 2020-10-05 09:18-0400\n"
 "PO-Revision-Date: 2020-09-06 18:29+0000\n"
 "Last-Translator: Oğuz Ersen <oguzersen@protonmail.com>\n"
 "Language-Team: Turkish <https://translate.fedoraproject.org/projects/dnf/libdnf-dnf-4-master/tr/>\n"
@@ -34,7 +34,7 @@ msgstr "'%s', bayta dönüştürülemedi"
 msgid "unknown unit '%s'"
 msgstr "bilinmeyen birim '%s'"
 
-#: libdnf/conf/ConfigMain.cpp:331
+#: libdnf/conf/ConfigMain.cpp:332
 #, c-format
 msgid "percentage '%s' is out of range"
 msgstr "yüzde değeri '%s' aralık dışında"
@@ -754,12 +754,12 @@ msgstr "%s deposunun ayarlanmış bir yansısı veya temel url'si yok."
 msgid "Repository '%s' has unsupported type: 'type=%s', skipping."
 msgstr "'%s' deposunun desteklenmeyen bir türü var: 'type=%s', atlanıyor."
 
-#: libdnf/repo/Repo.cpp:536
+#: libdnf/repo/Repo.cpp:546
 #, c-format
 msgid "Cannot find a valid baseurl for repo: %s"
 msgstr "%s deposu için geçerli bir temel url bulunamıyor"
 
-#: libdnf/repo/Repo.cpp:573 libdnf/repo/Repo.cpp:1662
+#: libdnf/repo/Repo.cpp:583 libdnf/repo/Repo.cpp:1672
 msgid ""
 "Maximum download speed is lower than minimum. Please change configuration of"
 " minrate or throttle"
@@ -767,139 +767,139 @@ msgstr ""
 "Azami indirme hızı asgariden düşük. Lütfen 'minrate' veya 'throttle' "
 "yapılandırmasını değiştirin"
 
-#: libdnf/repo/Repo.cpp:623 libdnf/repo/Repo.cpp:645
+#: libdnf/repo/Repo.cpp:633 libdnf/repo/Repo.cpp:655
 #, c-format
 msgid "%s: gpgme_data_new_from_fd(): %s"
 msgstr "%s: gpgme_data_new_from_fd(): %s"
 
-#: libdnf/repo/Repo.cpp:631 libdnf/repo/Repo.cpp:653
+#: libdnf/repo/Repo.cpp:641 libdnf/repo/Repo.cpp:663
 #, c-format
 msgid "%s: gpgme_op_import(): %s"
 msgstr "%s: gpgme_op_import(): %s"
 
-#: libdnf/repo/Repo.cpp:676 libdnf/repo/Repo.cpp:742 libdnf/repo/Repo.cpp:870
+#: libdnf/repo/Repo.cpp:686 libdnf/repo/Repo.cpp:752 libdnf/repo/Repo.cpp:880
 #, c-format
 msgid "%s: gpgme_ctx_set_engine_info(): %s"
 msgstr "%s: gpgme_ctx_set_engine_info(): %s"
 
-#: libdnf/repo/Repo.cpp:703 libdnf/repo/Repo.cpp:767
+#: libdnf/repo/Repo.cpp:713 libdnf/repo/Repo.cpp:777
 #, c-format
 msgid "can not list keys: %s"
 msgstr "anahtarlar listelenemiyor: %s"
 
-#: libdnf/repo/Repo.cpp:796
+#: libdnf/repo/Repo.cpp:806
 #, c-format
 msgid "Failed to retrieve GPG key for repo '%s': %s"
 msgstr "'%s' deposu için GPG anahtarı alınamadı: %s"
 
-#: libdnf/repo/Repo.cpp:849
+#: libdnf/repo/Repo.cpp:859
 #, c-format
 msgid "repo %s: 0x%s already imported"
 msgstr "depo %s: 0x%s zaten içe aktarıldı"
 
-#: libdnf/repo/Repo.cpp:877
+#: libdnf/repo/Repo.cpp:887
 #, c-format
 msgid "repo %s: imported key 0x%s."
 msgstr "depo %s: 0x%s anahtarı içe aktarıldı."
 
-#: libdnf/repo/Repo.cpp:1121
+#: libdnf/repo/Repo.cpp:1131
 #, c-format
 msgid "reviving: repo '%s' skipped, no metalink."
 msgstr "yeniden etkinleştirme: '%s' deposu atlandı, üst bağlantı yok."
 
-#: libdnf/repo/Repo.cpp:1140
+#: libdnf/repo/Repo.cpp:1150
 #, c-format
 msgid "reviving: repo '%s' skipped, no usable hash."
 msgstr ""
 "yeniden etkinleştirme: '%s' deposu atlandı, kullanılabilir sağlama kodu yok."
 
-#: libdnf/repo/Repo.cpp:1163
+#: libdnf/repo/Repo.cpp:1173
 #, c-format
 msgid "reviving: failed for '%s', mismatched %s sum."
 msgstr "yeniden etkinleştirme: '%s' için başarısız, %s toplamı eşleşmiyor."
 
-#: libdnf/repo/Repo.cpp:1169
+#: libdnf/repo/Repo.cpp:1179
 #, c-format
 msgid "reviving: '%s' can be revived - metalink checksums match."
 msgstr ""
 "yeniden etkinleştirme: '%s' yeniden etkinleştirilebilir - üst bağlantı "
 "sağlama toplamları eşleşiyor."
 
-#: libdnf/repo/Repo.cpp:1194
+#: libdnf/repo/Repo.cpp:1204
 #, c-format
 msgid "reviving: '%s' can be revived - repomd matches."
 msgstr ""
 "yeniden etkinleştirme: '%s' yeniden etkinleştirilebilir - repomd eşleşiyor."
 
-#: libdnf/repo/Repo.cpp:1196
+#: libdnf/repo/Repo.cpp:1206
 #, c-format
 msgid "reviving: failed for '%s', mismatched repomd."
 msgstr "yeniden etkinleştirme: '%s' için başarısız, repomd eşleşmiyor."
 
-#: libdnf/repo/Repo.cpp:1214
+#: libdnf/repo/Repo.cpp:1224
 #, c-format
 msgid "Cannot create repo destination directory \"%s\": %s"
 msgstr "Depo hedef dizini \"%s\" oluşturulamıyor: %s"
 
-#: libdnf/repo/Repo.cpp:1220
+#: libdnf/repo/Repo.cpp:1230
 #, c-format
 msgid "Cannot create repo temporary directory \"%s\": %s"
 msgstr "Depo geçici dizini \"%s\" oluşturulamıyor: %s"
 
-#: libdnf/repo/Repo.cpp:1234
+#: libdnf/repo/Repo.cpp:1244
 #, c-format
 msgid "Cannot create directory \"%s\": %s"
 msgstr "\"%s\" dizini oluşturulamıyor: %s"
 
-#: libdnf/repo/Repo.cpp:1257
+#: libdnf/repo/Repo.cpp:1267
 #, c-format
 msgid "Cannot rename directory \"%s\" to \"%s\": %s"
 msgstr "\"%s\" dizini \"%s\" olarak yeniden adlandırılamıyor: %s"
 
-#: libdnf/repo/Repo.cpp:1280
+#: libdnf/repo/Repo.cpp:1290
 #, c-format
 msgid "repo: using cache for: %s"
 msgstr "repo: %s için önbellek kullanılıyor"
 
-#: libdnf/repo/Repo.cpp:1292
+#: libdnf/repo/Repo.cpp:1302
 #, c-format
 msgid "Cache-only enabled but no cache for '%s'"
 msgstr "Sadece-önbellek modu etkin ancak '%s' için önbellek yok"
 
-#: libdnf/repo/Repo.cpp:1296
+#: libdnf/repo/Repo.cpp:1306
 #, c-format
 msgid "repo: downloading from remote: %s"
 msgstr "repo: %s uzak deposundan indiriliyor"
 
-#: libdnf/repo/Repo.cpp:1302
+#: libdnf/repo/Repo.cpp:1312
 #, c-format
 msgid "Failed to download metadata for repo '%s': %s"
 msgstr "'%s' deposu için üst veriler indirilemedi: %s"
 
-#: libdnf/repo/Repo.cpp:1328
+#: libdnf/repo/Repo.cpp:1338
 msgid "getCachedir(): Computation of SHA256 failed"
 msgstr "getCachedir(): SHA256 hesaplaması başarısız oldu"
 
-#: libdnf/repo/Repo.cpp:1353
+#: libdnf/repo/Repo.cpp:1363
 #, c-format
 msgid "Cannot create persistdir \"%s\": %s"
 msgstr "\"%s\" kalıcı dizini oluşturulamıyor: %s"
 
-#: libdnf/repo/Repo.cpp:1753
+#: libdnf/repo/Repo.cpp:1763
 msgid "resume cannot be used simultaneously with the byterangestart param"
 msgstr "'resume', 'byterangestart' parametresiyle aynı anda kullanılamaz"
 
-#: libdnf/repo/Repo.cpp:1770
+#: libdnf/repo/Repo.cpp:1780
 #, c-format
 msgid "PackageTarget initialization failed: %s"
 msgstr "PackageTarget başlatılamadı: %s"
 
-#: libdnf/repo/Repo.cpp:1876
+#: libdnf/repo/Repo.cpp:1886
 #, c-format
 msgid "Cannot open %s: %s"
 msgstr "%s açılamıyor: %s"
 
-#: libdnf/repo/Repo.cpp:1920
+#: libdnf/repo/Repo.cpp:1930
 #, c-format
 msgid "Log handler with id %ld doesn't exist"
 msgstr "%ld kimliğine sahip bir günlük kaydı işleyici yok"
