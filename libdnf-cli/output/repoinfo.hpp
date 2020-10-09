@@ -21,52 +21,63 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef LIBDNF_CLI_OUTPUT_REPOINFO_HPP
 #define LIBDNF_CLI_OUTPUT_REPOINFO_HPP
 
+#include "libdnf-cli/utils/tty.hpp"
+
 #include <libsmartcols/libsmartcols.h>
 
-namespace libdnf::cli::output {i
+#include <iostream>
+#include <string>
+
+namespace libdnf::cli::output {
 
 enum { COL_ARG_NAMES, COL_DESCR };
 
 static struct libscols_table * create_repoinfo_table() {
+    struct libscols_table * table = scols_new_table();
+    scols_table_enable_noheadings(table, 1);
+    scols_table_set_column_separator(table, ": ");
+    if (libdnf::cli::utils::tty::is_interactive()) {
+        scols_table_enable_colors(table, 1);
+        //scols_table_enable_maxout(table, 1);
+    }
+    struct libscols_column *cl = scols_table_new_column(table, "Key", 2, SCOLS_FL_WRAP);
+    scols_column_set_cmpfunc(cl, scols_cmpstr_cells, NULL);
+    scols_table_new_column(table, "Value", 2, SCOLS_FL_WRAP);
+    return table;
 }
 
-static void add_line_into_repoinfo_table(
-    struct libscols_table * table,
-    bool with_status,
-    const char * id,
-    const char * name){}
+static void add_line_into_repoinfo_table(struct libscols_table * table, const char * id, const char * descr) {
+    struct libscols_line * ln = scols_table_new_line(table, NULL);
+    scols_line_set_data(ln, COL_ARG_NAMES, id);
+    scols_line_set_data(ln, COL_DESCR, descr);
+}
+
+template <class Repo>
+static void make_single_repoinfo_table(Repo repo) {
+
+}
 
 template <class Query>
-static void print_repoinfo_table(Query query, bool with_status, int c) {
-    auto table = create_repoinfo_table(with_status);
+static void print_repoinfo_table(Query query) {
     for ( auto & repo : query.get_data() ) {
-        add_line_into_repoinfo_table(
-            table,
-            with_status,
-            repo->get_id(),
-            repo->get_name());
+        auto table = create_repoinfo_table();
+        add_line_into_repoinfo_table(table, "Repo-id", repo->get_id().c_str());
+        add_line_into_repoinfo_table(table, "Repo-name", repo->get_name().c_str());
+        add_line_into_repoinfo_table(table, "Repo-revision", "");
+        add_line_into_repoinfo_table(table, "Repo-updated", "");
+        add_line_into_repoinfo_table(table, "Repo-pkgs", "");
+        add_line_into_repoinfo_table(table, "Repo-available-pkgs", "");
+        add_line_into_repoinfo_table(table, "Repo-size", "");
+        add_line_into_repoinfo_table(table, "Repo-baseurl", "");
+        add_line_into_repoinfo_table(table, "Repo-expire", "");
+        add_line_into_repoinfo_table(table, "Repo-filename", "");
+        scols_print_table(table);
+        scols_unref_table(table);
+        std::cout << std::endl;
     }
-    auto cl = scols_table_get_column(table, c);
-    scols_sort_table(table, cl);
-
-    scols_print_table(table);
-    scols_unref_table(table);
+    /// TODO add total packages
 }
-/*
- *
-Repo-id            : virtualbox
-Repo-name          : Fedora 31 - x86_64 - VirtualBox
-Repo-revision      : 1599222917
-Repo-updated       : Fri 04 Sep 2020 02:35:18 PM CEST
-Repo-pkgs          : 45
-Repo-available-pkgs: 45
-Repo-size          : 4.2 G
-Repo-baseurl       : http://download.virtualbox.org/virtualbox/rpm/fedora/31/x86_64
-Repo-expire        : 172,800 second(s) (last: Thu 08 Oct 2020 02:22:53 PM CEST)
-Repo-filename      : /etc/yum.repos.d/virtualbox.repo
-Total packages: 88,800
 
- * */
 } // namespace libdnf::cli::output
 
 #endif  // LIBDNF_CLI_OUTPUT_REPOINFO_HPP

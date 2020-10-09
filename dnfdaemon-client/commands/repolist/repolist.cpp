@@ -24,9 +24,11 @@ along with dnfdaemon-client.  If not, see <https://www.gnu.org/licenses/>.
 #include <dnfdaemon-server/dbus.hpp>
 #include <libdnf/conf/option_string.hpp>
 
+#include "libdnf-cli/output/repoinfo.hpp"
 #include "libdnf-cli/output/repolist.hpp"
 
 #include <iostream>
+#include <memory>
 #include <vector>
 
 namespace dnfdaemon::client {
@@ -108,11 +110,10 @@ class RepoDbusList {
 public:
     RepoDbusList(dnfdaemon::KeyValueMapList & rawlist) : rawlist(rawlist){};
 
-    std::vector<RepoDbus*> get_data() {
-        std::vector<RepoDbus*> vec;
+    std::vector<std::unique_ptr<RepoDbus>> get_data() {
+        std::vector<std::unique_ptr<RepoDbus>> vec;
         for ( auto & rawdata : rawlist ) {
-            RepoDbus * repo = new RepoDbus(rawdata);
-            vec.push_back(repo);
+            vec.push_back(std::make_unique<RepoDbus>(rawdata));
         }
     return vec;
     };
@@ -160,11 +161,12 @@ void CmdRepolist::run(Context & ctx) {
    } else {
         // repoinfo command
         // TODO(mblaha): output using smartcols
-        for (auto & raw_repo : repositories) {
+        /*for (auto & raw_repo : repositories) {
             RepoDbus repo(raw_repo);
             std::cout << "REPO: " << repo.get_id() << std::endl;
             std::cout << "size: " << repo.get_size() << std::endl;
-        }
+        }*/
+        libdnf::cli::output::print_repoinfo_table(RepoDbusList(repositories));
     }
 }
 
