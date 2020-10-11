@@ -220,57 +220,6 @@ hy_query_run_set(HyQuery q)
     return new libdnf::PackageSet(*q->runSet());
 }
 
-/**
- * hy_query_union:
- * @q:     a #HyQuery instance
- * @other: other #HyQuery instance
- *
- * Unites query with other query (aka logical or).
- *
- * Returns: Nothing.
- *
- * Since: 0.7.0
- */
-void
-hy_query_union(HyQuery q, HyQuery other)
-{
-    q->queryUnion(*other);
-}
-
-/**
- * hy_query_intersection:
- * @q:     a #HyQuery instance
- * @other: other #HyQuery instance
- *
- * Intersects query with other query (aka logical and).
- *
- * Returns: Nothing.
- *
- * Since: 0.7.0
- */
-void
-hy_query_intersection(HyQuery q, HyQuery other)
-{
-    q->queryIntersection(*other);
-}
-
-/**
- * hy_query_difference:
- * @q:     a #HyQuery instance
- * @other: other #HyQuery instance
- *
- * Computes difference between query and other query (aka q and not other).
- *
- * Returns: Nothing.
- *
- * Since: 0.7.0
- */
-void
-hy_query_difference(HyQuery q, HyQuery other)
-{
-    q->queryDifference(*other);
-}
-
 bool
 hy_query_is_empty(HyQuery query)
 {

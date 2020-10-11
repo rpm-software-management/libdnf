@@ -140,27 +140,6 @@ public:
     Id getIndexItem(int index);
 
     /**
-    * @brief Applies both queries and result of the other query is added to result of this query
-    *
-    * @param other p_other:...
-    */
-    void queryUnion(Query & other);
-
-    /**
-    * @brief Applies both queries and keep only common packages for both queries in this query
-    *
-    * @param other p_other:...
-    */
-    void queryIntersection(Query & other);
-
-    /**
-    * @brief Applies both queries and keep only packages in this query that are absent in other query
-    *
-    * @param other p_other:...
-    */
-    void queryDifference(Query & other);
-
-    /**
     * @brief Applies Query and returns true if any package in the query
     *
     * @return bool
