@@ -1415,30 +1415,6 @@ Query::getIndexItem(int index)
     return (*pImpl->result.get())[index];
 }
 
-void
-Query::queryUnion(Query & other)
-{
-    apply();
-    other.apply();
-    *(pImpl->result.get()) += *(other.pImpl->result.get());
-}
-
-void
-Query::queryIntersection(Query & other)
-{
-    apply();
-    other.apply();
-    *(pImpl->result.get()) /= *(other.pImpl->result.get());
-}
-
-void
-Query::queryDifference(Query & other)
-{
-    apply();
-    other.apply();
-    *(pImpl->result.get()) -= *(other.pImpl->result.get());
-}
-
 bool
 Query::empty()
 {
