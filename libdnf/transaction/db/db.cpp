@@ -28,8 +28,13 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 namespace libdnf::transaction {
 
 
-static const char * SQL_CREATE_TABLES =
-#include "sql/create_tables.sql"
+static const char * SQL_1_1_CREATE_TABLES =
+#include "sql/1.1_create_tables.sql"
+    ;
+
+
+static const char * SQL_1_2_COMMENT =
+#include "sql/1.2_comment.sql"
     ;
 
 
@@ -54,22 +59,36 @@ static const char * SQL_GET_SCHEMA_VERSION = R"**(
 )**";
 
 
+std::string transaction_get_schema_version(libdnf::utils::SQLite3 & conn) {
+    std::string result;
+    libdnf::utils::SQLite3::Statement query_get_schema_version(conn, SQL_GET_SCHEMA_VERSION);
+    if (query_get_schema_version.step() == libdnf::utils::SQLite3::Statement::StepResult::ROW) {
+        result = query_get_schema_version.get<std::string>(0);
+    } else {
+        throw std::runtime_error("Unable to get 'version' from table 'config'");
+    }
+    return result;
+}
+
+
 void transaction_db_create(libdnf::utils::SQLite3 & conn) {
     // check if table 'config' exists; if not, assume an empty database and create the tables
     libdnf::utils::SQLite3::Statement query_table_config_exists(conn, SQL_TABLE_CONFIG_EXISTS);
     if (query_table_config_exists.step() != libdnf::utils::SQLite3::Statement::StepResult::ROW) {
-        conn.exec(SQL_CREATE_TABLES);
+        conn.exec(SQL_1_1_CREATE_TABLES);
     }
 
-    std::string schema_version;
-    libdnf::utils::SQLite3::Statement query_get_schema_version(conn, SQL_GET_SCHEMA_VERSION);
-    if (query_get_schema_version.step() == libdnf::utils::SQLite3::Statement::StepResult::ROW) {
-        schema_version = query_get_schema_version.get<std::string>(0);
-    } else {
-        throw std::runtime_error("Unable to get 'version' from table 'config'");
+    std::string version = transaction_get_schema_version(conn);
+
+    if (version == "1.1") {
+        conn.exec(SQL_1_2_COMMENT);
+        version = transaction_get_schema_version(conn);
     }
 
-    // TODO(dmach): migrations
+    // if (version == "1.2") {
+    //    conn.exec(SQL_1_3_...);
+    //    version = transaction_get_schema_version(conn);
+    // }
 }
 
 

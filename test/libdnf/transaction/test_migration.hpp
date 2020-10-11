@@ -18,38 +18,34 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-#ifndef LIBDNF_TRANSACTION_DB_DB_HPP
-#define LIBDNF_TRANSACTION_DB_DB_HPP
+#ifndef TEST_LIBDNF_TRANSACTION_TEST_MIGRATION_HPP
+#define TEST_LIBDNF_TRANSACTION_TEST_MIGRATION_HPP
 
+
+#include "transaction_test_base.hpp"
 
 #include "libdnf/utils/sqlite3/sqlite3.hpp"
 
+#include <cppunit/TestCase.h>
+#include <cppunit/extensions/HelperMacros.h>
 #include <memory>
-#include <string>
 
 
-namespace libdnf {
-class Base;
-}
+class TransactionMigrationTest : public TransactionTestBase {
+    CPPUNIT_TEST_SUITE(TransactionMigrationTest);
+    CPPUNIT_TEST(test_missing_schema_version);
+    CPPUNIT_TEST(test_migration);
+    CPPUNIT_TEST_SUITE_END();
+
+public:
+    void setUp() override;
+
+    void test_missing_schema_version();
+    void test_migration();
+
+private:
+    std::unique_ptr<libdnf::utils::SQLite3> conn;
+};
 
 
-namespace libdnf::transaction {
-
-
-/// Create tables and migrate schema if necessary.
-void transaction_db_create(libdnf::utils::SQLite3 & conn);
-
-
-/// Get schema version from the 'config' table
-std::string transaction_get_schema_version(libdnf::utils::SQLite3 & conn);
-
-
-/// Create a connection to transaction database in the 'persistdir' directory.
-/// The file is named 'history.sqlite' for compatibility reasons.
-std::unique_ptr<libdnf::utils::SQLite3> transaction_db_connect(libdnf::Base & base);
-
-
-}  // namespace libdnf::transaction
-
-
-#endif  // LIBDNF_TRANSACTION_DB_DB_HPP
+#endif  // TEST_LIBDNF_TRANSACTION_TEST_MIGRATION_HPP

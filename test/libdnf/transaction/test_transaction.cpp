@@ -41,6 +41,7 @@ static TransactionWeakPtr create_transaction(libdnf::Base & base) {
     trans->set_releasever("26");
     trans->set_user_id(1000);
     trans->set_cmdline("dnf install foo");
+    trans->set_comment("comment");
 
     trans->add_runtime_package("rpm-4.14.2-1.fc29.x86_64");
     trans->add_runtime_package("dnf-3.5.1-1.fc29.noarch");
@@ -73,6 +74,7 @@ void TransactionTest::test_save_load() {
     CPPUNIT_ASSERT_EQUAL(trans->get_releasever(), trans2->get_releasever());
     CPPUNIT_ASSERT_EQUAL(trans->get_user_id(), trans2->get_user_id());
     CPPUNIT_ASSERT_EQUAL(trans->get_cmdline(), trans2->get_cmdline());
+    CPPUNIT_ASSERT_EQUAL(trans->get_comment(), trans2->get_comment());
     CPPUNIT_ASSERT_EQUAL(trans->get_state(), trans2->get_state());
     CPPUNIT_ASSERT_EQUAL(2UL, trans2->get_runtime_packages().size());
 }

@@ -36,6 +36,7 @@ const char * SQL_TRANS_SELECT = R"**(
         releasever,
         user_id,
         cmdline,
+        comment,
         state
     FROM
         trans
@@ -63,6 +64,7 @@ bool trans_select(libdnf::utils::SQLite3::Query & query, int64_t transaction_id,
         trans.set_releasever(query.get<std::string>("releasever"));
         trans.set_user_id(query.get<uint32_t>("user_id"));
         trans.set_cmdline(query.get<std::string>("cmdline"));
+        trans.set_comment(query.get<std::string>("comment"));
         trans.set_state(static_cast<TransactionState>(query.get<int>("state")));
         result = true;
     }
@@ -82,11 +84,12 @@ static const char * SQL_TRANS_INSERT = R"**(
             releasever,
             user_id,
             cmdline,
+            comment,
             state,
             id
         )
         VALUES
-            (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 )**";
 
 
@@ -105,7 +108,9 @@ void trans_insert(libdnf::utils::SQLite3::Statement & query, Transaction & trans
         trans.get_releasever(),
         trans.get_user_id(),
         trans.get_cmdline(),
-        static_cast<int>(trans.get_state()));
+        trans.get_comment(),
+        static_cast<int>(trans.get_state())
+    );
 
     if (trans.get_id() > 0) {
         // use an existing primary key
@@ -131,6 +136,7 @@ static const char * SQL_TRANS_UPDATE = R"**(
         releasever=?,
         user_id=?,
         cmdline=?,
+        comment=?,
         state=?
     WHERE
         id = ?
@@ -153,9 +159,11 @@ void trans_update(libdnf::utils::SQLite3::Statement & query, const Transaction &
         trans.get_releasever(),
         trans.get_user_id(),
         trans.get_cmdline(),
+        trans.get_comment(),
         static_cast<int>(trans.get_state()),
         // WHERE id=?
-        trans.get_id());
+        trans.get_id()
+    );
     query.step();
     query.reset();
 }
