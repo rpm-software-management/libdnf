@@ -21,6 +21,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "db.hpp"
 
 #include "libdnf/base/base.hpp"
+#include "libdnf/utils/fs.hpp"
 
 #include <filesystem>
 
@@ -100,6 +101,7 @@ std::unique_ptr<libdnf::utils::SQLite3> transaction_db_connect(libdnf::Base & ba
     std::filesystem::path path(persistdir);
     path /= "history.sqlite";
     db_path = path.native();
+    libdnf::utils::fs::makedirs_for_file(db_path);
 
     auto conn = std::make_unique<libdnf::utils::SQLite3>(db_path);
     transaction_db_create(*conn);
