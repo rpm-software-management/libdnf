@@ -1,5 +1,3 @@
-%define __cmake_in_source_build 1
-
 %global libsolv_version 0.7.7
 %global libmodulemd_version 2.5.0
 %global librepo_version 1.12.0
