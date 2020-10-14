@@ -71,13 +71,25 @@ void CmdRepoquery::set_argument_parser(Context & ctx) {
     nevra->set_const_value("true");
     nevra->link_value(nevra_option);
 
-    patterns_to_show_options = ctx.arg_parser.add_new_values();
     auto keys = ctx.arg_parser.add_new_positional_arg(
         "keys_to_match",
         ArgumentParser::PositionalArg::UNLIMITED,
-        ctx.arg_parser.add_init_value(std::unique_ptr<libdnf::Option>(new libdnf::OptionString(nullptr))),
-        patterns_to_show_options);
+        nullptr,
+        nullptr);
     keys->set_short_description("List of keys to match");
+    keys->set_parse_hook_func([&](ArgumentParser::PositionalArg *, int argc, const char * const argv[]){
+        for (int i = 0; i < argc; ++i) {
+            switch (get_key_type(argv[i])) {
+                case KeyType::PACKAGE_FILE:
+                    package_paths.insert(argv[i]);
+                    break;
+                default:
+                    specs.insert(argv[i]);
+                    break;
+            }
+        }
+        return true;
+    });
 
     auto conflict_args =
         ctx.arg_parser.add_conflict_args_group(std::unique_ptr<std::vector<ArgumentParser::Argument *>>(
@@ -113,6 +125,7 @@ void CmdRepoquery::configure([[maybe_unused]] Context & ctx) {}
 
 void CmdRepoquery::run(Context & ctx) {
     auto & solv_sack = ctx.base.get_rpm_solv_sack();
+    std::vector<libdnf::rpm::Package> remote_packages;
 
     // To search in the system repository (installed packages)
     if (installed_option->get_value()) {
@@ -128,13 +141,19 @@ void CmdRepoquery::run(Context & ctx) {
             LoadFlags::USE_FILELISTS | LoadFlags::USE_PRESTO | LoadFlags::USE_UPDATEINFO | LoadFlags::USE_OTHER;
         ctx.load_rpm_repos(enabled_repos, flags);
         std::cout << std::endl;
+
+        // Adds remote packages (defined by a path on the command line) to the sack.
+        remote_packages = add_remote_packages(ctx, package_paths, false);
     }
 
     libdnf::rpm::PackageSet result_pset(&solv_sack);
+    for (auto & package : remote_packages) {
+        result_pset.add(package);
+    }
     libdnf::rpm::SolvQuery full_solv_query(&solv_sack);
-    for (auto & pattern : *patterns_to_show_options) {
+    for (auto & pattern : specs) {
         libdnf::rpm::SolvQuery solv_query(full_solv_query);
-        solv_query.resolve_pkg_spec(dynamic_cast<libdnf::OptionString *>(pattern.get())->get_value(), true, true, true, true, true, {});
+        solv_query.resolve_pkg_spec(pattern, true, true, true, true, true, {});
         result_pset |= solv_query.get_package_set();
     }
 

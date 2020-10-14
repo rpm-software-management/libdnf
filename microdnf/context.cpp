@@ -445,6 +445,16 @@ void download_packages(libdnf::Goal & goal, const char * dest_dir) {
     download_pkgs.insert(download_pkgs.end(), reinstalls_pkgs.begin(), reinstalls_pkgs.end());
     download_pkgs.insert(download_pkgs.end(), upgrades_pkgs.begin(), upgrades_pkgs.end());
     download_pkgs.insert(download_pkgs.end(), downgrades_pkgs.begin(), downgrades_pkgs.end());
+
+    // Packages in @commandline repository are removed from download.
+    for (auto it = download_pkgs.begin(); it != download_pkgs.end(); ) {
+        if (it->get_repo()->get_id() == "@commandline") {
+            download_pkgs.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
     download_packages(download_pkgs, dest_dir);
 }
 

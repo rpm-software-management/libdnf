@@ -25,7 +25,7 @@ along with microdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <libdnf/conf/option_bool.hpp>
 
 #include <memory>
-#include <vector>
+#include <set>
 
 namespace microdnf {
 
@@ -40,7 +40,8 @@ private:
     libdnf::OptionBool * installed_option{nullptr};
     libdnf::OptionBool * info_option{nullptr};
     libdnf::OptionBool * nevra_option{nullptr};
-    std::vector<std::unique_ptr<libdnf::Option>> * patterns_to_show_options{nullptr};
+    std::set<std::string> specs;
+    std::set<std::string> package_paths;
 };
 
 }  // namespace microdnf

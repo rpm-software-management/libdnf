@@ -39,13 +39,25 @@ namespace microdnf {
 using namespace libdnf::cli;
 
 void CmdUpgrade::set_argument_parser(Context & ctx) {
-    patterns_to_upgrade_options = ctx.arg_parser.add_new_values();
     auto keys = ctx.arg_parser.add_new_positional_arg(
         "keys_to_match",
         ArgumentParser::PositionalArg::UNLIMITED,
-        ctx.arg_parser.add_init_value(std::unique_ptr<libdnf::Option>(new libdnf::OptionString(nullptr))),
-        patterns_to_upgrade_options);
+        nullptr,
+        nullptr);
     keys->set_short_description("List of keys to match");
+    keys->set_parse_hook_func([&](ArgumentParser::PositionalArg *, int argc, const char * const argv[]){
+        for (int i = 0; i < argc; ++i) {
+            switch (get_key_type(argv[i])) {
+                case KeyType::PACKAGE_FILE:
+                    package_paths.insert(argv[i]);
+                    break;
+                default:
+                    specs.insert(argv[i]);
+                    break;
+            }
+        }
+        return true;
+    });
 
     auto upgrade = ctx.arg_parser.add_new_command("upgrade");
     upgrade->set_short_description("upgrade a package or packages on your system");
@@ -81,11 +93,17 @@ void CmdUpgrade::run(Context & ctx) {
     auto flags = LoadFlags::USE_FILELISTS | LoadFlags::USE_PRESTO | LoadFlags::USE_UPDATEINFO | LoadFlags::USE_OTHER;
     ctx.load_rpm_repos(enabled_repos, flags);
 
+    // Adds remote packages (defined by a path on the command line) to the sack.
+    auto remote_packages = add_remote_packages(ctx, package_paths, false);
+
     std::cout << std::endl;
 
     libdnf::Goal goal(&ctx.base);
-    for (auto & pattern : *patterns_to_upgrade_options) {
-        goal.add_rpm_upgrade(dynamic_cast<libdnf::OptionString *>(pattern.get())->get_value(), {});
+    for (auto & package : remote_packages) {
+        goal.add_rpm_upgrade(package);
+    }
+    for (auto & pattern : specs) {
+        goal.add_rpm_upgrade(pattern, {});
     }
     goal.resolve();
 
