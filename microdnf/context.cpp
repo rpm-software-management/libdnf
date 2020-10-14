@@ -723,4 +723,17 @@ std::vector<libdnf::rpm::Package> add_remote_packages(Context & ctx, const std::
     return remote_packages;
 }
 
+KeyType get_key_type(const std::string & value) {
+    auto & starts_with = libdnf::utils::string::starts_with;
+    auto & ends_with = libdnf::utils::string::ends_with;
+    if (ends_with(value, ".rpm") || starts_with(value, "file:/") || starts_with(value, "http:/")
+        || starts_with(value, "https:/") || starts_with(value, "ftp:/")) {
+        return KeyType::PACKAGE_FILE;
+    } else if (value[0] == '@') {
+        return KeyType::GROUP;
+    } else {
+        return KeyType::SPEC;
+    }
+}
+
 }  // namespace microdnf

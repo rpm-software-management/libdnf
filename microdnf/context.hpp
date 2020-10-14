@@ -79,6 +79,10 @@ void prepare_transaction(libdnf::Goal & goal, libdnf::rpm::Transaction & ts, std
 
 std::vector<libdnf::rpm::Package> add_remote_packages(Context & ctx, const std::set<std::string> & paths, bool strict);
 
+enum class KeyType {SPEC, PACKAGE_FILE, GROUP};
+
+KeyType get_key_type(const std::string & value);
+
 }  // namespace microdnf
 
 #endif
