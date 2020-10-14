@@ -72,12 +72,13 @@ const char * get_full_nevra(Pool * pool, libdnf::rpm::PackageId package_id) {
 //TODO(jrohel): What about local repositories? The original code in DNF4 uses baseurl+get_location(pool, package_id).
 std::string get_local_filepath(Pool * pool, libdnf::rpm::PackageId package_id) {
     auto solvable = get_solvable(pool, package_id);
-    if (auto repo = static_cast<Repo *>(solvable->repo->appdata)) {
-        auto dir = std::filesystem::path(repo->get_cachedir()) / "packages";
-        return dir / std::filesystem::path(get_location(pool, package_id)).filename();
-    } else {
-        return "";
+    if (!solvable->repo->appdata || strcmp(solvable->repo->name, "@commandline") == 0) {
+        SolvPrivate::internalize_libsolv_repo(solvable->repo);
+        return solvable_lookup_location(solvable, nullptr);
     }
+    auto repo = static_cast<Repo *>(solvable->repo->appdata);
+    auto dir = std::filesystem::path(repo->get_cachedir()) / "packages";
+    return dir / std::filesystem::path(get_location(pool, package_id)).filename();
 }
 
 }  // namespace libdnf::rpm::solv
