@@ -20,6 +20,8 @@ along with microdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "context.hpp"
 #include "utils.hpp"
 
+#include "libdnf/utils/string.hpp"
+
 #include <libdnf-cli/progressbar/multi_progress_bar.hpp>
 #include <libdnf-cli/utils/tty.hpp>
 #include <libdnf/base/goal.hpp>
@@ -703,6 +705,22 @@ void prepare_transaction(libdnf::Goal & goal, libdnf::rpm::Transaction & ts, std
         transaction_items.push_back(std::move(item));
         ts.upgrade(*item_ptr);
     }
+}
+
+std::vector<libdnf::rpm::Package> add_remote_packages(Context & ctx, const std::set<std::string> & paths, bool strict) {
+    auto & solv_sack = ctx.base.get_rpm_solv_sack();
+    std::vector<libdnf::rpm::Package> remote_packages;
+    for (auto & path : paths) {
+        try {
+            remote_packages.push_back(solv_sack.add_cmdline_package(path, false));
+        } catch (const libdnf::RuntimeError & ex) {
+            if (strict) {
+                std::cerr << ex.what() << std::endl;
+                throw;
+            }
+        }
+    }
+    return remote_packages;
 }
 
 }  // namespace microdnf

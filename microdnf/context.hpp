@@ -27,6 +27,7 @@ along with microdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <libdnf/rpm/transaction.hpp>
 
 #include <memory>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -75,6 +76,8 @@ void download_packages(libdnf::Goal & goal, const char * dest_dir);
 void run_transaction(libdnf::rpm::Transaction & transaction);
 
 void prepare_transaction(libdnf::Goal & goal, libdnf::rpm::Transaction & ts, std::vector<std::unique_ptr<RpmTransactionItem>> & transaction_items);
+
+std::vector<libdnf::rpm::Package> add_remote_packages(Context & ctx, const std::set<std::string> & paths, bool strict);
 
 }  // namespace microdnf
 
