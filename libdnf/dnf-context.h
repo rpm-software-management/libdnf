@@ -271,14 +271,29 @@ bool             dnf_context_plugin_hook                (DnfContext     *context
                                                          PluginHookId    id,
                                                          DnfPluginHookData *hookData,
                                                          DnfPluginError *error);
-
-
+/// String must be dealocated by g_free()
+gchar *          dnf_context_get_module_report          (DnfContext * context);
 gboolean         dnf_context_reset_modules              (DnfContext * context,
                                                          DnfSack * sack,
                                                          const char ** module_names,
                                                          GError ** error);
 gboolean         dnf_context_reset_all_modules          (DnfContext * context,
                                                          DnfSack * sack,
+                                                         GError ** error);
+/**
+ * dnf_context_enable_modules:
+ * @context: DnfContext
+ * @module_specs: Module specs that should be enabled
+ * @error: Error 
+ *
+ * Enable mudules, recalculate module filtration, but do not commit modular changes.
+ * To commit modular changes it requires to call dnf_context_run()
+ * Returns FALSE when an error is set.
+ *
+ * Since: 0.55.0
+ **/
+gboolean         dnf_context_module_enable              (DnfContext * context,
+                                                         const char ** module_specs,
                                                          GError ** error);
 
 G_END_DECLS

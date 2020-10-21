@@ -47,6 +47,7 @@ public:
     
     enum class ModuleErrorType {
         NO_ERROR = 0,
+        INFO,
         /// Error in module defaults detected during resovement of module dependencies
         ERROR_IN_DEFAULTS,
         /// Error detected during resovement of module dependencies
