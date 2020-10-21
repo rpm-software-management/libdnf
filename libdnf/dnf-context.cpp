@@ -35,6 +35,9 @@
 #include "dnf-context.hpp"
 #include "libdnf/conf/ConfigParser.hpp"
 #include "conf/Option.hpp"
+#include "bgettext/bgettext-lib.h"
+#include "tinyformat/tinyformat.hpp"
+#include "goal/Goal.hpp"
 
 #include <memory>
 #include <set>
@@ -2880,6 +2883,23 @@ dnf_context_plugin_hook(DnfContext * context, PluginHookId id, DnfPluginHookData
     return priv->plugins->hook(id, hookData, error);
 }
 
+gchar *
+dnf_context_get_module_report(DnfContext * context)
+{
+    DnfContextPrivate *priv = GET_PRIVATE (context);
+
+    /* create sack and add sources */
+    if (priv->sack == nullptr) {
+        return nullptr;
+    }
+    auto container = dnf_sack_get_module_container(priv->sack);
+    if (container == nullptr) {
+        return nullptr;
+    }
+    auto report = container->getReport();
+    return g_strdup(report.c_str());
+}
+
 DnfContext *
 pluginGetContext(DnfPluginInitData * data)
 {
@@ -2894,6 +2914,20 @@ pluginGetContext(DnfPluginInitData * data)
         return nullptr;
     }
     return (static_cast<PluginHookContextInitData *>(data)->context);
+}
+
+static std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, std::string, std::string>>
+recompute_modular_filtering(libdnf::ModulePackageContainer * moduleContainer, DnfSack * sack, std::vector<const char *> & hotfixRepos)
+{
+    auto solver_errors = dnf_sack_filter_modules_v2(
+        sack, moduleContainer, hotfixRepos.data(), nullptr, nullptr, true, false);
+    if (solver_errors.second == libdnf::ModulePackageContainer::ModuleErrorType::NO_ERROR) {
+        return {};
+    }
+    auto formated_problem = libdnf::Goal::formatAllProblemRules(solver_errors.first);
+    std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, std::string, std::string>> ret;
+    ret.emplace_back(std::make_tuple(solver_errors.second, std::move(formated_problem), std::string()));
+    return ret;
 }
 
 static gboolean
@@ -2959,10 +2993,217 @@ dnf_context_reset_all_modules(DnfContext * context, DnfSack * sack, GError ** er
     for (auto & name: names) {
         container->reset(name);
     }
-    container->save();
-    container->updateFailSafeData();
+    //container->save();
+    //container->updateFailSafeData();
     return recompute_modular_filtering(context, sack, error);
 } CATCH_TO_GERROR(FALSE)
+
+/// module dict { name : {stream : [modules] }
+static std::map<std::string, std::map<std::string, std::vector<libdnf::ModulePackage *>>> create_module_dict(
+    const std::vector<libdnf::ModulePackage *> & modules)
+{
+    std::map<std::string, std::map<std::string, std::vector<libdnf::ModulePackage *>>> data;
+    for (auto * module : modules) {
+        data[module->getName()][module->getStream()].push_back(module);
+    }
+    return data;
+}
+
+/// Modify module_dict => Keep only single relevant stream
+/// If more streams it keeps enabled or default stream
+static std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, std::string, std::string>> modify_module_dict_and_enable_stream(std::map<std::string, std::map<std::string, std::vector<libdnf::ModulePackage *>>> & module_dict, libdnf::ModulePackageContainer & container, bool enable)
+{
+    std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, std::string, std::string>> messages;
+    for (auto module_dict_iter : module_dict) {
+        auto & name = module_dict_iter.first;
+        auto & stream_dict = module_dict_iter.second;
+        auto moduleState = container.getModuleState(name);
+        if (stream_dict.size() > 1) {
+            if (moduleState != libdnf::ModulePackageContainer::ModuleState::ENABLED 
+                && moduleState != libdnf::ModulePackageContainer::ModuleState::DEFAULT) {
+                messages.emplace_back(std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_ENABLE_MULTIPLE_STREAMS, tfm::format(_("Cannot enable more streams from module '%s' at the same time"), name), name));
+                return messages;
+            }
+            const auto enabledOrDefaultStream = moduleState == libdnf::ModulePackageContainer::ModuleState::ENABLED ? container.getEnabledStream(name) : container.getDefaultStream(name);
+            auto modules_iter = stream_dict.find(enabledOrDefaultStream);
+            if (modules_iter == stream_dict.end()) {
+                messages.emplace_back(std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_ENABLE_MULTIPLE_STREAMS, tfm::format(_("Cannot enable more streams from module '%s' at the same time"), name), name));
+                return messages;;
+            }
+            if (enable) {
+                try {
+                    container.enable(name, modules_iter->first);
+                } catch (libdnf::ModulePackageContainer::EnableMultipleStreamsException &) {
+                    messages.emplace_back(std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_MODIFY_MULTIPLE_TIMES_MODULE_STATE, tfm::format( _("Cannot enable module '%s' stream '%s': State of module already modified"), name, modules_iter->first), name));
+                }
+            }
+            for (auto iter = stream_dict.begin(); iter != stream_dict.end(); ) {
+                if (iter->first != enabledOrDefaultStream) {
+                    stream_dict.erase(iter);
+                } else {
+                    ++iter;
+                }
+            }
+        } else if (enable) {
+            for (auto iter : stream_dict) {
+                try {
+                    container.enable(name, iter.first);
+                } catch (libdnf::ModulePackageContainer::EnableMultipleStreamsException &) {
+                    messages.emplace_back(std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_MODIFY_MULTIPLE_TIMES_MODULE_STATE, tfm::format( _("Cannot enable module '%s' stream '%s': State of module already modified"), name, iter.first), name));
+                }
+            }
+        }
+        if (stream_dict.size() != 1) {
+            throw std::runtime_error("modify_module_dict_and_enable_stream() did not modify output correctly!!!");
+        }
+    }
+    return messages;
+}
+
+static std::pair<std::unique_ptr<libdnf::Nsvcap>, std::vector< libdnf::ModulePackage*>> resolve_module_spec(const std::string & module_spec, libdnf::ModulePackageContainer & container)
+{
+    std::unique_ptr<libdnf::Nsvcap> nsvcapObj(new libdnf::Nsvcap);
+    for (std::size_t i = 0; HY_MODULE_FORMS_MOST_SPEC[i] != _HY_MODULE_FORM_STOP_; ++i) {
+        if (nsvcapObj->parse(module_spec.c_str(), HY_MODULE_FORMS_MOST_SPEC[i])) {
+            auto result_modules = container.query(nsvcapObj->getName(),
+                                                  nsvcapObj->getStream(),
+                                                  nsvcapObj->getVersion(),
+                                                  nsvcapObj->getContext(),
+                                                  nsvcapObj->getArch());
+            if (!result_modules.empty()) {
+                return std::make_pair(std::move(nsvcapObj), std::move(result_modules));
+            }
+        }
+    }
+    return {};
+}
+
+gboolean
+dnf_context_module_enable(DnfContext * context, const char ** module_specs, GError ** error) try
+{
+    DnfContextPrivate *priv = GET_PRIVATE (context);
+
+    /* create sack and add sources */
+    if (priv->sack == nullptr) {
+        dnf_state_reset (priv->state);
+        if (!dnf_context_setup_sack(context, priv->state, error)) {
+            return FALSE;
+        }
+    }
+
+    DnfSack * sack = priv->sack;
+    assert(sack);
+    assert(module_specs);
+
+    auto container = dnf_sack_get_module_container(sack);
+    if (!container) {
+        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FAILED, _("No modular data available"));
+        return FALSE;
+    }
+    std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, std::string, std::string>> messages;
+
+    std::vector<std::pair<const char *, std::map<std::string, std::map<std::string, std::vector<libdnf::ModulePackage *>>>>> all_resolved_module_dicts;
+    for (const char ** specs = module_specs; *specs != NULL; ++specs) {
+        auto resolved_spec = resolve_module_spec(*specs, *container);
+        if (!resolved_spec.first) {
+            messages.emplace_back(
+                std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC,
+                                tfm::format( _("Unable to resolve argument '%s'"), *specs), *specs));
+            continue;
+        }
+        if (!resolved_spec.first->getProfile().empty() || !resolved_spec.first->getVersion().empty() ||
+            !resolved_spec.first->getContext().empty()) {
+        messages.emplace_back(std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::INFO,
+                                              tfm::format(_("Ignoring unneeded information in argument: '%s'"), *specs),
+                                              *specs));
+        }
+        auto module_dict = create_module_dict(resolved_spec.second);
+        auto message = modify_module_dict_and_enable_stream(module_dict, *container, true);
+        if (!message.empty()) {
+            messages.insert(
+                messages.end(),std::make_move_iterator(message.begin()), std::make_move_iterator(message.end()));
+            messages.emplace_back(
+                std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC,
+                                tfm::format( _("Unable to resolve argument '%s'"), *specs), *specs));
+        } else {
+            all_resolved_module_dicts.emplace_back(make_pair(*specs, std::move(module_dict)));
+        }
+    }
+
+    std::vector<const char *> hotfixRepos;
+    // don't filter RPMs from repos with the 'module_hotfixes' flag set
+    for (unsigned int i = 0; i < priv->repos->len; i++) {
+        auto repo = static_cast<DnfRepo *>(g_ptr_array_index(priv->repos, i));
+        if (dnf_repo_get_module_hotfixes(repo)) {
+            hotfixRepos.push_back(dnf_repo_get_id(repo));
+        }
+    }
+    hotfixRepos.push_back(nullptr);
+    auto solver_error = recompute_modular_filtering(container, sack, hotfixRepos);
+    for (auto & pair : all_resolved_module_dicts) {
+        for (auto module_dict_iter : pair.second) {
+            for (auto & stream_dict_iter : module_dict_iter.second) {
+                try {
+                    container->enableDependencyTree(stream_dict_iter.second);
+                } catch (const libdnf::ModulePackageContainer::EnableMultipleStreamsException & exception) {
+                    messages.emplace_back(std::make_tuple(
+                        libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_MODIFY_MULTIPLE_TIMES_MODULE_STATE,
+                        tfm::format( _("Problem during enablement of dependency tree for moduele '%s' stream '%s': %s"),
+                                     module_dict_iter.first, stream_dict_iter.first, exception.what()), pair.first));
+                    messages.emplace_back(std::make_tuple(
+                        libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC,
+                        tfm::format( _("Unable to resolve argument '%s'"), pair.first), pair.first));
+                }
+            }
+        }
+    }
+    libdnf::ModulePackageContainer::ModuleErrorType typeMessage;
+    std::string report;
+    std::string argument;
+    auto logger(libdnf::Log::getLogger());
+    bool return_error = false;
+    for (auto & message : messages) {
+        std::tie(typeMessage, report, argument) = message;
+        switch (typeMessage) {
+            case libdnf::ModulePackageContainer::ModuleErrorType::NO_ERROR:
+                break;
+            case libdnf::ModulePackageContainer::ModuleErrorType::INFO:
+                logger->info(report);
+                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
+                printf("%s\n", report.c_str());
+                break;
+            case libdnf::ModulePackageContainer::ModuleErrorType::ERROR_IN_DEFAULTS:
+                logger->warning(tfm::format(_("Modular dependency problem with Defaults: %s"), report.c_str()));
+                break;
+            case libdnf::ModulePackageContainer::ModuleErrorType::ERROR:
+                logger->error(tfm::format(_("Modular dependency problem: %s"), report.c_str()));
+                return_error = true;
+                break;
+            case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULES:
+                logger->error(report);
+                return_error = true;
+                break;
+            case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC:
+                logger->error(report);
+                return_error = true;
+                break;
+            case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_ENABLE_MULTIPLE_STREAMS:
+                logger->error(report);
+                return_error = true;
+                break;
+            case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_MODIFY_MULTIPLE_TIMES_MODULE_STATE:
+                logger->error(report);
+                return_error = true;
+                break;
+        }
+    }
+    if (return_error) {
+        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FAILED, _("Problems appeared for module enable request"));
+        return FALSE;
+    }
+    return TRUE;
+} CATCH_TO_GERROR(FALSE)
+
 
 namespace libdnf {
 
@@ -3045,3 +3286,4 @@ libdnf::ConfigMain & getGlobalMainConfig()
 }
 
 }
+
