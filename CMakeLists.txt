@@ -146,15 +146,8 @@ endif()
 
 if(WITH_SANITIZERS)
     message(WARNING "Building with sanitizers enabled!")
-    set(SANITIZER_FLAGS "-fsanitize=address -fsanitize=leak -fsanitize=undefined")
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        # requires: compiler-rt package on Fedora
-        set(SANITIZER_FLAGS "${SANITIZER_FLAGS} -static-libsan")
-    else()
-        set(SANITIZER_FLAGS "${SANITIZER_FLAGS} -static-libasan -static-liblsan -static-libubsan")
-    endif()
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${SANITIZER_FLAGS}")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${SANITIZER_FLAGS}")
+    add_compile_options(-fsanitize=address -fsanitize=undefined -fsanitize=leak)
+    link_libraries(asan ubsan)
 endif()
 
 
