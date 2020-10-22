@@ -90,9 +90,9 @@ BuildRequires:  gettext
 BuildRequires:  gpgme-devel
 
 %if %{with sanitizers}
-BuildRequires:  libasan-static
-BuildRequires:  liblsan-static
-BuildRequires:  libubsan-static
+BuildRequires:  libasan
+BuildRequires:  liblsan
+BuildRequires:  libubsan
 %endif
 
 Requires:       libmodulemd%{?_isa} >= %{libmodulemd_version}
