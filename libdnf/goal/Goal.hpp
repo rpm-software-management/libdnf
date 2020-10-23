@@ -143,6 +143,8 @@ public:
     PackageSet listDowngrades();
     PackageSet listObsoletedByPackage(DnfPackage * pkg);
 
+    /// Concentrate all problems into a string
+    static std::string formatAllProblemRules(const std::vector<std::vector<std::string>> & problems);
 private:
     friend Query;
     class Impl;
