@@ -47,9 +47,15 @@ public:
     
     enum class ModuleErrorType {
         NO_ERROR = 0,
+        /// Error in module defaults detected during resovement of module dependencies
         ERROR_IN_DEFAULTS,
+        /// Error detected during resovement of module dependencies
         ERROR,
-        CANNOT_RESOLVE_MODULES
+        /// Error detected during resovement of module dependencies - Unexpected error!!!
+        CANNOT_RESOLVE_MODULES,
+        CANNOT_RESOLVE_MODULE_SPEC,
+        CANNOT_ENABLE_MULTIPLE_STREAMS,
+        CANNOT_MODIFY_MULTIPLE_TIMES_MODULE_STATE
     };
     
     struct Exception : public std::runtime_error
