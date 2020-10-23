@@ -1167,6 +1167,49 @@ Goal::listObsoletedByPackage(DnfPackage *pkg)
     return pset;
 }
 
+static std::string string_join(const std::vector<std::string> & src, const std::string & delim)
+{
+    if (src.empty()) {
+        return {};
+    }
+    std::string output(*src.begin());
+    for (auto iter = std::next(src.begin()); iter != src.end(); ++iter) {
+        output.append(delim);
+        output.append(*iter);
+    }
+    return output;
+}
+
+std::string
+Goal::formatAllProblemRules(const std::vector<std::vector<std::string>> & problems)
+{
+    if (problems.empty()) {
+        return {};
+    }
+    bool single_problems = problems.size() == 1;
+    std::string output;
+
+    if (single_problems) {
+        output.append(_("Problem: "));
+        output.append(string_join(*problems.begin(), "\n  - "));
+        return output;
+    }
+
+    const char * problem_prefix = _("Problem %d: ");
+
+    output.append(tfm::format(problem_prefix, 1));
+    output.append(string_join(*problems.begin(), "\n  - "));
+
+    int index = 2;
+    for (auto iter = std::next(problems.begin()); iter != problems.end(); ++iter) {
+        output.append("\n ");
+        output.append(tfm::format(problem_prefix, index));
+        output.append(string_join(*iter, "\n  - "));
+        ++index;
+    }
+    return output;
+}
+
 void
 Goal::Impl::allowUninstallAllButProtected(Queue *job, DnfGoalActions flags)
 {
