@@ -74,6 +74,7 @@
 #include "dnf-repo.hpp"
 #include "goal/Goal.hpp"
 #include "plugin/plugin-private.hpp"
+#include "utils/GLibLogger.hpp"
 #include "utils/os-release.hpp"
 
 
@@ -185,6 +186,7 @@ enum {
     SIGNAL_LAST
 };
 
+static libdnf::GLibLogger glibLogger(G_LOG_DOMAIN);
 static std::string pluginsDir = DEFAULT_PLUGINS_DIRECTORY;
 static std::unique_ptr<std::string> configFilePath;
 static std::set<std::string> pluginsEnabled;
@@ -331,6 +333,8 @@ static void
 dnf_context_init(DnfContext *context)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
+
+    libdnf::Log::setLogger(&glibLogger);
 
     priv->install_root = g_strdup("/");
     priv->check_disk_space = TRUE;
