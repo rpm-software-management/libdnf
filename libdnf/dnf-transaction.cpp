@@ -1466,14 +1466,16 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
 
     /* hmm, nothing was done... */
     if (priv->step != DNF_TRANSACTION_STEP_WRITING) {
-        ret = FALSE;
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_INTERNAL_ERROR,
-                    _("Transaction did not go to writing phase, "
-                      "but returned no error(%i)"),
-                    priv->step);
-        goto out;
+        if (priv->install->len > 0 || priv->remove->len > 0) {
+            ret = FALSE;
+            g_set_error(error,
+                        DNF_ERROR,
+                        DNF_ERROR_INTERNAL_ERROR,
+                        _("Transaction did not go to writing phase, "
+                        "but returned no error(%i)"),
+                        priv->step);
+            goto out;
+        }
     }
 
     /* this section done */
