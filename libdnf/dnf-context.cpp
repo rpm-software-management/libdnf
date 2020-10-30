@@ -3174,26 +3174,38 @@ dnf_context_module_enable(DnfContext * context, const char ** module_specs, GErr
                 break;
             case libdnf::ModulePackageContainer::ModuleErrorType::ERROR_IN_DEFAULTS:
                 logger->warning(tfm::format(_("Modular dependency problem with Defaults: %s"), report.c_str()));
+                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
+                printf(_("Modular dependency problem with Defaults: %s\n"), report.c_str());
                 break;
             case libdnf::ModulePackageContainer::ModuleErrorType::ERROR:
                 logger->error(tfm::format(_("Modular dependency problem: %s"), report.c_str()));
                 return_error = true;
+                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
+                printf(_("Modular dependency problem: %s\n"), report.c_str());
                 break;
             case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULES:
                 logger->error(report);
                 return_error = true;
+                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
+                printf("%s\n", report.c_str());
                 break;
             case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC:
                 logger->error(report);
                 return_error = true;
+                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
+                printf("%s\n", report.c_str());
                 break;
             case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_ENABLE_MULTIPLE_STREAMS:
                 logger->error(report);
                 return_error = true;
+                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
+                printf("%s\n", report.c_str());
                 break;
             case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_MODIFY_MULTIPLE_TIMES_MODULE_STATE:
                 logger->error(report);
                 return_error = true;
+                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
+                printf("%s\n", report.c_str());
                 break;
         }
     }
