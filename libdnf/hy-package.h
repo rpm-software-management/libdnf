@@ -62,6 +62,7 @@ const char  *dnf_package_get_release    (DnfPackage *pkg);
 
 Id           dnf_package_get_id         (DnfPackage *pkg);
 const char  *dnf_package_get_name       (DnfPackage *pkg);
+const char  *dnf_package_get_vendor     (DnfPackage *pkg);
 const char  *dnf_package_get_arch       (DnfPackage *pkg);
 const unsigned char *dnf_package_get_chksum(DnfPackage *pkg, int *type);
 const char  *dnf_package_get_description(DnfPackage *pkg);

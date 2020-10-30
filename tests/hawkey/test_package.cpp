@@ -91,6 +91,18 @@ START_TEST(test_versions)
 }
 END_TEST
 
+START_TEST(test_vendor)
+{
+    DnfSack *sack = test_globals.sack;
+    DnfPackage *pkg = by_name_repo(sack, "foolish-grin", "vendor");
+    fail_if(pkg == NULL);
+    const char *vendor = dnf_package_get_vendor(pkg);
+
+    ck_assert_str_eq(vendor, "PerfectlyLoud");
+    g_object_unref(pkg);
+}
+END_TEST
+
 START_TEST(test_no_sourcerpm)
 {
     DnfSack *sack = test_globals.sack;
@@ -377,6 +389,11 @@ package_suite(void)
     tc = tcase_create("WithCmdlinePackage");
     tcase_add_unchecked_fixture(tc, fixture_cmdline_only, teardown);
     tcase_add_test(tc, test_get_files_cmdline);
+    suite_add_tcase(s, tc);
+
+    tc = tcase_create("Vendor");
+    tcase_add_unchecked_fixture(tc, fixture_with_vendor, teardown);
+    tcase_add_test(tc, test_vendor);
     suite_add_tcase(s, tc);
 
     return s;
