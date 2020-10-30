@@ -419,6 +419,23 @@ dnf_package_get_name(DnfPackage *pkg)
 }
 
 /**
+ * dnf_package_get_vendor:
+ * @pkg: a #DnfPackage instance.
+ *
+ * Gets the name for the package.
+ *
+ * Returns: a string, or %NULL
+ *
+ * Since: 0.54.4
+ */
+const char *
+dnf_package_get_vendor(DnfPackage *pkg)
+{
+    Pool *pool = dnf_package_get_pool(pkg);
+    return pool_id2str(pool, get_solvable(pkg)->vendor);
+}
+
+/**
  * dnf_package_get_packager:
  * @pkg: a #DnfPackage instance.
  *

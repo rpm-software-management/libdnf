@@ -5,7 +5,7 @@
 %global swig_version 3.0.12
 %global libdnf_major_version 0
 %global libdnf_minor_version 54
-%global libdnf_micro_version 3
+%global libdnf_micro_version 4
 
 %define __cmake_in_source_build 1
 

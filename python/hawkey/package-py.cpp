@@ -302,6 +302,7 @@ static PyGetSetDef package_getsetters[] = {
     {(char*)"release",  (getter)get_str, NULL, NULL,
      (void *)dnf_package_get_release},
     {(char*)"name", (getter)get_str, NULL, NULL, (void *)dnf_package_get_name},
+    {(char*)"vendor", (getter)get_str, NULL, NULL, (void *)dnf_package_get_vendor},
     {(char*)"arch", (getter)get_str, NULL, NULL, (void *)dnf_package_get_arch},
     {(char*)"hdr_chksum", (getter)get_chksum, NULL, NULL,
      (void *)dnf_package_get_hdr_chksum},
