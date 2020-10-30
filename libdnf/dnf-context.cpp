@@ -2901,6 +2901,9 @@ dnf_context_get_module_report(DnfContext * context)
         return nullptr;
     }
     auto report = container->getReport();
+    if (report.empty()) {
+        return nullptr;
+    }
     return g_strdup(report.c_str());
 }
 
