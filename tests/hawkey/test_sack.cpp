@@ -83,14 +83,25 @@ START_TEST(test_list_arches)
     const char ** arches = dnf_sack_list_arches(sack);
 
     /* noarch, x86_64, athlon, i686, i586, i486, i386 */
-    fail_unless(g_strv_length((gchar**)arches) == 7);
+    fail_unless(g_strv_length((gchar**)arches) >= 6 && g_strv_length((gchar**)arches) <= 7);
 
-    if (strcmp(arches[2], "athlon") == 0) {
+    if (g_strv_length((gchar**)arches) == 7) {
         // Fedora, Mageia
+        ck_assert_str_eq(arches[0], "noarch");
+        ck_assert_str_eq(arches[1], "x86_64");
+        ck_assert_str_eq(arches[2], "athlon");
         ck_assert_str_eq(arches[3], "i686");
+        ck_assert_str_eq(arches[4], "i586");
+        ck_assert_str_eq(arches[5], "i486");
+        ck_assert_str_eq(arches[6], "i386");
     } else {
-        // openSUSE - "athlon" is not available
+        // openSUSE, Debian - "athlon" is not available
+        ck_assert_str_eq(arches[0], "noarch");
+        ck_assert_str_eq(arches[1], "x86_64");
+        ck_assert_str_eq(arches[2], "i686");
         ck_assert_str_eq(arches[3], "i586");
+        ck_assert_str_eq(arches[4], "i486");
+        ck_assert_str_eq(arches[5], "i386");
     }
 
     g_free(arches);
