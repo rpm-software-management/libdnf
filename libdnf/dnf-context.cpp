@@ -3085,6 +3085,118 @@ static std::pair<std::unique_ptr<libdnf::Nsvcap>, std::vector< libdnf::ModulePac
     return {};
 }
 
+static bool
+report_problems(const std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, std::string, std::string>> & messages)
+{
+    libdnf::ModulePackageContainer::ModuleErrorType typeMessage;
+    std::string report;
+    std::string argument;
+    auto logger(libdnf::Log::getLogger());
+    bool return_error = false;
+    for (auto & message : messages) {
+        std::tie(typeMessage, report, argument) = message;
+        switch (typeMessage) {
+            case libdnf::ModulePackageContainer::ModuleErrorType::NO_ERROR:
+                break;
+            case libdnf::ModulePackageContainer::ModuleErrorType::INFO:
+                logger->info(report);
+                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
+                printf("%s\n", report.c_str());
+                break;
+            case libdnf::ModulePackageContainer::ModuleErrorType::ERROR_IN_DEFAULTS:
+                logger->warning(tfm::format(_("Modular dependency problem with Defaults: %s"), report.c_str()));
+                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
+                printf(_("Modular dependency problem with Defaults: %s\n"), report.c_str());
+                break;
+            case libdnf::ModulePackageContainer::ModuleErrorType::ERROR:
+                logger->error(tfm::format(_("Modular dependency problem: %s"), report.c_str()));
+                return_error = true;
+                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
+                printf(_("Modular dependency problem: %s\n"), report.c_str());
+                break;
+            case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULES:
+                logger->error(report);
+                return_error = true;
+                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
+                printf("%s\n", report.c_str());
+                break;
+            case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC:
+                logger->error(report);
+                return_error = true;
+                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
+                printf("%s\n", report.c_str());
+                break;
+            case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_ENABLE_MULTIPLE_STREAMS:
+                logger->error(report);
+                return_error = true;
+                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
+                printf("%s\n", report.c_str());
+                break;
+            case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_MODIFY_MULTIPLE_TIMES_MODULE_STATE:
+                logger->error(report);
+                return_error = true;
+                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
+                printf("%s\n", report.c_str());
+                break;
+        }
+    }
+    return return_error;
+}
+
+static std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, std::string, std::string>>
+modules_reset_or_disable(libdnf::ModulePackageContainer & container, const char ** module_specs, bool reset)
+{
+    std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, std::string, std::string>> messages;
+
+    for (const char ** specs = module_specs; *specs != NULL; ++specs) {
+        auto resolved_spec = resolve_module_spec(*specs, container);
+        if (!resolved_spec.first) {
+            messages.emplace_back(
+                std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC,
+                                tfm::format( _("Unable to resolve argument '%s'"), *specs), *specs));
+            continue;
+        }
+        if (!resolved_spec.first->getStream().empty() || !resolved_spec.first->getProfile().empty() ||
+            !resolved_spec.first->getVersion().empty() || !resolved_spec.first->getContext().empty()) {
+        messages.emplace_back(std::make_tuple(
+            libdnf::ModulePackageContainer::ModuleErrorType::INFO,
+            tfm::format(_("Only module name is required. Ignoring unneeded information in argument: '%s'"), *specs),
+            *specs));
+        }
+        std::unordered_set<std::string> names;
+        for (auto * module : resolved_spec.second) {
+            names.insert(std::move(module->getName()));
+        }
+        for (auto & name : names) {
+            if (reset) {
+                try {
+                    container.reset(name);
+                } catch (libdnf::ModulePackageContainer::EnableMultipleStreamsException &) {
+                    messages.emplace_back(std::make_tuple(
+                        libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_MODIFY_MULTIPLE_TIMES_MODULE_STATE,
+                        tfm::format( _("Cannot reset module '%s': State of module already modified"), name), name));
+                    messages.emplace_back(
+                        std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC,
+                                        tfm::format( _("Unable to resolve argument '%s'"), *specs), *specs));
+                }
+            } else {
+                try {
+                    container.disable(name);
+                } catch (libdnf::ModulePackageContainer::EnableMultipleStreamsException &) {
+                    messages.emplace_back(std::make_tuple(
+                        libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_MODIFY_MULTIPLE_TIMES_MODULE_STATE,
+                        tfm::format( _("Cannot disable module '%s': State of module already modified"), name), name));
+                    messages.emplace_back(
+                        std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC,
+                                        tfm::format( _("Unable to resolve argument '%s'"), *specs), *specs));
+                }
+            }
+        }
+    }
+
+    return messages;
+}
+
 gboolean
 dnf_context_module_enable(DnfContext * context, const char ** module_specs, GError ** error) try
 {
@@ -3164,63 +3276,84 @@ dnf_context_module_enable(DnfContext * context, const char ** module_specs, GErr
             }
         }
     }
-    libdnf::ModulePackageContainer::ModuleErrorType typeMessage;
-    std::string report;
-    std::string argument;
-    auto logger(libdnf::Log::getLogger());
-    bool return_error = false;
-    for (auto & message : messages) {
-        std::tie(typeMessage, report, argument) = message;
-        switch (typeMessage) {
-            case libdnf::ModulePackageContainer::ModuleErrorType::NO_ERROR:
-                break;
-            case libdnf::ModulePackageContainer::ModuleErrorType::INFO:
-                logger->info(report);
-                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
-                printf("%s\n", report.c_str());
-                break;
-            case libdnf::ModulePackageContainer::ModuleErrorType::ERROR_IN_DEFAULTS:
-                logger->warning(tfm::format(_("Modular dependency problem with Defaults: %s"), report.c_str()));
-                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
-                printf(_("Modular dependency problem with Defaults: %s\n"), report.c_str());
-                break;
-            case libdnf::ModulePackageContainer::ModuleErrorType::ERROR:
-                logger->error(tfm::format(_("Modular dependency problem: %s"), report.c_str()));
-                return_error = true;
-                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
-                printf(_("Modular dependency problem: %s\n"), report.c_str());
-                break;
-            case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULES:
-                logger->error(report);
-                return_error = true;
-                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
-                printf("%s\n", report.c_str());
-                break;
-            case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC:
-                logger->error(report);
-                return_error = true;
-                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
-                printf("%s\n", report.c_str());
-                break;
-            case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_ENABLE_MULTIPLE_STREAMS:
-                logger->error(report);
-                return_error = true;
-                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
-                printf("%s\n", report.c_str());
-                break;
-            case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_MODIFY_MULTIPLE_TIMES_MODULE_STATE:
-                logger->error(report);
-                return_error = true;
-                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
-                printf("%s\n", report.c_str());
-                break;
-        }
-    }
+    bool return_error = report_problems(messages);
+
     if (return_error) {
         g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FAILED, _("Problems appeared for module enable request"));
         return FALSE;
     }
     return TRUE;
+} CATCH_TO_GERROR(FALSE)
+
+static gboolean
+context_modules_reset_or_disable(DnfContext * context, const char ** module_specs, GError ** error, bool reset)
+{
+    DnfContextPrivate *priv = GET_PRIVATE (context);
+
+    /* create sack and add sources */
+    if (priv->sack == nullptr) {
+        dnf_state_reset (priv->state);
+        if (!dnf_context_setup_sack(context, priv->state, error)) {
+            return FALSE;
+        }
+    }
+
+    DnfSack * sack = priv->sack;
+    assert(module_specs);
+
+    auto container = dnf_sack_get_module_container(sack);
+    if (!container) {
+        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FAILED, _("No modular data available"));
+        return FALSE;
+    }
+    std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, std::string, std::string>> messages;
+
+    auto disable_errors = modules_reset_or_disable(*container, module_specs, reset);
+    if (!disable_errors.empty()) {
+        messages.insert(
+            messages.end(),
+            std::make_move_iterator(disable_errors.begin()),
+            std::make_move_iterator(disable_errors.end()));
+    }
+
+    std::vector<const char *> hotfixRepos;
+    // don't filter RPMs from repos with the 'module_hotfixes' flag set
+    for (unsigned int i = 0; i < priv->repos->len; i++) {
+        auto repo = static_cast<DnfRepo *>(g_ptr_array_index(priv->repos, i));
+        if (dnf_repo_get_module_hotfixes(repo)) {
+            hotfixRepos.push_back(dnf_repo_get_id(repo));
+        }
+    }
+    hotfixRepos.push_back(nullptr);
+    auto solver_error = recompute_modular_filtering(container, sack, hotfixRepos);
+    if (!solver_error.empty()) {
+        messages.insert(
+            messages.end(),std::make_move_iterator(solver_error.begin()), std::make_move_iterator(solver_error.end()));
+    }
+    bool return_error = report_problems(messages);
+
+    if (return_error) {
+        if (reset) {
+            g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FAILED, _("Problems appeared for module reset request"));
+        } else {
+            g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FAILED, _("Problems appeared for module disable request"));
+        }
+        return FALSE;
+    }
+    return TRUE;
+}
+
+
+gboolean
+dnf_context_module_disable(DnfContext * context, const char ** module_specs, GError ** error) try
+{
+    return context_modules_reset_or_disable(context, module_specs, error, false);
+} CATCH_TO_GERROR(FALSE)
+
+gboolean
+dnf_context_module_reset(DnfContext * context, const char ** module_specs, GError ** error) try
+{
+    return context_modules_reset_or_disable(context, module_specs, error, true);
 } CATCH_TO_GERROR(FALSE)
 
 gboolean
