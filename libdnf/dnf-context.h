@@ -281,10 +281,10 @@ gboolean         dnf_context_reset_all_modules          (DnfContext * context,
                                                          DnfSack * sack,
                                                          GError ** error);
 /**
- * dnf_context_enable_modules:
+ * dnf_context_module_enable:
  * @context: DnfContext
  * @module_specs: Module specs that should be enabled
- * @error: Error 
+ * @error: Error
  *
  * Enable mudules, recalculate module filtration, but do not commit modular changes.
  * To commit modular changes it requires to call dnf_context_run()
@@ -294,6 +294,48 @@ gboolean         dnf_context_reset_all_modules          (DnfContext * context,
  **/
 gboolean         dnf_context_module_enable              (DnfContext * context,
                                                          const char ** module_specs,
+                                                         GError ** error);
+/**
+ * dnf_context_module_disable:
+ * @context: DnfContext
+ * @module_specs: Module specs that should be enabled
+ * @error: Error
+ *
+ * Disable mudules, recalculate module filtration, but do not commit modular changes.
+ * To commit modular changes it requires to call dnf_context_run()
+ * Returns FALSE when an error is set.
+ *
+ * Since: 0.55.0
+ **/
+gboolean         dnf_context_module_disable             (DnfContext * context,
+                                                         const char ** module_specs,
+                                                         GError ** error);
+/**
+ * dnf_context_module_reset:
+ * @context: DnfContext
+ * @module_specs: Module specs that should be enabled
+ * @error: Error
+ *
+ * Reset modules, recalculate module filtration, but do not commit modular changes.
+ * To commit modular changes it requires to call dnf_context_run()
+ * Returns FALSE when an error is set.
+ *
+ * Since: 0.55.0
+ **/
+gboolean         dnf_context_module_reset               (DnfContext * context,
+                                                         const char ** module_specs,
+                                                         GError ** error);
+/**
+ * dnf_context_module_switched_check:
+ * @context: DnfContext
+ * @error: Error
+ *
+ * Ceck if any module is switched and return FALSE and sets an error
+ * Returns FALSE when an error is set.
+ *
+ * Since: 0.55.0
+ **/
+gboolean         dnf_context_module_switched_check      (DnfContext * context,
                                                          GError ** error);
 
 G_END_DECLS
