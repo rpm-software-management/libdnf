@@ -3219,6 +3219,36 @@ dnf_context_module_enable(DnfContext * context, const char ** module_specs, GErr
     return TRUE;
 } CATCH_TO_GERROR(FALSE)
 
+gboolean
+dnf_context_module_switched_check(DnfContext * context, GError ** error) try
+{
+    DnfContextPrivate *priv = GET_PRIVATE (context);
+    if (priv->sack == nullptr) {
+        return TRUE;
+    }
+    auto container = dnf_sack_get_module_container(priv->sack);
+    if (!container) {
+        return TRUE;
+    }
+    auto switched = container->getSwitchedStreams();
+    if (switched.empty()) {
+        return TRUE;
+    }
+    auto logger(libdnf::Log::getLogger());
+    const char * msg = _("The operation would result in switching of module '%s' stream '%s' to stream '%s'");
+    for (auto item : switched) {
+        logger->warning(tfm::format(msg, item.first.c_str(), item.second.first.c_str(), item.second.second.c_str()));
+        //TODO(jmracek) Remove printf when logger will proparly work with g_logger
+        printf("%s\n", tfm::format(msg, item.first.c_str(), item.second.first.c_str(),
+                                   item.second.second.c_str()).c_str());
+    }
+    const char * msg_error = _("It is not possible to switch enabled streams of a module.\n"
+                       "It is recommended to remove all installed content from the module, and "
+                       "reset the module using 'microdnf module reset <module_name>' command. After "
+                       "you reset the module, you can install the other stream.");
+    g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FAILED, msg_error);
+    return FALSE;
+} CATCH_TO_GERROR(FALSE)
 
 namespace libdnf {
 
