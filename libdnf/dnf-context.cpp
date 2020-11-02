@@ -3255,6 +3255,10 @@ dnf_context_module_enable(DnfContext * context, const char ** module_specs, GErr
     }
     hotfixRepos.push_back(nullptr);
     auto solver_error = recompute_modular_filtering(container, sack, hotfixRepos);
+    if (!solver_error.empty()) {
+        messages.insert(
+            messages.end(),std::make_move_iterator(solver_error.begin()), std::make_move_iterator(solver_error.end()));
+    }
     for (auto & pair : all_resolved_module_dicts) {
         for (auto module_dict_iter : pair.second) {
             for (auto & stream_dict_iter : module_dict_iter.second) {
