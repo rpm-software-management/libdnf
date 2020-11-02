@@ -607,7 +607,8 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackage *> & m
 {
     if (modules.empty()) {
         activatedModules.reset();
-        return {};
+        return std::make_pair(std::vector<std::vector<std::string>>(),
+                              ModulePackageContainer::ModuleErrorType::NO_ERROR);
     }
     dnf_sack_recompute_considered(moduleSack);
     dnf_sack_make_provides_ready(moduleSack);
