@@ -823,9 +823,40 @@ std::string
 ModulePackageContainer::getReport()
 {
     std::string report;
+
+    auto installedProfiles = getInstalledProfiles();
+    if (!installedProfiles.empty()) {
+        report += _("Installing module profiles:\n");
+        for (auto & item: installedProfiles) {
+            for (auto & profile:item.second) {
+                report += "    ";
+                report += item.first;
+                report += ":";
+                report += profile;
+                report += "\n";
+            }
+        }
+        report += "\n";
+    }
+
+    auto removedProfiles = getRemovedProfiles();
+    if (!removedProfiles.empty()) {
+        report += _("Disabling module profiles:\n");
+        for (auto & item: removedProfiles) {
+            for (auto & profile:item.second) {
+                report += "    ";
+                report += item.first;
+                report += ":";
+                report += profile;
+                report += "\n";
+            }
+        }
+        report += "\n";
+    }
+
     auto enabled = getEnabledStreams();
     if (!enabled.empty()) {
-        report += "Module Enabling:\n";
+        report += _("Enabling module streams:\n");
         for (auto & item: enabled) {
             report += "    ";
             report += item.first;
@@ -835,20 +866,11 @@ ModulePackageContainer::getReport()
         }
         report += "\n";
     }
-    auto disabled = getDisabledModules();
-    if (!disabled.empty()) {
-        report += "Module Disabling:\n";
-        for (auto & name: disabled) {
-            report += "    ";
-            report += name;
-            report += "\n";
-        }
-        report += "\n";
-    }
+
     auto switchedStreams = getSwitchedStreams();
     if (!switchedStreams.empty()) {
         std::string switchedReport;
-        switchedReport += "Module Switched Streams:\n";
+        switchedReport += _("Switching module streams:\n");
         for (auto & item: switchedStreams) {
             switchedReport += "    ";
             switchedReport += item.first;
@@ -863,31 +885,25 @@ ModulePackageContainer::getReport()
         report += switchedReport;
         report += "\n";
     }
-    auto installedProfiles = getInstalledProfiles();
-    if (!installedProfiles.empty()) {
-        report += "Module Installing Profiles:\n";
-        for (auto & item: installedProfiles) {
-            for (auto & profile:item.second) {
-                report += "    ";
-                report += item.first;
-                report += ":";
-                report += profile;
-                report += "\n";
-            }
+
+    auto disabled = getDisabledModules();
+    if (!disabled.empty()) {
+        report += _("Disabling modules:\n");
+        for (auto & name: disabled) {
+            report += "    ";
+            report += name;
+            report += "\n";
         }
         report += "\n";
     }
-    auto removedProfiles = getRemovedProfiles();
-    if (!removedProfiles.empty()) {
-        report += "Module Removing Profiles:\n";
-        for (auto & item: removedProfiles) {
-            for (auto & profile:item.second) {
-                report += "    ";
-                report += item.first;
-                report += ":";
-                report += profile;
-                report += "\n";
-            }
+
+    auto reset = getResetModules();
+    if (!reset.empty()) {
+        report += _("Resetting modules:\n");
+        for (auto & name: reset) {
+            report += "    ";
+            report += name;
+            report += "\n";
         }
         report += "\n";
     }
