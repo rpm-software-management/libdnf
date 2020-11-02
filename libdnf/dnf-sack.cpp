@@ -371,19 +371,8 @@ load_ext(DnfSack *sack, HyRepo hrepo, _hy_repo_repodata which_repodata,
     auto repoImpl = libdnf::repoGetImpl(hrepo);
     Repo *repo = repoImpl->libsolvRepo;
     const char *name = repo->name;
-    auto fn = hrepo->getMetadataPath(which_filename);
     FILE *fp;
     gboolean done = FALSE;
-
-    /* nothing set */
-    if (fn.empty()) {
-        g_set_error (error,
-                     DNF_ERROR,
-                     DNF_ERROR_NO_CAPABILITY,
-                     _("no %1$s string for %2$s"),
-                     which_filename, name);
-        return FALSE;
-    }
 
     char *fn_cache =  dnf_sack_give_cache_fn(sack, name, suffix);
     fp = fopen(fn_cache, "r");
@@ -415,6 +404,17 @@ load_ext(DnfSack *sack, HyRepo hrepo, _hy_repo_repodata which_repodata,
         fclose(fp);
     if (done)
         return TRUE;
+
+    auto fn = hrepo->getMetadataPath(which_filename);
+    /* nothing set */
+    if (fn.empty()) {
+        g_set_error (error,
+                     DNF_ERROR,
+                     DNF_ERROR_NO_CAPABILITY,
+                     _("no %1$s string for %2$s"),
+                     which_filename, name);
+        return FALSE;
+    }
 
     fp = solv_xfopen(fn.c_str(), "r");
     if (fp == NULL) {
