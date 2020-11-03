@@ -280,6 +280,9 @@ popd
 %dir %{_libdir}/libdnf/
 %dir %{_libdir}/libdnf/plugins/
 %{_libdir}/libdnf/plugins/README
+%if %{with sanitizers}
+%{_sysconfdir}/profile.d/dnf-sanitizers.sh
+%endif
 
 %files devel
 %doc %{_datadir}/gtk-doc/html/%{name}/

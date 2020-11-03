@@ -176,3 +176,6 @@ add_subdirectory(tests)
 if(WITH_BINDINGS)
     add_subdirectory(python/hawkey)
 endif()
+
+
+add_subdirectory(etc)
