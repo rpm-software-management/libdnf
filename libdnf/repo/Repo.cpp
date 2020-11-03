@@ -1027,7 +1027,7 @@ bool Repo::Impl::loadCache(bool throwExcept)
 
     // Load timestamp unless explicitly expired
     if (timestamp != 0) {
-        timestamp = mtime(getMetadataPath(MD_TYPE_PRIMARY).c_str());
+        timestamp = mtime(repomdFn.c_str());
     }
     g_strfreev(this->mirrors);
     this->mirrors = mirrors;
@@ -1308,7 +1308,8 @@ bool Repo::Impl::load()
 {
     auto logger(Log::getLogger());
     try {
-        if (!getMetadataPath(MD_TYPE_PRIMARY).empty() || loadCache(false)) {
+        // If repo cache is not loaded (empty repomd) -> load it
+        if (!repomdFn.empty() || loadCache(false)) {
             resetMetadataExpired();
             if (!expired || syncStrategy == SyncStrategy::ONLY_CACHE || syncStrategy == SyncStrategy::LAZY) {
                 logger->debug(tfm::format(_("repo: using cache for: %s"), id));
@@ -1317,7 +1318,7 @@ bool Repo::Impl::load()
 
             if (isInSync()) {
                 // the expired metadata still reflect the origin:
-                utimes(getMetadataPath(MD_TYPE_PRIMARY).c_str(), NULL);
+                utimes(repomdFn.c_str(), NULL);
                 expired = false;
                 return true;
             }
@@ -1392,7 +1393,7 @@ std::string Repo::Impl::getPersistdir() const
 
 int Repo::Impl::getAge() const
 {
-    return time(NULL) - mtime(getMetadataPath(MD_TYPE_PRIMARY).c_str());
+    return time(NULL) - mtime(repomdFn.c_str());
 }
 
 void Repo::Impl::expire()
@@ -1465,9 +1466,10 @@ void Repo::Impl::resetMetadataExpired()
 {
     if (expired || conf->metadata_expire().getValue() == -1)
         return;
+
     if (conf->getMasterConfig().check_config_file_age().getValue() &&
         !repoFilePath.empty() &&
-        mtime(repoFilePath.c_str()) > mtime(getMetadataPath(MD_TYPE_PRIMARY).c_str()))
+        mtime(repoFilePath.c_str()) > mtime(repomdFn.c_str()))
         expired = true;
     else
         expired = getAge() > conf->metadata_expire().getValue();
