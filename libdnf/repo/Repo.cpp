@@ -196,6 +196,22 @@ bool Repo::Impl::endsWith(const std::string &str, const std::string &ending) con
         return false;
 }
 
+const std::string Repo::Impl::getSolvefilePath() const
+{
+    char * tmp_path_c = solv_dupjoin(conf->basecachedir().getValue().c_str(), "/", id.c_str());
+    char * path_c = solv_dupappend(tmp_path_c, ".solv", NULL);
+
+    std::string path = std::string(path_c);
+
+    free(path_c);
+
+    if (!libdnf::filesystem::exists(path)) {
+        return std::string();
+    }
+
+    return path;
+}
+
 const std::string & Repo::Impl::getMetadataPath(const std::string &metadataType) const {
 //    auto logger(Log::getLogger());
     static const std::string empty;
@@ -482,6 +498,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitLocal()
     const char *urls[] = {cachedir.c_str(), NULL};
     handleSetOpt(h.get(), LRO_URLS, urls);
     handleSetOpt(h.get(), LRO_LOCAL, 1L);
+    handleSetOpt(h.get(), LRO_IGNOREMISSING, 1L);
 #ifdef LRO_SUPPORTS_CACHEDIR
     /* If zchunk is enabled, set librepo cache dir */
     if (conf->getMasterConfig().zchunk().getValue())
@@ -1014,6 +1031,13 @@ bool Repo::Impl::loadCache(bool throwExcept)
     }
     g_strfreev(this->mirrors);
     this->mirrors = mirrors;
+
+    if (getMetadataPath(MD_TYPE_PRIMARY).empty() && getSolvefilePath().empty()) {
+        if (throwExcept)
+            throw;
+        return false;
+    }
+
     return true;
 }
 

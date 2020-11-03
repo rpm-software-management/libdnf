@@ -126,6 +126,7 @@ public:
     void setHttpHeaders(const char * headers[]);
     const char * const * getHttpHeaders() const;
     const std::string & getMetadataPath(const std::string &metadataType) const;
+    const std::string getSolvefilePath() const;
 
     std::unique_ptr<LrHandle> lrHandleInitBase();
     std::unique_ptr<LrHandle> lrHandleInitLocal();
