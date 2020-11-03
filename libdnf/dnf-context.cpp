@@ -3028,20 +3028,28 @@ static std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, s
         if (stream_dict.size() > 1) {
             if (moduleState != libdnf::ModulePackageContainer::ModuleState::ENABLED 
                 && moduleState != libdnf::ModulePackageContainer::ModuleState::DEFAULT) {
-                messages.emplace_back(std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_ENABLE_MULTIPLE_STREAMS, tfm::format(_("Cannot enable more streams from module '%s' at the same time"), name), name));
+                messages.emplace_back(std::make_tuple(
+                    libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_ENABLE_MULTIPLE_STREAMS,
+                    tfm::format(_("Cannot enable more streams from module '%s' at the same time"), name), name));
                 return messages;
             }
-            const auto enabledOrDefaultStream = moduleState == libdnf::ModulePackageContainer::ModuleState::ENABLED ? container.getEnabledStream(name) : container.getDefaultStream(name);
+            const auto enabledOrDefaultStream = moduleState == libdnf::ModulePackageContainer::ModuleState::ENABLED ?
+            container.getEnabledStream(name) : container.getDefaultStream(name);
             auto modules_iter = stream_dict.find(enabledOrDefaultStream);
             if (modules_iter == stream_dict.end()) {
-                messages.emplace_back(std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_ENABLE_MULTIPLE_STREAMS, tfm::format(_("Cannot enable more streams from module '%s' at the same time"), name), name));
+                messages.emplace_back(std::make_tuple(
+                    libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_ENABLE_MULTIPLE_STREAMS,
+                    tfm::format(_("Cannot enable more streams from module '%s' at the same time"), name), name));
                 return messages;;
             }
             if (enable) {
                 try {
                     container.enable(name, modules_iter->first);
                 } catch (libdnf::ModulePackageContainer::EnableMultipleStreamsException &) {
-                    messages.emplace_back(std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_MODIFY_MULTIPLE_TIMES_MODULE_STATE, tfm::format( _("Cannot enable module '%s' stream '%s': State of module already modified"), name, modules_iter->first), name));
+                    messages.emplace_back(std::make_tuple(
+                        libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_MODIFY_MULTIPLE_TIMES_MODULE_STATE,
+                        tfm::format(_("Cannot enable module '%1$s' stream '%2$s': State of module already modified"),
+                                    name, modules_iter->first), name));
                 }
             }
             for (auto iter = stream_dict.begin(); iter != stream_dict.end(); ) {
@@ -3056,7 +3064,10 @@ static std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, s
                 try {
                     container.enable(name, iter.first);
                 } catch (libdnf::ModulePackageContainer::EnableMultipleStreamsException &) {
-                    messages.emplace_back(std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_MODIFY_MULTIPLE_TIMES_MODULE_STATE, tfm::format( _("Cannot enable module '%s' stream '%s': State of module already modified"), name, iter.first), name));
+                    messages.emplace_back(std::make_tuple(
+                        libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_MODIFY_MULTIPLE_TIMES_MODULE_STATE,
+                        tfm::format(_("Cannot enable module '%1$s' stream '%2$s': State of module already modified"),
+                                     name, iter.first), name));
                 }
             }
         }
@@ -3153,7 +3164,7 @@ modules_reset_or_disable(libdnf::ModulePackageContainer & container, const char 
         if (!resolved_spec.first) {
             messages.emplace_back(
                 std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC,
-                                tfm::format( _("Unable to resolve argument '%s'"), *specs), *specs));
+                                tfm::format(_("Unable to resolve argument '%s'"), *specs), *specs));
             continue;
         }
         if (!resolved_spec.first->getStream().empty() || !resolved_spec.first->getProfile().empty() ||
@@ -3174,10 +3185,10 @@ modules_reset_or_disable(libdnf::ModulePackageContainer & container, const char 
                 } catch (libdnf::ModulePackageContainer::EnableMultipleStreamsException &) {
                     messages.emplace_back(std::make_tuple(
                         libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_MODIFY_MULTIPLE_TIMES_MODULE_STATE,
-                        tfm::format( _("Cannot reset module '%s': State of module already modified"), name), name));
+                        tfm::format(_("Cannot reset module '%s': State of module already modified"), name), name));
                     messages.emplace_back(
                         std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC,
-                                        tfm::format( _("Unable to resolve argument '%s'"), *specs), *specs));
+                                        tfm::format(_("Unable to resolve argument '%s'"), *specs), *specs));
                 }
             } else {
                 try {
@@ -3185,10 +3196,10 @@ modules_reset_or_disable(libdnf::ModulePackageContainer & container, const char 
                 } catch (libdnf::ModulePackageContainer::EnableMultipleStreamsException &) {
                     messages.emplace_back(std::make_tuple(
                         libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_MODIFY_MULTIPLE_TIMES_MODULE_STATE,
-                        tfm::format( _("Cannot disable module '%s': State of module already modified"), name), name));
+                        tfm::format(_("Cannot disable module '%s': State of module already modified"), name), name));
                     messages.emplace_back(
                         std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC,
-                                        tfm::format( _("Unable to resolve argument '%s'"), *specs), *specs));
+                                        tfm::format(_("Unable to resolve argument '%s'"), *specs), *specs));
                 }
             }
         }
@@ -3227,7 +3238,7 @@ dnf_context_module_enable(DnfContext * context, const char ** module_specs, GErr
         if (!resolved_spec.first) {
             messages.emplace_back(
                 std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC,
-                                tfm::format( _("Unable to resolve argument '%s'"), *specs), *specs));
+                                tfm::format(_("Unable to resolve argument '%s'"), *specs), *specs));
             continue;
         }
         if (!resolved_spec.first->getProfile().empty() || !resolved_spec.first->getVersion().empty() ||
@@ -3243,7 +3254,7 @@ dnf_context_module_enable(DnfContext * context, const char ** module_specs, GErr
                 messages.end(),std::make_move_iterator(message.begin()), std::make_move_iterator(message.end()));
             messages.emplace_back(
                 std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC,
-                                tfm::format( _("Unable to resolve argument '%s'"), *specs), *specs));
+                                tfm::format(_("Unable to resolve argument '%s'"), *specs), *specs));
         } else {
             all_resolved_module_dicts.emplace_back(make_pair(*specs, std::move(module_dict)));
         }
@@ -3271,11 +3282,11 @@ dnf_context_module_enable(DnfContext * context, const char ** module_specs, GErr
                 } catch (const libdnf::ModulePackageContainer::EnableMultipleStreamsException & exception) {
                     messages.emplace_back(std::make_tuple(
                         libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_MODIFY_MULTIPLE_TIMES_MODULE_STATE,
-                        tfm::format( _("Problem during enablement of dependency tree for moduele '%s' stream '%s': %s"),
+                        tfm::format(_("Problem during enablement of dependency tree for moduele '%1$s' stream '%2$s': %3$s"),
                                      module_dict_iter.first, stream_dict_iter.first, exception.what()), pair.first));
                     messages.emplace_back(std::make_tuple(
                         libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC,
-                        tfm::format( _("Unable to resolve argument '%s'"), pair.first), pair.first));
+                        tfm::format(_("Unable to resolve argument '%s'"), pair.first), pair.first));
                 }
             }
         }
