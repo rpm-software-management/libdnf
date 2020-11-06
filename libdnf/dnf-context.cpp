@@ -3110,44 +3110,30 @@ report_problems(const std::vector<std::tuple<libdnf::ModulePackageContainer::Mod
             case libdnf::ModulePackageContainer::ModuleErrorType::NO_ERROR:
                 break;
             case libdnf::ModulePackageContainer::ModuleErrorType::INFO:
-                logger->info(report);
-                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
-                printf("%s\n", report.c_str());
+                logger->notice(report);
                 break;
             case libdnf::ModulePackageContainer::ModuleErrorType::ERROR_IN_DEFAULTS:
                 logger->warning(tfm::format(_("Modular dependency problem with Defaults: %s"), report.c_str()));
-                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
-                printf(_("Modular dependency problem with Defaults: %s\n"), report.c_str());
                 break;
             case libdnf::ModulePackageContainer::ModuleErrorType::ERROR:
                 logger->error(tfm::format(_("Modular dependency problem: %s"), report.c_str()));
                 return_error = true;
-                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
-                printf(_("Modular dependency problem: %s\n"), report.c_str());
                 break;
             case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULES:
                 logger->error(report);
                 return_error = true;
-                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
-                printf("%s\n", report.c_str());
                 break;
             case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC:
                 logger->error(report);
                 return_error = true;
-                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
-                printf("%s\n", report.c_str());
                 break;
             case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_ENABLE_MULTIPLE_STREAMS:
                 logger->error(report);
                 return_error = true;
-                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
-                printf("%s\n", report.c_str());
                 break;
             case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_MODIFY_MULTIPLE_TIMES_MODULE_STATE:
                 logger->error(report);
                 return_error = true;
-                //TODO(jmracek) Remove printf when logger will proparly work with g_logger
-                printf("%s\n", report.c_str());
                 break;
         }
     }
@@ -3390,9 +3376,6 @@ dnf_context_module_switched_check(DnfContext * context, GError ** error) try
     const char * msg = _("The operation would result in switching of module '%s' stream '%s' to stream '%s'");
     for (auto item : switched) {
         logger->warning(tfm::format(msg, item.first.c_str(), item.second.first.c_str(), item.second.second.c_str()));
-        //TODO(jmracek) Remove printf when logger will proparly work with g_logger
-        printf("%s\n", tfm::format(msg, item.first.c_str(), item.second.first.c_str(),
-                                   item.second.second.c_str()).c_str());
     }
     const char * msg_error = _("It is not possible to switch enabled streams of a module.\n"
                        "It is recommended to remove all installed content from the module, and "
