@@ -2335,20 +2335,29 @@ setModuleExcludes(DnfSack *sack, const char ** hotfixRepos,
 {
     dnf_sack_set_module_excludes(sack, nullptr);
     std::vector<std::string> names;
+    std::vector<std::string> srcNames;
     libdnf::DependencyContainer nameDependencies{sack};
     libdnf::Nevra nevra;
     for (const auto &rpm : includeNEVRAs) {
         if (nevra.parse(rpm.c_str(), HY_FORM_NEVRA)) {
-            names.push_back(nevra.getName());
-            nameDependencies.addReldep(nevra.getName().c_str());
+            auto arch = nevra.getArch();
+            // source packages do not provide anything and must not cause excluding binary packages
+            if (arch == "src" || arch == "nosrc") {
+                srcNames.push_back(nevra.getName());
+            } else {
+                names.push_back(nevra.getName());
+                nameDependencies.addReldep(nevra.getName().c_str());
+            }
         }
     }
 
     std::vector<const char *> namesCString(names.size() + 1);
+    std::vector<const char *> srcNamesCString(srcNames.size() + 1);
     std::vector<const char *> excludeNEVRAsCString(excludeNEVRAs.size() + 1);
     std::vector<const char *> includeNEVRAsCString(includeNEVRAs.size() + 1);
 
     transform(names.begin(), names.end(), namesCString.begin(), std::mem_fn(&std::string::c_str));
+    transform(srcNames.begin(), srcNames.end(), srcNamesCString.begin(), std::mem_fn(&std::string::c_str));
     transform(excludeNEVRAs.begin(), excludeNEVRAs.end(), excludeNEVRAsCString.begin(),
               std::mem_fn(&std::string::c_str));
     transform(includeNEVRAs.begin(), includeNEVRAs.end(), includeNEVRAsCString.begin(),
@@ -2363,6 +2372,7 @@ setModuleExcludes(DnfSack *sack, const char ** hotfixRepos,
     libdnf::Query excludeQuery{keepPackages};
     libdnf::Query excludeProvidesQuery{keepPackages};
     libdnf::Query excludeNamesQuery(keepPackages);
+    libdnf::Query excludeSrcNamesQuery(keepPackages);
     includeQuery.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, includeNEVRAsCString.data());
 
     excludeQuery.addFilter(HY_PKG_NEVRA_STRICT, HY_EQ, excludeNEVRAsCString.data());
@@ -2372,8 +2382,14 @@ setModuleExcludes(DnfSack *sack, const char ** hotfixRepos,
     excludeProvidesQuery.addFilter(HY_PKG_PROVIDES, &nameDependencies);
     excludeProvidesQuery.queryDifference(includeQuery);
 
-    // Requred to filtrate out source packages and packages with incompatible architectures
+    // Search for source packages with same names as included source artifacts
+    excludeSrcNamesQuery.addFilter(HY_PKG_NAME, HY_EQ, srcNamesCString.data());
+    const char * srcArchs[] = {"src", "nosrc", nullptr};
+    excludeSrcNamesQuery.addFilter(HY_PKG_ARCH, HY_EQ, srcArchs);
+
+    // Required to filtrate out source packages and packages with incompatible architectures
     excludeNamesQuery.addFilter(HY_PKG_NAME, HY_EQ, namesCString.data());
+    excludeNamesQuery.queryUnion(excludeSrcNamesQuery);
     excludeNamesQuery.queryDifference(includeQuery);
 
     dnf_sack_set_module_excludes(sack, excludeQuery.getResultPset());
