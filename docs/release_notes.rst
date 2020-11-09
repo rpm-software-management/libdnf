@@ -20,6 +20,19 @@
 ######################
 
 ====================
+0.55.0 Release Notes
+====================
+
+- Add vendor to dnf API (RhBug:1876561)
+- Add formatting function for solver error
+- Add error types in ModulePackageContainer
+- Implement module enable for context part
+- Improve string formatting for translation
+- Remove redundant printf and change logging info to notice (RhBug:1827424)
+- Add allow_vendor_change option (RhBug:1788371) (RhBug:1788371)
+
+
+====================
 0.54.2 Release Notes
 ====================
 
