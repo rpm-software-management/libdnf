@@ -46,6 +46,7 @@
 #include "hy-package-private.hpp"
 #include "hy-repo-private.hpp"
 #include "repo/solvable/DependencyContainer.hpp"
+#include "sack/advisorymodule.hpp"
 
 #define BLOCK_SIZE 31
 
@@ -1044,7 +1045,6 @@ dnf_package_get_advisories(DnfPackage *pkg, int cmp_type)
     Dataiterator di;
     Id evr;
     int cmp;
-    DnfAdvisory *advisory;
     Pool *pool = dnf_package_get_pool(pkg);
     DnfSack *sack = dnf_package_get_sack(pkg);
     GPtrArray *advisorylist = g_ptr_array_new_with_free_func((GDestroyNotify) dnf_advisory_free);
@@ -1053,6 +1053,7 @@ dnf_package_get_advisories(DnfPackage *pkg, int cmp_type)
     dataiterator_init(&di, pool, 0, 0, UPDATE_COLLECTION_NAME,
                       pool_id2str(pool, s->name), SEARCH_STRING);
     dataiterator_prepend_keyname(&di, UPDATE_COLLECTION);
+    dataiterator_prepend_keyname(&di, UPDATE_COLLECTIONLIST);
     while (dataiterator_step(&di)) {
         dataiterator_setpos_parent(&di);
         if (pool_lookup_id(pool, SOLVID_POS, UPDATE_COLLECTION_ARCH) != s->arch)
@@ -1065,12 +1066,39 @@ dnf_package_get_advisories(DnfPackage *pkg, int cmp_type)
         if ((cmp > 0 && (cmp_type & HY_GT)) ||
             (cmp < 0 && (cmp_type & HY_LT)) ||
             (cmp == 0 && (cmp_type & HY_EQ))) {
-            advisory = dnf_advisory_new(sack, di.solvid);
-            if (libdnf::isAdvisoryApplicable(*advisory, sack)) {
-                g_ptr_array_add(advisorylist, advisory);
-            } else {
-                dnf_advisory_free(advisory);
+
+            // We need to move the di dataiterator to the start of the advisory collection
+            // so that di_advisory_collection can be initialized with SOLVID_POS because
+            // the collection it self doesn't have an id.
+            dataiterator_seek(&di, DI_SEEK_PARENT);
+            dataiterator_setpos_parent(&di);
+            dataiterator_seek(&di, DI_SEEK_PARENT);
+
+            bool isModuleCollectionApplicable = true;
+            Dataiterator di_advisory_collection;
+            dataiterator_init(&di_advisory_collection, pool, 0, SOLVID_POS, UPDATE_MODULE, 0, 0);
+            while (dataiterator_step(&di_advisory_collection)) {
+                dataiterator_setpos(&di_advisory_collection);
+                Id name = pool_lookup_id(pool, SOLVID_POS, UPDATE_MODULE_NAME);
+                Id stream = pool_lookup_id(pool, SOLVID_POS, UPDATE_MODULE_STREAM);
+                Id version = pool_lookup_id(pool, SOLVID_POS, UPDATE_MODULE_VERSION);
+                Id context = pool_lookup_id(pool, SOLVID_POS, UPDATE_MODULE_CONTEXT);
+                Id arch = pool_lookup_id(pool, SOLVID_POS, UPDATE_MODULE_ARCH);
+
+                libdnf::AdvisoryModule moduleAdvisory(sack, di.solvid, name, stream, version, context, arch);
+                if (moduleAdvisory.isApplicable()) {
+                    isModuleCollectionApplicable = true;
+                    break;
+                } else {
+                    isModuleCollectionApplicable = false;
+                }
             }
+            dataiterator_free(&di_advisory_collection);
+
+            if (isModuleCollectionApplicable) {
+                g_ptr_array_add(advisorylist, dnf_advisory_new(sack, di.solvid));
+            }
+
             dataiterator_skip_solvable(&di);
         }
     }
