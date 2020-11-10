@@ -1816,9 +1816,7 @@ Query::Impl::filterAdvisory(const Filter & f, Map *m, int keyname)
                     eq = false;
             }
             if (eq) {
-                if (isAdvisoryApplicable(advisory, sack)) {
-                    advisory.getPackages(pkgs, false);
-                }
+                advisory.getApplicablePackages(pkgs, false);
                 break;
             }
         }
@@ -2434,9 +2432,7 @@ Query::getAdvisoryPkgs(int cmpType, std::vector<AdvisoryPkg> & advisoryPkgs)
     dataiterator_prepend_keyname(&di, UPDATE_COLLECTION);
     while (dataiterator_step(&di)) {
         Advisory advisory(sack, di.solvid);
-        if (isAdvisoryApplicable(advisory, sack)) {
-            advisory.getPackages(pkgs);
-        }
+        advisory.getApplicablePackages(pkgs);
         dataiterator_skip_solvable(&di);
     }
     dataiterator_free(&di);
