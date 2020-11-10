@@ -2,6 +2,7 @@ add_subdirectory(libdnf/module/modulemd)
 add_subdirectory(libdnf/module)
 add_subdirectory(libdnf/repo)
 add_subdirectory(libdnf/transaction)
+add_subdirectory(libdnf/sack)
 add_subdirectory(hawkey)
 add_subdirectory(libdnf)
 

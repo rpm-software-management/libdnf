@@ -1,0 +1,6 @@
+#! /bin/bash
+
+THISDIR=$(readlink -f $(dirname $0))
+cd $THISDIR
+createrepo_c --no-database --simple-md-filenames .
+modifyrepo_c ./updateinfo.xml repodata --simple-md-filenames

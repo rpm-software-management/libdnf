@@ -1,0 +1,60 @@
+---
+document: modulemd
+version: 2
+data:
+  name: perl
+  stream: 5.23
+  version: 1
+  context: aa
+  arch: x86_64
+  summary: Perl
+  description: Perl
+  license:
+    module:
+      - MIT
+  profiles:
+    default:
+      rpms: ["test-perl"]
+  artifacts:
+    rpms: ["test-perl-0:5.24-1.module_el8+5182+8241aed2.x86_64"]
+...
+---
+document: modulemd
+version: 2
+data:
+  name: perl-DBI
+  stream: master
+  version: 2
+  context: 2b
+  arch: x86_64
+  summary: Perl-DBI
+  description: Perl-DBI
+  license:
+    module:
+    - MIT
+  profiles:
+    default:
+      rpms: ["test-perl-DBI"]
+  artifacts:
+    rpms: ["test-perl-DBI-0:1-2.module_el8+6587+9879afr5.x86_64"]
+...
+---
+document: modulemd
+version: 2
+data:
+  name: perl-DBI
+  stream: master
+  version: 2
+  context: 2c
+  arch: x86_64
+  summary: Perl-DBI
+  description: Perl-DBI
+  license:
+    module:
+    - MIT
+  profiles:
+    default:
+      rpms: ["test-perl-DBI"]
+  artifacts:
+    rpms: ["test-perl-DBI-0:1-2.module_el8+6745+9879ate3.x86_64"]
+...
