@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<updates>
+  <update from="secresponseteam@foo.bar" status="final" type="enhancement" version="3">
+    <id>FEDORA-2019-0329090518</id>
+    <title>glibc bug fix</title>
+    <issued date="2019-03-29 00:00:00"/>
+    <updated date="2019-03-29 00:00:00"/>
+    <severity>none</severity>
+    <rights>Everyone has them</rights>
+    <summary>summary_1</summary>
+    <description>Enhance some stuff</description>
+    <references>
+        <reference href="https://foobar/foobarupdate_2" id="2222" type="bugzilla" title="222"/>
+        <reference href="https://foobar/foobarupdate_2" id="2222" type="cve" title="CVE-2999"/>
+    </references>
+    <pkglist>
+      <collection short="named collection">
+        <name>Foo component</name>
+        <module name="perl-DBI" stream="master" version="2" context="2c" arch="x86_64"/>
+        <module name="non" stream="existing" version="2" context="module" arch="x86_64"/>
+        <package name="test-perl-DBI" version="1" release="2.module_el8+6745+9879ate3" epoch="0" arch="x86_64" src="http://www.foo.org">
+          <filename>perl-DBI-1-2.module_el8+6745+9879ate3.spec</filename>
+          <reboot_suggested/>
+        </package>
+        <package name="test-perl-DBI-new-collection-override" version="1" release="2.module_el8+6745+9879ate3" epoch="0" arch="x86_64" src="http://www.foo.org">
+          <filename>perl-DBI-1-2.module_el8+6745+9879ate3.spec</filename>
+          <reboot_suggested/>
+        </package>
+      </collection>
+      <collection short="unreal collection">
+        <name>Foo component</name>
+        <module name="perl-DBI" stream="master" version="2" context="2b" arch="x86_64"/>
+        <package name="test-perl-DBI" version="1" release="2.module_el8+6587+9879afr5" epoch="0" arch="x86_64" src="http://www.foo.org">
+          <filename>perl-DBI-1-2.module_el8+6587+9879afr5.spec</filename>
+          <reboot_suggested/>
+        </package>
+      </collection>
+      <collection short="perl collection">
+        <name>perl component</name>
+        <module name="perl" stream="5.23" version="2" context="aa" arch="x86_64"/>
+        <package name="not-present" version="5.24" release="1.module_el8+5182+8241aed2" epoch="0" arch="x86_64" src="http://www.foo.org">
+          <filename>not-present-0:5.24-1.module_el8+5182+8241aed2.x86_64</filename>
+        </package>
+      </collection>
+    </pkglist>
+  </update>
+</updates>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<repomd xmlns="http://linux.duke.edu/metadata/repo" xmlns:rpm="http://linux.duke.edu/metadata/rpm">
+  <revision>1612879414</revision>
+  <data type="primary">
+    <checksum type="sha256">b69e4467719314fdb155872cf9c8e895d5b169c0506c5180c512d693c48f0f4b</checksum>
+    <open-checksum type="sha256">8606d1f777859f167f7bd0bf8a1d532abedcb4db143b719e631e1040800fd1f0</open-checksum>
+    <location href="repodata/primary.xml.gz"/>
+    <timestamp>1612879414</timestamp>
+    <size>743</size>
+    <open-size>2665</open-size>
+  </data>
+  <data type="filelists">
+    <checksum type="sha256">efbf7f021163a3c7698a257351e327102c60bb39a7bdceee77c421f064205e99</checksum>
+    <open-checksum type="sha256">ca5620e2734574d04d3c01ae5a72f865313369954698d71776076b9cbd831bbd</open-checksum>
+    <location href="repodata/filelists.xml.gz"/>
+    <timestamp>1612879414</timestamp>
+    <size>311</size>
+    <open-size>511</open-size>
+  </data>
+  <data type="other">
+    <checksum type="sha256">6673953e1f28f55b9d4c3f38a9e3c0e0ff88ad06fb693b7f15eb241a81b80d71</checksum>
+    <open-checksum type="sha256">0997c242bf1b96372d7a625a73de23dced68cae9375baff0c73215a07693b3f4</open-checksum>
+    <location href="repodata/other.xml.gz"/>
+    <timestamp>1612879414</timestamp>
+    <size>310</size>
+    <open-size>507</open-size>
+  </data>
+  <data type="modules">
+    <checksum type="sha256">a815d0669b15b97dd6260713405c79045eeda10aedb6460a0f742b86cc236cca</checksum>
+    <open-checksum type="sha256">0d1063b74e3a7cb4c7cdc3b2080b1901c347693140765534f8c5c3d8b964778a</open-checksum>
+    <location href="repodata/modules.yaml.gz"/>
+    <timestamp>1612879414</timestamp>
+    <size>300</size>
+    <open-size>1019</open-size>
+  </data>
+  <data type="updateinfo">
+    <checksum type="sha256">9d791d16c2adc2d7d4c85b45f2a704edac62a926b09fc20df73207f4190acd49</checksum>
+    <open-checksum type="sha256">3cf7df860860ac7a4a8e64a1a2d71c1ec43225dacbfe09a0cff80f28be3825da</open-checksum>
+    <location href="repodata/updateinfo.xml.gz"/>
+    <timestamp>1612879414</timestamp>
+    <size>708</size>
+    <open-size>2414</open-size>
+  </data>
+</repomd>
