@@ -8,6 +8,7 @@
 #define REPOID_CHARS ASCII_LETTERS DIGITS "-_.:"
 
 #include "libdnf/sack/advisory.hpp"
+#include "libdnf/dnf-utils.h"
 
 #include <functional>
 #include <string>
@@ -36,6 +37,7 @@ private:
     std::function<void()> func;
 };
 
+DEPRECATED("advisory now provides getApplicablePackages and each AdvisoryModule provides isApplicable.")
 bool isAdvisoryApplicable(Advisory & advisory, DnfSack * sack);
 
 namespace string {
