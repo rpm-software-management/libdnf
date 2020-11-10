@@ -24,23 +24,12 @@ namespace libdnf {
 
 bool isAdvisoryApplicable(libdnf::Advisory & advisory, DnfSack * sack)
 {
-    auto moduleContainer = dnf_sack_get_module_container(sack);
-    if (!moduleContainer) {
-        return true;
-    }
-    auto moduleAdvisories = advisory.getModules();
-    if (moduleAdvisories.empty()) {
-        return true;
-    }
-    for (auto & moduleAdvisory: moduleAdvisories) {
-        if (const char * name = moduleAdvisory.getName()) {
-            if (const char * stream = moduleAdvisory.getStream()) {
-                if (moduleContainer->isEnabled(name, stream)) {
-                    return true;
-                }
-            }
+    for (auto & advisoryModule: advisory.getModules()) {
+        if (advisoryModule.isApplicable()) {
+            return true;
         }
     }
+
     return false;
 }
 
