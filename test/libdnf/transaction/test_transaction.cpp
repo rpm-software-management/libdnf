@@ -152,14 +152,14 @@ void TransactionTest::test_compare() {
     CPPUNIT_ASSERT(*first > *second);
     CPPUNIT_ASSERT(*second < *first);
 
-    // equal id and dt_begin
+    // equal id and dt_start
     first->set_id(1);
     second->set_id(1);
     first->set_dt_start(1);
     second->set_dt_start(1);
     CPPUNIT_ASSERT(*first == *second);
 
-    // equal id, compare by dt_begin
+    // equal id, compare by dt_start
     second->set_dt_start(2);
     CPPUNIT_ASSERT(*first > *second);
     CPPUNIT_ASSERT(*second < *first);
