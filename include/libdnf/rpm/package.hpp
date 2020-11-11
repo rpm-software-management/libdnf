@@ -25,6 +25,8 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "reldep_list.hpp"
 #include "solv_sack.hpp"
 
+#include "libdnf/transaction/transaction_item_reason.hpp"
+
 #include <string>
 #include <vector>
 
@@ -227,6 +229,11 @@ public:
     /// @replaces libdnf:libdnf/hy-package.h:function:dnf_package_installed(DnfPackage * pkg)
     /// @replaces dnf:dnf/package.py:attribute:Package.installed
     bool is_installed() const;
+
+    /// Return a resolved package reason from the transaction database based on package 'name' and 'arch'
+    ///
+    /// @replaces libdnf:goal/Goal.hpp:method:Goal.getReason(DnfPackage * pkg)
+    libdnf::transaction::TransactionItemReason get_reason() const;
 
     /// TODO is_local
     /// @replaces dnf:dnf/package.py:method:Package.localPkg(self)

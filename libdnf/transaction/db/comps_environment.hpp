@@ -22,6 +22,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #define LIBDNF_TRANSACTION_DB_COMPS_ENVIRONMENT_HPP
 
 
+#include "libdnf/transaction/transaction_item_reason.hpp"
 #include "libdnf/utils/sqlite3/sqlite3.hpp"
 
 #include <memory>
@@ -50,6 +51,10 @@ int64_t comps_environment_insert(libdnf::utils::SQLite3::Statement & query, Comp
 
 /// Insert CompsEnvironment objects associated with a transaction into the database
 void insert_transaction_comps_environments(libdnf::utils::SQLite3 & conn, Transaction & trans);
+
+
+/// Return a map of comps environment reasons from the database: {environmentid -> reason}
+std::map<std::string, TransactionItemReason> comps_environment_select_reasons(libdnf::utils::SQLite3 & conn);
 
 
 }  // namespace libdnf::transaction

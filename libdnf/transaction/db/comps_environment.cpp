@@ -27,6 +27,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/transaction/comps_group.hpp"
 #include "libdnf/transaction/transaction.hpp"
 #include "libdnf/transaction/transaction_item.hpp"
+#include "libdnf/transaction/transaction_item_action.hpp"
 
 
 namespace libdnf::transaction {
@@ -133,6 +134,48 @@ void insert_transaction_comps_environments(libdnf::utils::SQLite3 & conn, Transa
         transaction_item_insert(*query_trans_item_insert, *env);
         comps_environment_groups_insert(conn, *env);
     }
+}
+
+
+static const char * SQL_COMPS_ENVIRONMENT_REASONS_SELECT = R"**(
+    SELECT
+        i.environmentid,
+        ti.action as action,
+        ti.reason as reason
+    FROM
+        trans_item ti
+    JOIN
+        trans t ON ti.trans_id = t.id
+    JOIN
+        comps_environment i USING (item_id)
+    WHERE
+        t.state = 1
+    GROUP BY
+        i.environmentid
+    HAVING
+        /* more significant records have higher id in the trans_item table */
+        MAX(ti.id)
+)**";
+
+
+std::map<std::string, TransactionItemReason> comps_environment_select_reasons(libdnf::utils::SQLite3 & conn) {
+    std::map<std::string, TransactionItemReason> result;
+    libdnf::utils::SQLite3::Query query(conn, SQL_COMPS_ENVIRONMENT_REASONS_SELECT);
+
+    while (query.step() == libdnf::utils::SQLite3::Statement::StepResult::ROW) {
+        // skip backward actions, we're looking only for reasons of packages that are on the system
+        auto action = static_cast<TransactionItemAction>(query.get<int>("action"));
+        if (TransactionItemAction_is_backward_action(action)) {
+            continue;
+        }
+
+        auto environmentid = query.get<std::string>("environmentid");
+        auto reason = static_cast<TransactionItemReason>(query.get<int>("reason"));
+
+        result.emplace(environmentid, reason);
+    }
+
+    return result;
 }
 
 

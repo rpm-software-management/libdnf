@@ -270,6 +270,12 @@ bool Package::is_installed() const {
     return solv::is_installed(pool, solv::get_solvable(pool, id));
 }
 
+
+libdnf::transaction::TransactionItemReason Package::get_reason() const {
+    return sack->pImpl->base->get_transaction_sack().get_package_reason(get_name(), get_arch());
+}
+
+
 unsigned long long Package::get_hdr_end() noexcept {
     Pool * pool = sack->pImpl->pool;
     return solv::get_hdr_end(pool, id);

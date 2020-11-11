@@ -22,6 +22,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #define LIBDNF_TRANSACTION_DB_COMPS_GROUP_HPP
 
 
+#include "libdnf/transaction/transaction_item_reason.hpp"
 #include "libdnf/utils/sqlite3/sqlite3.hpp"
 
 #include <memory>
@@ -50,6 +51,10 @@ int64_t comps_group_insert(libdnf::utils::SQLite3::Statement & query, CompsGroup
 
 /// Insert CompsGroup objects associated with a transaction into the database
 void insert_transaction_comps_groups(libdnf::utils::SQLite3 & conn, Transaction & trans);
+
+
+/// Return a map of comps group reasons from the database: {groupid -> reason}
+std::map<std::string, TransactionItemReason> comps_group_select_reasons(libdnf::utils::SQLite3 & conn);
 
 
 }  // namespace libdnf::transaction

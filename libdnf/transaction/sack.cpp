@@ -21,6 +21,10 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/transaction/sack.hpp"
 
 #include "libdnf/base/base.hpp"
+#include "libdnf/transaction/db/comps_environment.hpp"
+#include "libdnf/transaction/db/comps_group.hpp"
+#include "libdnf/transaction/db/db.hpp"
+#include "libdnf/transaction/db/rpm.hpp"
 
 
 namespace libdnf::transaction {
@@ -30,6 +34,14 @@ TransactionSack::TransactionSack(libdnf::Base & base) : base{base} {}
 
 
 TransactionSack::~TransactionSack() = default;
+
+
+void TransactionSack::fill() {
+    auto conn = transaction_db_connect(base);
+    comps_environment_reasons = comps_environment_select_reasons(*conn);
+    comps_group_reasons = comps_group_select_reasons(*conn);
+    package_reasons = rpm_select_reasons(*conn);
+}
 
 
 TransactionQuery TransactionSack::new_query() {
@@ -43,6 +55,45 @@ TransactionQuery TransactionSack::new_query() {
 
 TransactionWeakPtr TransactionSack::new_transaction() {
     return add_item_with_return(std::make_unique<Transaction>(*this));
+}
+
+
+TransactionItemReason TransactionSack::get_comps_environment_reason(const std::string & environmentid) const {
+    TransactionItemReason result{TransactionItemReason::UNKNOWN};
+
+    auto it = comps_environment_reasons.find(environmentid);
+    if (it != comps_environment_reasons.end()) {
+        result = it->second;
+    }
+
+    // TODO(dmach): inspect also transaction(s) in progress?
+    return result;
+}
+
+
+TransactionItemReason TransactionSack::get_comps_group_reason(const std::string & groupid) const {
+    TransactionItemReason result{TransactionItemReason::UNKNOWN};
+
+    auto it = comps_group_reasons.find(groupid);
+    if (it != comps_group_reasons.end()) {
+        result = it->second;
+    }
+
+    // TODO(dmach): inspect also transaction(s) in progress?
+    return result;
+}
+
+
+TransactionItemReason TransactionSack::get_package_reason(const std::string & name, const std::string & arch) const {
+    TransactionItemReason result{TransactionItemReason::UNKNOWN};
+
+    auto it = package_reasons.find(std::make_pair(name, arch));
+    if (it != package_reasons.end()) {
+        result = it->second;
+    }
+
+    // TODO(dmach): inspect also transaction(s) in progress?
+    return result;
 }
 
 

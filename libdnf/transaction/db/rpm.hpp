@@ -22,9 +22,12 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #define LIBDNF_TRANSACTION_DB_RPM_HPP
 
 
+#include "libdnf/transaction/transaction_item_reason.hpp"
 #include "libdnf/utils/sqlite3/sqlite3.hpp"
 
+#include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 
@@ -76,6 +79,11 @@ std::vector<std::unique_ptr<Package>> get_transaction_packages(libdnf::utils::SQ
 
 /// Insert Package objects associated with a transaction into the database
 void insert_transaction_packages(libdnf::utils::SQLite3 & conn, Transaction & trans);
+
+
+/// Return a map of package reasons from the database: {(name, arch) -> reason}.
+/// If arch is empty, return the highest reason for packages with the given name.
+std::map<std::pair<std::string, std::string>, TransactionItemReason> rpm_select_reasons(libdnf::utils::SQLite3 & conn);
 
 
 }  // namespace libdnf::transaction

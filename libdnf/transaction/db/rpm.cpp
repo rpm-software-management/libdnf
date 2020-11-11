@@ -25,6 +25,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "libdnf/transaction/rpm_package.hpp"
 #include "libdnf/transaction/transaction.hpp"
+#include "libdnf/transaction/transaction_item_action.hpp"
 
 
 namespace libdnf::transaction {
@@ -99,7 +100,7 @@ std::unique_ptr<libdnf::utils::SQLite3::Statement> rpm_insert_new_query(libdnf::
 
 int64_t rpm_insert(libdnf::utils::SQLite3::Statement & query, const Package & rpm) {
     query.bindv(
-        rpm.get_item_id(), rpm.get_name(), rpm.get_epoch(), rpm.get_version(), rpm.get_release(), rpm.get_arch());
+        rpm.get_item_id(), rpm.get_name(), rpm.get_epoch_int(), rpm.get_version(), rpm.get_release(), rpm.get_arch());
     query.step();
     int64_t result = query.last_insert_rowid();
     query.reset();
@@ -209,6 +210,63 @@ void insert_transaction_packages(libdnf::utils::SQLite3 & conn, Transaction & tr
         }
         transaction_item_insert(*query_trans_item_insert, *pkg);
     }
+}
+
+
+static const char * SQL_RPM_REASONS_SELECT = R"**(
+    SELECT
+        i.name,
+        i.arch,
+        ti.action as action,
+        ti.reason as reason
+    FROM
+        trans_item ti
+    JOIN
+        trans t ON ti.trans_id = t.id
+    JOIN
+        rpm i USING (item_id)
+    WHERE
+        t.state = 1
+    GROUP BY
+        i.name,
+        i.arch
+    HAVING
+        /* more significant records have higher id in the trans_item table */
+        MAX(ti.id)
+)**";
+
+
+std::map<std::pair<std::string, std::string>, TransactionItemReason> rpm_select_reasons(libdnf::utils::SQLite3 & conn) {
+    std::map<std::pair<std::string, std::string>, TransactionItemReason> result;
+    libdnf::utils::SQLite3::Query query(conn, SQL_RPM_REASONS_SELECT);
+
+    while (query.step() == libdnf::utils::SQLite3::Statement::StepResult::ROW) {
+        // skip backward actions, we're looking only for reasons of packages that are on the system
+        auto action = static_cast<TransactionItemAction>(query.get<int>("action"));
+        if (TransactionItemAction_is_backward_action(action)) {
+            continue;
+        }
+
+        auto name = query.get<std::string>("name");
+        auto arch = query.get<std::string>("arch");
+        auto reason = static_cast<TransactionItemReason>(query.get<int>("reason"));
+
+        result.emplace(std::make_pair(name, arch), reason);
+
+        // cache also the best reasons for the names without arch
+        auto it_name_only = result.find(std::make_pair(name, ""));
+        if (it_name_only == result.end()) {
+            // not found, insert a new value
+            result.emplace(std::make_pair(name, ""), reason);
+        } else {
+            // found, store the better reason
+            if (it_name_only->second < reason) {
+                it_name_only->second = reason;
+            }
+        }
+    }
+
+    return result;
 }
 
 

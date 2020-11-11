@@ -60,12 +60,37 @@ public:
     /// The Transaction object is owned by the TransactionSack.
     TransactionWeakPtr new_transaction();
 
+    /// Fill TransactionSack with data.
+    /// Because Transactions are loaded lazily, load (cache) only reasons.
+    void fill();
+
     using libdnf::sack::Sack<Transaction, TransactionQuery>::get_data;
 
+    /// Return a resolved comps environment reason from the transaction database based on 'environmentid'
+    TransactionItemReason get_comps_environment_reason(const std::string & environmentid) const;
+
+    /// Return a resolved comps group reason from the transaction database based on 'groupid'
+    TransactionItemReason get_comps_group_reason(const std::string & groupid) const;
+
+    /// Return a resolved package reason from the transaction database based on package 'name' and 'arch'
+    ///
+    /// @replaces libdnf:transaction/RPMItem.hpp:method:RPMItem.resolveTransactionItemReason(SQLite3Ptr conn, const std::string & name, const std::string & arch, int64_t maxTransactionId)
+    TransactionItemReason get_package_reason(const std::string & name, const std::string & arch) const;
+
 private:
+    friend class Package;
     friend class Transaction;
     friend class TransactionQuery;
     libdnf::Base & base;
+
+    // cached comps environment reasons: environmentd -> reason
+    std::map<std::string, TransactionItemReason> comps_environment_reasons;
+
+    // cached comps group reasons: groupid -> reason
+    std::map<std::string, TransactionItemReason> comps_group_reasons;
+
+    // cached package reasons: (name, arch) -> reason
+    std::map<std::pair<std::string, std::string>, TransactionItemReason> package_reasons;
 
     // Lazy adding new items to the sack needs to be thread-safe to avoid adding duplicates.
     std::mutex mtx;

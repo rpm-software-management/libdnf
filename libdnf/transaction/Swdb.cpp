@@ -199,30 +199,6 @@ Swdb::setItemDone(const std::string &nevra)
     //item->saveState();
 }
 
-TransactionItemReason
-Swdb::resolveRPMTransactionItemReason(const std::string &name,
-                                      const std::string &arch,
-                                      int64_t maxTransactionId)
-{
-    // TODO:
-    // -1: latest
-    // -2: latest and lastTransaction data in memory
-    /*
-    if (maxTransactionId == -2 && transactionInProgress != nullptr) {
-        for (auto i : transactionInProgress->getItems()) {
-            auto rpm = std::dynamic_pointer_cast< Package >(i->getItem());
-            if (!rpm) {
-                continue;
-            }
-            if (rpm->get_name() == name && rpm->get_arch() == arch) {
-                return i->get_reason();
-            }
-        }
-    }
-    */
-
-    return Package::resolveTransactionItemReason(get_connection(), name, arch, maxTransactionId);
-}
 
 const std::string
 Swdb::getRPMRepo(const std::string &nevra)
