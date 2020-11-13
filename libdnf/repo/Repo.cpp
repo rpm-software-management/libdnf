@@ -484,8 +484,12 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitLocal()
     handleSetOpt(h.get(), LRO_LOCAL, 1L);
 #ifdef LRO_SUPPORTS_CACHEDIR
     /* If zchunk is enabled, set librepo cache dir */
-    if (conf->getMasterConfig().zchunk().getValue())
+    if (conf->getMasterConfig().zchunk().getValue()) {
+        if (conf->basecachedir().empty()) {
+            throw Exception(tfm::format(_("repo '%s': 'basecachedir' is not set"), id));
+        }
         handleSetOpt(h.get(), LRO_CACHEDIR, conf->basecachedir().getValue().c_str());
+    }
 #endif
     return h;
 }
@@ -526,6 +530,9 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir)
                 handleSetOpt(h.get(), LRO_METALINKURL, tmp.c_str());
         }
         handleSetOpt(h.get(), LRO_FASTESTMIRROR, conf->fastestmirror().getValue() ? 1L : 0L);
+        if (conf->basecachedir().empty()) {
+            throw Exception(tfm::format(_("repo '%s': 'basecachedir' is not set"), id));
+        }
         auto fastestMirrorCacheDir = conf->basecachedir().getValue();
         if (fastestMirrorCacheDir.back() != '/')
             fastestMirrorCacheDir.push_back('/');
@@ -569,8 +576,12 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir)
 
 #ifdef LRO_SUPPORTS_CACHEDIR
     /* If zchunk is enabled, set librepo cache dir */
-    if (conf->getMasterConfig().zchunk().getValue())
+    if (conf->getMasterConfig().zchunk().getValue()) {
+        if (conf->basecachedir().empty()) {
+            throw Exception(tfm::format(_("repo '%s': 'basecachedir' is not set"), id));
+        }
         handleSetOpt(h.get(), LRO_CACHEDIR, conf->basecachedir().getValue().c_str());
+    }
 #endif
 
     auto minrate = conf->minrate().getValue();
@@ -610,6 +621,9 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir)
     if (!conf->proxy_username().empty()) {
         userpwd = conf->proxy_username().getValue();
         if (!userpwd.empty()) {
+            if (conf->proxy_password().empty()) {
+                throw RepoError(tfm::format(_("repo '%s': 'proxy_username' is set but not 'proxy_password'"), id));
+            }
             userpwd = formatUserPassString(userpwd, conf->proxy_password().getValue(), true);
             handleSetOpt(h.get(), LRO_PROXYUSERPWD, userpwd.c_str());
         }
@@ -1346,6 +1360,9 @@ std::string Repo::Impl::getHash() const
 
 std::string Repo::Impl::getCachedir() const
 {
+    if (conf->basecachedir().empty()) {
+        throw Exception(tfm::format(_("repo '%s': 'basecachedir' is not set"), id));
+    }
     auto repodir(conf->basecachedir().getValue());
     if (repodir.back() != '/')
         repodir.push_back('/');
@@ -1690,6 +1707,9 @@ static LrHandle * newHandle(ConfigMain * conf)
         if (!conf->proxy_username().empty()) {
             auto userpwd = conf->proxy_username().getValue();
             if (!userpwd.empty()) {
+                if (conf->proxy_password().empty()) {
+                    throw RepoError(_("'proxy_username' is set but not 'proxy_password'"));
+                }
                 userpwd = formatUserPassString(userpwd, conf->proxy_password().getValue(), true);
                 handleSetOpt(h, LRO_PROXYUSERPWD, userpwd.c_str());
             }
