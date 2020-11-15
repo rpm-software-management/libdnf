@@ -2501,6 +2501,65 @@ Query::filterUserInstalled(const Swdb &swdb)
     swdb.filterUserinstalled(*getResultPset());
 }
 
+void
+Query::installed()
+{
+    apply();
+    Pool * pool = dnf_sack_get_pool(pImpl->sack);
+    auto * installed_repo = pool->installed;
+    auto queryResult = pImpl->result.get();
+    if (installed_repo == nullptr) {
+        queryResult->clear();
+        return;
+    }
+    Map filterResult;
+    map_init(&filterResult, pool->nsolvables);
+    Id pkgId = installed_repo->start;
+    if (!queryResult->has(pkgId)) {
+        pkgId = queryResult->next(pkgId);
+    }
+    for (; pkgId != -1; pkgId = queryResult->next(pkgId)) {
+        Solvable * solvable = pool_id2solvable(pool, pkgId);
+        if (solvable->repo == installed_repo) {
+            MAPSET(&filterResult, pkgId);
+            continue;
+        }
+        if (pkgId < installed_repo->end) {
+            continue;
+        }
+        break;
+    }
+    map_and(queryResult->getMap(), &filterResult);
+    map_free(&filterResult);
+}
+
+void
+Query::available()
+{
+    apply();
+    Pool * pool = dnf_sack_get_pool(pImpl->sack);
+    auto * installed_repo = pool->installed;
+    if (installed_repo == nullptr) {
+        return;
+    }
+    auto queryResult = pImpl->result.get();
+    Id pkgId = installed_repo->start;
+    if (!queryResult->has(pkgId)) {
+        pkgId = queryResult->next(pkgId);
+    }
+    for (; pkgId != -1; pkgId = queryResult->next(pkgId)) {
+        Solvable * solvable = pool_id2solvable(pool, pkgId);
+        if (solvable->repo == installed_repo) {
+            queryResult->remove(pkgId);
+            continue;
+        }
+        if (pkgId < installed_repo->end) {
+            continue;
+        }
+        break;
+    }
+}
+
 std::pair<bool, std::unique_ptr<Nevra>>
 Query::filterSubject(const char * subject, HyForm * forms, bool icase, bool with_nevra,
     bool with_provides, bool with_filenames)

@@ -179,6 +179,14 @@ public:
     int filterSafeToRemove(const Swdb &swdb, bool debug_solver);
     void getAdvisoryPkgs(int cmpType,  std::vector<AdvisoryPkg> & advisoryPkgs);
     void filterUserInstalled(const Swdb &swdb);
+    /**
+     * @brief Applies all filters and keep only installed packages
+     */
+    void installed();
+    /**
+     * @brief Applies all filters and keep only available packages
+     */
+    void available();
 
     /**
      * @brief Apply query and return a set of strings representing information in provide that begin

@@ -565,7 +565,7 @@ static PyObject *
 add_available_filter(_QueryObject *self, PyObject *unused) try
 {
     HyQuery query = new libdnf::Query(*self->query);
-    query->addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    query->available();
     PyObject *final_query = queryToPyObject(query, self->sack, Py_TYPE(self));
     return final_query;
 } CATCH_TO_PYTHON
@@ -601,7 +601,7 @@ static PyObject *
 add_installed_filter(_QueryObject *self, PyObject *unused) try
 {
     HyQuery query = new libdnf::Query(*self->query);
-    query->addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+    query->installed();
     PyObject *final_query = queryToPyObject(query, self->sack, Py_TYPE(self));
     return final_query;
 } CATCH_TO_PYTHON
