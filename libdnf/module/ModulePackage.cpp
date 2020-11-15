@@ -504,7 +504,7 @@ ModulePackage::createPlatformSolvable(DnfSack * sack, DnfSack * moduleSack,
         baseQuery.addFilter(HY_PKG_LATEST, HY_EQ, 1);
         baseQuery.apply();
         Query availableQuery(baseQuery);
-        availableQuery.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+        availableQuery.available();
         auto platform = availableQuery.getStringsFromProvide("base-module");
         auto platformSize = platform.size();
         if (platformSize == 1) {
@@ -517,7 +517,7 @@ ModulePackage::createPlatformSolvable(DnfSack * sack, DnfSack * moduleSack,
             name = parsedPlatform.first;
             stream = parsedPlatform.second;
         } else {
-            baseQuery.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+            baseQuery.installed();
             platform = baseQuery.getStringsFromProvide("base-module");
             platformSize = platform.size();
             if (platformSize == 1) {

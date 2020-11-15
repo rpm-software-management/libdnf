@@ -2463,7 +2463,7 @@ std::string dnf_sack_get_rpmdb_version(DnfSack *sack) {
 
     // iterate all @System repo RPMs (rpmdb records)
     libdnf::Query query{sack, libdnf::Query::ExcludeFlags::IGNORE_EXCLUDES};
-    query.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+    query.installed();
 
     auto pset = query.getResultPset();
     Id id = -1;

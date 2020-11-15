@@ -2389,7 +2389,7 @@ dnf_context_remove(DnfContext *context, const gchar *name, GError **error) try
 
     /* find installed packages to remove */
     query = hy_query_create(priv->sack);
-    hy_query_filter(query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+    query->installed();
     hy_query_filter(query, HY_PKG_NAME, HY_EQ, name);
     pkglist = hy_query_run(query);
 

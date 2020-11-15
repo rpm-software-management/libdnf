@@ -2086,7 +2086,7 @@ Query::Impl::filterUnneededOrSafeToRemove(const Swdb &swdb, bool debug_solver, b
     Goal goal(sack);
     Pool *pool = dnf_sack_get_pool(sack);
     Query installed(sack);
-    installed.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+    installed.installed();
     auto userInstalled = installed.getResultPset();
 
     swdb.filterUserinstalled(*userInstalled);
@@ -2314,8 +2314,7 @@ Query::filterExtras()
 
     auto resultMap = pImpl->result->getMap();
     Query query_installed(*this);
-    query_installed.addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-    query_installed.apply();
+    query_installed.installed();
     MAPZERO(resultMap);
     if (query_installed.size() == 0) {
         return;
@@ -2324,8 +2323,7 @@ Query::filterExtras()
     // create query with available packages without non-modular excludes. As a extras should be
     // considered anso packages in non-active modules
     Query query_available(pImpl->sack, Query::ExcludeFlags::IGNORE_REGULAR_EXCLUDES);
-    query_available.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
-    query_available.apply();
+    query_available.available();
 
     auto resultAvailable = query_available.pImpl->result.get();
     Id id_available = -1;
@@ -2378,8 +2376,7 @@ Query::filterDuplicated()
     IdQueue samename;
     Pool *pool = dnf_sack_get_pool(pImpl->sack);
 
-    addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-    apply();
+    installed();
 
     auto resultMap = pImpl->result->getMap();
     hy_query_to_name_ordered_queue(this, &samename);
@@ -2497,7 +2494,7 @@ std::set<std::string> Query::getStringsFromProvide(const char * patternProvide)
 void
 Query::filterUserInstalled(const Swdb &swdb)
 {
-    addFilter(HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+    installed();
     swdb.filterUserinstalled(*getResultPset());
 }
 

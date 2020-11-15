@@ -672,7 +672,7 @@ ModulePackageContainer::query(std::string subject)
     std::vector<ModulePackage *> result;
     Query query(pImpl->moduleSack, Query::ExcludeFlags::IGNORE_EXCLUDES);
     // platform modules are installed and not in modules std::Map.
-    query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    query.available();
     std::ostringstream ss;
     ss << subject << "*";
     query.addFilter(HY_PKG_NAME, HY_GLOB, ss.str().c_str());
@@ -692,7 +692,7 @@ ModulePackageContainer::query(std::string name, std::string stream, std::string 
     std::vector<ModulePackage *> result;
     Query query(pImpl->moduleSack, Query::ExcludeFlags::IGNORE_EXCLUDES);
     // platform modules are installed and not in modules std::Map.
-    query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    query.available();
     std::ostringstream ss;
     ss << stringFormater(name) << ":" << stringFormater(stream);
     ss << ":" << stringFormater(version) << ":";
