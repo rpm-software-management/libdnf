@@ -108,7 +108,7 @@ hy_subject_get_best_selector(HySubject subject, DnfSack *sack, HyForm *forms, bo
         }
         if (reponame != NULL) {
             HyQuery installed_query = hy_query_clone(query);
-            hy_query_filter(installed_query, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+            installed_query->installed();
             hy_query_filter(query, HY_PKG_REPONAME, HY_EQ, reponame);
             hy_query_union(query, installed_query);
             hy_query_free(installed_query);

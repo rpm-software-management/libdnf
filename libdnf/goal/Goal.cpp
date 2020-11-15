@@ -711,7 +711,7 @@ Goal::distupgrade()
     pImpl->actions = static_cast<DnfGoalActions>(pImpl->actions | DNF_DISTUPGRADE|DNF_ALLOW_DOWNGRADE);
     DnfSack * sack = pImpl->sack;
     Query query(sack);
-    query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
+    query.available();
     Selector selector(sack);
     selector.set(query.runSet());
     sltrToJob(&selector, &pImpl->staging, SOLVER_DISTUPGRADE);
