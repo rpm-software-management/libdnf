@@ -128,6 +128,25 @@ START_TEST(test_query_repo)
 }
 END_TEST
 
+START_TEST(test_query_installed_available)
+{
+    HyQuery q;
+
+    q = hy_query_create(test_globals.sack);
+    q->installed();
+
+    fail_unless(query_count_results(q) == TEST_EXPECT_SYSTEM_NSOLVABLES);
+
+    hy_query_free(q);
+
+    q = hy_query_create(test_globals.sack);
+    q->available();
+    fail_if(query_count_results(q));
+
+    hy_query_free(q);
+}
+END_TEST
+
 START_TEST(test_query_name)
 {
     HyQuery q;
@@ -1028,6 +1047,7 @@ query_suite(void)
     tcase_add_test(tc, test_query_clone);
     tcase_add_test(tc, test_query_empty);
     tcase_add_test(tc, test_query_repo);
+    tcase_add_test(tc, test_query_installed_available);
     tcase_add_test(tc, test_query_name);
     tcase_add_test(tc, test_query_evr);
     tcase_add_test(tc, test_query_epoch);
