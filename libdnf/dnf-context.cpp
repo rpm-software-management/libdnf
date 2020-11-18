@@ -933,6 +933,22 @@ dnf_context_get_install_weak_deps()
 }
 
 /**
+ * dnf_context_get_allow_vendor_change:
+ *
+ * Gets allow_vendor_change global configuration value.
+ *
+ * Returns: %TRUE if changing vendors in a transaction is allowed
+ *
+ * Since: 0.55.2
+ */
+gboolean
+dnf_context_get_allow_vendor_change()
+{
+    auto & mainConf = libdnf::getGlobalMainConfig();
+    return mainConf.allow_vendor_change().getValue();
+}
+
+/**
  * dnf_context_get_check_disk_space:
  * @context: a #DnfContext instance.
  *
@@ -1410,6 +1426,20 @@ dnf_context_set_install_weak_deps(gboolean enabled)
 }
 
 /**
+ * dnf_context_set_allow_vendor_change:
+ *
+ * Sets allow_vendor_change global configuration value.
+ *
+ * Since: 0.55.2
+ */
+void
+dnf_context_set_allow_vendor_change(gboolean vendorchange)
+{
+    auto & mainConf = libdnf::getGlobalMainConfig();
+    mainConf.allow_vendor_change().set(libdnf::Option::Priority::RUNTIME, vendorchange);
+}
+
+/**
  * dnf_context_set_cache_only:
  * @context: a #DnfContext instance.
  * @cache_only: %TRUE to use only metadata from cache
@@ -1725,12 +1755,15 @@ dnf_context_setup_sack_with_flags(DnfContext               *context,
     DnfContextPrivate *priv = GET_PRIVATE(context);
     gboolean ret;
     g_autofree gchar *solv_dir_real = nullptr;
+    gboolean vendorchange;
 
     /* create empty sack */
     solv_dir_real = dnf_realpath(priv->solv_dir);
+    vendorchange = dnf_context_get_allow_vendor_change();
     priv->sack = dnf_sack_new();
     dnf_sack_set_cachedir(priv->sack, solv_dir_real);
     dnf_sack_set_rootdir(priv->sack, priv->install_root);
+    dnf_sack_set_allow_vendor_change(priv->sack, vendorchange);
     if (priv->arch) {
         if(!dnf_sack_set_arch(priv->sack, priv->arch, error)) {
             return FALSE;
