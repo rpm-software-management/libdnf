@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <set>
 #include <sstream>
+#include <iostream>
 
 extern "C" {
 #include <solv/poolarch.h>
@@ -177,6 +178,7 @@ public:
      */
     const ModuleState & getState(const std::string &name);
 
+    std::vector<ModulePackageContainer::stream_change_t> getChangedStreams();
     std::map<std::string, std::string> getEnabledStreams();
     std::vector<std::string> getDisabledModules();
     std::map<std::string, std::string> getDisabledStreams();
@@ -1098,6 +1100,63 @@ void ModulePackageContainer::rollback()
     pImpl->persistor->rollback();
 }
 
+
+
+static TransactionItemAction
+moduleStateToTransactionItemAction(ModulePackageContainer::ModuleState state, bool in) {
+    switch (state) {
+        case ModulePackageContainer::ModuleState::ENABLED:
+            return in ? TransactionItemAction::ENABLE : TransactionItemAction::ENABLE_OUT;
+        case ModulePackageContainer::ModuleState::DISABLED:
+            return in ? TransactionItemAction::DISABLE : TransactionItemAction::DISABLE_OUT;
+        case ModulePackageContainer::ModuleState::UNKNOWN:
+            return in ? TransactionItemAction::RESET : TransactionItemAction::RESET_OUT;
+        case ModulePackageContainer::ModuleState::DEFAULT:
+            return in ? TransactionItemAction::RESET : TransactionItemAction::RESET_OUT;
+    }
+}
+
+
+/*
+ * Store changes in module stream states in history database.
+ */
+bool ModulePackageContainer::saveHistory(Swdb & swdb)
+{
+    bool result{false};
+    auto conn = swdb.getConn();
+
+    for (const auto & it : getChangedStreams()) {
+        result = true;
+        std::string name;
+        std::string oldStream;
+        ModuleState oldState;
+        std::string newStream;
+        ModuleState newState;
+        std::tie(name, oldStream, oldState, newStream, newState) = it;
+
+        auto new_stream = std::make_shared< ModuleStreamItem >(conn);
+        new_stream->setName(name);
+        new_stream->setStream(newStream);
+        // TODO: TransactionItemReason::DEPENDENCY
+        auto new_ti = swdb.addItem(new_stream, "", moduleStateToTransactionItemAction(newState, true), TransactionItemReason::USER);
+        new_ti->setState(TransactionItemState::DONE);
+
+        auto old_stream = std::make_shared< ModuleStreamItem >(conn);
+        old_stream->setName(name);
+        old_stream->setStream(oldStream);
+        // TODO: TransactionItemReason::DEPENDENCY
+        auto old_ti = swdb.addItem(old_stream, "", moduleStateToTransactionItemAction(oldState, false), TransactionItemReason::USER);
+        old_ti->addReplacedBy(new_ti);
+        old_ti->setState(TransactionItemState::DONE);
+    }
+    return result;
+}
+
+std::vector<ModulePackageContainer::stream_change_t> ModulePackageContainer::getChangedStreams()
+{
+    return pImpl->persistor->getChangedStreams();
+}
+
 std::map<std::string, std::string> ModulePackageContainer::getEnabledStreams()
 {
     return pImpl->persistor->getEnabledStreams();
@@ -1364,6 +1423,31 @@ void ModulePackageContainer::Impl::ModulePersistor::rollback(void)
         const auto &name = iter.first;
         reset(name);
     }
+}
+
+
+
+
+std::vector<ModulePackageContainer::stream_change_t>
+ModulePackageContainer::Impl::ModulePersistor::getChangedStreams()
+{
+    // [(name, old_stream, old_state, new_stream, new_state)]
+    std::vector<ModulePackageContainer::stream_change_t> result;
+    for (const auto & it : configs) {
+        const std::string & name = it.first;
+        const std::string & oldStream = it.second.first.getValue(name, "stream");
+        const ModuleState & oldState = fromString(it.second.first.getValue(name, "state"));
+        const std::string & newStream = it.second.second.stream;
+        ModuleState newState = it.second.second.state;
+        if (newState == ModuleState::DEFAULT) {
+            newState = ModuleState::UNKNOWN;
+        }
+        if (oldStream == newStream && oldState == newState) {
+            continue;
+        }
+        result.push_back(std::make_tuple(name, oldStream, oldState, newStream, newState));
+    }
+    return result;
 }
 
 std::map<std::string, std::string>

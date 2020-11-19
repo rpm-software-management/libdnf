@@ -54,7 +54,7 @@ TransformerTest::testGroupTransformation()
     // perform the transformation
     transformer.processGroupPersistor(swdb, groupsJson);
 
-    swdb->backup("db.sql");
+    // swdb->backup("db.sql");
 
     // check basic stuff in generated transaction
     libdnf::Transaction trans(swdb, 1);

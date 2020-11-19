@@ -93,6 +93,7 @@ public:
     RPMItemPtr createRPMItem();
     CompsGroupItemPtr createCompsGroupItem();
     CompsEnvironmentItemPtr createCompsEnvironmentItem();
+    ModuleStreamItemPtr createModuleStreamItem();
 
     // Item: RPM
     TransactionItemReason resolveRPMTransactionItemReason(const std::string &name,
@@ -112,6 +113,9 @@ public:
     std::vector< TransactionItemPtr > getCompsEnvironmentItemsByPattern(const std::string &pattern);
     std::vector< std::string > getCompsGroupEnvironments(const std::string &groupId);
 
+    // Item: ModuleStream
+    // TOOD: Add methods if needed
+
     // misc
     void setReleasever(std::string value);
     void addConsoleOutputLine(int fileDescriptor, std::string line);
@@ -123,6 +127,7 @@ public:
 
 protected:
     friend class Transformer;
+    friend class ModulePackageContainer;
 
     explicit Swdb(SQLite3Ptr conn, bool autoClose);
     SQLite3Ptr conn;

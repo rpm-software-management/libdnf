@@ -37,7 +37,7 @@ enum class TransactionItemState : int {
     ERROR = 2
 };
 
-enum class ItemType : int { UNKNOWN = 0, RPM = 1, GROUP = 2, ENVIRONMENT = 3 };
+enum class ItemType : int { UNKNOWN = 0, RPM = 1, GROUP = 2, ENVIRONMENT = 3, MODULE_STREAM = 4 };
 
 // Any time you add a new action, change functions that resolve reasons,
 // because removed items (RPMs) must be excluded from reason resolution:
@@ -53,7 +53,15 @@ enum class TransactionItemAction : int {
     REMOVE = 8,        // a package that was removed from the system
     REINSTALL = 9,     // a package that was reinstalled with the identical version
     REINSTALLED = 10,  // a package that was reinstalled with the identical version (old repo, for example)
-    REASON_CHANGE = 11 // a package was kept on the system but it's reason has changed
+    REASON_CHANGE = 11, // a package was kept on the system but it's reason has changed
+
+    // module streams
+    ENABLE = 101,
+    ENABLE_OUT = 102,
+    DISABLE = 103,
+    DISABLE_OUT = 104,
+    RESET = 105,
+    RESET_OUT = 106,
 };
 
 } // namespace libdnf

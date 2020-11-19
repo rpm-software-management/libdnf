@@ -34,6 +34,8 @@
 
 namespace libdnf {
 
+class Swdb;
+
 struct ModulePackageContainer
 {
 public:
@@ -276,6 +278,18 @@ public:
     bool isModuleActive(const ModulePackage * modulePackage);
     void loadFailSafeData();
     void updateFailSafeData();
+
+    /**
+     * @brief commit module changes to storage
+     */
+    bool saveHistory(Swdb & swdb);
+
+    typedef std::tuple<std::string, std::string, ModuleState, std::string, ModuleState> stream_change_t;
+
+    /**
+     * @brief list of tuples with (name, old_stream, old_state, new_stream, new_state) describing stream changes
+     */
+    std::vector<stream_change_t> getChangedStreams();
 
 private:
     class Impl;

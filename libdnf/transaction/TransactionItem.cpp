@@ -37,6 +37,13 @@ static const std::map< TransactionItemAction, std::string > transactionItemActio
     {TransactionItemAction::REINSTALL, "Reinstall"},
     {TransactionItemAction::REINSTALLED, "Reinstalled"},
     {TransactionItemAction::REASON_CHANGE, "Reason Change"},
+
+    {TransactionItemAction::ENABLE, "Enable"},
+    {TransactionItemAction::ENABLE_OUT, "Enable (out)"},
+    {TransactionItemAction::DISABLE, "Disable"},
+    {TransactionItemAction::DISABLE_OUT, "Disable (out)"},
+    {TransactionItemAction::RESET, "Reset"},
+    {TransactionItemAction::RESET_OUT, "Reset (out)"},
 };
 
 static const std::map< TransactionItemAction, std::string > transactionItemActionShort = {
@@ -53,6 +60,13 @@ static const std::map< TransactionItemAction, std::string > transactionItemActio
     {TransactionItemAction::REINSTALLED, "R"},
     // TODO: replace "?" with something better
     {TransactionItemAction::REASON_CHANGE, "?"},
+
+    {TransactionItemAction::ENABLE, "e"},
+    {TransactionItemAction::ENABLE_OUT, ""},
+    {TransactionItemAction::DISABLE, "x"},
+    {TransactionItemAction::DISABLE_OUT, ""},
+    {TransactionItemAction::RESET, "r"},
+    {TransactionItemAction::RESET_OUT, ""},
 };
 
 /*
@@ -100,6 +114,9 @@ TransactionItemBase::isForwardAction() const
         case TransactionItemAction::OBSOLETE:
         case TransactionItemAction::UPGRADE:
         case TransactionItemAction::REINSTALL:
+        case TransactionItemAction::ENABLE:
+        case TransactionItemAction::DISABLE:
+        case TransactionItemAction::RESET:
             return true;
         default:
             return false;
@@ -115,6 +132,9 @@ TransactionItemBase::isBackwardAction() const
         case TransactionItemAction::OBSOLETED:
         case TransactionItemAction::UPGRADED:
         case TransactionItemAction::REINSTALLED:
+        case TransactionItemAction::ENABLE_OUT:
+        case TransactionItemAction::DISABLE_OUT:
+        case TransactionItemAction::RESET_OUT:
             return true;
         default:
             return false;

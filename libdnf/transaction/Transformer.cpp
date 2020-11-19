@@ -53,6 +53,10 @@ static const char * const sql_migrate_tables_1_2 =
 #include "sql/migrate_tables_1_2.sql"
     ;
 
+static const char * const sql_migrate_tables_1_3 =
+#include "sql/migrate_tables_1_3.sql"
+    ;
+
 void
 Transformer::createDatabase(SQLite3Ptr conn)
 {
@@ -70,6 +74,12 @@ Transformer::migrateSchema(SQLite3Ptr conn)
 
         if (schemaVersion == "1.1") {
             conn->exec(sql_migrate_tables_1_2);
+            schemaVersion = "1.2";
+        }
+
+        if (schemaVersion == "1.2") {
+            conn->exec(sql_migrate_tables_1_3);
+            schemaVersion = "1.3";
         }
     }
     else {

@@ -2,7 +2,9 @@ set(TRANSACTION_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/Item.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CompsEnvironmentItem.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CompsGroupItem.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ModuleStreamItem.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/RPMItem.cpp
+
     ${CMAKE_CURRENT_SOURCE_DIR}/Swdb.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Transaction.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MergedTransaction.cpp

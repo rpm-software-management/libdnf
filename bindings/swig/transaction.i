@@ -31,6 +31,9 @@ typedef std::shared_ptr< libdnf::CompsGroupItem > CompsGroupItemPtr;
 %shared_ptr(libdnf::CompsGroupPackage)
 typedef std::shared_ptr< libdnf::CompsGroupPackage > CompsGroupPackagePtr;
 
+%shared_ptr(libdnf::ModuleStreamItem)
+typedef std::shared_ptr< libdnf::ModuleStreamItem > ModuleStreamItemPtr;
+
 %shared_ptr(libdnf::CompsEnvironmentItem)
 typedef std::shared_ptr< libdnf::CompsEnvironmentItem > CompsEnvironmentItemPtr;
 
@@ -57,6 +60,7 @@ typedef libdnf::CompsPackageType CompsPackageType;
     #include "libdnf/transaction/Item.hpp"
     #include "libdnf/transaction/CompsEnvironmentItem.hpp"
     #include "libdnf/transaction/CompsGroupItem.hpp"
+    #include "libdnf/transaction/ModuleStreamItem.hpp"
     #include "libdnf/transaction/RPMItem.hpp"
     #include "libdnf/transaction/Swdb.hpp"
     #include "libdnf/transaction/Transaction.hpp"
@@ -96,6 +100,7 @@ typedef libdnf::CompsPackageType CompsPackageType;
 %include "libdnf/transaction/Item.hpp"
 %include "libdnf/transaction/CompsEnvironmentItem.hpp"
 %include "libdnf/transaction/CompsGroupItem.hpp"
+%include "libdnf/transaction/ModuleStreamItem.hpp"
 %include "libdnf/transaction/RPMItem.hpp"
 %include "libdnf/transaction/Swdb.hpp"
 %include "libdnf/transaction/Transaction.hpp"

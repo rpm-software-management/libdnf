@@ -255,6 +255,9 @@ getItemIdentifier(ItemPtr item)
     } else if (itemType == ItemType::ENVIRONMENT) {
         auto env = std::dynamic_pointer_cast< CompsEnvironmentItem >(item);
         name = env->getEnvironmentId();
+    } else if (itemType == ItemType::MODULE_STREAM) {
+        auto mod = std::dynamic_pointer_cast< ModuleStreamItem >(item);
+        name = mod->getName();
     }
     return name;
 }
@@ -435,6 +438,14 @@ MergedTransaction::mergeItem(ItemPairMap &itemPairMap, TransactionItemBasePtr mT
             resolveAltered(previousItemPair, mTransItem);
             break;
         case TransactionItemAction::REINSTALLED:
+            break;
+        case TransactionItemAction::ENABLE:
+        case TransactionItemAction::DISABLE:
+        case TransactionItemAction::RESET:
+        case TransactionItemAction::ENABLE_OUT:
+        case TransactionItemAction::DISABLE_OUT:
+        case TransactionItemAction::RESET_OUT:
+            resolveAltered(previousItemPair, mTransItem);
             break;
     }
 }

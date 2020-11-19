@@ -27,13 +27,18 @@
 #include "../utils/sqlite3/Sqlite3.hpp"
 
 namespace libdnf {
+class ModuleStreamItem;
+using ModuleStreamItemPtr = std::shared_ptr< ModuleStreamItem >;
+
 class TransactionItem;
+class TransactionItemBase;
 typedef std::shared_ptr< TransactionItem > TransactionItemPtr;
 }
 
 #include "Item.hpp"
 #include "CompsEnvironmentItem.hpp"
 #include "CompsGroupItem.hpp"
+#include "ModuleStreamItem.hpp"
 #include "RPMItem.hpp"
 #include "private/Repo.hpp"
 #include "Transaction.hpp"
@@ -54,6 +59,10 @@ public:
     CompsGroupItemPtr getCompsGroupItem() const noexcept
     {
         return std::dynamic_pointer_cast< CompsGroupItem >(item);
+    }
+    ModuleStreamItemPtr getModuleStreamItem() const noexcept
+    {
+        return std::dynamic_pointer_cast< ModuleStreamItem >(item);
     }
     RPMItemPtr getRPMItem() const noexcept { return std::dynamic_pointer_cast< RPMItem >(item); }
 

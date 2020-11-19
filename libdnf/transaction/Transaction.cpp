@@ -121,6 +121,9 @@ Transaction::getItems()
     auto comps_environments = CompsEnvironmentItem::getTransactionItems(conn, getId());
     result.insert(result.end(), comps_environments.begin(), comps_environments.end());
 
+    auto module_streams = ModuleStreamItem::getTransactionItems(conn, getId());
+    result.insert(result.end(), module_streams.begin(), module_streams.end());
+
     return result;
 }
 

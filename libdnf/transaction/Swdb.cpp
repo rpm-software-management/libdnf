@@ -227,7 +227,7 @@ Swdb::closeTransaction()
         throw std::logic_error(_("Not in progress"));
     }
     int64_t result = transactionInProgress->getId();
-    transactionInProgress = std::unique_ptr< swdb_private::Transaction >(nullptr);
+    transactionInProgress = std::shared_ptr< swdb_private::Transaction >(nullptr);
     itemsInProgress.clear();
     return result;
 }
@@ -586,6 +586,13 @@ Swdb::createCompsGroupItem()
 {
     return std::make_shared< CompsGroupItem >(conn);
 }
+
+ModuleStreamItemPtr
+Swdb::createModuleStreamItem()
+{
+    return std::make_shared< ModuleStreamItem >(conn);
+}
+
 
 /**
  * Filter unneeded packages from pool
