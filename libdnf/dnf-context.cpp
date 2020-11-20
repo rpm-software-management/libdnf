@@ -3087,7 +3087,7 @@ static std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, s
             }
             for (auto iter = stream_dict.begin(); iter != stream_dict.end(); ) {
                 if (iter->first != enabledOrDefaultStream) {
-                    stream_dict.erase(iter);
+                    stream_dict.erase(iter++);
                 } else {
                     ++iter;
                 }
