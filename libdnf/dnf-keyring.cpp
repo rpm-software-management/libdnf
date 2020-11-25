@@ -189,11 +189,17 @@ dnf_keyring_add_public_keys(rpmKeyring keyring, GError **error) try
     const gchar *gpg_dir = "/etc/pki/rpm-gpg";
     gboolean ret = TRUE;
     g_autoptr(GDir) dir = NULL;
+    GError *localError = NULL;
 
     /* search all the public key files */
-    dir = g_dir_open(gpg_dir, 0, error);
-    if (dir == NULL)
-        return FALSE;
+    dir = g_dir_open(gpg_dir, 0, &localError);
+    if (dir == NULL) {
+        if (localError->domain != G_FILE_ERROR || localError->code != G_FILE_ERROR_NOENT) {
+            g_warning("%s", localError->message);
+        }
+        g_error_free(localError);
+        return TRUE;
+    }
     do {
         const gchar *filename;
         g_autofree gchar *path_tmp = NULL;
@@ -201,7 +207,6 @@ dnf_keyring_add_public_keys(rpmKeyring keyring, GError **error) try
         if (filename == NULL)
             break;
         path_tmp = g_build_filename(gpg_dir, filename, NULL);
-        GError *localError = NULL;
         ret = dnf_keyring_add_public_key(keyring, path_tmp, &localError);
         if (!ret) {
             g_warning("%s", localError->message);
