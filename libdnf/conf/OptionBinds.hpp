@@ -55,6 +55,8 @@ public:
         void newString(Option::Priority priority, const std::string & value);
         std::string getValueString() const;
         bool getAddValue() const;
+        const Option & getOption() const;
+        Option & getOption();
 
     private:
         friend class OptionBinds;
