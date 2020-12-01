@@ -66,6 +66,15 @@ bool OptionBinds::Item::getAddValue() const
     return addValue;
 }
 
+const Option & OptionBinds::Item::getOption() const
+{
+    return *option;
+}
+
+Option & OptionBinds::Item::getOption()
+{
+    return *option;
+}
 
 // =========== OptionBinds class ===============
 
