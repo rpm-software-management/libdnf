@@ -936,6 +936,70 @@ dnf_repo_get_boolean(GKeyFile *keyfile,
     return false;
 }
 
+/* Resets repository configuration options previously readed from repository
+ * configuration file to initial state. */
+static void
+dnf_repo_conf_reset(libdnf::ConfigRepo &config)
+{
+    for (auto & item : config.optBinds()) {
+        auto & itemOption = item.second;
+        if (itemOption.getPriority() == libdnf::Option::Priority::REPOCONFIG) {
+            itemOption.getOption().reset();
+        }
+    }
+}
+
+/* Loads repository configuration from GKeyFile */
+static void
+dnf_repo_conf_from_gkeyfile(libdnf::ConfigRepo &config, const char *repoId, GKeyFile *gkeyFile)
+{
+    // Reset to the initial state before reloading the configuration.
+    dnf_repo_conf_reset(config);
+
+    g_auto(GStrv) keys = g_key_file_get_keys(gkeyFile, repoId, NULL, NULL);
+    for (auto it = keys; *it != NULL; ++it) {
+        auto key = *it;
+        g_autofree gchar *str = g_key_file_get_value(gkeyFile, repoId, key, NULL);
+        if (str) {
+            try {
+                auto & optionItem = config.optBinds().at(key);
+
+                if (dynamic_cast<libdnf::OptionStringList*>(&optionItem.getOption()) ||
+                    dynamic_cast<libdnf::OptionChild<libdnf::OptionStringList>*>(&optionItem.getOption())
+                ) {
+
+                    // reload list option from gKeyFile using g_key_file_get_string_list()
+                    // g_key_file_get_value () is problematic for multiline lists
+                    g_auto(GStrv) list = g_key_file_get_string_list(gkeyFile, repoId, key, NULL, NULL);
+                    if (list) {
+                        // list can be ['value1', 'value2, value3'] therefore we first join
+                        // to have 'value1, value2, value3'
+                        g_autofree gchar * tmp_strval = g_strjoinv(",", list);
+                        try {
+                            optionItem.newString(libdnf::Option::Priority::REPOCONFIG, tmp_strval);
+                        } catch (const std::exception & ex) {
+                            g_debug("Invalid configuration value: %s = %s in %s; %s", key, str, repoId, ex.what());
+                        }
+                    }
+
+                } else {
+
+                    // process other (non list) options
+                    try {
+                        optionItem.newString(libdnf::Option::Priority::REPOCONFIG, str);
+                    } catch (const std::exception & ex) {
+                        g_debug("Invalid configuration value: %s = %s in %s; %s", key, str, repoId, ex.what());
+                    }
+
+                }
+
+            } catch (const std::exception &) {
+                g_debug("Unknown configuration option: %s = %s in %s", key, str, repoId);
+            }
+        }
+    }
+}
+
 /* Initialize (or potentially reset) repo & LrHandle from keyfile values. */
 static gboolean
 dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
