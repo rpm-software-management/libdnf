@@ -817,93 +817,6 @@ dnf_repo_set_metadata_expire(DnfRepo *repo, guint metadata_expire)
 }
 
 /**
- *  dnf_repo_parse_time_from_str
- *  @expression: a expression to be parsed
- *  @out_parsed_time: (out): return location for parsed time
- *  @error: error item
- *
- *  Parse String into an integer value of seconds, or a human
- *  readable variation specifying days, hours, minutes or seconds
- *  until something happens. Note that due to historical president
- *  -1 means "never", so this accepts that and allows
- *  the word never, too.
- *
- *  Valid inputs: 100, 1.5m, 90s, 1.2d, 1d, 0xF, 0.1, -1, never.
- *  Invalid inputs: -10, -0.1, 45.6Z, 1d6h, 1day, 1y.
-
- *  Returns: integer value in seconds
- **/
-
-static gboolean
-dnf_repo_parse_time_from_str(const gchar *expression, guint *out_parsed_time, GError **error)
-{
-    gint multiplier;
-    gdouble parsed_time;
-    gchar *endptr = NULL;
-
-    if (!g_strcmp0(expression, "")) {
-        g_set_error_literal(error,
-                            DNF_ERROR,
-                            DNF_ERROR_FILE_INVALID,
-                            "no metadata value specified");
-        return FALSE;
-    }
-
-    if (g_strcmp0(expression, "-1") == 0 ||
-        g_strcmp0(expression,"never") == 0) {
-        *out_parsed_time = G_MAXUINT;
-        return TRUE; /* Note early return */
-    }
-
-    gchar last_char = expression[ strlen(expression) - 1 ];
-
-    /* check if the input ends with h, m ,d ,s as units */
-    if (g_ascii_isalpha(last_char)) {
-        if (last_char == 'h')
-            multiplier = 60 * 60;
-        else if (last_char == 's')
-            multiplier = 1;
-        else if (last_char == 'm')
-            multiplier = 60;
-        else if (last_char == 'd')
-            multiplier = 60 * 60 * 24;
-        else {
-            g_set_error(error, DNF_ERROR, DNF_ERROR_FILE_INVALID,
-                        "unknown unit %c", last_char);
-            return FALSE;
-        }
-    }
-    else
-        multiplier = 1;
-
-    /* convert expression into a double*/
-    parsed_time = g_ascii_strtod(expression, &endptr);
-
-    /* failed to parse */
-    if (expression == endptr) {
-        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
-                    "failed to parse time: %s", expression);
-        return FALSE;
-    }
-
-    /* time can not be below zero */
-    if (parsed_time < 0) {
-        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
-                    "seconds value must not be negative %s",expression );
-        return FALSE;
-    }
-
-    /* time too large */
-    if (parsed_time > G_MAXDOUBLE || (parsed_time * multiplier) > G_MAXUINT){
-        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
-                    "time too large");
-        return FALSE;
-    }
-
-    *out_parsed_time = (guint) (parsed_time * multiplier);
-    return TRUE;
-}
-/**
  * dnf_repo_get_username_password_string:
  */
 static gchar *
@@ -1005,8 +918,6 @@ static gboolean
 dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    guint cost;
-    g_autofree gchar *metadata_expire_str = NULL;
     g_autofree gchar *mirrorlist = NULL;
     g_autofree gchar *mirrorlisturl = NULL;
     g_autofree gchar *metalinkurl = NULL;
@@ -1024,11 +935,6 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     // Reload repository configuration from keyfile.
     dnf_repo_conf_from_gkeyfile(*conf, repoId, priv->keyfile);
 
-    /* cost is optional */
-    cost = g_key_file_get_integer(priv->keyfile, repoId, "cost", NULL);
-    if (cost != 0)
-        dnf_repo_set_cost(repo, cost);
-
     /* baseurl is optional; if missing, unset it */
     g_auto(GStrv) baseurls = NULL;
     auto & repoBaseurls = conf->baseurl().getValue();
@@ -1041,15 +947,6 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     }
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_URLS, baseurls))
         return FALSE;
-
-    /* metadata_expire is optional, if shown, we parse the string to add the time */
-    metadata_expire_str = g_key_file_get_string(priv->keyfile, repoId, "metadata_expire", NULL);
-    if (metadata_expire_str) {
-        guint metadata_expire;
-        if (!dnf_repo_parse_time_from_str(metadata_expire_str, &metadata_expire, error))
-            return FALSE;
-        dnf_repo_set_metadata_expire(repo, metadata_expire);
-    }
 
     /* the "mirrorlist" entry could be either a real mirrorlist, or a metalink entry */
     mirrorlist = g_key_file_get_string(priv->keyfile, repoId, "mirrorlist", NULL);
