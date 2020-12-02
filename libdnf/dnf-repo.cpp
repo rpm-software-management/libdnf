@@ -1006,7 +1006,6 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     guint cost;
-    gboolean module_hotfixes = false;
     g_autofree gchar *metadata_expire_str = NULL;
     g_autofree gchar *mirrorlist = NULL;
     g_autofree gchar *mirrorlisturl = NULL;
@@ -1016,48 +1015,28 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     g_autofree gchar *usr = NULL;
     g_autofree gchar *usr_pwd = NULL;
     g_autofree gchar *usr_pwd_proxy = NULL;
-    g_auto(GStrv) baseurls;
 
     auto repoId = priv->repo->getId().c_str();
     g_debug("setting keyfile data for %s", repoId);
 
-    /* skip_if_unavailable is optional */
-    if (g_key_file_has_key(priv->keyfile, repoId, "skip_if_unavailable", NULL)) {
-        bool skip = dnf_repo_get_boolean(priv->keyfile, repoId, "skip_if_unavailable");
-        priv->repo->getConfig()->skip_if_unavailable().set(libdnf::Option::Priority::REPOCONFIG, skip);
-    }
+    auto conf = priv->repo->getConfig();
 
-    /* priority is optional */
-    g_autofree gchar * priority_str = g_key_file_get_string(priv->keyfile, repoId, "priority", NULL);
-    if (priority_str) {
-        priv->repo->getConfig()->priority().set(libdnf::Option::Priority::REPOCONFIG, priority_str);
-    }
+    // Reload repository configuration from keyfile.
+    dnf_repo_conf_from_gkeyfile(*conf, repoId, priv->keyfile);
 
     /* cost is optional */
     cost = g_key_file_get_integer(priv->keyfile, repoId, "cost", NULL);
     if (cost != 0)
         dnf_repo_set_cost(repo, cost);
 
-    module_hotfixes = g_key_file_get_boolean(priv->keyfile, repoId, "module_hotfixes", NULL);
-    priv->repo->getConfig()->module_hotfixes().set(libdnf::Option::Priority::REPOCONFIG, module_hotfixes);
-
     /* baseurl is optional; if missing, unset it */
-    baseurls = g_key_file_get_string_list(priv->keyfile, repoId, "baseurl", NULL, NULL);
-    if (baseurls) {
-        // baseruls can be ['value1', 'value2, value3'] therefore we first join to have 'value1, value2, value3'
-        g_autofree gchar * tmp_strval = g_strjoinv(",", baseurls);
-
-        auto & bindBaseurls = priv->repo->getConfig()->optBinds().at("baseurl");
-        bindBaseurls.newString(libdnf::Option::Priority::REPOCONFIG, tmp_strval);
-
-        auto & repoBaseurls = priv->repo->getConfig()->baseurl();
-        if (!repoBaseurls.getValue().empty()){
-            auto len = repoBaseurls.getValue().size();
-            g_strfreev(baseurls);
-            baseurls = g_new0(char *, len + 1);
-            for (size_t i = 0; i < len; ++i) {
-                baseurls[i] = g_strdup(repoBaseurls.getValue()[i].c_str());
-            }
+    g_auto(GStrv) baseurls = NULL;
+    auto & repoBaseurls = conf->baseurl().getValue();
+    if (!repoBaseurls.empty()){
+        auto len = repoBaseurls.size();
+        baseurls = g_new0(char *, len + 1);
+        for (size_t i = 0; i < len; ++i) {
+            baseurls[i] = g_strdup(repoBaseurls[i].c_str());
         }
     }
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_URLS, baseurls))
@@ -1092,18 +1071,6 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
         return FALSE;
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_METALINKURL, metalinkurl))
         return FALSE;
-
-    /* needed in order for addCountmeFlag() to use the same persistdir as DNF
-     * would */
-    if (metalinkurl)
-        priv->repo->getConfig()->metalink().set(libdnf::Option::Priority::REPOCONFIG, metalinkurl);
-    if (mirrorlisturl)
-        priv->repo->getConfig()->mirrorlist().set(libdnf::Option::Priority::REPOCONFIG, mirrorlisturl);
-
-    if (g_key_file_has_key(priv->keyfile, repoId, "countme", NULL)) {
-        bool countme = dnf_repo_get_boolean(priv->keyfile, repoId, "countme");
-        priv->repo->getConfig()->countme().set(libdnf::Option::Priority::REPOCONFIG, countme);
-    }
 
     /* file:// */
     if (baseurls != NULL && baseurls[0] != NULL &&
@@ -1150,42 +1117,20 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
         dnf_repo_set_location_tmp(repo, tmp->str);
     }
 
-    /* gpgkey is optional for gpgcheck=1, but required for repo_gpgcheck=1 */
+    // Sync priv->gpgkeys
     g_strfreev(priv->gpgkeys);
-    priv->gpgkeys = NULL;
-
-    g_auto(GStrv) gpgkeys;
-    gpgkeys = g_key_file_get_string_list(priv->keyfile, repoId, "gpgkey", NULL, NULL);
-
-    if (gpgkeys) {
-        // gpgkeys can be ['value1', 'value2, value3'] therefore we first join to have 'value1, value2, value3'
-        g_autofree gchar * tmp_strval = g_strjoinv(",", gpgkeys);
-
-        auto & bindGpgkeys = priv->repo->getConfig()->optBinds().at("gpgkey");
-        bindGpgkeys.newString(libdnf::Option::Priority::REPOCONFIG, tmp_strval);
-
-        auto & repoGpgkeys = priv->repo->getConfig()->gpgkey();
-        if (!repoGpgkeys.getValue().empty()){
-            auto len = repoGpgkeys.getValue().size();
-            priv->gpgkeys = g_new0(char *, len + 1);
-            for (size_t i = 0; i < len; ++i) {
-                priv->gpgkeys[i] = g_strdup(repoGpgkeys.getValue()[i].c_str());
-            }
-        } else {
-            /* Canonicalize the empty list to NULL for ease of checking elsewhere */
-            g_strfreev(static_cast<gchar **>(g_steal_pointer(&priv->gpgkeys)));
+    auto & repoGpgkeys = conf->gpgkey().getValue();
+    if (!repoGpgkeys.empty()){
+        auto len = repoGpgkeys.size();
+        priv->gpgkeys = g_new0(char *, len + 1);
+        for (size_t i = 0; i < len; ++i) {
+            priv->gpgkeys[i] = g_strdup(repoGpgkeys[i].c_str());
         }
+    } else {
+        priv->gpgkeys = NULL;
     }
 
-    if (g_key_file_has_key(priv->keyfile, repoId, "gpgcheck", NULL)) {
-        auto gpgcheck_pkgs = dnf_repo_get_boolean(priv->keyfile, repoId, "gpgcheck");
-        priv->repo->getConfig()->gpgcheck().set(libdnf::Option::Priority::REPOCONFIG, gpgcheck_pkgs);
-    }
-
-    if (g_key_file_has_key(priv->keyfile, repoId, "repo_gpgcheck", NULL)) {
-        auto gpgcheck_md = dnf_repo_get_boolean(priv->keyfile, repoId, "repo_gpgcheck");
-        priv->repo->getConfig()->repo_gpgcheck().set(libdnf::Option::Priority::REPOCONFIG, gpgcheck_md);
-    }
+    /* gpgkey is optional for gpgcheck=1, but required for repo_gpgcheck=1 */
     auto gpgcheck_md = priv->repo->getConfig()->repo_gpgcheck().getValue();
     if (gpgcheck_md && priv->gpgkeys == NULL) {
         g_set_error_literal(error,
@@ -1199,33 +1144,17 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_GPGCHECK, (long)gpgcheck_md))
         return FALSE;
 
-    auto & repoExcludepkgs = priv->repo->getConfig()->excludepkgs();
-    repoExcludepkgs.set(libdnf::Option::Priority::REPOCONFIG, "");
-
-    auto & bindExcludepkgs = priv->repo->getConfig()->optBinds().at("excludepkgs");
-    if (auto excludepkgs = g_key_file_get_string(priv->keyfile, repoId, "exclude", NULL)) {
-        bindExcludepkgs.newString(libdnf::Option::Priority::REPOCONFIG, excludepkgs);
-        g_free(excludepkgs);
-    }
-    if (auto excludepkgs = g_key_file_get_string(priv->keyfile, repoId, "excludepkgs", NULL)) {
-        bindExcludepkgs.newString(libdnf::Option::Priority::REPOCONFIG, excludepkgs);
-        g_free(excludepkgs);
-    }
-
+    // Sync priv->exclude_packages
     g_strfreev(priv->exclude_packages);
-    if (!repoExcludepkgs.getValue().empty()) {
-        auto len = repoExcludepkgs.getValue().size();
+    auto & repoExcludepkgs = conf->excludepkgs().getValue();
+    if (!repoExcludepkgs.empty()) {
+        auto len = repoExcludepkgs.size();
         priv->exclude_packages = g_new0(char *, len + 1);
         for (size_t i = 0; i < len; ++i) {
-            priv->exclude_packages[i] = g_strdup(repoExcludepkgs.getValue()[i].c_str());
+            priv->exclude_packages[i] = g_strdup(repoExcludepkgs[i].c_str());
         }
     } else {
         priv->exclude_packages = NULL;
-    }
-
-    if (auto includepkgs = g_key_file_get_string(priv->keyfile, repoId, "includepkgs", NULL)) {
-        priv->repo->getConfig()->includepkgs().set(libdnf::Option::Priority::REPOCONFIG, includepkgs);
-        g_free(includepkgs);
     }
 
     /* proxy is optional */
