@@ -817,18 +817,22 @@ dnf_repo_set_metadata_expire(DnfRepo *repo, guint metadata_expire)
 }
 
 /**
- * dnf_repo_get_username_password_string:
- */
-static gchar *
-dnf_repo_get_username_password_string(const gchar *user, const gchar *pass)
+* @brief Format user password string
+*
+* Returns user and password in user:password form. If encode is True,
+* special characters in user and password are URL encoded.
+*
+* @param user Username
+* @param passwd Password
+* @param encode If quote is True, special characters in user and password are URL encoded.
+* @return User and password in user:password form
+*/
+static std::string formatUserPassString(const std::string & user, const std::string & passwd, bool encode)
 {
-    if (user == NULL && pass == NULL)
-        return NULL;
-    if (user != NULL && pass == NULL)
-        return g_strdup(user);
-    if (user == NULL && pass != NULL)
-        return g_strdup_printf(":%s", pass);
-    return g_strdup_printf("%s:%s", user, pass);
+    if (encode)
+        return libdnf::urlEncode(user) + ":" + libdnf::urlEncode(passwd);
+    else
+        return user + ":" + passwd;
 }
 
 static gboolean
@@ -921,11 +925,8 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     g_autofree gchar *mirrorlist = NULL;
     g_autofree gchar *mirrorlisturl = NULL;
     g_autofree gchar *metalinkurl = NULL;
-    g_autofree gchar *proxy = NULL;
-    g_autofree gchar *pwd = NULL;
-    g_autofree gchar *usr = NULL;
-    g_autofree gchar *usr_pwd = NULL;
-    g_autofree gchar *usr_pwd_proxy = NULL;
+    std::string tmp_str;
+    const char *tmp_cstr;
 
     auto repoId = priv->repo->getId().c_str();
     g_debug("setting keyfile data for %s", repoId);
@@ -1054,26 +1055,39 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
         priv->exclude_packages = NULL;
     }
 
-    /* proxy is optional */
-    proxy = g_key_file_get_string(priv->keyfile, repoId, "proxy", NULL);
-    auto repoProxy = proxy ? (strcasecmp(proxy, "_none_") == 0 ? NULL : proxy)
-        : dnf_context_get_http_proxy(priv->context);
-    if (!lr_handle_setopt(priv->repo_handle, error, LRO_PROXY, repoProxy))
+    tmp_str = conf->proxy().getValue();
+    tmp_cstr = tmp_str.empty() ? dnf_context_get_http_proxy(priv->context) : tmp_str.c_str();
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_PROXY, tmp_cstr))
         return FALSE;
 
-    /* both parts of the proxy auth are optional */
-    usr = g_key_file_get_string(priv->keyfile, repoId, "proxy_username", NULL);
-    pwd = g_key_file_get_string(priv->keyfile, repoId, "proxy_password", NULL);
-    usr_pwd_proxy = dnf_repo_get_username_password_string(usr, pwd);
-    if (!lr_handle_setopt(priv->repo_handle, error, LRO_PROXYUSERPWD, usr_pwd_proxy))
+    // setup proxy username and password
+    tmp_cstr = NULL;
+    if (!conf->proxy_username().empty()) {
+        tmp_str = conf->proxy_username().getValue();
+        if (!tmp_str.empty()) {
+            if (conf->proxy_password().empty()) {
+                g_set_error(error, DNF_ERROR, DNF_ERROR_FILE_INVALID,
+                            "repo '%s': 'proxy_username' is set but not 'proxy_password'", repoId);
+                return FALSE;
+            }
+            tmp_str = formatUserPassString(tmp_str, conf->proxy_password().getValue(), true);
+            tmp_cstr = tmp_str.c_str();
+        }
+    }
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_PROXYUSERPWD, tmp_cstr))
         return FALSE;
 
-    /* both parts of the HTTP auth are optional */
-    usr = g_key_file_get_string(priv->keyfile, repoId, "username", NULL);
-    pwd = g_key_file_get_string(priv->keyfile, repoId, "password", NULL);
-    usr_pwd = dnf_repo_get_username_password_string(usr, pwd);
-    if (!lr_handle_setopt(priv->repo_handle, error, LRO_USERPWD, usr_pwd))
+    // setup username and password
+    tmp_cstr = NULL;
+    tmp_str = conf->username().getValue();
+    if (!tmp_str.empty()) {
+        // TODO Use URL encoded form, needs support in librepo
+        tmp_str = formatUserPassString(tmp_str, conf->password().getValue(), false);
+        tmp_cstr = tmp_str.c_str();
+    }
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_USERPWD, tmp_cstr))
         return FALSE;
+
     return TRUE;
 }
 
