@@ -20,6 +20,25 @@
 ######################
 
 ====================
+0.55.2 Release Notes
+====================
+
+- Add a dnf sanitizers wrapper to /etc/profile.d
+- Improve performance of query installed() and available()
+- Swdb: Add a method to get the current transaction
+- [modules] Add special handling for src artifacts (RhBug:1809314)
+- Better msgs if "basecachedir" or "proxy_password" isn't set (RhBug:1888946)
+
+- New features:
+  - Add new options module_stream_switch
+  - Support allow_vendor_change setting in dnf context API
+
+Bugs fixed in 0.55.2:
+
+* :rhbug:`1888946`
+* :rhbug:`1809314`
+
+====================
 0.55.0 Release Notes
 ====================
 
