@@ -27,18 +27,21 @@
 namespace libdnf {
 
 OptionString::OptionString(const std::string & defaultValue)
-: Option(Priority::DEFAULT), defaultValue(defaultValue), value(defaultValue) {}
+: Option(Priority::DEFAULT), initPriority(Priority::DEFAULT), defaultValue(defaultValue), value(defaultValue) {}
 
 OptionString::OptionString(const char * defaultValue)
 {
     if (defaultValue) {
         this->value = this->defaultValue = defaultValue;
-        this->priority = Priority::DEFAULT;
+        this->initPriority = this->priority = Priority::DEFAULT;
+    } else {
+        this->initPriority = Priority::EMPTY;
     }
 }
 
 OptionString::OptionString(const std::string & defaultValue, const std::string & regex, bool icase)
-: Option(Priority::DEFAULT), regex(regex), icase(icase), defaultValue(defaultValue), value(defaultValue) { test(defaultValue); }
+: Option(Priority::DEFAULT), initPriority(Priority::DEFAULT), regex(regex), icase(icase)
+, defaultValue(defaultValue), value(defaultValue) { test(defaultValue); }
 
 OptionString::OptionString(const char * defaultValue, const std::string & regex, bool icase)
 : regex(regex), icase(icase)
@@ -48,6 +51,8 @@ OptionString::OptionString(const char * defaultValue, const std::string & regex,
         test(this->defaultValue);
         this->value = this->defaultValue;
         this->priority = Priority::DEFAULT;
+    } else {
+        this->initPriority = Priority::EMPTY;
     }
 }
 

@@ -47,6 +47,7 @@ public:
     std::string getValueString() const override;
     const char * const * getTrueValues() const noexcept;
     const char * const * getFalseValues() const noexcept;
+    void reset() override;
 
 protected:
     const char * const * const trueValues;
@@ -84,7 +85,13 @@ inline const char * const * OptionBool::getTrueValues() const noexcept
 
 inline const char * const * OptionBool::getFalseValues() const noexcept
 {
-    return falseValues ? falseValues : defFalseValues; 
+    return falseValues ? falseValues : defFalseValues;
+}
+
+inline void OptionBool::reset()
+{
+    value = defaultValue;
+    priority = Priority::DEFAULT;
 }
 
 }

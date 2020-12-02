@@ -62,6 +62,8 @@ public:
     virtual void set(Priority priority, const std::string & value) = 0;
     virtual std::string getValueString() const = 0;
     virtual bool empty() const noexcept;
+    /// Resets the option to its initial state.
+    virtual void reset() = 0;
     virtual ~Option() = default;
 
 protected:

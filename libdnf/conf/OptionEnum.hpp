@@ -49,6 +49,7 @@ public:
     T getDefaultValue() const;
     std::string toString(ValueType value) const;
     std::string getValueString() const override;
+    void reset() override;
 
 protected:
     FromStringFunc fromStringUser;
@@ -74,6 +75,7 @@ public:
     const std::string & getValue() const;
     const std::string & getDefaultValue() const;
     std::string getValueString() const override;
+    void reset() override;
 
 protected:
     FromStringFunc fromStringUser;
@@ -86,6 +88,13 @@ template <typename T>
 inline OptionEnum<T> * OptionEnum<T>::clone() const
 {
     return new OptionEnum<T>(*this);
+}
+
+template <typename T>
+inline void OptionEnum<T>::reset()
+{
+    value = defaultValue;
+    priority = Priority::DEFAULT;
 }
 
 inline OptionEnum<std::string> * OptionEnum<std::string>::clone() const
@@ -106,6 +115,12 @@ inline const std::string & OptionEnum<std::string>::getDefaultValue() const
 inline std::string OptionEnum<std::string>::getValueString() const
 {
     return value;
+}
+
+inline void OptionEnum<std::string>::reset()
+{
+    value = defaultValue;
+    priority = Priority::DEFAULT;
 }
 
 }
