@@ -1055,6 +1055,35 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
         priv->exclude_packages = NULL;
     }
 
+    auto minrate = conf->minrate().getValue();
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_LOWSPEEDLIMIT, static_cast<long>(minrate)))
+        return FALSE;
+
+    auto maxspeed = conf->throttle().getValue();
+    if (maxspeed > 0 && maxspeed <= 1)
+        maxspeed *= conf->bandwidth().getValue();
+    if (maxspeed != 0 && maxspeed < minrate) {
+        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FILE_INVALID,
+                            "Maximum download speed is lower than minimum. "
+                            "Please change configuration of minrate or throttle");
+        return FALSE;
+    }
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_MAXSPEED, static_cast<int64_t>(maxspeed)))
+        return FALSE;
+
+    long timeout = conf->timeout().getValue();
+    if (timeout > 0) {
+        if (!lr_handle_setopt(priv->repo_handle, error, LRO_CONNECTTIMEOUT, timeout))
+            return FALSE;
+        if (!lr_handle_setopt(priv->repo_handle, error, LRO_LOWSPEEDTIME, timeout))
+            return FALSE;
+    } else {
+        if (!lr_handle_setopt(priv->repo_handle, error, LRO_CONNECTTIMEOUT, LRO_CONNECTTIMEOUT_DEFAULT))
+            return FALSE;
+        if (!lr_handle_setopt(priv->repo_handle, error, LRO_LOWSPEEDTIME, LRO_LOWSPEEDTIME_DEFAULT))
+            return FALSE;
+    }
+
     tmp_str = conf->proxy().getValue();
     tmp_cstr = tmp_str.empty() ? dnf_context_get_http_proxy(priv->context) : tmp_str.c_str();
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_PROXY, tmp_cstr))
