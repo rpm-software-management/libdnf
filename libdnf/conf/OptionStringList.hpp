@@ -45,6 +45,7 @@ public:
     const ValueType & getDefaultValue() const;
     std::string toString(const ValueType & value) const;
     std::string getValueString() const override;
+    void reset() override;
 
 protected:
     std::string regex;
@@ -70,7 +71,13 @@ inline const OptionStringList::ValueType & OptionStringList::getDefaultValue() c
 
 inline std::string OptionStringList::getValueString() const
 {
-    return toString(value); 
+    return toString(value);
+}
+
+inline void OptionStringList::reset()
+{
+    value = defaultValue;
+    priority = Priority::DEFAULT;
 }
 
 }

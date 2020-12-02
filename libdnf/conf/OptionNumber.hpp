@@ -50,6 +50,7 @@ public:
     T getDefaultValue() const;
     std::string toString(ValueType value) const;
     std::string getValueString() const override;
+    void reset() override;
 
 protected:
     FromStringFunc fromStringUser;
@@ -80,7 +81,14 @@ inline T OptionNumber<T>::getDefaultValue() const
 template <typename T>
 inline std::string OptionNumber<T>::getValueString() const
 {
-    return toString(value); 
+    return toString(value);
+}
+
+template <typename T>
+inline void OptionNumber<T>::reset()
+{
+    value = defaultValue;
+    priority = Priority::DEFAULT;
 }
 
 extern template class OptionNumber<std::int32_t>;
