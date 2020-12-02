@@ -42,8 +42,10 @@ public:
     const std::string & getValue() const;
     const std::string & getDefaultValue() const noexcept;
     std::string getValueString() const override;
+    void reset() override;
 
 protected:
+    Priority initPriority;
     std::string regex;
     bool icase;
     std::string defaultValue;
@@ -68,6 +70,12 @@ inline std::string OptionString::getValueString() const
 inline std::string OptionString::fromString(const std::string & value) const
 {
     return value;
+}
+
+inline void OptionString::reset()
+{
+    value = defaultValue;
+    priority = initPriority;
 }
 
 }
