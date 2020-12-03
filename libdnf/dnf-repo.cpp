@@ -922,9 +922,6 @@ static gboolean
 dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    g_autofree gchar *mirrorlist = NULL;
-    g_autofree gchar *mirrorlisturl = NULL;
-    g_autofree gchar *metalinkurl = NULL;
     std::string tmp_str;
     const char *tmp_cstr;
 
@@ -949,20 +946,22 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_URLS, baseurls))
         return FALSE;
 
+    const char *mirrorlisturl = NULL;
+    const char *metalinkurl = NULL;
+
     /* the "mirrorlist" entry could be either a real mirrorlist, or a metalink entry */
-    mirrorlist = g_key_file_get_string(priv->keyfile, repoId, "mirrorlist", NULL);
-    if (mirrorlist) {
-        if (strstr(mirrorlist, "metalink"))
-            metalinkurl = static_cast<gchar *>(g_steal_pointer(&mirrorlist));
+    tmp_cstr = conf->mirrorlist().empty() ? NULL : conf->mirrorlist().getValue().c_str();
+    if (tmp_cstr) {
+        if (strstr(tmp_cstr, "metalink"))
+            metalinkurl = tmp_cstr;
         else /* it really is a mirrorlist */
-            mirrorlisturl = static_cast<gchar *>(g_steal_pointer(&mirrorlist));
+            mirrorlisturl = tmp_cstr;
     }
 
     /* let "metalink" entry override metalink-as-mirrorlist entry */
-    if (g_key_file_has_key(priv->keyfile, repoId, "metalink", NULL)) {
-        g_free(metalinkurl);
-        metalinkurl = g_key_file_get_string(priv->keyfile, repoId, "metalink", NULL);
-    }
+    tmp_cstr = conf->metalink().empty() ? NULL : conf->metalink().getValue().c_str();
+    if (tmp_cstr)
+        metalinkurl = tmp_cstr;
 
     /* now set the final values (or unset them) */
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_MIRRORLISTURL, mirrorlisturl))
