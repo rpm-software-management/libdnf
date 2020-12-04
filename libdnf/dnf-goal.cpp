@@ -40,10 +40,13 @@
 #include "dnf-package.h"
 #include "hy-packageset-private.hpp"
 #include "hy-iutil-private.hpp"
+#include "dnf-context.hpp"
 #include "dnf-sack-private.hpp"
 #include "dnf-utils.h"
 #include "utils/bgettext/bgettext-lib.h"
 #include "../goal/Goal.hpp"
+
+#include <vector>
 
 /**
  * dnf_goal_depsolve:
@@ -62,6 +65,20 @@ dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError **error) try
     gint j;
     gint rc;
     g_autoptr(GString) string = NULL;
+
+    DnfSack * sack = hy_goal_get_sack(goal);
+
+    libdnf::Query query(sack);
+    const auto & protected_packages = libdnf::getGlobalMainConfig().protected_packages().getValue();
+    std::vector<const char *> cprotected_packages;
+    cprotected_packages.reserve(protected_packages.size() + 1);
+    for (const auto & package : protected_packages) {
+        cprotected_packages.push_back(package.c_str());
+    }
+    cprotected_packages.push_back(nullptr);
+    query.addFilter(HY_PKG_NAME, HY_EQ, cprotected_packages.data());
+    auto pkgset = *query.runSet();
+    goal->addProtected(pkgset);
 
     rc = hy_goal_run_flags(goal, flags);
     if (rc) {
@@ -101,7 +118,6 @@ dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError **error) try
                             "The transaction was empty");
         return FALSE;
     }
-    DnfSack * sack = hy_goal_get_sack(goal);
     auto moduleContainer = dnf_sack_get_module_container(sack);
     if (moduleContainer) {
         auto installSet = goal->listInstalls();
