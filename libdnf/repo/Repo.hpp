@@ -167,7 +167,7 @@ public:
     * @return true if fresh metadata were downloaded, false otherwise.
     */
     bool load();
-    bool loadCache(bool throwExcept);
+    bool loadCache(bool throwExcept, bool ignoreMissing=false);
     void downloadMetadata(const std::string & destdir);
     bool getUseIncludes() const;
     void setUseIncludes(bool enabled);
