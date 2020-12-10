@@ -111,7 +111,7 @@ public:
     ~Impl();
 
     bool load();
-    bool loadCache(bool throwExcept);
+    bool loadCache(bool throwExcept, bool ignoreMissing=false);
     void downloadMetadata(const std::string & destdir);
     bool isInSync();
     void fetch(const std::string & destdir, std::unique_ptr<LrHandle> && h);

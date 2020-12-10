@@ -379,7 +379,7 @@ std::string Repo::getLocalBaseurl() const
 }
 
 bool Repo::load() { return pImpl->load(); }
-bool Repo::loadCache(bool throwExcept) { return pImpl->loadCache(throwExcept); }
+bool Repo::loadCache(bool throwExcept, bool ignoreMissing) { return pImpl->loadCache(throwExcept, ignoreMissing); }
 void Repo::downloadMetadata(const std::string & destdir) { pImpl->downloadMetadata(destdir); }
 bool Repo::getUseIncludes() const { return pImpl->useIncludes; }
 void Repo::setUseIncludes(bool enabled) { pImpl->useIncludes = enabled; }
@@ -963,10 +963,14 @@ std::unique_ptr<LrResult> Repo::Impl::lrHandlePerform(LrHandle * handle, const s
     return result;
 }
 
-bool Repo::Impl::loadCache(bool throwExcept)
+bool Repo::Impl::loadCache(bool throwExcept, bool ignoreMissing)
 {
     std::unique_ptr<LrHandle> h(lrHandleInitLocal());
     std::unique_ptr<LrResult> r;
+
+    if (ignoreMissing) {
+        handleSetOpt(h.get(), LRO_IGNOREMISSING, 1L);
+    }
 
     // Fetch data
     try {
