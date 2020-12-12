@@ -830,24 +830,6 @@ static std::string formatUserPassString(const std::string & user, const std::str
         return user + ":" + passwd;
 }
 
-static gboolean
-dnf_repo_get_boolean(GKeyFile *keyfile,
-                     const gchar *group_name,
-                     const gchar *key)
-{
-    g_autofree gchar *str = NULL;
-
-    str = g_key_file_get_value(keyfile, group_name, key, NULL);
-    if (str) {
-        try {
-            return libdnf::OptionBool(false).fromString(str);
-        } catch (const std::exception & ex) {
-            g_warning("Config error in section \"%s\" key \"%s\": %s", group_name, key, ex.what());
-        }
-    }
-    return false;
-}
-
 /* Resets repository configuration options previously readed from repository
  * configuration file to initial state. */
 static void
@@ -914,7 +896,7 @@ dnf_repo_conf_from_gkeyfile(libdnf::ConfigRepo &config, const char *repoId, GKey
 
 /* Initialize (or potentially reset) repo & LrHandle from keyfile values. */
 static gboolean
-dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
+dnf_repo_set_keyfile_data(DnfRepo *repo, gboolean reloadFromGKeyFile, GError **error)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     std::string tmp_str;
@@ -926,7 +908,8 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, GError **error)
     auto conf = priv->repo->getConfig();
 
     // Reload repository configuration from keyfile.
-    dnf_repo_conf_from_gkeyfile(*conf, repoId, priv->keyfile);
+    if (reloadFromGKeyFile)
+        dnf_repo_conf_from_gkeyfile(*conf, repoId, priv->keyfile);
 
     /* baseurl is optional; if missing, unset it */
     g_auto(GStrv) baseurls = NULL;
@@ -1120,10 +1103,6 @@ dnf_repo_setup(DnfRepo *repo, GError **error) try
     g_autofree gchar *basearch = NULL;
     g_autofree gchar *release = NULL;
     g_autofree gchar *testdatadir = NULL;
-    g_autofree gchar *sslcacert = NULL;
-    g_autofree gchar *sslclientcert = NULL;
-    g_autofree gchar *sslclientkey = NULL;
-    gboolean sslverify = TRUE;
 
     basearch = g_key_file_get_string(priv->keyfile, "general", "arch", NULL);
     if (basearch == NULL)
@@ -1170,30 +1149,32 @@ dnf_repo_setup(DnfRepo *repo, GError **error) try
         return FALSE;
 
     auto repoId = priv->repo->getId().c_str();
-    if (g_key_file_has_key(priv->keyfile, repoId, "sslverify", NULL))
-        sslverify = dnf_repo_get_boolean(priv->keyfile, repoId, "sslverify");
 
+    auto conf = priv->repo->getConfig();
+    dnf_repo_conf_from_gkeyfile(*conf, repoId, priv->keyfile);
+
+    auto sslverify = conf->sslverify().getValue();
     /* XXX: setopt() expects a long, so we need a long on the stack */
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLVERIFYPEER, (long)sslverify))
         return FALSE;
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLVERIFYHOST, (long)sslverify))
         return FALSE;
 
-    sslcacert = g_key_file_get_string(priv->keyfile, repoId, "sslcacert", NULL);
-    if (sslcacert != NULL) {
-        if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLCACERT, sslcacert))
+    auto & sslcacert = conf->sslcacert().getValue();
+    if (!sslcacert.empty()) {
+        if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLCACERT, sslcacert.c_str()))
             return FALSE;
     }
 
-    sslclientcert = g_key_file_get_string(priv->keyfile, repoId, "sslclientcert", NULL);
-    if (sslclientcert != NULL) {
-        if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLCLIENTCERT, sslclientcert))
+    auto & sslclientcert = conf->sslclientcert().getValue();
+    if (!sslclientcert.empty()) {
+        if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLCLIENTCERT, sslclientcert.c_str()))
             return FALSE;
     }
 
-    sslclientkey = g_key_file_get_string(priv->keyfile, repoId, "sslclientkey", NULL);
-    if (sslclientkey != NULL) {
-        if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLCLIENTKEY, sslclientkey))
+    auto & sslclientkey = conf->sslclientkey().getValue();
+    if (!sslclientkey.empty()) {
+        if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLCLIENTKEY, sslclientkey.c_str()))
             return FALSE;
     }
 
@@ -1205,18 +1186,17 @@ dnf_repo_setup(DnfRepo *repo, GError **error) try
     }
 #endif
 
-    /* enabled is optional */
-    if (g_key_file_has_key(priv->keyfile, repoId, "enabled", NULL)) {
-        if (dnf_repo_get_boolean(priv->keyfile, repoId, "enabled"))
-            enabled |= DNF_REPO_ENABLED_PACKAGES;
-    } else {
+    if (conf->enabled().getValue())
         enabled |= DNF_REPO_ENABLED_PACKAGES;
-    }
 
     /* enabled_metadata is optional */
-    if (g_key_file_has_key(priv->keyfile, repoId, "enabled_metadata", NULL)) {
-        if (dnf_repo_get_boolean(priv->keyfile, repoId, "enabled_metadata"))
-            enabled |= DNF_REPO_ENABLED_METADATA;
+    if (conf->enabled_metadata().getPriority() != libdnf::Option::Priority::DEFAULT) {
+        try {
+            if (libdnf::OptionBool(false).fromString(conf->enabled_metadata().getValue()))
+                enabled |= DNF_REPO_ENABLED_METADATA;
+        } catch (const std::exception & ex) {
+            g_warning("Config error in section \"%s\" key \"%s\": %s", repoId, "enabled_metadata", ex.what());
+        }
     } else {
         g_autofree gchar *basename = g_path_get_basename(priv->filename);
         /* special case the satellite and subscription manager repo */
@@ -1226,7 +1206,7 @@ dnf_repo_setup(DnfRepo *repo, GError **error) try
 
     dnf_repo_set_enabled(repo, enabled);
 
-    return dnf_repo_set_keyfile_data(repo, error);
+    return dnf_repo_set_keyfile_data(repo, FALSE, error);
 } CATCH_TO_GERROR(FALSE)
 
 typedef struct
@@ -1444,7 +1424,7 @@ dnf_repo_check_internal(DnfRepo *repo,
         }
     }
     /* ensure we reset the values from the keyfile */
-    if (!dnf_repo_set_keyfile_data(repo, error))
+    if (!dnf_repo_set_keyfile_data(repo, TRUE, error))
         return FALSE;
 
     return TRUE;
@@ -1692,7 +1672,7 @@ dnf_repo_update(DnfRepo *repo,
     }
 
     /* ensure we set the values from the keyfile */
-    if (!dnf_repo_set_keyfile_data(repo, error))
+    if (!dnf_repo_set_keyfile_data(repo, TRUE, error))
         return FALSE;
 
     /* countme support */
@@ -2151,7 +2131,7 @@ dnf_repo_download_packages(DnfRepo *repo,
     g_autofree gchar *directory_slash = NULL;
 
     /* ensure we reset the values from the keyfile */
-    if (!dnf_repo_set_keyfile_data(repo, error))
+    if (!dnf_repo_set_keyfile_data(repo, TRUE, error))
         goto out;
 
     /* if nothing specified then use cachedir */
