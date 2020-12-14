@@ -17,6 +17,7 @@ set(LIBDNF_SRCS
     hy-subject.cpp
     hy-util.cpp
     dnf-db.cpp
+    dnf-conf.cpp
     dnf-context.cpp
     dnf-goal.cpp
     dnf-keyring.cpp
@@ -104,6 +105,7 @@ set(LIBDNF_headers
     dnf-advisorypkg.h
     dnf-advisoryref.h
     dnf-db.h
+    dnf-conf.h
     dnf-context.h
     dnf-enums.h
     dnf-goal.h

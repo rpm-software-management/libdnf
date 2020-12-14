@@ -78,6 +78,7 @@ typedef struct _DnfSack                 DnfSack;
  * @DNF_ERROR_BAD_QUERY:                        The query was in some way bad
  * @DNF_ERROR_NO_CAPABILITY:                    This feature was not available
  * @DNF_ERROR_NO_SPACE:                         Out of disk space
+ * @DNF_ERROR_UNKNOWN_OPTION:                   Option with the requested name was not found
  *
  * The error code.
  **/
@@ -107,6 +108,7 @@ typedef enum {
         DNF_ERROR_CANNOT_WRITE_CACHE,                   /* Since: 0.7.0 */
         DNF_ERROR_NO_CAPABILITY,                        /* Since: 0.7.0 */
         DNF_ERROR_REMOVAL_OF_PROTECTED_PKG,             /* Since: 0.7.0 */
+        DNF_ERROR_UNKNOWN_OPTION,                       /* Since: 0.56.0 */
         /*< private >*/
         DNF_ERROR_LAST
 } DnfError;
