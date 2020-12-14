@@ -31,6 +31,7 @@ extern "C" {
 #include <libdnf/dnf-advisory.h>
 #include <libdnf/dnf-advisorypkg.h>
 #include <libdnf/dnf-advisoryref.h>
+#include <libdnf/dnf-conf.h>
 #include <libdnf/dnf-context.h>
 #include <libdnf/dnf-goal.h>
 #include <libdnf/dnf-keyring.h>
