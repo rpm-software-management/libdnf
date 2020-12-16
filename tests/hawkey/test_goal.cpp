@@ -752,7 +752,7 @@ START_TEST(test_goal_favor)
     HySelector sltr = hy_selector_create(sack);
 
     hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "dodo");
-    hy_goal_install_selector(goal, sltr, NULL);
+    fail_if(!hy_goal_install_selector(goal, sltr, NULL));
     DnfPackage *pkg = get_latest_pkg(sack, "dodo-dep-a");
     hy_goal_favor(goal, pkg);
     fail_if(hy_goal_run_flags(goal, DNF_NONE));
@@ -774,7 +774,7 @@ START_TEST(test_goal_disfavor)
     HySelector sltr = hy_selector_create(sack);
 
     hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "dodo");
-    hy_goal_install_selector(goal, sltr, NULL);
+    fail_if(!hy_goal_install_selector(goal, sltr, NULL));
     DnfPackage *pkg = get_latest_pkg(sack, "dodo-dep-a");
     hy_goal_disfavor(goal, pkg);
     fail_if(hy_goal_run_flags(goal, DNF_NONE));
@@ -986,7 +986,7 @@ START_TEST(test_goal_describe_problem_excludes)
     HySelector sltr = hy_selector_create(sack);
 
     hy_selector_set(sltr, HY_PKG_NAME, HY_EQ, "semolina");
-    hy_goal_install_selector(goal, sltr, NULL);
+    fail_if(!hy_goal_install_selector(goal, sltr, NULL));
     hy_selector_free(sltr);
 
     fail_unless(hy_goal_run_flags(goal, DNF_NONE));
