@@ -88,3 +88,21 @@ dnf_conf_main_set_option(const gchar * name, enum DnfConfPriority priority, cons
     return TRUE;
 }
 
+/**
+ * dnf_conf_add_setopt:
+ * @key: opton_name or repo_id.option_name (repo_id can contain globs)
+ * @priority: priority
+ * @value: string value
+ * @error: A #GError or %NULL
+ *
+ * Add setopt. Supports also repositories options.
+ *
+ * Returns: %TRUE  setopt was accepted, %FALSE means error - setopt was not accepted
+ *
+ * Since: 0.56.0
+ **/
+gboolean
+dnf_conf_add_setopt(const gchar * key, enum DnfConfPriority priority, const gchar * value, GError ** error)
+{
+    return libdnf::addSetopt(key, static_cast<libdnf::Option::Priority>(priority), value, error);
+}
