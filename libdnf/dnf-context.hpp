@@ -35,10 +35,19 @@ inline DnfContextInvalidateFlags operator|(DnfContextInvalidateFlags a, DnfConte
 
 namespace libdnf {
 
+struct Setopt {
+    Option::Priority priority;
+    std::string key;
+    std::string value;
+};
+
 std::map<std::string, std::string> & dnf_context_get_vars(DnfContext * context);
 bool dnf_context_get_vars_cached(DnfContext * context);
 void dnf_context_load_vars(DnfContext * context);
 ConfigMain & getGlobalMainConfig();
+bool addSetopt(const char * key, Option::Priority priority, const char * value, GError ** error);
+const std::vector<Setopt> & getGlobalSetopts();
+
 }
 
 #endif /* __DNF_CONTEXT_HPP */

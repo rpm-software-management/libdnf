@@ -41,6 +41,7 @@
 
 #include <strings.h>
 #include <fcntl.h>
+#include <fnmatch.h>
 #include <glib/gstdio.h>
 #include "hy-util.h"
 #include <librepo/librepo.h>
@@ -894,6 +895,33 @@ dnf_repo_conf_from_gkeyfile(libdnf::ConfigRepo &config, const char *repoId, GKey
     }
 }
 
+static void
+dnf_repo_apply_setopts(libdnf::ConfigRepo &config, const char *repoId)
+{
+    // apply repository setopts
+    auto & optBinds = config.optBinds();
+    for (const auto & setopt : libdnf::getGlobalSetopts()) {
+        auto last_dot_pos = setopt.key.rfind('.');
+        if (last_dot_pos == std::string::npos) {
+            continue;
+        }
+        auto repo_pattern = setopt.key.substr(0, last_dot_pos);
+        if (fnmatch(repo_pattern.c_str(), repoId, FNM_CASEFOLD) == 0) {
+            auto key = setopt.key.substr(last_dot_pos+1);
+            try {
+                auto & optionItem = optBinds.at(key);
+                try {
+                    optionItem.newString(setopt.priority, setopt.value);
+                } catch (const std::exception & ex) {
+                    g_warning("dnf_repo_apply_setopt: Invalid configuration value: %s = %s; %s", setopt.key.c_str(), setopt.value.c_str(), ex.what());
+                }
+            } catch (const std::exception &) {
+                g_warning("dnf_repo_apply_setopt: Unknown configuration option: %s in %s = %s", key.c_str(), setopt.key.c_str(), setopt.value.c_str());
+            }
+        }
+    }
+}
+
 /* Initialize (or potentially reset) repo & LrHandle from keyfile values. */
 static gboolean
 dnf_repo_set_keyfile_data(DnfRepo *repo, gboolean reloadFromGKeyFile, GError **error)
@@ -908,8 +936,10 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, gboolean reloadFromGKeyFile, GError **e
     auto conf = priv->repo->getConfig();
 
     // Reload repository configuration from keyfile.
-    if (reloadFromGKeyFile)
+    if (reloadFromGKeyFile) {
         dnf_repo_conf_from_gkeyfile(*conf, repoId, priv->keyfile);
+        dnf_repo_apply_setopts(*conf, repoId);
+    }
 
     /* baseurl is optional; if missing, unset it */
     g_auto(GStrv) baseurls = NULL;
@@ -1152,6 +1182,7 @@ dnf_repo_setup(DnfRepo *repo, GError **error) try
 
     auto conf = priv->repo->getConfig();
     dnf_repo_conf_from_gkeyfile(*conf, repoId, priv->keyfile);
+    dnf_repo_apply_setopts(*conf, repoId);
 
     auto sslverify = conf->sslverify().getValue();
     /* XXX: setopt() expects a long, so we need a long on the stack */

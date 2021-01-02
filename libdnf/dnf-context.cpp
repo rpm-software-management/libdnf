@@ -3453,6 +3453,58 @@ dnf_context_load_vars(DnfContext * context)
 static std::unique_ptr<libdnf::ConfigMain> globalMainConfig;
 static std::atomic_flag cfgMainLoaded = ATOMIC_FLAG_INIT;
 
+static std::vector<Setopt> globalSetopts;
+static bool globalSetoptsInSync = true;
+
+bool
+addSetopt(const char * key, Option::Priority priority, const char * value, GError ** error)
+{
+    auto dot = strrchr(key, '.');
+    if (dot && *(dot+1) == '\0') {
+        g_set_error(error, DNF_ERROR, DNF_ERROR_UNKNOWN_OPTION, "Last key character cannot be '.': %s", key);
+        return false;
+    }
+
+    // Store option to vector. Use it later when configuration will be loaded.
+    globalSetopts.push_back({static_cast<libdnf::Option::Priority>(priority), key, value});
+    globalSetoptsInSync = false;
+
+    return true;
+}
+
+const std::vector<Setopt> &
+getGlobalSetopts()
+{
+    return globalSetopts;
+}
+
+static void
+dnf_main_conf_apply_setopts()
+{
+    if (globalSetoptsInSync) {
+        return;
+    }
+
+    // apply global main setopts
+    auto & optBinds = globalMainConfig->optBinds();
+    for (const auto & setopt : globalSetopts) {
+        if (setopt.key.find('.') == std::string::npos) {
+            try {
+                auto & optionItem = optBinds.at(setopt.key);
+                try {
+                    optionItem.newString(setopt.priority, setopt.value);
+                } catch (const std::exception & ex) {
+                    g_warning("dnf_main_conf_apply_setopt: Invalid configuration value: %s = %s; %s", setopt.key.c_str(), setopt.value.c_str(), ex.what());
+                }
+            } catch (const std::exception &) {
+                g_warning("dnf_main_conf_apply_setopt: Unknown configuration option: %s in %s = %s", setopt.key.c_str(), setopt.key.c_str(), setopt.value.c_str());
+            }
+        }
+    }
+
+    globalSetoptsInSync = true;
+}
+
 libdnf::ConfigMain & getGlobalMainConfig()
 {
     if (!cfgMainLoaded.test_and_set()) {
@@ -3498,6 +3550,7 @@ libdnf::ConfigMain & getGlobalMainConfig()
             g_warning("Loading \"%s\": %s", cfgPath.c_str(), ex.what());
         }
     }
+    dnf_main_conf_apply_setopts();
     return *globalMainConfig;
 }
 

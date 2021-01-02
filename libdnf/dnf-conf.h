@@ -43,6 +43,7 @@ enum DnfConfPriority {
 
 gchar *dnf_conf_main_get_option(const gchar *name, enum DnfConfPriority *priority, GError ** error);
 gboolean dnf_conf_main_set_option(const gchar *name, enum DnfConfPriority priority, const gchar *value, GError ** error);
+gboolean dnf_conf_add_setopt(const gchar *key, enum DnfConfPriority priority, const gchar *value, GError ** error);
 
 #ifdef __cplusplus
 }
