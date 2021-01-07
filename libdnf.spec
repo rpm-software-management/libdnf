@@ -7,7 +7,9 @@
 %global libdnf_minor_version 56
 %global libdnf_micro_version 0
 
-%define __cmake_in_source_build 1
+%if (0%{?fedora} && 0%{?fedora} <= 32) || 0%{?rhel}
+    %define __cmake_in_source_build 1
+%endif
 
 # set sphinx package name according to distro
 %global requires_python2_sphinx python2-sphinx
