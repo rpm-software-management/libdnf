@@ -885,6 +885,7 @@ dnf_context_func(void)
     g_assert_cmpstr(dnf_context_get_solv_dir(ctx), ==, "/tmp/hawkey");
     g_assert(dnf_context_get_check_disk_space(ctx));
     g_assert(dnf_context_get_check_transaction(ctx));
+    dnf_context_set_keep_cache(ctx, FALSE);
     g_assert(!dnf_context_get_keep_cache(ctx));
 
     dnf_context_set_cache_dir(ctx, "/var");

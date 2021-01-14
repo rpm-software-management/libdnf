@@ -160,7 +160,6 @@ typedef struct
     gboolean         check_transaction;
     gboolean         only_trusted;
     gboolean         enable_filelists;
-    gboolean         keep_cache;
     gboolean         enrollment_valid;
     gboolean         write_history;
     DnfLock         *lock;
@@ -1000,8 +999,8 @@ dnf_context_get_check_transaction(DnfContext *context)
 gboolean
 dnf_context_get_keep_cache(DnfContext *context)
 {
-    DnfContextPrivate *priv = GET_PRIVATE(context);
-    return priv->keep_cache;
+    auto & mainConf = libdnf::getGlobalMainConfig();
+    return mainConf.keepcache().getValue();
 }
 
 /**
@@ -1503,8 +1502,8 @@ dnf_context_set_check_transaction(DnfContext *context, gboolean check_transactio
 void
 dnf_context_set_keep_cache(DnfContext *context, gboolean keep_cache)
 {
-    DnfContextPrivate *priv = GET_PRIVATE(context);
-    priv->keep_cache = keep_cache;
+    auto & mainConf = libdnf::getGlobalMainConfig();
+    mainConf.keepcache().set(libdnf::Option::Priority::RUNTIME, keep_cache);
 }
 
 /**
