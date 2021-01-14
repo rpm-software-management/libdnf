@@ -2431,12 +2431,12 @@ void dnf_sack_filter_modules(DnfSack *sack, GPtrArray *repos, const char *instal
     }
     hotfixRepos.push_back(nullptr);
     dnf_sack_filter_modules_v2(sack, nullptr, hotfixRepos.data(), install_root, platformModule,
-                               false, false);
+                               false, false, false);
 }
 
 std::pair<std::vector<std::vector<std::string>>, libdnf::ModulePackageContainer::ModuleErrorType> dnf_sack_filter_modules_v2(
     DnfSack * sack, DnfModulePackageContainer * moduleContainer, const char ** hotfixRepos,
-    const char * install_root, const char * platformModule, bool updateOnly, bool debugSolver)
+    const char * install_root, const char * platformModule, bool updateOnly, bool debugSolver, bool applyObsoletes)
 {
     if (!updateOnly) {
         if (!install_root) {
@@ -2464,6 +2464,10 @@ std::pair<std::vector<std::vector<std::string>>, libdnf::ModulePackageContainer:
 
     if (!moduleContainer) {
         throw std::runtime_error("ModuleContainer not provided");
+    }
+
+    if (applyObsoletes) {
+        moduleContainer->applyObsoletes();
     }
     auto ret = moduleContainer->resolveActiveModulePackages(debugSolver);
     auto nevraTuple = collectNevraForInclusionExclusion(*moduleContainer);

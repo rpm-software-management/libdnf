@@ -77,7 +77,7 @@ DnfPackage  *dnf_sack_add_cmdline_package_flags   (DnfSack *sack,
                             const char *fn, const int flags);
 std::pair<std::vector<std::vector<std::string>>, libdnf::ModulePackageContainer::ModuleErrorType> dnf_sack_filter_modules_v2(
     DnfSack *sack, libdnf::ModulePackageContainer * moduleContainer, const char ** hotfixRepos,
-    const char *install_root, const char * platformModule, bool updateOnly, bool debugSolver);
+    const char *install_root, const char * platformModule, bool updateOnly, bool debugSolver, bool applyObsoletes);
 
 std::vector<libdnf::ModulePackage *> requiresModuleEnablement(DnfSack * sack, const libdnf::PackageSet * installSet);
 
