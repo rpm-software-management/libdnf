@@ -605,20 +605,22 @@ static PyObject *
 filter_modules(_SackObject *self, PyObject *args, PyObject *kwds) try
 {
     const char *kwlist[] = {"module_container", "hotfix_repos", "install_root", "platform_module",
-        "update_only", "debugsolver", NULL};
+        "update_only", "debugsolver", "module_obsoletes", NULL};
     PyObject * pyModuleContainer;
     PyObject * pyHotfixRepos;
     char * installRoot = nullptr;
     char * platformModule = nullptr;
     PyObject * pyUpdateOnly = nullptr;
     PyObject * pyDebugSolver = nullptr;
+    PyObject * pyModuleObsoletes = nullptr;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOzz|O!O!", (char**) kwlist, &pyModuleContainer,
-                                     &pyHotfixRepos, &installRoot, &platformModule,  &PyBool_Type,
-                                     &pyUpdateOnly,  &PyBool_Type, &pyDebugSolver))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOzz|O!O!O!", (char**) kwlist, &pyModuleContainer,
+                                     &pyHotfixRepos, &installRoot, &platformModule, &PyBool_Type, &pyUpdateOnly,
+                                     &PyBool_Type, &pyDebugSolver, &PyBool_Type, &pyModuleObsoletes))
         return 0;
     bool updateOnly = pyUpdateOnly == NULL || PyObject_IsTrue(pyUpdateOnly);
     bool debugSolver = pyDebugSolver != NULL && PyObject_IsTrue(pyDebugSolver);
+    bool moduleObsoletes = pyModuleObsoletes != NULL && PyObject_IsTrue(pyModuleObsoletes);
     UniquePtrPyObject thisPyModuleContainer(PyObject_GetAttrString(pyModuleContainer, "this"));
     auto swigContainer = reinterpret_cast< ModulePackageContainerPyObject * >(thisPyModuleContainer.get());
     auto moduleContainer = swigContainer->ptr;
@@ -633,7 +635,7 @@ filter_modules(_SackObject *self, PyObject *args, PyObject *kwds) try
         std::mem_fn(&std::string::c_str));
     try {
         auto problems = dnf_sack_filter_modules_v2(self->sack, moduleContainer, hotfixReposCString.data(),
-            installRoot, platformModule, updateOnly, debugSolver);
+            installRoot, platformModule, updateOnly, debugSolver, moduleObsoletes);
         if (problems.second == libdnf::ModulePackageContainer::ModuleErrorType::NO_ERROR) {
             PyObject * returnTuple = PyTuple_New(0);
             return returnTuple;
