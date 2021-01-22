@@ -5,4 +5,4 @@
 build
 *.pyc
 data/tests/modules/yum.repos.d/test.repo
-libdnf/config.h
+libdnf/config-64.h

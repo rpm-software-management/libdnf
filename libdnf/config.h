@@ -18,9 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef _LIBDNF_CONFIG_H_
-#define _LIBDNF_CONFIG_H_
+#include <bits/wordsize.h>
 
-#define DEFAULT_PLUGINS_DIRECTORY "@CMAKE_INSTALL_FULL_LIBDIR@/libdnf/plugins/"
-
-#endif // _LIBDNF_CONFIG_H_
+#if __WORDSIZE == 32
+#include "config-32.h"
+#elif __WORDSIZE == 64
+#include "config-64.h"
+#else
+#error "Unknown word size"
+#endif
