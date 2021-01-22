@@ -35,7 +35,13 @@ set(LIBDNF_SRCS
 include_directories(transaction)
 add_subdirectory("transaction")
 
-configure_file("config.h.in" ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(MULTILIB_ARCH "64")
+    configure_file("config-64.h.in" ${CMAKE_CURRENT_SOURCE_DIR}/config-64.h)
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set(MULTILIB_ARCH "32")
+    configure_file("config-64.h.in" ${CMAKE_CURRENT_SOURCE_DIR}/config-32.h)
+endif()
 configure_file("dnf-version.h.in"  ${CMAKE_CURRENT_SOURCE_DIR}/dnf-version.h)
 configure_file("libdnf.pc.in" ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc @ONLY)
 
