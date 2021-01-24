@@ -1129,7 +1129,7 @@ dnf_context_get_installonly_limit(DnfContext *context)
  *
  * Sets the path to the global configuration file. The empty string means no read configuration
  * file. NULL resets the path to the default value. Must be used before
- * dnf_context_set_*, dnf_context_get_*, and dnf_context_setup functions are called.
+ * dnf_context_get_*, and dnf_context_setup functions are called.
  *
  * Since: 0.42.0
  **/
@@ -1409,7 +1409,7 @@ dnf_context_set_source_root(DnfContext *context, const gchar *source_root)
 void
 dnf_context_set_best(gboolean best)
 {
-    auto & mainConf = libdnf::getGlobalMainConfig();
+    auto & mainConf = libdnf::getGlobalMainConfig(false);
     mainConf.best().set(libdnf::Option::Priority::RUNTIME, best);
 }
 
@@ -1423,7 +1423,7 @@ dnf_context_set_best(gboolean best)
 void
 dnf_context_set_install_weak_deps(gboolean enabled)
 {
-    auto & mainConf = libdnf::getGlobalMainConfig();
+    auto & mainConf = libdnf::getGlobalMainConfig(false);
     mainConf.install_weak_deps().set(libdnf::Option::Priority::RUNTIME, enabled);
 }
 
@@ -1437,7 +1437,7 @@ dnf_context_set_install_weak_deps(gboolean enabled)
 void
 dnf_context_set_allow_vendor_change(gboolean vendorchange)
 {
-    auto & mainConf = libdnf::getGlobalMainConfig();
+    auto & mainConf = libdnf::getGlobalMainConfig(false);
     mainConf.allow_vendor_change().set(libdnf::Option::Priority::RUNTIME, vendorchange);
 }
 
@@ -1502,7 +1502,7 @@ dnf_context_set_check_transaction(DnfContext *context, gboolean check_transactio
 void
 dnf_context_set_keep_cache(DnfContext *context, gboolean keep_cache)
 {
-    auto & mainConf = libdnf::getGlobalMainConfig();
+    auto & mainConf = libdnf::getGlobalMainConfig(false);
     mainConf.keepcache().set(libdnf::Option::Priority::RUNTIME, keep_cache);
 }
 
@@ -1551,7 +1551,7 @@ dnf_context_set_only_trusted(DnfContext *context, gboolean only_trusted)
 void
 dnf_context_set_zchunk(DnfContext *context, gboolean zchunk)
 {
-    auto & mainConf = libdnf::getGlobalMainConfig();
+    auto & mainConf = libdnf::getGlobalMainConfig(false);
     mainConf.zchunk().set(libdnf::Option::Priority::RUNTIME, zchunk);
 }
 
@@ -2879,7 +2879,7 @@ dnf_context_get_plugins_all_disabled()
 void
 dnf_context_set_plugins_all_disabled(gboolean disabled)
 {
-    auto & mainConf = libdnf::getGlobalMainConfig();
+    auto & mainConf = libdnf::getGlobalMainConfig(false);
     mainConf.plugins().set(libdnf::Option::Priority::RUNTIME, !disabled);
 }
 
@@ -3454,6 +3454,7 @@ dnf_context_load_vars(DnfContext * context)
  * to do it without touching packagekit.
  */
 static std::unique_ptr<libdnf::ConfigMain> globalMainConfig;
+static std::mutex getGlobalMainConfigMutex;
 static std::atomic_flag cfgMainLoaded = ATOMIC_FLAG_INIT;
 
 static std::vector<Setopt> globalSetopts;
@@ -3508,13 +3509,17 @@ dnf_main_conf_apply_setopts()
     globalSetoptsInSync = true;
 }
 
-libdnf::ConfigMain & getGlobalMainConfig()
+libdnf::ConfigMain & getGlobalMainConfig(bool canReadConfigFile)
 {
-    if (!cfgMainLoaded.test_and_set()) {
+    std::lock_guard<std::mutex> guard(getGlobalMainConfigMutex);
+
+    if (!globalMainConfig) {
         globalMainConfig.reset(new libdnf::ConfigMain);
         // The gpgcheck was enabled by default in context part of libdnf. We stay "compatible".
         globalMainConfig->gpgcheck().set(libdnf::Option::Priority::DEFAULT, true);
+    }
 
+    if (canReadConfigFile && !cfgMainLoaded.test_and_set()) {
         if (configFilePath) {
             globalMainConfig->config_file_path().set(libdnf::Option::Priority::RUNTIME, *configFilePath);
             if (configFilePath->empty()) {
@@ -3553,6 +3558,7 @@ libdnf::ConfigMain & getGlobalMainConfig()
             g_warning("Loading \"%s\": %s", cfgPath.c_str(), ex.what());
         }
     }
+
     dnf_main_conf_apply_setopts();
     return *globalMainConfig;
 }
