@@ -44,7 +44,7 @@ struct Setopt {
 std::map<std::string, std::string> & dnf_context_get_vars(DnfContext * context);
 bool dnf_context_get_vars_cached(DnfContext * context);
 void dnf_context_load_vars(DnfContext * context);
-ConfigMain & getGlobalMainConfig();
+ConfigMain & getGlobalMainConfig(bool canReadConfigFile = true);
 bool addSetopt(const char * key, Option::Priority priority, const char * value, GError ** error);
 const std::vector<Setopt> & getGlobalSetopts();
 
