@@ -144,7 +144,7 @@ static int snapper_dbus_create_pre_snap_pack(const char * snapper_conf, const ch
     return 0;
 }
 
-static int snapper_dbus_create_pre_snap_unpack(DBusMessage * rsp_msg, uint32_t * snap_id_out, ErrMsgBuf * err_msg)
+static int snapper_dbus_create_snap_unpack(DBusMessage * rsp_msg, uint32_t * snap_id_out, ErrMsgBuf * err_msg)
 {
     DBusMessageIter iter;
     int msg_type;
@@ -152,26 +152,26 @@ static int snapper_dbus_create_pre_snap_unpack(DBusMessage * rsp_msg, uint32_t *
 
     msg_type = dbus_message_get_type(rsp_msg);
     if (msg_type == DBUS_MESSAGE_TYPE_ERROR) {
-        snprintf(err_msg->msg, sizeof(err_msg->msg), "create pre snap error response: %s",
+        snprintf(err_msg->msg, sizeof(err_msg->msg), "create snap error response: %s",
             dbus_message_get_error_name(rsp_msg));
         return -EINVAL;
     }
 
     if (msg_type != DBUS_MESSAGE_TYPE_METHOD_RETURN) {
-        snprintf(err_msg->msg, sizeof(err_msg->msg), "unexpected create pre snap ret type: %d", msg_type);
+        snprintf(err_msg->msg, sizeof(err_msg->msg), "unexpected create snap ret type: %d", msg_type);
         return -EINVAL;
     }
 
     sig = dbus_message_get_signature(rsp_msg);
     if (!sig || (strcmp(sig, SNAPPER_DBUS_SIG_CREATE_SNAP_RSP) != 0)) {
-        snprintf(err_msg->msg, sizeof(err_msg->msg), "bad create pre snap response sig: %s, expected: %s",
+        snprintf(err_msg->msg, sizeof(err_msg->msg), "bad create snap response sig: %s, expected: %s",
             (sig ? sig : "NULL"), SNAPPER_DBUS_SIG_CREATE_SNAP_RSP);
         return -EINVAL;
     }
 
     // read arguments
     if (!dbus_message_iter_init(rsp_msg, &iter)) {
-        snprintf(err_msg->msg, sizeof(err_msg->msg), "pre snap response: Message has no arguments!");
+        snprintf(err_msg->msg, sizeof(err_msg->msg), "snap response: Message has no arguments!");
         return -EINVAL;
     }
 
@@ -208,7 +208,7 @@ int snapper_dbus_create_pre_snap_call(DBusConnection * conn, const char * snappe
         return ret;
     }
 
-    ret = snapper_dbus_create_pre_snap_unpack(rsp_msg, out_snap_id, err_msg);
+    ret = snapper_dbus_create_snap_unpack(rsp_msg, out_snap_id, err_msg);
     if (ret < 0) {
         dbus_message_unref(req_msg);
         dbus_message_unref(rsp_msg);
@@ -240,8 +240,7 @@ static int snapper_dbus_create_post_snap_pack(const char * snapper_conf, uint32_
 
     // append arguments
     dbus_message_iter_init_append(msg, &args);
-    if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING,
-                        &snapper_conf)) {
+    if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &snapper_conf)) {
         snprintf(err_msg->msg, sizeof(err_msg->msg), "Out Of Memory!");
         return -ENOMEM;
     }
@@ -261,9 +260,7 @@ static int snapper_dbus_create_post_snap_pack(const char * snapper_conf, uint32_
         return -ENOMEM;
     }
 
-    ret = dbus_message_iter_open_container(&args, DBUS_TYPE_ARRAY,
-                            SNAPPER_DBUS_SIG_STRING_DICT,
-                            &array_iter);
+    ret = dbus_message_iter_open_container(&args, DBUS_TYPE_ARRAY, SNAPPER_DBUS_SIG_STRING_DICT, &array_iter);
     if (!ret) {
         snprintf(err_msg->msg, sizeof(err_msg->msg), "failed to open array container");
         return -ENOMEM;
@@ -272,44 +269,6 @@ static int snapper_dbus_create_post_snap_pack(const char * snapper_conf, uint32_
     dbus_message_iter_close_container(&args, &array_iter);
 
     *req_msg_out = msg;
-
-    return 0;
-}
-
-static int snapper_dbus_create_post_snap_unpack(DBusMessage * rsp_msg, uint32_t * snap_id_out, ErrMsgBuf * err_msg)
-{
-    DBusMessageIter iter;
-    int msg_type;
-    const char * sig;
-
-    msg_type = dbus_message_get_type(rsp_msg);
-    if (msg_type == DBUS_MESSAGE_TYPE_ERROR) {
-        snprintf(err_msg->msg, sizeof(err_msg->msg), "create post snap error response: %s",
-            dbus_message_get_error_name(rsp_msg));
-        return -EINVAL;
-    }
-
-    if (msg_type != DBUS_MESSAGE_TYPE_METHOD_RETURN) {
-        snprintf(err_msg->msg, sizeof(err_msg->msg), "unexpected create post snap ret type: %d", msg_type);
-        return -EINVAL;
-    }
-
-    sig = dbus_message_get_signature(rsp_msg);
-    if (!sig || (strcmp(sig, SNAPPER_DBUS_SIG_CREATE_SNAP_RSP) != 0)) {
-        snprintf(err_msg->msg, sizeof(err_msg->msg), "bad create post snap response sig: %s, expected: %s",
-            (sig ? sig : "NULL"), SNAPPER_DBUS_SIG_CREATE_SNAP_RSP);
-        return -EINVAL;
-    }
-
-    // read arguments
-    if (!dbus_message_iter_init(rsp_msg, &iter)) {
-        snprintf(err_msg->msg, sizeof(err_msg->msg), "post snap response: Message has no arguments!");
-        return -EINVAL;
-    }
-
-    if (snapper_dbus_type_check_get(&iter, DBUS_TYPE_UINT32, snap_id_out, err_msg)) {
-        return -EINVAL;
-    }
 
     return 0;
 }
@@ -341,7 +300,7 @@ int snapper_dbus_create_post_snap_call(DBusConnection * conn, const char * snapp
         return ret;
     }
 
-    ret = snapper_dbus_create_post_snap_unpack(rsp_msg, &snap_id, err_msg);
+    ret = snapper_dbus_create_snap_unpack(rsp_msg, &snap_id, err_msg);
     if (ret < 0) {
         dbus_message_unref(req_msg);
         dbus_message_unref(rsp_msg);
