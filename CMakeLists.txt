@@ -34,6 +34,7 @@ option(WITH_ZCHUNK "Build with zchunk support" ON)
 option(ENABLE_RHSM_SUPPORT "Build with Red Hat Subscription Manager support?" OFF)
 option(ENABLE_SOLV_URPMREORDER "Build with support for URPM-like solution reordering?" OFF)
 
+option(ENABLE_SNAPPER_PLUGIN "Build snapper plugin?" OFF)
 
 # build options - debugging
 option(WITH_SANITIZERS "Build with address, leak and undefined sanitizers (DEBUG ONLY)" OFF)
@@ -179,3 +180,5 @@ endif()
 
 
 add_subdirectory(etc)
+
+add_subdirectory(plugins)
