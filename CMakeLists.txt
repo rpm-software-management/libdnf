@@ -27,6 +27,7 @@ message("Building ${PROJECT_NAME} version: ${LIBDNF_VERSION}")
 
 # build options
 option(WITH_BINDINGS "Enables python/SWIG bindings" ON)
+option(ENABLE_STATIC "Build a static library instead of shared" OFF)
 option(WITH_GTKDOC "Enables libdnf GTK-Doc HTML documentation" ON)
 option(WITH_HTML "Enables hawkey HTML generation" ON)
 option(WITH_MAN "Enables hawkey man page generation" ON)
