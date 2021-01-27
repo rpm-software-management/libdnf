@@ -56,6 +56,7 @@
 #include "dnf-utils.h"
 #include "utils/File.hpp"
 #include "utils/url-encode.hpp"
+#include "utils/utils.hpp"
 
 #include <set>
 #include <string>
@@ -856,6 +857,12 @@ dnf_repo_conf_from_gkeyfile(libdnf::ConfigRepo &config, const char *repoId, GKey
         auto key = *it;
         g_autofree gchar *str = g_key_file_get_value(gkeyFile, repoId, key, NULL);
         if (str) {
+            auto value = libdnf::string::trim(str);
+            if (value.length() > 1 && value.front() == value.back() &&
+                (value.front() == '"' || value.front() == '\'')) {
+                value.erase(--value.end());
+                value.erase(value.begin());
+            }
             try {
                 auto & optionItem = config.optBinds().at(key);
 
@@ -873,7 +880,7 @@ dnf_repo_conf_from_gkeyfile(libdnf::ConfigRepo &config, const char *repoId, GKey
                         try {
                             optionItem.newString(libdnf::Option::Priority::REPOCONFIG, tmp_strval);
                         } catch (const std::exception & ex) {
-                            g_debug("Invalid configuration value: %s = %s in %s; %s", key, str, repoId, ex.what());
+                            g_debug("Invalid configuration value: %s = %s in %s; %s", key, value.c_str(), repoId, ex.what());
                         }
                     }
 
@@ -881,15 +888,15 @@ dnf_repo_conf_from_gkeyfile(libdnf::ConfigRepo &config, const char *repoId, GKey
 
                     // process other (non list) options
                     try {
-                        optionItem.newString(libdnf::Option::Priority::REPOCONFIG, str);
+                        optionItem.newString(libdnf::Option::Priority::REPOCONFIG, value);
                     } catch (const std::exception & ex) {
-                        g_debug("Invalid configuration value: %s = %s in %s; %s", key, str, repoId, ex.what());
+                        g_debug("Invalid configuration value: %s = %s in %s; %s", key, value.c_str(), repoId, ex.what());
                     }
 
                 }
 
             } catch (const std::exception &) {
-                g_debug("Unknown configuration option: %s = %s in %s", key, str, repoId);
+                g_debug("Unknown configuration option: %s = %s in %s", key, value.c_str(), repoId);
             }
         }
     }
