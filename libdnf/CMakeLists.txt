@@ -61,7 +61,11 @@ set(LIBDNF_SRCS ${LIBDNF_SRCS} ${SACK_SOURCES})
 set(LIBDNF_SRCS ${LIBDNF_SRCS} ${REPO_SOURCES})
 set(LIBDNF_SRCS ${LIBDNF_SRCS} ${PLUGIN_SOURCES})
 
-add_library(libdnf SHARED ${LIBDNF_SRCS})
+if(ENABLE_STATIC)
+    add_library(libdnf STATIC ${LIBDNF_SRCS})
+else()
+    add_library(libdnf SHARED ${LIBDNF_SRCS})
+endif()
 target_link_libraries(libdnf
     ${CMAKE_DL_LIBS}
     ${REPO_LIBRARIES}
