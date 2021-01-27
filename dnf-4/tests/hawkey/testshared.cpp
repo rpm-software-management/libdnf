@@ -71,22 +71,3 @@ glob_for_repofiles(Pool *pool, const char *repo_name, const char *path)
     hy_repo_free(repo);
     return NULL;
 }
-
-int
-load_repo(Pool *pool, const char *name, const char *path, int installed)
-{
-    HyRepo hrepo = hy_repo_create(name);
-    Repo *r = repo_create(pool, name);
-    libdnf::repoGetImpl(hrepo)->attachLibsolvRepo(r);
-    hy_repo_free(hrepo);
-
-    FILE *fp = fopen(path, "r");
-
-    if (!fp)
-        return 1;
-    testcase_add_testtags(r,  fp, 0);
-    if (installed)
-        pool_set_installed(pool, r);
-    fclose(fp);
-    return 0;
-}
