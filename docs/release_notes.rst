@@ -20,6 +20,38 @@
 ######################
 
 ====================
+0.58.0 Release Notes
+====================
+
+- Option: Add reset() method
+- Add OptionBinds::getOption() method
+- [context] Add dnf_repo_conf_from_gkeyfile() and dnf_repo_conf_reset()
+- [context] Add support for options: minrate, throttle, bandwidth, timeout
+- [context] Remove g_key_file_get_string() from dnf_repo_set_keyfile_data()
+- Allow loading ext metadata even if only cache (solv) is present
+- Add ASAN_OPTIONS for test_libdnf_main
+- [context,API] Functions for accessing main/global configuration options
+- [context,API] Function for adding setopt
+- Add getter for modular obsoletes from ModuleMetadata
+- Add ModulePackage.getStaticContext() and getRequires()
+- Add compatible layer for MdDocuments v2
+- Fix modular queries with the new solver
+- Improve formatting of error string for modules
+- Change mechanism of module conflicts
+- Fix load/update FailSafe
+
+- New features:
+  - Extend repo loadCache method with ignoreMissing parameter to allow loading incomplete xml cache (repomd.xml is required). (RhBug:1865803)
+  - Add a new option module_obsoletes
+  - Add new API applyObsoletes() function to apply modular obsoletes
+  - Extend filter_modules with an optional parameter to enable applying modular obsoletes
+
+Bugs fixed in 0.58.0:
+
+* :rhbug:`1918818`
+* :rhbug:`1865803`
+
+====================
 0.55.2 Release Notes
 ====================
 
