@@ -244,7 +244,14 @@ public:
     * @return Seconds to expiration
     */
     int getExpiresIn() const;
+
+    /**
+    * @brief Returns whether the metadata was loaded from the origin, not from cache
+    *
+    * @return bool
+    */
     bool fresh();
+
     void setMaxMirrorTries(int maxMirrorTries);
     int getTimestamp() const;
     int getMaxTimestamp();
