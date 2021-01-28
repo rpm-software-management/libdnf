@@ -144,6 +144,7 @@ public:
     int timestamp;
     int maxTimestamp{0};
     bool preserveRemoteTime{false};
+    bool fresh{false};
     std::string repomdFn;
     std::set<std::string> additionalMetadata;
     std::string revision;

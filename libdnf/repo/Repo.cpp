@@ -1326,6 +1326,7 @@ bool Repo::Impl::load()
         fetch(cacheDir, lrHandleInitRemote(nullptr));
         timestamp = -1;
         loadCache(true);
+        fresh = true;
     } catch (const LrExceptionWithSourceUrl & e) {
         auto msg = tfm::format(_("Failed to download metadata for repo '%s': %s"), id, e.what());
         throw RepoError(msg);
@@ -1455,7 +1456,7 @@ const char * const * Repo::Impl::getHttpHeaders() const
 
 bool Repo::fresh()
 {
-    return pImpl->timestamp >= 0;
+    return pImpl->fresh;
 }
 
 void Repo::Impl::resetMetadataExpired()
