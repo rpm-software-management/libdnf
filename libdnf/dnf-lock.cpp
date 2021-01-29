@@ -494,9 +494,9 @@ dnf_lock_release(DnfLock *lock, guint id, GError **error) try
     DnfLockPrivate *priv = GET_PRIVATE(lock);
     gboolean ret = FALSE;
 
-    g_return_val_if_fail(DNF_IS_LOCK(lock), FALSE);
-    g_return_val_if_fail(id != 0, FALSE);
-    g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
+    g_assert(DNF_IS_LOCK(lock));
+    g_assert(id != 0);
+    g_assert(error == NULL || *error == NULL);
 
     /* lock other threads */
     g_mutex_lock(&priv->mutex);
