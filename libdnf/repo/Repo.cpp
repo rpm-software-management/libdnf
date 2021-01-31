@@ -633,6 +633,17 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir)
     handleSetOpt(h.get(), LRO_SSLVERIFYHOST, sslverify);
     handleSetOpt(h.get(), LRO_SSLVERIFYPEER, sslverify);
 
+    // setup proxy ssl stuff
+    if (!conf->proxy_sslcacert().getValue().empty())
+        handleSetOpt(h.get(), LRO_PROXY_SSLCACERT, conf->proxy_sslcacert().getValue().c_str());
+    if (!conf->proxy_sslclientcert().getValue().empty())
+        handleSetOpt(h.get(), LRO_PROXY_SSLCLIENTCERT, conf->proxy_sslclientcert().getValue().c_str());
+    if (!conf->proxy_sslclientkey().getValue().empty())
+        handleSetOpt(h.get(), LRO_PROXY_SSLCLIENTKEY, conf->proxy_sslclientkey().getValue().c_str());
+    auto proxy_sslverify = conf->proxy_sslverify().getValue() ? 1L : 0L;
+    handleSetOpt(h.get(), LRO_PROXY_SSLVERIFYHOST, proxy_sslverify);
+    handleSetOpt(h.get(), LRO_PROXY_SSLVERIFYPEER, proxy_sslverify);
+
     return h;
 }
 
@@ -1731,6 +1742,17 @@ static LrHandle * newHandle(ConfigMain * conf)
         auto sslverify = conf->sslverify().getValue() ? 1L : 0L;
         handleSetOpt(h, LRO_SSLVERIFYHOST, sslverify);
         handleSetOpt(h, LRO_SSLVERIFYPEER, sslverify);
+
+        // setup proxy ssl stuff
+        if (!conf->proxy_sslcacert().getValue().empty())
+            handleSetOpt(h, LRO_PROXY_SSLCACERT, conf->proxy_sslcacert().getValue().c_str());
+        if (!conf->proxy_sslclientcert().getValue().empty())
+            handleSetOpt(h, LRO_PROXY_SSLCLIENTCERT, conf->proxy_sslclientcert().getValue().c_str());
+        if (!conf->proxy_sslclientkey().getValue().empty())
+            handleSetOpt(h, LRO_PROXY_SSLCLIENTKEY, conf->proxy_sslclientkey().getValue().c_str());
+        auto proxy_sslverify = conf->proxy_sslverify().getValue() ? 1L : 0L;
+        handleSetOpt(h, LRO_PROXY_SSLVERIFYHOST, proxy_sslverify);
+        handleSetOpt(h, LRO_PROXY_SSLVERIFYPEER, proxy_sslverify);
     }
     handleSetOpt(h, LRO_USERAGENT, user_agent);
     return h;

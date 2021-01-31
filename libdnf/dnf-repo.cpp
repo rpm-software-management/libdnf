@@ -1118,6 +1118,31 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, gboolean reloadFromGKeyFile, GError **e
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_USERPWD, tmp_cstr))
         return FALSE;
 
+    auto proxy_sslverify = conf->proxy_sslverify().getValue();
+    /* XXX: setopt() expects a long, so we need a long on the stack */
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_PROXY_SSLVERIFYPEER, (long)proxy_sslverify))
+        return FALSE;
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_PROXY_SSLVERIFYHOST, (long)proxy_sslverify))
+        return FALSE;
+
+    auto & proxy_sslcacert = conf->proxy_sslcacert().getValue();
+    if (!proxy_sslcacert.empty()) {
+        if (!lr_handle_setopt(priv->repo_handle, error, LRO_PROXY_SSLCACERT, proxy_sslcacert.c_str()))
+            return FALSE;
+    }
+
+    auto & proxy_sslclientcert = conf->proxy_sslclientcert().getValue();
+    if (!proxy_sslclientcert.empty()) {
+        if (!lr_handle_setopt(priv->repo_handle, error, LRO_PROXY_SSLCLIENTCERT, proxy_sslclientcert.c_str()))
+            return FALSE;
+    }
+
+    auto & proxy_sslclientkey = conf->proxy_sslclientkey().getValue();
+    if (!proxy_sslclientkey.empty()) {
+        if (!lr_handle_setopt(priv->repo_handle, error, LRO_PROXY_SSLCLIENTKEY, proxy_sslclientkey.c_str()))
+            return FALSE;
+    }
+
     return TRUE;
 }
 
