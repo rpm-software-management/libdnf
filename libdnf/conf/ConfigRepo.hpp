@@ -83,6 +83,10 @@ public:
     OptionChild<OptionBool> & sslverify();
     OptionChild<OptionString> & sslclientcert();
     OptionChild<OptionString> & sslclientkey();
+    OptionChild<OptionString> & proxy_sslcacert();
+    OptionChild<OptionBool> & proxy_sslverify();
+    OptionChild<OptionString> & proxy_sslclientcert();
+    OptionChild<OptionString> & proxy_sslclientkey();
     OptionChild<OptionBool> & deltarpm();
     OptionChild<OptionNumber<std::uint32_t> > & deltarpm_percentage();
     OptionChild<OptionBool> & skip_if_unavailable();

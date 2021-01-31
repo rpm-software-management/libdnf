@@ -69,6 +69,10 @@ class ConfigRepo::Impl {
     OptionChild<OptionBool> sslverify{masterConfig.sslverify()};
     OptionChild<OptionString> sslclientcert{masterConfig.sslclientcert()};
     OptionChild<OptionString> sslclientkey{masterConfig.sslclientkey()};
+    OptionChild<OptionString> proxy_sslcacert{masterConfig.proxy_sslcacert()};
+    OptionChild<OptionBool> proxy_sslverify{masterConfig.proxy_sslverify()};
+    OptionChild<OptionString> proxy_sslclientcert{masterConfig.proxy_sslclientcert()};
+    OptionChild<OptionString> proxy_sslclientkey{masterConfig.proxy_sslclientkey()};
     OptionChild<OptionBool> deltarpm{masterConfig.deltarpm()};
     OptionChild<OptionNumber<std::uint32_t> > deltarpm_percentage{masterConfig.deltarpm_percentage()};
     OptionChild<OptionBool> skip_if_unavailable{masterConfig.skip_if_unavailable()};
@@ -159,6 +163,10 @@ ConfigRepo::Impl::Impl(Config & owner, ConfigMain & masterConfig)
     owner.optBinds().add("sslverify", sslverify);
     owner.optBinds().add("sslclientcert", sslclientcert);
     owner.optBinds().add("sslclientkey", sslclientkey);
+    owner.optBinds().add("proxy_sslcacert", proxy_sslcacert);
+    owner.optBinds().add("proxy_sslverify", proxy_sslverify);
+    owner.optBinds().add("proxy_sslclientcert", proxy_sslclientcert);
+    owner.optBinds().add("proxy_sslclientkey", proxy_sslclientkey);
     owner.optBinds().add("deltarpm", deltarpm);
     owner.optBinds().add("deltarpm_percentage", deltarpm_percentage);
     owner.optBinds().add("skip_if_unavailable", skip_if_unavailable);
@@ -210,6 +218,10 @@ OptionChild<OptionString> & ConfigRepo::sslcacert() { return pImpl->sslcacert; }
 OptionChild<OptionBool> & ConfigRepo::sslverify() { return pImpl->sslverify; }
 OptionChild<OptionString> & ConfigRepo::sslclientcert() { return pImpl->sslclientcert; }
 OptionChild<OptionString> & ConfigRepo::sslclientkey() { return pImpl->sslclientkey; }
+OptionChild<OptionString> & ConfigRepo::proxy_sslcacert() { return pImpl->proxy_sslcacert; }
+OptionChild<OptionBool> & ConfigRepo::proxy_sslverify() { return pImpl->proxy_sslverify; }
+OptionChild<OptionString> & ConfigRepo::proxy_sslclientcert() { return pImpl->proxy_sslclientcert; }
+OptionChild<OptionString> & ConfigRepo::proxy_sslclientkey() { return pImpl->proxy_sslclientkey; }
 OptionChild<OptionBool> & ConfigRepo::deltarpm() { return pImpl->deltarpm; }
 OptionChild<OptionNumber<std::uint32_t> > & ConfigRepo::deltarpm_percentage() { return pImpl->deltarpm_percentage; }
 OptionChild<OptionBool> & ConfigRepo::skip_if_unavailable() { return pImpl->skip_if_unavailable; }

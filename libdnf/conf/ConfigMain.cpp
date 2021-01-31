@@ -346,6 +346,10 @@ class ConfigMain::Impl {
     OptionBool sslverify{true};
     OptionString sslclientcert{""};
     OptionString sslclientkey{""};
+    OptionString proxy_sslcacert{""};
+    OptionBool proxy_sslverify{true};
+    OptionString proxy_sslclientcert{""};
+    OptionString proxy_sslclientkey{""};
     OptionBool deltarpm{true};
     OptionNumber<std::uint32_t> deltarpm_percentage{75};
     OptionBool skip_if_unavailable{false};
@@ -493,6 +497,10 @@ ConfigMain::Impl::Impl(Config & owner)
     owner.optBinds().add("sslverify", sslverify);
     owner.optBinds().add("sslclientcert", sslclientcert);
     owner.optBinds().add("sslclientkey", sslclientkey);
+    owner.optBinds().add("proxy_sslcacert", proxy_sslcacert);
+    owner.optBinds().add("proxy_sslverify", proxy_sslverify);
+    owner.optBinds().add("proxy_sslclientcert", proxy_sslclientcert);
+    owner.optBinds().add("proxy_sslclientkey", proxy_sslclientkey);
     owner.optBinds().add("deltarpm", deltarpm);
     owner.optBinds().add("deltarpm_percentage", deltarpm_percentage);
     owner.optBinds().add("skip_if_unavailable", skip_if_unavailable);
@@ -607,6 +615,10 @@ OptionString & ConfigMain::sslcacert() { return pImpl->sslcacert; }
 OptionBool & ConfigMain::sslverify() { return pImpl->sslverify; }
 OptionString & ConfigMain::sslclientcert() { return pImpl->sslclientcert; }
 OptionString & ConfigMain::sslclientkey() { return pImpl->sslclientkey; }
+OptionString & ConfigMain::proxy_sslcacert() { return pImpl->proxy_sslcacert; }
+OptionBool & ConfigMain::proxy_sslverify() { return pImpl->proxy_sslverify; }
+OptionString & ConfigMain::proxy_sslclientcert() { return pImpl->proxy_sslclientcert; }
+OptionString & ConfigMain::proxy_sslclientkey() { return pImpl->proxy_sslclientkey; }
 OptionBool & ConfigMain::deltarpm() { return pImpl->deltarpm; }
 OptionNumber<std::uint32_t> & ConfigMain::deltarpm_percentage() { return pImpl->deltarpm_percentage; }
 OptionBool & ConfigMain::skip_if_unavailable() { return pImpl->skip_if_unavailable; }
