@@ -159,6 +159,10 @@ public:
     OptionBool & sslverify();
     OptionString & sslclientcert();
     OptionString & sslclientkey();
+    OptionString & proxy_sslcacert();
+    OptionBool & proxy_sslverify();
+    OptionString & proxy_sslclientcert();
+    OptionString & proxy_sslclientkey();
     OptionBool & deltarpm();
     OptionNumber<std::uint32_t> & deltarpm_percentage();
     OptionBool & skip_if_unavailable();
