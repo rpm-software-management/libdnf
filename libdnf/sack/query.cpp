@@ -197,6 +197,31 @@ NamePrioritySolvableKey(const Solvable * first, const Solvable * second)
     return first->repo->priority > second->repo->priority;
 }
 
+struct NameArchEVRComparator {
+   NameArchEVRComparator(Pool * pool) : pool(pool) {};
+   bool operator()(const Solvable * first, const Solvable * second) {
+       if (first->name != second->name) {
+          return first->name < second->name;
+       }
+       if (first->arch != second->arch) {
+          return first->arch < second->arch;
+       }
+       return pool_evrcmp(pool, first->evr, second->evr, EVRCMP_COMPARE) < 0;
+   }
+   bool operator()(const Solvable * solvable, const AdvisoryPkg & pkg) {
+       if (pkg.getName() != solvable->name) {
+          return pkg.getName() > solvable->name;
+        }
+        if (pkg.getArch() != solvable->arch) {
+            return pkg.getArch() > solvable->arch;
+        }
+        return pool_evrcmp(pool, pkg.getEVR(), solvable->evr, EVRCMP_COMPARE) > 0;
+   }
+
+   Pool * pool;
+};
+
+
 static bool
 match_type_num(int keyname) {
     switch (keyname) {
@@ -604,6 +629,14 @@ advisoryPkgCompareSolvableNameArch(const AdvisoryPkg &first, const Solvable &s)
     if (first.getName() != s.name)
         return first.getName() < s.name;
     return first.getArch() < s.arch;
+}
+
+static bool
+SolvableCompareAdvisoryPkgNameArch(const Solvable * s, const AdvisoryPkg & first)
+{
+    if (first.getName() != s->name)
+        return first.getName() > s->name;
+    return first.getArch() > s->arch;
 }
 
 static char *
@@ -1769,7 +1802,8 @@ Query::Impl::filterLocation(const Filter & f, Map *m)
 }
 
 /**
-* @brief Reduce query to security filters. It reflect following compare types: HY_EQ, HY_GT, HY_LT.
+* @brief Reduce query to security filters. It reflect following compare types: HY_EQ, HY_GT, HY_LT. Additionally it is
+* possible to use HY_EQG. HY_EQG can be combine with HY_UPGRADE or HY_GT.
 *
 * @param f: Filter that should be applied on advisories
 * @param m: Map of query results complying the filter
@@ -1825,32 +1859,80 @@ Query::Impl::filterAdvisory(const Filter & f, Map *m, int keyname)
     dataiterator_free(&di);
     std::sort(pkgs.begin(), pkgs.end(), advisoryPkgSort);
 
-    // convert nevras (from DnfAdvisoryPkg) to pool ids
-    Id id = -1;
     int cmp_type = f.getCmpType();
-    while (true) {
-        if (pkgs.size() == 0)
-            break;
-        id = resultPset->next(id);
-        if (id == -1)
-            break;
-        Solvable* s = pool_id2solvable(pool, id);
-        if (cmp_type == HY_EQ) {
-            auto low = std::lower_bound(pkgs.begin(), pkgs.end(), *s, advisoryPkgCompareSolvable);
-            if (low != pkgs.end() && low->nevraEQ(s)) {
-                MAPSET(m, id);
+
+    if (cmp_type & HY_EQG) {
+        std::vector<Solvable *> candidates;
+        std::vector<Solvable *> installed_solvables;
+
+        Id id = -1;
+        while ((id = resultPset->next(id)) != -1) {
+            candidates.push_back(pool_id2solvable(pool, id));
+        }
+        NameArchEVRComparator cmp_key(pool);
+        std::sort(candidates.begin(), candidates.end(), cmp_key);
+
+        if (cmp_type & HY_UPGRADE) {
+            Query installed(sack, ExcludeFlags::IGNORE_EXCLUDES);
+            installed.installed();
+            installed.addFilter(HY_PKG_LATEST_PER_ARCH, HY_EQ, 1);
+            installed.apply();
+            Id installed_id = -1;
+            while ((installed_id = installed.pImpl->result->next(installed_id)) != -1) {
+                installed_solvables.push_back(pool_id2solvable(pool, installed_id));
             }
-        } else {
-            auto low = std::lower_bound(pkgs.begin(), pkgs.end(), *s, advisoryPkgCompareSolvableNameArch);
-            while (low != pkgs.end() && low->getName() == s->name && low->getArch() == s->arch) {
-                int cmp = pool_evrcmp(pool, s->evr, low->getEVR(), EVRCMP_COMPARE);
-                if ((cmp > 0 && cmp_type & HY_GT) ||
-                    (cmp < 0 && cmp_type & HY_LT) ||
-                    (cmp == 0 && cmp_type & HY_EQ)) {
-                    MAPSET(m, id);
-                    break;
+            std::sort(installed_solvables.begin(), installed_solvables.end(), NameArchSolvableComparator);
+        }
+        for (auto & advisoryPkg : pkgs) {
+            if (cmp_type & HY_UPGRADE) {
+                // skip advisory pkgs that have lower evr than installed version - important for upgrade logic
+                auto low = std::lower_bound(installed_solvables.begin(), installed_solvables.end(), advisoryPkg, SolvableCompareAdvisoryPkgNameArch);
+                if (low != installed_solvables.end() && advisoryPkg.getName() == (*low)->name && advisoryPkg.getArch() == (*low)->arch) {
+                    // Skip all advisory packages that has same or lover ever than installed
+                    if (pool_evrcmp(pool, (*low)->evr, advisoryPkg.getEVR(), EVRCMP_COMPARE) >= 0) {
+                        continue;
+                    }
                 }
-                ++low;
+            }
+            auto low = std::lower_bound(candidates.begin(), candidates.end(), advisoryPkg, cmp_key);
+            if (low != candidates.end() && advisoryPkg.getName() == (*low)->name && advisoryPkg.getArch() == (*low)->arch) {
+                MAPSET(m, pool_solvable2id(pool, (*low)));
+                if (cmp_type & HY_GT) {
+                    ++low;
+                    while (low != candidates.end() && advisoryPkg.getName() == (*low)->name && advisoryPkg.getArch() == (*low)->arch) {
+                        MAPSET(m, pool_solvable2id(pool, (*low)));
+                        ++low;
+                    }
+                }
+            }
+        }
+    } else {
+        // convert nevras (from DnfAdvisoryPkg) to pool ids
+        Id id = -1;
+        while (true) {
+            if (pkgs.size() == 0)
+                break;
+            id = resultPset->next(id);
+            if (id == -1)
+                break;
+            Solvable* s = pool_id2solvable(pool, id);
+            if (cmp_type == HY_EQ) {
+                auto low = std::lower_bound(pkgs.begin(), pkgs.end(), *s, advisoryPkgCompareSolvable);
+                if (low != pkgs.end() && low->nevraEQ(s)) {
+                    MAPSET(m, id);
+                }
+            } else {
+                auto low = std::lower_bound(pkgs.begin(), pkgs.end(), *s, advisoryPkgCompareSolvableNameArch);
+                while (low != pkgs.end() && low->getName() == s->name && low->getArch() == s->arch) {
+                    int cmp = pool_evrcmp(pool, s->evr, low->getEVR(), EVRCMP_COMPARE);
+                    if ((cmp > 0 && cmp_type & HY_GT) ||
+                        (cmp < 0 && cmp_type & HY_LT) ||
+                        (cmp == 0 && cmp_type & HY_EQ)) {
+                        MAPSET(m, id);
+                        break;
+                    }
+                    ++low;
+                }
             }
         }
     }
