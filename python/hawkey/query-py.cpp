@@ -150,6 +150,8 @@ static const char * const query_cmp_map_char[] = {
     "lte",
     "substr",
     "glob",
+    "eqg",
+    "upgrade",
     NULL
 };
 
@@ -162,7 +164,9 @@ static const int query_cmp_map_int[] = {
     HY_EQ | HY_GT,
     HY_EQ | HY_LT,
     HY_SUBSTR,
-    HY_GLOB
+    HY_GLOB,
+    HY_EQG,
+    HY_UPGRADE
 };
 
 HyQuery

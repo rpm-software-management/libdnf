@@ -123,6 +123,12 @@ enum _hy_comparison_type_e {
 
     /* part 5: additional flags, not necessarily used for queries */
     HY_NAME_ONLY = (1 << 16),
+
+    /* part 6: additional flags for addvisory filters*/
+    /// EQ or the first higher
+    HY_EQG        = (1 << 17),
+    /// skip advisory packages with lower EVR than latest installed
+    HY_UPGRADE    = (1 << 18),
 };
 
 #endif /* HY_TYPES_H */
