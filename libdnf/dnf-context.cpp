@@ -1763,6 +1763,7 @@ dnf_context_setup_sack_with_flags(DnfContext               *context,
     solv_dir_real = dnf_realpath(priv->solv_dir);
     vendorchange = dnf_context_get_allow_vendor_change();
     priv->sack = dnf_sack_new();
+    dnf_sack_set_context(priv->sack, context);
     dnf_sack_set_cachedir(priv->sack, solv_dir_real);
     dnf_sack_set_rootdir(priv->sack, priv->install_root);
     dnf_sack_set_allow_vendor_change(priv->sack, vendorchange);

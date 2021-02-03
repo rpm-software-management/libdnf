@@ -38,7 +38,9 @@ typedef enum {
     PLUGIN_HOOK_ID_CONTEXT_CONF,
     PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION,
     PLUGIN_HOOK_ID_CONTEXT_TRANSACTION,
-    PLUGIN_HOOK_ID_CONTEXT_PRE_REPOS_RELOAD
+    PLUGIN_HOOK_ID_CONTEXT_PRE_REPOS_RELOAD,
+    PLUGIN_HOOK_ID_CONTEXT_PRE_GOAL_SOLVE,
+    PLUGIN_HOOK_ID_CONTEXT_GOAL_SOLVED
 } PluginHookId;
 
 #ifdef __cplusplus
@@ -62,16 +64,23 @@ typedef struct _PluginHandle PluginHandle;
 extern "C" {
 #endif
 
-// Functions to access initData.
+// ========== Functions to access initData ==========
 DnfContext * pluginGetContext(DnfPluginInitData * data);
 
-// Functions to access hookData.
-// Usable with PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION and PLUGIN_HOOK_ID_CONTEXT_TRANSACTION,
+
+// ========== Functions to access hookData ==========
+
+// Usable with PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION and PLUGIN_HOOK_ID_CONTEXT_TRANSACTION.
 DnfTransaction * hookContextTransactionGetTransaction(DnfPluginHookData * data);
 HyGoal hookContextTransactionGetGoal(DnfPluginHookData * data);
 DnfState * hookContextTransactionGetState(DnfPluginHookData * data);
 
-// code below will be implemented in plugins
+// Usable with PLUGIN_HOOK_ID_CONTEXT_PRE_GOAL_SOLVE and PLUGIN_HOOK_ID_CONTEXT_GOAL_SOLVED.
+HyGoal hookContextGoalGetGoal(DnfPluginHookData * data);
+DnfGoalActions * hookContextGoalGetActions(DnfPluginHookData * data);
+
+
+// ========== code below will be implemented in plugins ==========
 struct _PluginHandle;
 
 const PluginInfo * pluginGetInfo(void);

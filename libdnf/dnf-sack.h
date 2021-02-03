@@ -88,6 +88,9 @@ typedef enum {
 
 DnfSack     *dnf_sack_new                   (void);
 
+void         dnf_sack_set_context           (DnfSack        *sack,
+                                             DnfContext     *context);
+DnfContext  *dnf_sack_get_context           (DnfSack        *sack);
 void         dnf_sack_set_cachedir          (DnfSack        *sack,
                                              const gchar    *value);
 gboolean     dnf_sack_set_arch              (DnfSack        *sack,

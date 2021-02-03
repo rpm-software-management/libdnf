@@ -37,25 +37,6 @@ enum _hy_goal_op_flags {
 };
 
 typedef enum {
-    DNF_NONE                     = 0,
-    DNF_ERASE                    = 1 << 0,
-    DNF_DISTUPGRADE              = 1 << 1,
-    DNF_DISTUPGRADE_ALL          = 1 << 2,
-    DNF_DOWNGRADE                = 1 << 3,
-    DNF_INSTALL                  = 1 << 4,
-    DNF_UPGRADE                  = 1 << 5,
-    DNF_UPGRADE_ALL              = 1 << 6,
-
-    // hy_goal_run flags
-    DNF_ALLOW_UNINSTALL          = 1 << 10,
-    DNF_FORCE_BEST               = 1 << 11,
-    DNF_VERIFY                   = 1 << 12,
-    DNF_IGNORE_WEAK_DEPS         = 1 << 13,
-    DNF_ALLOW_DOWNGRADE          = 1 << 14,
-    DNF_IGNORE_WEAK              = 1 << 15
-} DnfGoalActions;
-
-typedef enum {
     DNF_PACKAGE_STATE_ALL              = 0,
     DNF_PACKAGE_STATE_AVAILABLE        = 1,
     DNF_PACKAGE_STATE_INSTALLED        = 2

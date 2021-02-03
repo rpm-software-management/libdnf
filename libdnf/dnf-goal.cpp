@@ -34,6 +34,8 @@
 #include <glib.h>
 
 #include "catch-error.hpp"
+#include "log.hpp"
+#include "tinyformat/tinyformat.hpp"
 #include "hy-util.h"
 #include "hy-goal-private.hpp"
 #include "dnf-goal.h"
@@ -44,6 +46,21 @@
 #include "dnf-utils.h"
 #include "utils/bgettext/bgettext-lib.h"
 #include "../goal/Goal.hpp"
+#include "plugin/plugin-private.hpp"
+
+/**
+* @brief Information about goal
+*
+* The structure is passed to pluginHook() as hookData, when id of hook
+* is PLUGIN_HOOK_ID_CONTEXT_PRE_GOAL_SOLVE or PLUGIN_HOOK_ID_CONTEXT_GOAL_SOLVED.
+*/
+struct PluginHookContextGoalData : public libdnf::PluginHookData {
+    PluginHookContextGoalData(PluginHookId hookId, HyGoal goal, DnfGoalActions & actions)
+    : PluginHookData(hookId), goal(goal), actions(&actions) {}
+
+    HyGoal goal;
+    DnfGoalActions * actions;
+};
 
 /**
  * dnf_goal_depsolve:
@@ -62,6 +79,16 @@ dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError **error) try
     gint j;
     gint rc;
     g_autoptr(GString) string = NULL;
+
+    auto * sack = hy_goal_get_sack(goal);
+    auto * context = dnf_sack_get_context(sack);
+
+    if (context) {
+        PluginHookContextGoalData data{PLUGIN_HOOK_ID_CONTEXT_PRE_GOAL_SOLVE, goal, flags};
+        if (!dnf_context_plugin_hook(context, data.hookId, &data, nullptr)) {
+            return FALSE;
+        }
+    }
 
     rc = hy_goal_run_flags(goal, flags);
     if (rc) {
@@ -101,7 +128,7 @@ dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError **error) try
                             "The transaction was empty");
         return FALSE;
     }
-    DnfSack * sack = hy_goal_get_sack(goal);
+
     auto moduleContainer = dnf_sack_get_module_container(sack);
     if (moduleContainer) {
         auto installSet = goal->listInstalls();
@@ -110,6 +137,14 @@ dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError **error) try
             moduleContainer->enable(module->getName(), module->getStream());
         }
     }
+
+    if (context) {
+        PluginHookContextGoalData data{PLUGIN_HOOK_ID_CONTEXT_GOAL_SOLVED, goal, flags};
+        if (!dnf_context_plugin_hook(context, data.hookId, &data, nullptr)) {
+            return FALSE;
+        }
+    }
+
     return TRUE;
 } CATCH_TO_GERROR(FALSE)
 
@@ -216,4 +251,38 @@ void
 dnf_goal_set_protected(HyGoal goal, DnfPackageSet *pset)
 {
     goal->setProtected(*pset);
+}
+
+HyGoal
+hookContextGoalGetGoal(DnfPluginHookData * data)
+{
+    if (!data) {
+        auto logger(libdnf::Log::getLogger());
+        logger->error(tfm::format("%s: was called with data == nullptr", __func__));
+        return nullptr;
+    }
+    if (data->hookId != PLUGIN_HOOK_ID_CONTEXT_PRE_GOAL_SOLVE &&
+        data->hookId != PLUGIN_HOOK_ID_CONTEXT_GOAL_SOLVED) {
+        auto logger(libdnf::Log::getLogger());
+        logger->error(tfm::format("%s: was called with hookId == %i", __func__, data->hookId));
+        return nullptr;
+    }
+    return (static_cast<PluginHookContextGoalData *>(data))->goal;
+}
+
+DnfGoalActions *
+hookContextGoalGetActions(DnfPluginHookData * data)
+{
+    if (!data) {
+        auto logger(libdnf::Log::getLogger());
+        logger->error(tfm::format("%s: was called with data == nullptr", __func__));
+        return nullptr;
+    }
+    if (data->hookId != PLUGIN_HOOK_ID_CONTEXT_PRE_GOAL_SOLVE &&
+        data->hookId != PLUGIN_HOOK_ID_CONTEXT_GOAL_SOLVED) {
+        auto logger(libdnf::Log::getLogger());
+        logger->error(tfm::format("%s: was called with hookId == %i", __func__, data->hookId));
+        return nullptr;
+    }
+    return (static_cast<PluginHookContextGoalData *>(data))->actions;
 }

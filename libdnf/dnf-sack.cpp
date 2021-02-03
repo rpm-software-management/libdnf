@@ -113,6 +113,7 @@ typedef struct
     dnf_sack_running_kernel_fn_t  running_kernel_fn;
     guint                installonly_limit;
     libdnf::ModulePackageContainer * moduleContainer;
+    DnfContext          *context;
 } DnfSackPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfSack, dnf_sack, G_TYPE_OBJECT)
@@ -223,6 +224,20 @@ DnfSack *
 dnf_sack_new(void)
 {
     return DNF_SACK(g_object_new(DNF_TYPE_SACK, NULL));
+}
+
+void
+dnf_sack_set_context(DnfSack *sack, DnfContext *context)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    priv->context = context;
+}
+
+DnfContext *
+dnf_sack_get_context(DnfSack *sack)
+{
+    DnfSackPrivate *priv = GET_PRIVATE(sack);
+    return priv->context;
 }
 
 static int
