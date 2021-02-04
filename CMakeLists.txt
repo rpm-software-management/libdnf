@@ -107,6 +107,9 @@ if(WITH_BINDINGS)
         message(FATAL_ERROR "Invalid PYTHON_DESIRED value: " ${PYTHON_DESIRED})
     endif()
     find_package(PythonLibs REQUIRED)
+    message(STATUS "Building for python${PYTHON_VERSION_MAJOR}")
+else()
+    message(STATUS "Not building language bindings")
 endif()
 
 
