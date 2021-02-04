@@ -137,8 +137,6 @@ set(LIBDNF_headers
     libdnf.h
 )
 
-message(STATUS "Building for python${PYTHON_VERSION_MAJOR}")
-
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc
     DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig
 )
