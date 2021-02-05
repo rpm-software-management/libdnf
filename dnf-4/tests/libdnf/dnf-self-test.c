@@ -161,7 +161,7 @@ dnf_lock_threads_func(void)
     guint lock_id;
     DnfLock *lock;
 
-    /* take in master thread */
+    /* take in parent thread */
     lock = dnf_lock_new();
     dnf_lock_set_lock_dir(lock, "/tmp");
     lock_id = dnf_lock_take(lock,
@@ -171,7 +171,7 @@ dnf_lock_threads_func(void)
     g_assert_no_error(error);
     g_assert_cmpint(lock_id, >, 0);
 
-    /* attempt to take in slave thread(should fail) */
+    /* attempt to take in child thread(should fail) */
     one = g_thread_new("dnf-lock-one",
                 dnf_self_test_lock_thread_one,
                 lock);
