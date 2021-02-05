@@ -40,11 +40,11 @@ namespace libdnf {
 */
 class ConfigRepo : public Config {
 public:
-    ConfigRepo(ConfigMain & masterConfig);
+    ConfigRepo(ConfigMain & mainConfig);
     ~ConfigRepo();
     ConfigRepo(ConfigRepo && src);
 
-    ConfigMain & getMasterConfig();
+    ConfigMain & getMainConfig();
 
     OptionString & name();
     OptionChild<OptionBool> & enabled();
