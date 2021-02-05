@@ -27,14 +27,14 @@ namespace libdnf {
 class ConfigRepo::Impl {
     friend class ConfigRepo;
 
-    Impl(Config & owner, ConfigMain & masterConfig);
+    Impl(Config & owner, ConfigMain & mainConfig);
 
     Config & owner;
-    ConfigMain & masterConfig;
+    ConfigMain & mainConfig;
 
     OptionString name{""};
-    OptionChild<OptionBool> enabled{masterConfig.enabled()};
-    OptionChild<OptionString> basecachedir{masterConfig.cachedir()};
+    OptionChild<OptionBool> enabled{mainConfig.enabled()};
+    OptionChild<OptionString> basecachedir{mainConfig.cachedir()};
     OptionStringList baseurl{std::vector<std::string>{}};
     OptionString mirrorlist{nullptr};
     OptionString metalink{nullptr};
@@ -43,47 +43,47 @@ class ConfigRepo::Impl {
     OptionStringList gpgkey{std::vector<std::string>{}};
     OptionStringList excludepkgs{std::vector<std::string>{}};
     OptionStringList includepkgs{std::vector<std::string>{}};
-    OptionChild<OptionBool> fastestmirror{masterConfig.fastestmirror()};
-    OptionChild<OptionString> proxy{masterConfig.proxy()};
-    OptionChild<OptionString> proxy_username{masterConfig.proxy_username()};
-    OptionChild<OptionString> proxy_password{masterConfig.proxy_password()};
-    OptionChild<OptionEnum<std::string> > proxy_auth_method{masterConfig.proxy_auth_method()};
-    OptionChild<OptionString> username{masterConfig.username()};
-    OptionChild<OptionString> password{masterConfig.password()};
-    OptionChild<OptionStringList> protected_packages{masterConfig.protected_packages()};
-    OptionChild<OptionBool> gpgcheck{masterConfig.gpgcheck()};
-    OptionChild<OptionBool> repo_gpgcheck{masterConfig.repo_gpgcheck()};
-    OptionChild<OptionBool> enablegroups{masterConfig.enablegroups()};
-    OptionChild<OptionNumber<std::uint32_t> > retries{masterConfig.retries()};
-    OptionChild<OptionNumber<std::uint32_t> > bandwidth{masterConfig.bandwidth()};
-    OptionChild<OptionNumber<std::uint32_t> > minrate{masterConfig.minrate()};
-    OptionChild<OptionEnum<std::string> > ip_resolve{masterConfig.ip_resolve()};
-    OptionChild<OptionNumber<float> > throttle{masterConfig.throttle()};
-    OptionChild<OptionSeconds> timeout{masterConfig.timeout()};
-    OptionChild<OptionNumber<std::uint32_t> >  max_parallel_downloads{masterConfig.max_parallel_downloads()};
-    OptionChild<OptionSeconds> metadata_expire{masterConfig.metadata_expire()};
+    OptionChild<OptionBool> fastestmirror{mainConfig.fastestmirror()};
+    OptionChild<OptionString> proxy{mainConfig.proxy()};
+    OptionChild<OptionString> proxy_username{mainConfig.proxy_username()};
+    OptionChild<OptionString> proxy_password{mainConfig.proxy_password()};
+    OptionChild<OptionEnum<std::string> > proxy_auth_method{mainConfig.proxy_auth_method()};
+    OptionChild<OptionString> username{mainConfig.username()};
+    OptionChild<OptionString> password{mainConfig.password()};
+    OptionChild<OptionStringList> protected_packages{mainConfig.protected_packages()};
+    OptionChild<OptionBool> gpgcheck{mainConfig.gpgcheck()};
+    OptionChild<OptionBool> repo_gpgcheck{mainConfig.repo_gpgcheck()};
+    OptionChild<OptionBool> enablegroups{mainConfig.enablegroups()};
+    OptionChild<OptionNumber<std::uint32_t> > retries{mainConfig.retries()};
+    OptionChild<OptionNumber<std::uint32_t> > bandwidth{mainConfig.bandwidth()};
+    OptionChild<OptionNumber<std::uint32_t> > minrate{mainConfig.minrate()};
+    OptionChild<OptionEnum<std::string> > ip_resolve{mainConfig.ip_resolve()};
+    OptionChild<OptionNumber<float> > throttle{mainConfig.throttle()};
+    OptionChild<OptionSeconds> timeout{mainConfig.timeout()};
+    OptionChild<OptionNumber<std::uint32_t> >  max_parallel_downloads{mainConfig.max_parallel_downloads()};
+    OptionChild<OptionSeconds> metadata_expire{mainConfig.metadata_expire()};
     OptionNumber<std::int32_t> cost{1000};
     OptionNumber<std::int32_t> priority{99};
     OptionBool module_hotfixes{false};
-    OptionChild<OptionString> sslcacert{masterConfig.sslcacert()};
-    OptionChild<OptionBool> sslverify{masterConfig.sslverify()};
-    OptionChild<OptionString> sslclientcert{masterConfig.sslclientcert()};
-    OptionChild<OptionString> sslclientkey{masterConfig.sslclientkey()};
-    OptionChild<OptionString> proxy_sslcacert{masterConfig.proxy_sslcacert()};
-    OptionChild<OptionBool> proxy_sslverify{masterConfig.proxy_sslverify()};
-    OptionChild<OptionString> proxy_sslclientcert{masterConfig.proxy_sslclientcert()};
-    OptionChild<OptionString> proxy_sslclientkey{masterConfig.proxy_sslclientkey()};
-    OptionChild<OptionBool> deltarpm{masterConfig.deltarpm()};
-    OptionChild<OptionNumber<std::uint32_t> > deltarpm_percentage{masterConfig.deltarpm_percentage()};
-    OptionChild<OptionBool> skip_if_unavailable{masterConfig.skip_if_unavailable()};
+    OptionChild<OptionString> sslcacert{mainConfig.sslcacert()};
+    OptionChild<OptionBool> sslverify{mainConfig.sslverify()};
+    OptionChild<OptionString> sslclientcert{mainConfig.sslclientcert()};
+    OptionChild<OptionString> sslclientkey{mainConfig.sslclientkey()};
+    OptionChild<OptionString> proxy_sslcacert{mainConfig.proxy_sslcacert()};
+    OptionChild<OptionBool> proxy_sslverify{mainConfig.proxy_sslverify()};
+    OptionChild<OptionString> proxy_sslclientcert{mainConfig.proxy_sslclientcert()};
+    OptionChild<OptionString> proxy_sslclientkey{mainConfig.proxy_sslclientkey()};
+    OptionChild<OptionBool> deltarpm{mainConfig.deltarpm()};
+    OptionChild<OptionNumber<std::uint32_t> > deltarpm_percentage{mainConfig.deltarpm_percentage()};
+    OptionChild<OptionBool> skip_if_unavailable{mainConfig.skip_if_unavailable()};
     OptionString enabled_metadata{""};
-    OptionChild<OptionString> user_agent{masterConfig.user_agent()};
-    OptionChild<OptionBool> countme{masterConfig.countme()};
+    OptionChild<OptionString> user_agent{mainConfig.user_agent()};
+    OptionChild<OptionBool> countme{mainConfig.countme()};
     OptionEnum<std::string> failovermethod{"priority", {"priority", "roundrobin"}};
 };
 
-ConfigRepo::Impl::Impl(Config & owner, ConfigMain & masterConfig)
-: owner(owner), masterConfig(masterConfig)
+ConfigRepo::Impl::Impl(Config & owner, ConfigMain & mainConfig)
+: owner(owner), mainConfig(mainConfig)
 {
     owner.optBinds().add("name", name);
     owner.optBinds().add("enabled", enabled);
@@ -175,11 +175,11 @@ ConfigRepo::Impl::Impl(Config & owner, ConfigMain & masterConfig)
     owner.optBinds().add("countme", countme);
 }
 
-ConfigRepo::ConfigRepo(ConfigMain & masterConfig) : pImpl(new Impl(*this, masterConfig)) {}
+ConfigRepo::ConfigRepo(ConfigMain & mainConfig) : pImpl(new Impl(*this, mainConfig)) {}
 ConfigRepo::~ConfigRepo() = default;
 ConfigRepo::ConfigRepo(ConfigRepo && src) : pImpl(std::move(src.pImpl)) {}
 
-ConfigMain & ConfigRepo::getMasterConfig() { return pImpl->masterConfig; }
+ConfigMain & ConfigRepo::getMainConfig() { return pImpl->mainConfig; }
 
 OptionString & ConfigRepo::name() { return pImpl->name; }
 OptionChild<OptionBool> & ConfigRepo::enabled() { return pImpl->enabled; }
