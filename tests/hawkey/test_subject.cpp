@@ -42,7 +42,6 @@ const char inp_fof_na[] = "four-of-fish-3.6.9.i686";
 /* with profile */
 const char module_nsvcap[] = "module-name:stream:1:b86c854:x86_64/profile";
 const char module_nsvap[] = "module-name:stream:1::x86_64/profile";
-const char module_nsvcp[] = "module-name:stream:1:b86c854/profile";
 const char module_nsvp[] = "module-name:stream:1/profile";
 const char module_nsap[] = "module-name:stream::x86_64/profile";
 const char module_nsp[] = "module-name:stream/profile";
