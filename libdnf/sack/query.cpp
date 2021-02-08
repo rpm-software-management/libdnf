@@ -197,6 +197,17 @@ NamePrioritySolvableKey(const Solvable * first, const Solvable * second)
     return first->repo->priority > second->repo->priority;
 }
 
+static bool
+NameArchPrioritySolvableKey(const Solvable * first, const Solvable * second)
+{
+    if (first->name != second->name)
+        return first->name < second->name;
+    if (first->arch != second->arch) {
+        return first->arch < second->arch;
+    }
+    return first->repo->priority > second->repo->priority;
+}
+
 struct NameArchEVRComparator {
    NameArchEVRComparator(Pool * pool) : pool(pool) {};
    bool operator()(const Solvable * first, const Solvable * second) {
@@ -1803,7 +1814,8 @@ Query::Impl::filterLocation(const Filter & f, Map *m)
 
 /**
 * @brief Reduce query to security filters. It reflect following compare types: HY_EQ, HY_GT, HY_LT. Additionally it is
-* possible to use HY_EQG. HY_EQG can be combine with HY_UPGRADE or HY_GT.
+* possible to use HY_EQG. HY_EQG can be combine with HY_UPGRADE or HY_GT. HY_UPGRADE skips advisory that arr already
+* resolved by installed packages. It also select results according priority (important for upgrade-minimal).
 *
 * @param f: Filter that should be applied on advisories
 * @param m: Map of query results complying the filter
@@ -1870,7 +1882,6 @@ Query::Impl::filterAdvisory(const Filter & f, Map *m, int keyname)
             candidates.push_back(pool_id2solvable(pool, id));
         }
         NameArchEVRComparator cmp_key(pool);
-        std::sort(candidates.begin(), candidates.end(), cmp_key);
 
         if (cmp_type & HY_UPGRADE) {
             Query installed(sack, ExcludeFlags::IGNORE_EXCLUDES);
@@ -1882,7 +1893,30 @@ Query::Impl::filterAdvisory(const Filter & f, Map *m, int keyname)
                 installed_solvables.push_back(pool_id2solvable(pool, installed_id));
             }
             std::sort(installed_solvables.begin(), installed_solvables.end(), NameArchSolvableComparator);
+
+            // Apply security filters only to packages with lower priority - to unify behaviour upgrade
+            // and upgrade-minimal
+            std::sort(candidates.begin(), candidates.end(), NameArchPrioritySolvableKey);
+            std::vector<Solvable *> priority_candidates;
+            Id name = 0;
+            Id arch = 0;
+            int priority = 0;
+
+            for (auto * candidate: candidates) {
+                if (candidate->repo == pool->installed) {
+                    priority_candidates.push_back(candidate);
+                } else if (name != candidate->name || arch != candidate->arch) {
+                    name = candidate->name;
+                    arch = candidate->arch;
+                    priority = candidate->repo->priority;
+                    priority_candidates.push_back(candidate);
+                } else if (priority == candidate->repo->priority) {
+                    priority_candidates.push_back(candidate);
+                }
+            }
+            std::swap(candidates, priority_candidates);
         }
+        std::sort(candidates.begin(), candidates.end(), cmp_key);
         for (auto & advisoryPkg : pkgs) {
             if (cmp_type & HY_UPGRADE) {
                 // skip advisory pkgs that have lower evr than installed version - important for upgrade logic
