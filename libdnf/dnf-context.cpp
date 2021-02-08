@@ -137,6 +137,7 @@ typedef struct
 {
     gchar            **repos_dir;
     gchar            **vars_dir;
+    gchar            **installonlypkgs;
     gchar            *base_arch;
     gchar            *release_ver;
     gchar            *platform_module;
@@ -220,6 +221,7 @@ dnf_context_finalize(GObject *object)
 
     g_strfreev(priv->repos_dir);
     g_strfreev(priv->vars_dir);
+    g_strfreev(priv->installonlypkgs);
     g_free(priv->base_arch);
     g_free(priv->release_ver);
     g_free(priv->platform_module);
@@ -1092,20 +1094,47 @@ dnf_context_get_cache_age(DnfContext *context)
  *
  * Gets the packages that are allowed to be installed more than once.
  *
+ * The return value is valid until the value of the global configuration "installonlypkgs" changes.
+ * E.g. using dnf_conf_main_set_option() or dnf_conf_add_setopt().
+ *
  * Returns: (transfer none): array of package names
  */
 const gchar **
 dnf_context_get_installonly_pkgs(DnfContext *context)
 {
-    static const gchar *installonly_pkgs[] = {
-        "kernel",
-        "kernel-PAE",
-        "installonlypkg(kernel)",
-        "installonlypkg(kernel-module)",
-        "installonlypkg(vm)",
-        "multiversion(kernel)",
-        NULL };
-    return installonly_pkgs;
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    auto & mainConf = libdnf::getGlobalMainConfig();
+    auto & packages = mainConf.installonlypkgs().getValue();
+
+    // If "installonlypkgs" is not initialized (first run), set "differs" to true.
+    bool differs = !priv->installonlypkgs;
+
+    // Test if they are not different.
+    if (!differs) {
+        size_t i = 0;
+        while (i < packages.size()) {
+            if (!priv->installonlypkgs[i] || packages[i].compare(priv->installonlypkgs[i]) != 0) {
+                differs = true;
+                break;
+            }
+            ++i;
+        }
+        if (priv->installonlypkgs[i]) {
+            differs = true;
+        }
+    }
+
+    // Re-initialize "installonlypkgs" only if it differs from the values in mainConf.
+    if (differs) {
+        g_strfreev(priv->installonlypkgs);
+        priv->installonlypkgs = g_new0(gchar*, packages.size() + 1);
+
+        for (size_t i = 0; i < packages.size(); ++i) {
+            priv->installonlypkgs[i] = g_strdup(packages[i].c_str());
+        }
+    }
+
+    return const_cast<const gchar **>(priv->installonlypkgs);
 }
 
 /**
