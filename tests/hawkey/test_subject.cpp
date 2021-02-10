@@ -52,6 +52,7 @@ const char module_nap[] = "module-name::x86_64/profile";
 const char module_nsvca[] = "module-name:stream:1:b86c854:x86_64";
 const char module_nsva[] = "module-name:stream:1::x86_64";
 const char module_nsvc[] = "module-name:stream:1:b86c854";
+const char module_nsvc2[] = "module-name:stream:1:muj-cont_ext.5";
 const char module_nsv[] = "module-name:stream:1";
 const char module_nsa[] = "module-name:stream::x86_64";
 const char module_ns[] = "module-name:stream";
@@ -222,6 +223,17 @@ START_TEST(module_form_nsvc)
 }
 END_TEST
 
+START_TEST(module_form_nsvc2)
+{
+    libdnf::Nsvcap nsvcap;
+    ck_assert(nsvcap.parse(module_nsvc2, HY_MODULE_FORM_NSVC));
+    ck_assert_str_eq(nsvcap.getName().c_str(), "module-name");
+    ck_assert_str_eq(nsvcap.getStream().c_str(), "stream");
+    ck_assert_str_eq(nsvcap.getVersion().c_str(), "1");
+    ck_assert_str_eq(nsvcap.getContext().c_str(), "muj-cont_ext.5");
+}
+END_TEST
+
 START_TEST(module_form_nsv)
 {
     libdnf::Nsvcap nsvcap;
@@ -325,6 +337,7 @@ subject_suite(void)
     tcase_add_test(tc, module_form_nsva);
     tcase_add_test(tc, module_form_nsvp);
     tcase_add_test(tc, module_form_nsvc);
+    tcase_add_test(tc, module_form_nsvc2);
     tcase_add_test(tc, module_form_nsv);
     tcase_add_test(tc, module_form_nsap);
     tcase_add_test(tc, module_form_nsa);
