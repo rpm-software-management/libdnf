@@ -22,10 +22,6 @@
 #ifndef __LIBDNF_H
 #define __LIBDNF_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define __LIBDNF_H_INSIDE__
 
 #include <libdnf/dnf-advisory.h>
@@ -62,9 +58,5 @@ extern "C" {
 #include <libdnf/hy-util.h>
 
 #undef __LIBDNF_H_INSIDE__
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* __LIBDNF_H */
