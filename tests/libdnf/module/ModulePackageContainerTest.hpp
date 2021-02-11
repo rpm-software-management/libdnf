@@ -11,12 +11,9 @@ class ModulePackageContainerTest : public CppUnit::TestCase
 {
     CPPUNIT_TEST_SUITE(ModulePackageContainerTest);
         CPPUNIT_TEST(testEnabledModules);
-        CPPUNIT_TEST(testDisableModules);
-        CPPUNIT_TEST(testDisabledModules);
-        CPPUNIT_TEST(testEnableModules);
+        CPPUNIT_TEST(testDisableEnableModules);
         CPPUNIT_TEST(testRollback);
-        CPPUNIT_TEST(testInstallProfile);
-        CPPUNIT_TEST(testRemoveProfile);
+        CPPUNIT_TEST(testInstallRemoveProfile);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -24,16 +21,14 @@ public:
     void tearDown() override;
 
     void testEnabledModules();
-    void testDisableModules();
-    void testDisabledModules();
-    void testEnableModules();
+    void testDisableEnableModules();
     void testRollback();
-    void testInstallProfile();
-    void testRemoveProfile();
+    void testInstallRemoveProfile();
 
 private:
     DnfContext *context;
     libdnf::ModulePackageContainer *modules;
+    char* tmpdir;
 };
 
 #endif /* LIBDNF_MODULEPACKAGECONTAINERTEST_HPP */

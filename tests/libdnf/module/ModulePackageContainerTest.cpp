@@ -4,23 +4,33 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ModulePackageContainerTest);
 
 #include "libdnf/log.hpp"
 #include "libdnf/dnf-sack-private.hpp"
+#include "libdnf/hy-iutil-private.hpp"
 
 #include <algorithm>
+
+#define UNITTEST_DIR "/tmp/libdnf22XXXXXX"
 
 void ModulePackageContainerTest::setUp()
 {
     g_autoptr(GError) error = nullptr;
+    tmpdir = g_strdup(UNITTEST_DIR);
+    char *retptr = mkdtemp(tmpdir);
+    CPPUNIT_ASSERT(retptr);
+    char * etc_target = g_strjoin(NULL, tmpdir, "/etc", NULL);
+    dnf_copy_recursive(TESTDATADIR "/modules/etc", etc_target, &error);
+    g_assert_no_error(error);
+    g_free(etc_target);
 
     dnf_context_set_config_file_path("");
     context = dnf_context_new();
     dnf_context_set_release_ver(context, "26");
     dnf_context_set_arch(context, "x86_64");
     dnf_context_set_platform_module(context, "platform:26");
-    dnf_context_set_install_root(context, TESTDATADIR "/modules/");
+    dnf_context_set_install_root(context, tmpdir);
     g_autoptr(DnfLock) lock = dnf_lock_new();
-    dnf_lock_set_lock_dir(lock, "/tmp");
+    dnf_lock_set_lock_dir(lock, tmpdir);
     dnf_context_set_repo_dir(context, TESTDATADIR "/modules/yum.repos.d/");
-    dnf_context_set_solv_dir(context, "/tmp");
+    dnf_context_set_solv_dir(context, tmpdir);
     dnf_context_setup(context, nullptr, &error);
     g_assert_no_error(error);
 
@@ -34,11 +44,16 @@ void ModulePackageContainerTest::setUp()
 
 void ModulePackageContainerTest::tearDown()
 {
+    g_autoptr(GError) error = nullptr;
     g_object_unref(context);
+    dnf_remove_recursive_v2(tmpdir, &error);
+    g_assert_no_error(error);
+    g_free(tmpdir);
 }
 
 void ModulePackageContainerTest::testEnabledModules()
 {
+    // Starting environment has enabled modules, using older syntax to test backwards compatibility.
     const std::vector<std::string> specs = {"httpd:2.4", "base-runtime:f26" };
     for (const auto &spec : specs) {
         const auto &qRes = modules->query(spec);
@@ -47,8 +62,9 @@ void ModulePackageContainerTest::testEnabledModules()
     }
 }
 
-void ModulePackageContainerTest::testDisableModules()
+void ModulePackageContainerTest::testDisableEnableModules()
 {
+    // Starting environment has enabled modules, using older syntax to test backwards compatibility.
     modules->disable("httpd");
     modules->disable("base-runtime");
 
@@ -57,17 +73,11 @@ void ModulePackageContainerTest::testDisableModules()
     }
 
     modules->save();
-}
 
-void ModulePackageContainerTest::testDisabledModules()
-{
     CPPUNIT_ASSERT(!modules->isEnabled("httpd", "2.4"));
     CPPUNIT_ASSERT(!modules->isEnabled("httpd", "2.2"));
     CPPUNIT_ASSERT(!modules->isEnabled("base-runtime", "f26"));
-}
 
-void ModulePackageContainerTest::testEnableModules()
-{
     modules->enable("httpd", "2.4");
     modules->enable("base-runtime", "f26");
 
@@ -84,6 +94,7 @@ void ModulePackageContainerTest::testEnableModules()
 
 void ModulePackageContainerTest::testRollback()
 {
+    // Starting environment has enabled modules, using older syntax to test backwards compatibility.
     modules->disable("httpd");
     modules->disable("base-runtime");
 
@@ -96,7 +107,7 @@ void ModulePackageContainerTest::testRollback()
     CPPUNIT_ASSERT(modules->isEnabled("base-runtime", "f26"));
 }
 
-void ModulePackageContainerTest::testInstallProfile()
+void ModulePackageContainerTest::testInstallRemoveProfile()
 {
     modules->install("httpd", "2.4", "default");
     {
@@ -119,11 +130,7 @@ void ModulePackageContainerTest::testInstallProfile()
     }
 
     modules->save();
-}
 
-
-void ModulePackageContainerTest::testRemoveProfile()
-{
     modules->uninstall("httpd", "2.4", "default");
     {
         auto installed = modules->getInstalledProfiles()["httpd"];
