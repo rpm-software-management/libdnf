@@ -1,4 +1,6 @@
-execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; sys.stdout.write('%s.%s' % (sys.version_info.major, sys.version_info.minor))" OUTPUT_VARIABLE PYTHON_MAJOR_DOT_MINOR_VERSION)
 execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_BINARY_DIR}/bindings/python" "${CMAKE_CURRENT_BINARY_DIR}/libdnf")
-configure_file("run_nosetests.in"  "run_nosetests")
-add_test(test_python run_nosetests -s ${CMAKE_CURRENT_SOURCE_DIR})
+add_test(NAME test_python3_libdnf COMMAND ${PYTHON_EXECUTABLE} -m unittest discover -t "${CMAKE_CURRENT_SOURCE_DIR}/.." -s "${CMAKE_CURRENT_SOURCE_DIR}")
+set_property(TEST test_python3_libdnf PROPERTY ENVIRONMENT
+    "PYTHONPATH=${CMAKE_BINARY_DIR}/python/hawkey/"
+    "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/libdnf/"
+)

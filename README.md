@@ -20,7 +20,7 @@ Building for Fedora
 
 To install build requirements, run following command:
 
-    dnf install check-devel cmake cppunit-devel gcc gcc-c++ glib2-devel gpgme-devel gtk-doc json-c-devel libmodulemd-devel librepo-devel libsolv-devel libsolv-tools make python2-devel python3-devel python2-nose python3-nose python2-sphinx python3-sphinx python2-breathe python3-breathe rpm-devel sqlite-devel swig libsmartcols-devel
+    dnf install check-devel cmake cppunit-devel gcc gcc-c++ glib2-devel gpgme-devel gtk-doc json-c-devel libmodulemd-devel librepo-devel libsolv-devel libsolv-tools make python2-devel python3-devel python2-sphinx python3-sphinx python2-breathe python3-breathe rpm-devel sqlite-devel swig libsmartcols-devel
 
 From the checkout dir:
 
@@ -42,16 +42,16 @@ Tests
 
 All unit tests should pass after the build finishes:
 
-    cd build/tests
-    make tests
+    cd build
+    make test
 
 There are two parts of unit tests: unit tests in C and unit tests in Python. To run the C part of the tests manually, from hawkey checkout::
 
     build/tests/test_main tests/repos/
 
-Manually executing the Python tests::
+To manually execute the Python tests, from libdnf git checkout directory::
 
-    PYTHONPATH=`readlink -f ./build/src/python/` nosetests -s tests/python/tests/
+    PYTHONPATH=`readlink -f ./build/src/python/` python3 -m unittest discover -bt python/hawkey/tests/ -s python/hawkey/tests/tests/
 
 The PYTHONPATH is unfortunately needed as the Python test suite needs to know where to import the built hawkey modules.
 
