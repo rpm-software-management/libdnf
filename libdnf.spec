@@ -158,11 +158,6 @@ Python 3 bindings for the libdnf library.
 Summary:        Python 2 bindings for the hawkey library
 %{?python_provide:%python_provide python2-hawkey}
 BuildRequires:  python2-devel
-%if 0%{?rhel} && 0%{?rhel} <= 7
-BuildRequires:  python-nose
-%else
-BuildRequires:  python2-nose
-%endif
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 Requires:       python2-%{name} = %{version}-%{release}
 # Fix problem with hawkey - dnf version incompatibility
@@ -180,7 +175,6 @@ Python 2 bindings for the hawkey library.
 Summary:        Python 3 bindings for the hawkey library
 %{?python_provide:%python_provide python3-hawkey}
 BuildRequires:  python3-devel
-BuildRequires:  python3-nose
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 Requires:       python3-%{name} = %{version}-%{release}
 # Fix problem with hawkey - dnf version incompatibility
