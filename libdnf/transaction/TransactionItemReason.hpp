@@ -48,10 +48,10 @@ inline bool operator<(TransactionItemReason lhs, TransactionItemReason rhs)
         return false;
     }
     TransactionItemReason order[] = {
-        TransactionItemReason::UNKNOWN,
         TransactionItemReason::CLEAN,
         TransactionItemReason::WEAK_DEPENDENCY,
         TransactionItemReason::DEPENDENCY,
+        TransactionItemReason::UNKNOWN,
         TransactionItemReason::GROUP,
         TransactionItemReason::USER,
     };

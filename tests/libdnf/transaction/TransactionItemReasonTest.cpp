@@ -339,6 +339,14 @@ TransactionItemReasonTest::testCompareReasons()
     CPPUNIT_ASSERT(TransactionItemReason::GROUP != TransactionItemReason::USER);
     CPPUNIT_ASSERT(TransactionItemReason::GROUP < TransactionItemReason::USER);
     CPPUNIT_ASSERT(TransactionItemReason::GROUP <= TransactionItemReason::USER);
+
+    CPPUNIT_ASSERT(TransactionItemReason::UNKNOWN < TransactionItemReason::USER);
+    CPPUNIT_ASSERT(TransactionItemReason::GROUP > TransactionItemReason::UNKNOWN);
+    CPPUNIT_ASSERT(TransactionItemReason::DEPENDENCY < TransactionItemReason::UNKNOWN);
+    CPPUNIT_ASSERT(TransactionItemReason::WEAK_DEPENDENCY < TransactionItemReason::UNKNOWN);
+    CPPUNIT_ASSERT(TransactionItemReason::CLEAN < TransactionItemReason::UNKNOWN);
+    CPPUNIT_ASSERT(TransactionItemReason::WEAK_DEPENDENCY < TransactionItemReason::DEPENDENCY);
+    CPPUNIT_ASSERT(TransactionItemReason::CLEAN < TransactionItemReason::WEAK_DEPENDENCY);
 }
 
 void
