@@ -41,6 +41,7 @@
 #include <memory>
 
 #include "catch-error.hpp"
+#include "dnf-context.hpp"
 #include "dnf-package.h"
 #include "dnf-types.h"
 #include "dnf-utils.h"
@@ -655,15 +656,13 @@ dnf_package_is_downloaded(DnfPackage *pkg)
 gboolean
 dnf_package_is_installonly(DnfPackage *pkg)
 {
-    const gchar **installonly_pkgs;
-    const gchar *pkg_name;
-    guint i;
-
-    installonly_pkgs = dnf_context_get_installonly_pkgs(NULL);
-    pkg_name = dnf_package_get_name(pkg);
-    for (i = 0; installonly_pkgs[i] != NULL; i++) {
-        if (g_strcmp0(pkg_name, installonly_pkgs[i]) == 0)
-            return TRUE;
+    if (auto * pkg_name = dnf_package_get_name(pkg)) {
+        auto & mainConf = libdnf::getGlobalMainConfig();
+        for (auto & inst_only_pkg_name : mainConf.installonlypkgs().getValue()) {
+            if (inst_only_pkg_name == pkg_name) {
+                return TRUE;
+            }
+        }
     }
     return FALSE;
 }
