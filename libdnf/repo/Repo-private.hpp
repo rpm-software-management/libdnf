@@ -134,6 +134,9 @@ public:
     void attachLibsolvRepo(LibsolvRepo * libsolvRepo);
     void detachLibsolvRepo();
 
+    // Converts configuration string of proxy authorization methods to librepo enum.
+    static LrAuth stringToProxyAuthMethods(const std::string & proxy_auth_method) noexcept;
+
     std::string id;
     Type type;
     std::unique_ptr<ConfigRepo> conf;
