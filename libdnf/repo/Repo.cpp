@@ -608,15 +608,8 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir)
         handleSetOpt(h.get(), LRO_PROXY, conf->proxy().getValue().c_str());
 
     //set proxy authorization method
-    auto proxyAuthMethodStr = conf->proxy_auth_method().getValue();
-    auto proxyAuthMethod = LR_AUTH_ANY;
-    for (auto & auth : PROXYAUTHMETHODS) {
-        if (proxyAuthMethodStr == auth.name) {
-            proxyAuthMethod = auth.code;
-            break;
-        }
-    }
-    handleSetOpt(h.get(), LRO_PROXYAUTHMETHODS, static_cast<long>(proxyAuthMethod));
+    auto proxyAuthMethods = stringToProxyAuthMethods(conf->proxy_auth_method().getValue());
+    handleSetOpt(h.get(), LRO_PROXYAUTHMETHODS, static_cast<long>(proxyAuthMethods));
 
     if (!conf->proxy_username().empty()) {
         userpwd = conf->proxy_username().getValue();
@@ -1531,6 +1524,18 @@ void Repo::Impl::detachLibsolvRepo()
         attachLibsolvMutex.unlock();
 }
 
+LrAuth Repo::Impl::stringToProxyAuthMethods(const std::string & proxyAuthMethodStr) noexcept
+{
+    auto proxyAuthMethods = LR_AUTH_ANY;
+    for (auto & auth : PROXYAUTHMETHODS) {
+        if (proxyAuthMethodStr == auth.name) {
+            proxyAuthMethods = auth.code;
+            break;
+        }
+    }
+    return proxyAuthMethods;
+}
+
 void Repo::setMaxMirrorTries(int maxMirrorTries)
 {
     pImpl->maxMirrorTries = maxMirrorTries;
@@ -1710,15 +1715,8 @@ static LrHandle * newHandle(ConfigMain * conf)
             handleSetOpt(h, LRO_PROXY, conf->proxy().getValue().c_str());
 
         //set proxy authorization method
-        auto proxyAuthMethodStr = conf->proxy_auth_method().getValue();
-        auto proxyAuthMethod = LR_AUTH_ANY;
-        for (auto & auth : PROXYAUTHMETHODS) {
-            if (proxyAuthMethodStr == auth.name) {
-                proxyAuthMethod = auth.code;
-                break;
-            }
-        }
-        handleSetOpt(h, LRO_PROXYAUTHMETHODS, static_cast<long>(proxyAuthMethod));
+        auto proxyAuthMethods = Repo::Impl::stringToProxyAuthMethods(conf->proxy_auth_method().getValue());
+        handleSetOpt(h, LRO_PROXYAUTHMETHODS, static_cast<long>(proxyAuthMethods));
 
         if (!conf->proxy_username().empty()) {
             auto userpwd = conf->proxy_username().getValue();
