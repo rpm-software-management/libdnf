@@ -1090,6 +1090,11 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, gboolean reloadFromGKeyFile, GError **e
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_PROXY, tmp_cstr))
         return FALSE;
 
+    // setup proxy authorization method
+    auto proxyAuthMethods = libdnf::Repo::Impl::stringToProxyAuthMethods(conf->proxy_auth_method().getValue());
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_PROXYAUTHMETHODS, static_cast<long>(proxyAuthMethods)))
+        return FALSE;
+
     // setup proxy username and password
     tmp_cstr = NULL;
     if (!conf->proxy_username().empty()) {
