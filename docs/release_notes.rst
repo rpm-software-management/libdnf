@@ -20,6 +20,36 @@
 ######################
 
 ====================
+0.60.0 Release Notes
+====================
+
+- Fix repo.fresh() implementation
+- build-sys: Add ENABLE_STATIC option
+- Fix: Fully set ssl in newHandle function
+- [conf] Add options for working with certificates used with proxy
+- Apply proxy certificate options
+- lock: Switch return-if-fail to assert to quiet gcc -fanalyzer
+- build-sys: Clean up message about Python bindings
+- Modify module NSVCA parsing - context definition (RhBug:1926771)
+- [context] Fix: dnf_package_is_installonly (RhBug:1928056)
+- Fix problematic language
+- Add getApplicablePackages to advisory and isApplicable to advisorymodule
+- Keep isAdvisoryApplicable to preserve API
+- Run ModulePackageContainerTest tests in tmpdir, merge interdependent
+- [context] Support config file option "proxy_auth_method", defaults "any"
+
+- Bug fixes:
+  - Support main config file option "installonlypkgs".      Changes behaviour of microdnf and PackageKit.
+  - Support main config file option "protected_packages".      Changes behaviour of microdnf and PackageKit.
+  - Properly handle multiple collections in updateinfo.xml (RhBug:1804234)
+
+Bugs fixed in 0.60.0:
+
+* :rhbug:`1928056`
+* :rhbug:`1804234`
+* :rhbug:`1926771`
+
+====================
 0.58.0 Release Notes
 ====================
 
