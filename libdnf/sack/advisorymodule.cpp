@@ -77,14 +77,16 @@ bool
 AdvisoryModule::isApplicable() const {
     auto moduleContainer = dnf_sack_get_module_container(pImpl->sack);
     if (!moduleContainer) {
-        return true;
-    }
-
-    if (!moduleContainer->isEnabled(getName(), getStream())) {
         return false;
     }
 
-    return true;
+    for (auto & module : moduleContainer->query(getName(), getStream(), {}, getContext(), {})) {
+        if (moduleContainer->isModuleActive(module)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 Advisory * AdvisoryModule::getAdvisory() const

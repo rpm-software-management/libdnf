@@ -28,6 +28,15 @@ void QueryTest::setUp()
     hy_repo_set_string(repo, MODULES_FN, (repodata + "modules.yaml.gz").c_str());
     dnf_sack_load_repo(sack, repo, DNF_SACK_LOAD_FLAG_USE_UPDATEINFO, &error);
 
+    // loads modular data into ModulePackageContainer (No module enabled)
+    dnf_sack_filter_modules_v2(sack, nullptr, nullptr, tmpdir, "platform_id:f33", false, false, false);
+
+    libdnf::ModulePackageContainer * modules = dnf_sack_get_module_container(sack);
+    CPPUNIT_ASSERT(modules->enable("perl-DBI", "master", false));
+    CPPUNIT_ASSERT(modules->enable("perl", "5.23", false));
+    // Modify modular data and make modules active (enabled - "perl-DBI:master", "perl:5.23")
+    dnf_sack_filter_modules_v2(sack, modules, nullptr, tmpdir, nullptr, true, false, false);
+
     HyQuery query = new libdnf::Query(sack);
     std::vector<libdnf::AdvisoryPkg> advisoryPkgs;
     query->getAdvisoryPkgs(HY_EQ, advisoryPkgs);
@@ -57,23 +66,28 @@ void QueryTest::testQueryGetAdvisoryPkgs()
     CPPUNIT_ASSERT(!g_strcmp0(advisoryPkgs[0].getNameString(), "test-perl-DBI"));
     CPPUNIT_ASSERT(!g_strcmp0(advisoryPkgs[1].getNameString(), "test-perl-DBI"));
 
-    dnf_sack_filter_modules_v2(sack, nullptr, nullptr, tmpdir, nullptr, false, false, false);
+    // When modules are setup but none are enabled all collections are not applicable - no enabled module
+    libdnf::ModulePackageContainer * modules = dnf_sack_get_module_container(sack);
+    modules->reset("perl", false);
+    modules->reset("perl-DBI", false);
+    dnf_sack_filter_modules_v2(sack, modules, nullptr, tmpdir, nullptr, true, false, false);
 
-    // When module are setup but none are enabled all collections are not applicable
     advisoryPkgs.clear();
     query->getAdvisoryPkgs(HY_EQ, advisoryPkgs);
     CPPUNIT_ASSERT(advisoryPkgs.size() == 0);
 
-    libdnf::ModulePackageContainer * modules = dnf_sack_get_module_container(sack);
-
     // When I enable module from collection that contains non present pkg it doesn't show up
-    CPPUNIT_ASSERT(modules->enable("perl", "5.23"));
+    CPPUNIT_ASSERT(modules->enable("perl", "5.23", false));
+    dnf_sack_filter_modules_v2(sack, modules, nullptr, tmpdir, nullptr, true, false, false);
+
     advisoryPkgs.clear();
     query->getAdvisoryPkgs(HY_EQ, advisoryPkgs);
     CPPUNIT_ASSERT(advisoryPkgs.size() == 0);
 
     // When I enable a module from multiple collections that contain a present package I get them
-    CPPUNIT_ASSERT(modules->enable("perl-DBI", "master"));
+    CPPUNIT_ASSERT(modules->enable("perl-DBI", "master", false));
+    dnf_sack_filter_modules_v2(sack, modules, nullptr, tmpdir, nullptr, true, false, false);
+
     advisoryPkgs.clear();
     query->getAdvisoryPkgs(HY_EQ, advisoryPkgs);
     CPPUNIT_ASSERT(advisoryPkgs.size() == 2);
@@ -100,16 +114,16 @@ void QueryTest::testQueryFilterAdvisory()
     g_object_unref(pkg);
     delete query;
 
-    // First call creates module container, it also uses installroot: 'TESTDATADIR "/advisories/"'
-    dnf_sack_filter_modules_v2(sack, nullptr, nullptr, tmpdir, nullptr, false, false, false);
-
-    // When module are setup but none are enabled all collections are not applicable
+    // When module are setup but none are enabled all collections are not applicable - no enabled module
+    libdnf::ModulePackageContainer * modules = dnf_sack_get_module_container(sack);
+    modules->reset("perl", false);
+    modules->reset("perl-DBI", false);
+    dnf_sack_filter_modules_v2(sack, modules, nullptr, tmpdir, nullptr, true, false, false);
     query = new libdnf::Query(sack);
     query->addFilter(HY_PKG_ADVISORY_TYPE, HY_EQ, "enhancement");
     CPPUNIT_ASSERT(query->size() == 0);
     delete query;
 
-    libdnf::ModulePackageContainer * modules = dnf_sack_get_module_container(sack);
     // When I enable module from collection that contains non present pkg it doesn't show up
     CPPUNIT_ASSERT(modules->enable("perl", "5.23"));
     modules->save();

@@ -28,6 +28,15 @@ void DnfPackageTest::setUp()
     hy_repo_set_string(repo, MODULES_FN, (repodata + "modules.yaml.gz").c_str());
     dnf_sack_load_repo(sack, repo, DNF_SACK_LOAD_FLAG_USE_UPDATEINFO, &error);
 
+    // loads modular data into ModulePackageContainer (No module enabled)
+    dnf_sack_filter_modules_v2(sack, nullptr, nullptr, tmpdir, "platform_id:f33", false, false, false);
+
+    libdnf::ModulePackageContainer * modules = dnf_sack_get_module_container(sack);
+    CPPUNIT_ASSERT(modules->enable("perl-DBI", "master", false));
+    CPPUNIT_ASSERT(modules->enable("perl", "5.23", false));
+    // Modify modular data and make modules active (enabled - "perl-DBI:master", "perl:5.23")
+    dnf_sack_filter_modules_v2(sack, modules, nullptr, tmpdir, nullptr, true, false, false);
+
     HyQuery query = new libdnf::Query(sack);
     std::vector<libdnf::AdvisoryPkg> advisoryPkgs;
     query->getAdvisoryPkgs(HY_EQ, advisoryPkgs);
@@ -58,21 +67,25 @@ void DnfPackageTest::testDnfPackageGetAdvisories()
     advisories = dnf_package_get_advisories(p, HY_EQ);
     CPPUNIT_ASSERT(advisories->len == 1);
 
-    dnf_sack_filter_modules_v2(sack, nullptr, nullptr, tmpdir, nullptr, false, false, false);
+    // When module are setup but none are enabled all collections are not applicable
+    libdnf::ModulePackageContainer * modules = dnf_sack_get_module_container(sack);
+    modules->reset("perl", false);
+    modules->reset("perl-DBI", false);
+    dnf_sack_filter_modules_v2(sack, modules, nullptr, tmpdir, nullptr, true, false, false);
 
     // When module are setup but none are enabled all collections are not applicable
     advisories = dnf_package_get_advisories(p, HY_EQ);
     CPPUNIT_ASSERT(advisories->len == 0);
 
-    libdnf::ModulePackageContainer * modules = dnf_sack_get_module_container(sack);
-
     // When I enable module from collection that doesn't contain p package I don't get the advisory
-    CPPUNIT_ASSERT(modules->enable("perl", "5.23"));
+    CPPUNIT_ASSERT(modules->enable("perl", "5.23", false));
+    dnf_sack_filter_modules_v2(sack, modules, nullptr, tmpdir, nullptr, true, false, false);
     advisories = dnf_package_get_advisories(p, HY_EQ);
     CPPUNIT_ASSERT(advisories->len == 0);
 
     // When I enable module from collection that contains p package I get the advisory
-    CPPUNIT_ASSERT(modules->enable("perl-DBI", "master"));
+    CPPUNIT_ASSERT(modules->enable("perl-DBI", "master", false));
+    dnf_sack_filter_modules_v2(sack, modules, nullptr, tmpdir, nullptr, true, false, false);
     advisories = dnf_package_get_advisories(p, HY_EQ);
     CPPUNIT_ASSERT(advisories->len == 1);
 

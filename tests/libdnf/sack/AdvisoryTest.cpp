@@ -28,6 +28,14 @@ void AdvisoryTest::setUp()
     hy_repo_set_string(repo, MODULES_FN, (repodata + "modules.yaml.gz").c_str());
     dnf_sack_load_repo(sack, repo, DNF_SACK_LOAD_FLAG_USE_UPDATEINFO, &error);
 
+    // loads modular data into ModulePackageContainer (No module enabled)
+    dnf_sack_filter_modules_v2(sack, nullptr, nullptr, tmpdir, "platform_id:f33", false, false, false);
+
+    libdnf::ModulePackageContainer * modules = dnf_sack_get_module_container(sack);
+    CPPUNIT_ASSERT(modules->enable("perl-DBI", "master", false));
+    CPPUNIT_ASSERT(modules->enable("perl", "5.23", false));
+    // Modify modular data and make modules active (enabled - "perl-DBI:master", "perl:5.23")
+    dnf_sack_filter_modules_v2(sack, modules, nullptr, tmpdir, nullptr, true, false, false);
     HyQuery query = new libdnf::Query(sack);
     std::vector<libdnf::AdvisoryPkg> advisoryPkgs;
     query->getAdvisoryPkgs(HY_EQ, advisoryPkgs);
@@ -101,7 +109,11 @@ void AdvisoryTest::testGetApplicablePackagesModulesSetupNoneEnabled()
     std::vector<libdnf::AdvisoryPkg> pkgsvector;
 
     // When module are setup but none are enabled no collections are applicable -> no packages
-    dnf_sack_filter_modules_v2(sack, nullptr, nullptr, tmpdir, nullptr, false, false, false);
+    libdnf::ModulePackageContainer * modules = dnf_sack_get_module_container(sack);
+    modules->reset("perl", false);
+    modules->reset("perl-DBI", false);
+    dnf_sack_filter_modules_v2(sack, modules, nullptr, tmpdir, nullptr, true, false, false);
+
     advisory->getApplicablePackages(pkgsvector);
     CPPUNIT_ASSERT(pkgsvector.size() == 0);
 }
@@ -110,10 +122,11 @@ void AdvisoryTest::testGetApplicablePackagesOneApplicableCollection()
 {
     std::vector<libdnf::AdvisoryPkg> pkgsvector;
 
-    // When I enable a module I get packages from all collections that contain that module
-    dnf_sack_filter_modules_v2(sack, nullptr, nullptr, tmpdir, nullptr, false, false, false);
+    // When I keep enabled only perl-DBI module I get packages from all collections that contain that module
     libdnf::ModulePackageContainer * modules = dnf_sack_get_module_container(sack);
-    CPPUNIT_ASSERT(modules->enable("perl-DBI", "master"));
+    modules->reset("perl");
+    dnf_sack_filter_modules_v2(sack, modules, nullptr, tmpdir, nullptr, true, false, false);
+
     advisory->getApplicablePackages(pkgsvector);
     CPPUNIT_ASSERT(pkgsvector.size() == 3);
     CPPUNIT_ASSERT(!g_strcmp0(pkgsvector[0].getNameString(), "test-perl-DBI"));
@@ -126,10 +139,7 @@ void AdvisoryTest::testGetApplicablePackagesMultipleApplicableCollections()
     std::vector<libdnf::AdvisoryPkg> pkgsvector;
 
     // When I enable modules from multiple collections -> I get packages from all applicable collections
-    dnf_sack_filter_modules_v2(sack, nullptr, nullptr, tmpdir, nullptr, false, false, false);
-    libdnf::ModulePackageContainer * modules = dnf_sack_get_module_container(sack);
-    CPPUNIT_ASSERT(modules->enable("perl", "5.23"));
-    CPPUNIT_ASSERT(modules->enable("perl-DBI", "master"));
+    // Enabled - "perl-DBI:master", "perl:5.23"
     advisory->getApplicablePackages(pkgsvector);
     CPPUNIT_ASSERT(pkgsvector.size() == 4);
     CPPUNIT_ASSERT(!g_strcmp0(pkgsvector[0].getNameString(), "test-perl-DBI"));
