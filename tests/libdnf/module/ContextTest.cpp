@@ -54,6 +54,9 @@ void ContextTest::testLoadModules()
     dnf_repo_check(repo, G_MAXUINT, state, &error);
     g_object_unref(state);
 
+    // Setup platform to prevent logger critical message
+    dnf_context_set_platform_module(context, "platform:26");
+
     state = dnf_context_get_state(context);
     dnf_context_setup_sack(context, state, &error);
     g_assert_no_error(error);
