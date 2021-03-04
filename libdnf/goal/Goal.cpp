@@ -1003,12 +1003,6 @@ Goal::describeProblemRules(unsigned i, bool pkgs)
     IdQueue rq;
     // this libsolv interface indexes from 1 (we do from 0), so:
     solver_findallproblemrules(solv, i+1, pq.getQueue());
-    std::map<int, const char *> problemDict;
-    if (pkgs) {
-        problemDict = PKG_PROBLEMS_DICT;
-    } else {
-        problemDict = MODULE_PROBLEMS_DICT;
-    }
     std::unique_ptr<libdnf::PackageSet> modularExcludes(dnf_sack_get_module_excludes(pImpl->sack));
     for (j = 0; j < pq.size(); j++) {
         rid = pq[j];
