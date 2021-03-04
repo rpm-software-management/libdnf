@@ -2365,7 +2365,9 @@ setModuleExcludes(DnfSack *sack, const char ** hotfixRepos,
     libdnf::Query keepPackages{sack};
     const char *keepRepo[] = {HY_CMDLINE_REPO_NAME, HY_SYSTEM_REPO_NAME, nullptr};
     keepPackages.addFilter(HY_PKG_REPONAME, HY_NEQ, keepRepo);
-    keepPackages.addFilter(HY_PKG_REPONAME, HY_NEQ, hotfixRepos);
+    if (hotfixRepos != nullptr) {
+        keepPackages.addFilter(HY_PKG_REPONAME, HY_NEQ, hotfixRepos);
+    }
 
     libdnf::Query includeQuery{sack};
     libdnf::Query excludeQuery{keepPackages};
