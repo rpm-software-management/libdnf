@@ -196,12 +196,18 @@ class ConfigMain::Impl {
         [](const std::string & value)->std::uint32_t{
             if (value == "<off>")
                 return 0;
+            std::int32_t value_i;
             try {
-                return std::stoul(value);
+                value_i = std::stol(value);
             }
             catch (...) {
-                return 0;
+                throw Option::InvalidValue(tfm::format(_("invalid value")));
             }
+            if (value_i == 1)
+                throw Option::InvalidValue(tfm::format(_("value 1 is not allowed")));
+            if (value_i < 0)
+                throw Option::InvalidValue(tfm::format(_("negative value is not allowed")));
+            return (std::uint32_t)value_i;
         }
     };
 
