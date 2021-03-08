@@ -1,20 +1,21 @@
 # Casey Jones <nahareport@live.com>, 2018. #zanata
 # Ludek Janda <ljanda@redhat.com>, 2018. #zanata
 # Casey Jones <nahareport@yahoo.com>, 2020.
+# Sundeep Anand <suanand@redhat.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-05 09:18-0400\n"
-"PO-Revision-Date: 2020-05-05 09:40+0000\n"
-"Last-Translator: Casey Jones <nahareport@yahoo.com>\n"
-"Language-Team: Japanese <https://translate.fedoraproject.org/projects/dnf/libdnf-dnf-4-master/ja/>\n"
+"POT-Creation-Date: 2021-02-22 09:52+0100\n"
+"PO-Revision-Date: 2021-03-08 11:09+0000\n"
+"Last-Translator: Sundeep Anand <suanand@redhat.com>\n"
+"Language-Team: Japanese <https://translate.fedoraproject.org/projects/dnf/libdnf-rhel-8/ja/>\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.0.3\n"
+"X-Generator: Weblate 4.5.1\n"
 
 #: libdnf/conf/ConfigMain.cpp:62 libdnf/conf/OptionSeconds.cpp:40
 msgid "no value specified"
@@ -35,17 +36,17 @@ msgstr "'%s' を バイトへ変換できませんでした"
 msgid "unknown unit '%s'"
 msgstr "不明な単位 '%s'"
 
-#: libdnf/conf/ConfigMain.cpp:332
+#: libdnf/conf/ConfigMain.cpp:334
 #, c-format
 msgid "percentage '%s' is out of range"
 msgstr "パーセンテージ '%s' が範囲外にあります"
 
-#: libdnf/conf/OptionBinds.cpp:76
+#: libdnf/conf/OptionBinds.cpp:85
 #, c-format
 msgid "Configuration: OptionBinding with id \"%s\" does not exist"
 msgstr "設定: id \"%s\" を伴う OptionBinding は存在しません"
 
-#: libdnf/conf/OptionBinds.cpp:88
+#: libdnf/conf/OptionBinds.cpp:97
 #, c-format
 msgid "Configuration: OptionBinding with id \"%s\" already exists"
 msgstr "設定: id \"%s\" を伴う OptionBinding はすでに存在します"
@@ -56,7 +57,7 @@ msgid "invalid boolean value '%s'"
 msgstr "無効な boolean 値 '%s'"
 
 #: libdnf/conf/OptionEnum.cpp:72 libdnf/conf/OptionEnum.cpp:158
-#: libdnf/conf/OptionString.cpp:59 libdnf/conf/OptionStringList.cpp:59
+#: libdnf/conf/OptionString.cpp:64 libdnf/conf/OptionStringList.cpp:59
 #, c-format
 msgid "'%s' is not an allowed value"
 msgstr "'%s' 値は許可されていない値です"
@@ -68,12 +69,12 @@ msgstr "無効な値"
 #: libdnf/conf/OptionNumber.cpp:73
 #, c-format
 msgid "given value [%d] should be less than allowed value [%d]."
-msgstr "指定された値 [%d] は許可された値 [%d]より小さくしてください"
+msgstr "指定された値 [%d] は許可された値 [%d]より小さくしてください。"
 
 #: libdnf/conf/OptionNumber.cpp:76
 #, c-format
 msgid "given value [%d] should be greater than allowed value [%d]."
-msgstr "指定された値 [%d] は許可された値 [%d]より大きくしてください"
+msgstr "指定された値 [%d] は許可された値 [%d]より大きくしてください。"
 
 #: libdnf/conf/OptionPath.cpp:78
 #, c-format
@@ -90,9 +91,97 @@ msgstr "指定されたパス '%s' が存在しません。"
 msgid "could not convert '%s' to seconds"
 msgstr "'%s' を 秒に変換できません"
 
-#: libdnf/conf/OptionString.cpp:74
+#: libdnf/conf/OptionString.cpp:79
 msgid "GetValue(): Value not set"
 msgstr "GetValue(): 値は設定されていません"
+
+#: libdnf/dnf-context.cpp:3033 libdnf/dnf-context.cpp:3042
+#, c-format
+msgid "Cannot enable more streams from module '%s' at the same time"
+msgstr "モジュール '%s' から、さらにストリームを同時に有効にできません"
+
+#: libdnf/dnf-context.cpp:3051 libdnf/dnf-context.cpp:3069
+#, c-format
+msgid ""
+"Cannot enable module '%1$s' stream '%2$s': State of module already modified"
+msgstr "モジュール '%1$s' ストリーム '%2$s' を有効にできません。モジュールの状態はすでに変更されています"
+
+#: libdnf/dnf-context.cpp:3116
+#, c-format
+msgid "Modular dependency problem with Defaults: %s"
+msgstr "デフォルトのモジュラー依存問題: %s"
+
+#: libdnf/dnf-context.cpp:3119
+#, c-format
+msgid "Modular dependency problem: %s"
+msgstr "モジュラーの依存に関する問題: %s"
+
+#: libdnf/dnf-context.cpp:3153 libdnf/dnf-context.cpp:3177
+#: libdnf/dnf-context.cpp:3188 libdnf/dnf-context.cpp:3227
+#: libdnf/dnf-context.cpp:3243 libdnf/dnf-context.cpp:3275
+#, c-format
+msgid "Unable to resolve argument '%s'"
+msgstr "引数 '%s' を解決できません"
+
+#: libdnf/dnf-context.cpp:3160
+#, c-format
+msgid ""
+"Only module name is required. Ignoring unneeded information in argument: "
+"'%s'"
+msgstr "モジュール名のみが必要です。引数の不必要な情報は無視します: '%s'"
+
+#: libdnf/dnf-context.cpp:3174
+#, c-format
+msgid "Cannot reset module '%s': State of module already modified"
+msgstr "モジュール '%s' をリセットできません。モジュールの状態はすでに変更されています"
+
+#: libdnf/dnf-context.cpp:3185
+#, c-format
+msgid "Cannot disable module '%s': State of module already modified"
+msgstr "モジュール '%s' を無効にできません。モジュールの状態はすでに変更されています"
+
+#: libdnf/dnf-context.cpp:3216 libdnf/dnf-context.cpp:3307
+msgid "No modular data available"
+msgstr "モジュールデータは利用できません"
+
+#: libdnf/dnf-context.cpp:3233
+#, c-format
+msgid "Ignoring unneeded information in argument: '%s'"
+msgstr "引数の不要な情報は無視します: '%s'"
+
+#: libdnf/dnf-context.cpp:3271
+#, c-format
+msgid ""
+"Problem during enablement of dependency tree for moduele '%1$s' stream "
+"'%2$s': %3$s"
+msgstr "モジュール '%1$s' ストリーム '%2$s' の依存関係ツリーの有効化中に問題: %3$s"
+
+#: libdnf/dnf-context.cpp:3283
+msgid "Problems appeared for module enable request"
+msgstr "モジュール有効リクエストに発生する問題"
+
+#: libdnf/dnf-context.cpp:3338
+msgid "Problems appeared for module reset request"
+msgstr "モジュールリセットリクエストに発生する問題"
+
+#: libdnf/dnf-context.cpp:3340
+msgid "Problems appeared for module disable request"
+msgstr "モジュール無効化リクエストに発生する問題"
+
+#: libdnf/dnf-context.cpp:3376
+#, c-format
+msgid ""
+"The operation would result in switching of module '%s' stream '%s' to stream"
+" '%s'"
+msgstr "オペレーションは、モジュール '%s' ストリーム '%s' を ストリーム '%s' へと切り替える結果となります"
+
+#: libdnf/dnf-context.cpp:3380
+msgid ""
+"It is not possible to switch enabled streams of a module.\n"
+"It is recommended to remove all installed content from the module, and reset the module using 'microdnf module reset <module_name>' command. After you reset the module, you can install the other stream."
+msgstr ""
+"有効化されたモジュールのストリームの切り替えはできません。\n"
+"モジュールからすべてのインストールされたコンテンツを削除し、'microdnf module reset <module_name>' コマンドを使用してモジュールをリセットすることを推奨します。モジュールのリセット後に、別のストリームをインストールできます。"
 
 #: libdnf/dnf-goal.cpp:68
 msgid "Could not depsolve transaction; "
@@ -174,87 +263,87 @@ msgstr "パッケージ %s を見つけることができませんでした"
 msgid "could not add erase element %1$s(%2$i)"
 msgstr "erase 要素 %1$s(%2$i) を追加することができません"
 
-#: libdnf/dnf-sack.cpp:381
+#: libdnf/dnf-sack.cpp:395
+msgid "failed to add solv"
+msgstr "solv の追加に失敗しました"
+
+#: libdnf/dnf-sack.cpp:414
 #, c-format
 msgid "no %1$s string for %2$s"
 msgstr "%2$s の %1$s 文字列はありません"
 
-#: libdnf/dnf-sack.cpp:404
-msgid "failed to add solv"
-msgstr "solv の追加に失敗しました"
-
-#: libdnf/dnf-sack.cpp:422
+#: libdnf/dnf-sack.cpp:424
 #, c-format
 msgid "failed to open: %s"
 msgstr "開くことに失敗しました: %s"
 
-#: libdnf/dnf-sack.cpp:501
+#: libdnf/dnf-sack.cpp:503
 #, c-format
 msgid "cannot create temporary file: %s"
 msgstr "一時ファイルを作成できません: %s"
 
-#: libdnf/dnf-sack.cpp:511
+#: libdnf/dnf-sack.cpp:513
 #, c-format
 msgid "failed opening tmp file: %s"
 msgstr "tmp ファイルを開くことに失敗しました: %s"
 
-#: libdnf/dnf-sack.cpp:523
+#: libdnf/dnf-sack.cpp:525
 #, c-format
 msgid "write_main() failed writing data: %i"
 msgstr "write_main() はデータの書き込みに失敗しました: %i"
 
-#: libdnf/dnf-sack.cpp:540
+#: libdnf/dnf-sack.cpp:542
 msgid "write_main() failed to re-load written solv file"
 msgstr "write_main() は、書き込みされた solv ファイルの再ロードに失敗しました"
 
-#: libdnf/dnf-sack.cpp:605
+#: libdnf/dnf-sack.cpp:607
 #, c-format
 msgid "can not create temporary file %s"
 msgstr "一時ファイル %s を作成できません"
 
-#: libdnf/dnf-sack.cpp:623
+#: libdnf/dnf-sack.cpp:625
 #, c-format
 msgid "write_ext(%1$d) has failed: %2$d"
 msgstr "write_ext(%1$d) は失敗しました: %2$d"
 
-#: libdnf/dnf-sack.cpp:678
+#: libdnf/dnf-sack.cpp:680
 msgid "null repo md file"
 msgstr "null repo md ファイル"
 
-#: libdnf/dnf-sack.cpp:687
+#: libdnf/dnf-sack.cpp:689
 #, c-format
 msgid "can not read file %1$s: %2$s"
 msgstr "ファイル %1$s を読み込みできません: %2$s"
 
-#: libdnf/dnf-sack.cpp:701
+#: libdnf/dnf-sack.cpp:703
 msgid "repo_add_solv() has failed."
 msgstr "repo_add_solv() は失敗しました。"
 
-#: libdnf/dnf-sack.cpp:714
+#: libdnf/dnf-sack.cpp:716
 msgid "loading of MD_TYPE_PRIMARY has failed."
 msgstr "MD_TYPE_PRIMARY のロードに失敗しました。"
 
-#: libdnf/dnf-sack.cpp:727
+#: libdnf/dnf-sack.cpp:729
 msgid "repo_add_repomdxml/rpmmd() has failed."
 msgstr "repo_add_repomdxml/rpmmd() は失敗しました。"
 
-#: libdnf/dnf-sack.cpp:794
+#: libdnf/dnf-sack.cpp:796
 msgid "failed to auto-detect architecture"
 msgstr "アーキテクチャーの自動検出に失敗しました"
 
-#: libdnf/dnf-sack.cpp:919
+#: libdnf/dnf-sack.cpp:961
 #, c-format
 msgid "failed creating cachedir %s"
 msgstr "cachedir %s の作成に失敗しました"
 
-#: libdnf/dnf-sack.cpp:1696
+#: libdnf/dnf-sack.cpp:1738
 msgid "failed loading RPMDB"
 msgstr "RPMDB のロードに失敗しました"
 
-#: libdnf/dnf-sack.cpp:2403
+#: libdnf/dnf-sack.cpp:2461
 #, c-format
 msgid "No module defaults found: %s"
-msgstr ""
+msgstr "モジュールのデフォルトは見つかりませんでした: %s"
 
 #: libdnf/dnf-state.cpp:1184
 #, c-format
@@ -337,7 +426,7 @@ msgstr "トランザクションテストの実行中にエラー %i"
 msgid "Error %i running transaction"
 msgstr "トランザクションの実行中にエラー %i"
 
-#: libdnf/dnf-transaction.cpp:1473
+#: libdnf/dnf-transaction.cpp:1474
 #, c-format
 msgid "Transaction did not go to writing phase, but returned no error(%i)"
 msgstr "トランザクションは書き込みフェーズまで行きませんでしたが、エラー(%i) は返しませんでした"
@@ -569,7 +658,16 @@ msgstr "ソリューションがなく、保護されたパッケージを削除
 msgid "no solution possible"
 msgstr "可能なソリューションがありません"
 
-#: libdnf/goal/Goal.cpp:1479
+#: libdnf/goal/Goal.cpp:1193
+msgid "Problem: "
+msgstr "問題: "
+
+#: libdnf/goal/Goal.cpp:1198
+#, c-format
+msgid "Problem %d: "
+msgstr "問題 %d: "
+
+#: libdnf/goal/Goal.cpp:1525
 msgid ""
 "The operation would result in removing the following protected packages: "
 msgstr "操作は結果的に以下の保護されたパッケージを削除します: "
@@ -631,27 +729,51 @@ msgstr "モジュール '%s' の複数ストリームを有効化できません
 msgid "Conflicting defaults with repo '%s': %s"
 msgstr "repo '%s' のデフォルトが競合: %s"
 
-#: libdnf/module/ModulePackageContainer.cpp:1569
+#: libdnf/module/ModulePackageContainer.cpp:829
+msgid "Installing module profiles:\n"
+msgstr "モジュールプロファイルのインストール中:\n"
+
+#: libdnf/module/ModulePackageContainer.cpp:844
+msgid "Disabling module profiles:\n"
+msgstr "モジュールプロファイルの無効化中:\n"
+
+#: libdnf/module/ModulePackageContainer.cpp:859
+msgid "Enabling module streams:\n"
+msgstr "モジュールストリームの有効化中:\n"
+
+#: libdnf/module/ModulePackageContainer.cpp:873
+msgid "Switching module streams:\n"
+msgstr "モジュールストリームの切り替え中:\n"
+
+#: libdnf/module/ModulePackageContainer.cpp:891
+msgid "Disabling modules:\n"
+msgstr "モジュールの無効化:\n"
+
+#: libdnf/module/ModulePackageContainer.cpp:902
+msgid "Resetting modules:\n"
+msgstr "モジュールの再設定中:\n"
+
+#: libdnf/module/ModulePackageContainer.cpp:1586
 #, c-format
 msgid "Unable to load modular Fail-Safe data at '%s'"
 msgstr "'%s' のモジュラーフェイルセーフデータをロードできません"
 
-#: libdnf/module/ModulePackageContainer.cpp:1575
+#: libdnf/module/ModulePackageContainer.cpp:1592
 #, c-format
 msgid "Unable to load modular Fail-Safe data for module '%s:%s'"
 msgstr "モジュール '%s:%s' のモジュラーフェイルセーフデータをロードできません"
 
-#: libdnf/module/ModulePackageContainer.cpp:1639
+#: libdnf/module/ModulePackageContainer.cpp:1656
 #, c-format
 msgid "Unable to create directory \"%s\" for modular Fail Safe data: %s"
 msgstr "ディレクトリー \"%s\" を作成できません。対象モジュラーフェイルセーフデータ: %s"
 
-#: libdnf/module/ModulePackageContainer.cpp:1661
+#: libdnf/module/ModulePackageContainer.cpp:1678
 #, c-format
 msgid "Unable to save a modular Fail Safe data to '%s'"
 msgstr "'%s' のモジュラーフェイルセーフデータを保存できません"
 
-#: libdnf/module/ModulePackageContainer.cpp:1686
+#: libdnf/module/ModulePackageContainer.cpp:1703
 #, c-format
 msgid "Unable to remove a modular Fail Safe data in '%s'"
 msgstr "'%s' のモジュラーフェイルセーフデータを削除できません"
@@ -669,7 +791,7 @@ msgstr "名前解決に失敗しました: %s"
 #: libdnf/module/modulemd/ModuleMetadata.cpp:115
 #, c-format
 msgid "There were errors while resolving modular defaults: %s"
-msgstr ""
+msgstr "モジュラーデフォルトの解決中にエラーが発生しました: %s"
 
 #: libdnf/module/modulemd/ModuleMetadata.cpp:120
 #, c-format
@@ -722,6 +844,9 @@ msgid ""
 "deprecated and the support will be dropped in future versions. Use '=' "
 "operator instead."
 msgstr ""
+"reldeps で '==' "
+"演算子を使用すると、未定義の動作が発生する可能性があります。これは非推奨で、将来のバージョンではサポートされなくなります。代わりに '=' "
+"演算子を使用してください。"
 
 #: libdnf/repo/Repo.cpp:321
 #, c-format
@@ -733,146 +858,161 @@ msgstr "リポジトリー %s にはミラーまたは baseurl セットがあ�
 msgid "Repository '%s' has unsupported type: 'type=%s', skipping."
 msgstr "リポジトリー '%s' にはサポートされていないタイプがあります: 'type=%s'、スキッピング。"
 
-#: libdnf/repo/Repo.cpp:546
+#: libdnf/repo/Repo.cpp:489 libdnf/repo/Repo.cpp:534 libdnf/repo/Repo.cpp:581
+#: libdnf/repo/Repo.cpp:1368
+#, c-format
+msgid "repo '%s': 'basecachedir' is not set"
+msgstr "repo '%s': 'basecachedir' が設定されていません"
+
+#: libdnf/repo/Repo.cpp:553
 #, c-format
 msgid "Cannot find a valid baseurl for repo: %s"
 msgstr "repo に対して有効な baseurl を見つけられません: %s"
 
-#: libdnf/repo/Repo.cpp:583 libdnf/repo/Repo.cpp:1672
+#: libdnf/repo/Repo.cpp:594 libdnf/repo/Repo.cpp:1693
 msgid ""
 "Maximum download speed is lower than minimum. Please change configuration of"
 " minrate or throttle"
-msgstr "ダウンロードの最高速度は、最低速度よりも低いです。minrate またはスロットルの設定を変更してください。"
+msgstr "ダウンロードの最高速度は、最低速度よりも低いです。minrate またはスロットルの設定を変更してください"
 
-#: libdnf/repo/Repo.cpp:633 libdnf/repo/Repo.cpp:655
+#: libdnf/repo/Repo.cpp:625
+#, c-format
+msgid "repo '%s': 'proxy_username' is set but not 'proxy_password'"
+msgstr "repo '%s': 'proxy_username' は設定済みですが、'proxy_password' は設定されていません"
+
+#: libdnf/repo/Repo.cpp:647 libdnf/repo/Repo.cpp:669
 #, c-format
 msgid "%s: gpgme_data_new_from_fd(): %s"
 msgstr "%s: gpgme_data_new_from_fd(): %s"
 
-#: libdnf/repo/Repo.cpp:641 libdnf/repo/Repo.cpp:663
+#: libdnf/repo/Repo.cpp:655 libdnf/repo/Repo.cpp:677
 #, c-format
 msgid "%s: gpgme_op_import(): %s"
 msgstr "%s: gpgme_op_import(): %s"
 
-#: libdnf/repo/Repo.cpp:686 libdnf/repo/Repo.cpp:752 libdnf/repo/Repo.cpp:880
+#: libdnf/repo/Repo.cpp:700 libdnf/repo/Repo.cpp:766 libdnf/repo/Repo.cpp:894
 #, c-format
 msgid "%s: gpgme_ctx_set_engine_info(): %s"
 msgstr "%s: gpgme_ctx_set_engine_info(): %s"
 
-#: libdnf/repo/Repo.cpp:713 libdnf/repo/Repo.cpp:777
+#: libdnf/repo/Repo.cpp:727 libdnf/repo/Repo.cpp:791
 #, c-format
 msgid "can not list keys: %s"
 msgstr "キーを一覧表示できません: %s"
 
-#: libdnf/repo/Repo.cpp:806
+#: libdnf/repo/Repo.cpp:820
 #, c-format
 msgid "Failed to retrieve GPG key for repo '%s': %s"
 msgstr "repo '%s' のGPG鍵の回収に失敗しました : %s"
 
-#: libdnf/repo/Repo.cpp:859
+#: libdnf/repo/Repo.cpp:873
 #, c-format
 msgid "repo %s: 0x%s already imported"
 msgstr "repo %s: 0x%s はインポート済みです"
 
-#: libdnf/repo/Repo.cpp:887
+#: libdnf/repo/Repo.cpp:901
 #, c-format
 msgid "repo %s: imported key 0x%s."
 msgstr "repo %s: インポート済みのキー 0x%s。"
 
-#: libdnf/repo/Repo.cpp:1131
+#: libdnf/repo/Repo.cpp:1149
 #, c-format
 msgid "reviving: repo '%s' skipped, no metalink."
 msgstr "復元中: repo '%s' はスキップされました、metalink はありません。"
 
-#: libdnf/repo/Repo.cpp:1150
+#: libdnf/repo/Repo.cpp:1168
 #, c-format
 msgid "reviving: repo '%s' skipped, no usable hash."
 msgstr "復元中: repo '%s' はスキップされました、使用可能なハッシュはありません。"
 
-#: libdnf/repo/Repo.cpp:1173
+#: libdnf/repo/Repo.cpp:1191
 #, c-format
 msgid "reviving: failed for '%s', mismatched %s sum."
 msgstr "復元中: '%s' は失敗しました、%s の合計は一致しません。"
 
-#: libdnf/repo/Repo.cpp:1179
+#: libdnf/repo/Repo.cpp:1197
 #, c-format
 msgid "reviving: '%s' can be revived - metalink checksums match."
 msgstr "復元中: '%s' は復元できます - metalink チェックサムが一致します。"
 
-#: libdnf/repo/Repo.cpp:1204
+#: libdnf/repo/Repo.cpp:1222
 #, c-format
 msgid "reviving: '%s' can be revived - repomd matches."
 msgstr "復元中: '%s' は復元できます - repomd が一致します。"
 
-#: libdnf/repo/Repo.cpp:1206
+#: libdnf/repo/Repo.cpp:1224
 #, c-format
 msgid "reviving: failed for '%s', mismatched repomd."
-msgstr "復元中:  '%s' に失敗しました、repomd が一致しません。"
+msgstr "復元中: '%s' に失敗しました、repomd が一致しません。"
 
-#: libdnf/repo/Repo.cpp:1224
+#: libdnf/repo/Repo.cpp:1242
 #, c-format
 msgid "Cannot create repo destination directory \"%s\": %s"
 msgstr "repo 送信先ディレクトリ \"%s\" を作成できません : %s"
 
-#: libdnf/repo/Repo.cpp:1230
+#: libdnf/repo/Repo.cpp:1248
 #, c-format
 msgid "Cannot create repo temporary directory \"%s\": %s"
 msgstr "repo 一時ディレクトリー \"%s\" を作成できません: %s"
 
-#: libdnf/repo/Repo.cpp:1244
+#: libdnf/repo/Repo.cpp:1262
 #, c-format
 msgid "Cannot create directory \"%s\": %s"
 msgstr "ディレクトリー \"%s\" を作成できません: %s"
 
-#: libdnf/repo/Repo.cpp:1267
+#: libdnf/repo/Repo.cpp:1285
 #, c-format
 msgid "Cannot rename directory \"%s\" to \"%s\": %s"
 msgstr "ディレクトリー名を \"%s\" から \"%s\" へと変更できません: %s"
 
-#: libdnf/repo/Repo.cpp:1290
+#: libdnf/repo/Repo.cpp:1308
 #, c-format
 msgid "repo: using cache for: %s"
 msgstr "repo: キャッシュを使用: %s"
 
-#: libdnf/repo/Repo.cpp:1302
+#: libdnf/repo/Repo.cpp:1320
 #, c-format
 msgid "Cache-only enabled but no cache for '%s'"
 msgstr "キャッシュオンリーが有効になっていますが、'%s' に対するキャッシュはありません"
 
-#: libdnf/repo/Repo.cpp:1306
+#: libdnf/repo/Repo.cpp:1324
 #, c-format
 msgid "repo: downloading from remote: %s"
 msgstr "repo: リモートからダウンロード中: %s"
 
-#: libdnf/repo/Repo.cpp:1312
+#: libdnf/repo/Repo.cpp:1330
 #, c-format
 msgid "Failed to download metadata for repo '%s': %s"
 msgstr "repo '%s' のメタデータのダウンロードに失敗しました : %s"
 
-#: libdnf/repo/Repo.cpp:1338
+#: libdnf/repo/Repo.cpp:1356
 msgid "getCachedir(): Computation of SHA256 failed"
 msgstr "getCachedir(): SHA256 のコンピュテーションに失敗しました"
 
-#: libdnf/repo/Repo.cpp:1363
+#: libdnf/repo/Repo.cpp:1384
 #, c-format
 msgid "Cannot create persistdir \"%s\": %s"
 msgstr "persistdir \"%s\" を作成できません : %s"
 
-#: libdnf/repo/Repo.cpp:1763
+#: libdnf/repo/Repo.cpp:1715
+msgid "'proxy_username' is set but not 'proxy_password'"
+msgstr "'proxy_username' は設定済みですが、'proxy_password' は設定されていません"
+
+#: libdnf/repo/Repo.cpp:1787
 msgid "resume cannot be used simultaneously with the byterangestart param"
 msgstr "resume は byterangestart param と同時に使用できません"
 
-#: libdnf/repo/Repo.cpp:1780
+#: libdnf/repo/Repo.cpp:1804
 #, c-format
 msgid "PackageTarget initialization failed: %s"
 msgstr "PackageTarget の初期化に失敗しました: %s"
 
-#: libdnf/repo/Repo.cpp:1886
+#: libdnf/repo/Repo.cpp:1910
 #, c-format
 msgid "Cannot open %s: %s"
 msgstr "%s を開くことができません: %s"
 
-#: libdnf/repo/Repo.cpp:1930
+#: libdnf/repo/Repo.cpp:1954
 #, c-format
 msgid "Log handler with id %ld doesn't exist"
 msgstr "id %ld を伴うログハンドラーは存在しません"
@@ -901,7 +1041,7 @@ msgstr "完了したトランザクションにトランザクションアイテ
 
 #: libdnf/transaction/Transformer.cpp:76
 msgid "Database Corrupted: no row 'version' in table 'config'"
-msgstr ""
+msgstr "データベースが破損しています。テーブル 'config' の行 'version' がありません"
 
 #: libdnf/transaction/Transformer.cpp:681
 msgid "Transformer: can't open history persist dir"
@@ -926,6 +1066,3 @@ msgstr "未保存のトランザクションにコンソールの出力を追加
 
 #~ msgid "Bad id for repo: %s, byte = %s %d"
 #~ msgstr "repo に対する不正な id: %s, byte = %s %d"
-
-#~ msgid "failed calculating RPMDB checksum"
-#~ msgstr "RPMDB チェックサムの計算に失敗しました"
