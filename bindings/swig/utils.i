@@ -44,4 +44,7 @@ namespace libdnf { namespace filesystem {
 
 void decompress(const char * inPath, const char * outPath, mode_t outMode, const char * compressType = nullptr);
 
+bool checksum_check(const char * type, const char * inPath, const char * checksum_valid);
+std::string checksum_value(const char * type, const char * inPath);
+
 }}

@@ -68,6 +68,22 @@ std::vector<std::string> getDirContent(const std::string &dirPath);
 * @param compressType Type of compression (".bz2", ".gz", ...), nullptr - detect from inPath filename. Defaults to nullptr.
 */
 void decompress(const char * inPath, const char * outPath, mode_t outMode, const char * compressType = nullptr);
+
+/**
+* @brief checksum file and return if matching.
+*
+* @param type Checksum type ("sha", "sha1", "sha256" etc). Raises libdnf::Error if invalid.
+* @param inPath Path to input file
+* @param valid_checksum hexadecimal encoded checksum string.
+*/
+bool checksum_check(const char * type, const char * inPath, const char * valid_checksum);
+/**
+* @brief checksum file and return checksum.
+*
+* @param type Checksum type ("sha", "sha1", "sha256" etc). Raises libdnf::Error if invalid.
+* @param inPath Path to input file
+*/
+std::string checksum_value(const char * type, const char * inPath);
 }
 
 namespace numeric {
