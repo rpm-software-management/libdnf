@@ -1,6 +1,7 @@
 #include "utils.hpp"
 #include "libdnf/dnf-sack-private.hpp"
 #include "libdnf/sack/advisorymodule.hpp"
+#include <librepo/librepo.h>
 
 #include <tinyformat/tinyformat.hpp>
 
@@ -298,6 +299,55 @@ void decompress(const char * inPath, const char * outPath, mode_t outMode, const
     }
     close(outFd);
     fclose(inFile);
+}
+
+void checksum(const char * type, const char * inPath, const char * checksum_valid, bool * valid_out, gchar ** calculated_out)
+{
+    GError * errP{nullptr};
+    gboolean valid;
+    LrChecksumType lr_type = lr_checksum_type(type);
+
+    if (lr_type == LR_CHECKSUM_UNKNOWN)
+        throw libdnf::Error(tfm::format("Unknown checksum type %s", type));
+
+    auto inFd = open(inPath, O_RDONLY);
+
+    if (inFd == -1)
+        throw libdnf::Error(tfm::format("Error opening %s: %s", inPath, strerror(errno)));
+
+    auto ret = lr_checksum_fd_compare(lr_type,
+                      inFd,
+                      /**
+                       * If checksum_valid references a string, pass it in, else use
+                       * an empty string
+                       */
+                      checksum_valid ? checksum_valid : "",
+                      TRUE,
+                      &valid,
+                      calculated_out,
+                      &errP);
+
+    close(inFd);
+    if (!ret)
+      throw libdnf::Error(tfm::format("Error calculating checksum %s: (%d, %s)", inPath, errP->code, errP->message));
+    if (valid_out)
+        *valid_out = valid == TRUE; /* gboolean -> bool */
+}
+
+
+bool checksum_check(const char * type, const char * inPath, const char * checksum_valid)
+{
+    bool valid;
+    checksum(type, inPath, checksum_valid, &valid, NULL);
+    return valid;
+}
+
+std::string checksum_value(const char * type, const char * inPath)
+{
+    g_autofree gchar *calculated = NULL;
+    checksum(type, inPath, NULL, NULL, &calculated);
+    std::string out(calculated);
+    return out;
 }
 
 }
