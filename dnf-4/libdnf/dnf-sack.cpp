@@ -1081,39 +1081,6 @@ dnf_sack_list_arches(DnfSack *sack)
 }
 
 /**
- * dnf_sack_set_installonly_limit:
- * @sack: a #DnfSack instance.
- * @limit: a the number of packages.
- *
- * Sets the installonly limit.
- *
- * Since: 0.7.0
- */
-void
-dnf_sack_set_installonly_limit(DnfSack *sack, guint limit)
-{
-    DnfSackPrivate *priv = GET_PRIVATE(sack);
-    priv->installonly_limit = limit;
-}
-
-/**
- * dnf_sack_get_installonly_limit:
- * @sack: a #DnfSack instance.
- *
- * Gets the installonly limit.
- *
- * Returns: integer value
- *
- * Since: 0.7.0
- */
-guint
-dnf_sack_get_installonly_limit(DnfSack *sack)
-{
-    DnfSackPrivate *priv = GET_PRIVATE(sack);
-    return priv->installonly_limit;
-}
-
-/**
  * dnf_sack_count:
  * @sack: a #DnfSack instance.
  *
