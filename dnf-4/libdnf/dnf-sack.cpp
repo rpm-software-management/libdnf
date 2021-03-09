@@ -1081,45 +1081,6 @@ dnf_sack_list_arches(DnfSack *sack)
 }
 
 /**
- * dnf_sack_set_installonly:
- * @sack: a #DnfSack instance.
- * @installonly: an array of package names.
- *
- * Sets the packages to use for installonlyn.
- *
- * Since: 0.7.0
- */
-void
-dnf_sack_set_installonly(DnfSack *sack, const char **installonly)
-{
-    DnfSackPrivate *priv = GET_PRIVATE(sack);
-    const char *name;
-
-    queue_empty(&priv->installonly);
-    if (installonly == NULL)
-        return;
-    while ((name = *installonly++) != NULL)
-        queue_pushunique(&priv->installonly, pool_str2id(priv->pool, name, 1));
-}
-
-/**
- * dnf_sack_get_installonly: (skip)
- * @sack: a #DnfSack instance.
- *
- * Gets the installonlyn packages.
- *
- * Returns: a Queue
- *
- * Since: 0.7.0
- */
-Queue *
-dnf_sack_get_installonly(DnfSack *sack)
-{
-    DnfSackPrivate *priv = GET_PRIVATE(sack);
-    return &priv->installonly;
-}
-
-/**
  * dnf_sack_set_installonly_limit:
  * @sack: a #DnfSack instance.
  * @limit: a the number of packages.

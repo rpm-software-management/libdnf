@@ -110,8 +110,6 @@ char        *dnf_sack_give_cache_fn         (DnfSack        *sack,
                                              const char     *reponame,
                                              const char     *ext);
 const char **dnf_sack_list_arches           (DnfSack        *sack);
-void         dnf_sack_set_installonly       (DnfSack        *sack,
-                                             const char    **installonly);
 void         dnf_sack_set_installonly_limit (DnfSack        *sack,
                                              guint           limit);
 guint        dnf_sack_get_installonly_limit (DnfSack        *sack);
