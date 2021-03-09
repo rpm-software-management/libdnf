@@ -554,19 +554,6 @@ sort_packages(const void *ap, const void *bp, void *s_cb)
     return pool_evrcmp(pool, sa->evr, sb->evr, EVRCMP_COMPARE);
 }
 
-static void
-same_name_subqueue(Pool *pool, Queue *in, Queue *out)
-{
-    Id el = queue_pop(in);
-    Id name = pool_id2solvable(pool, el)->name;
-    queue_empty(out);
-    queue_push(out, el);
-    while (in->count &&
-           pool_id2solvable(pool, in->elements[in->count - 1])->name == name)
-        // reverses the order so packages are sorted by descending version
-        queue_push(out, queue_pop(in));
-}
-
 static std::unique_ptr<PackageSet>
 remove_pkgs_with_same_nevra_from_pset(DnfPackageSet* pset, DnfPackageSet* remove_musters,
                                       DnfSack* sack)
@@ -675,22 +662,6 @@ Goal::getReason(DnfPackage *pkg)
         }
     }
     return HY_REASON_DEP;
-}
-
-void
-Goal::addProtected(PackageSet & pset)
-{
-    if (!pImpl->protectedPkgs) {
-        pImpl->protectedPkgs.reset(new PackageSet(pset));
-    } else {
-        map_or(pImpl->protectedPkgs->getMap(), pset.getMap());
-    }
-}
-
-void
-Goal::setProtected(const PackageSet & pset)
-{
-    pImpl->protectedPkgs.reset(new PackageSet(pset));
 }
 
 void
@@ -1137,29 +1108,6 @@ Goal::listObsoletedByPackage(DnfPackage *pkg)
     return pset;
 }
 
-void
-Goal::Impl::allowUninstallAllButProtected(Queue *job, DnfGoalActions flags)
-{
-    Pool *pool = dnf_sack_get_pool(sack);
-
-    if (!protectedPkgs) {
-        protectedPkgs.reset(new PackageSet(sack));
-    } else
-        map_grow(protectedPkgs->getMap(), pool->nsolvables);
-
-    Id kernel = dnf_sack_running_kernel(sack);
-    if (kernel > 0)
-        protectedPkgs->set(kernel);
-
-    if (DNF_ALLOW_UNINSTALL & flags)
-        for (Id id = 1; id < pool->nsolvables; ++id) {
-            Solvable *s = pool_id2solvable(pool, id);
-            if (pool->installed == s->repo && !protectedPkgs->has(id) &&
-                (!pool->considered || MAPTST(pool->considered, id))) {
-                queue_push2(job, SOLVER_ALLOWUNINSTALL|SOLVER_SOLVABLE, id);
-            }
-        }
-}
 
 std::unique_ptr<IdQueue>
 Goal::Impl::constructJob(DnfGoalActions flags)
@@ -1210,58 +1158,6 @@ Goal::Impl::initSolver()
 #endif
 
     return solv;
-}
-
-int
-Goal::Impl::limitInstallonlyPackages(Solver *solv, Queue *job)
-{
-    if (!dnf_sack_get_installonly_limit(sack))
-        return 0;
-
-    Queue *onlies = dnf_sack_get_installonly(sack);
-    Pool *pool = dnf_sack_get_pool(sack);
-    int reresolve = 0;
-
-    for (int i = 0; i < onlies->count; ++i) {
-        Id p, pp;
-        IdQueue q, installing;
-
-        FOR_PKG_PROVIDES(p, pp, onlies->elements[i])
-            if (solver_get_decisionlevel(solv, p) > 0)
-                q.pushBack(p);
-        if (q.size() <= (int) dnf_sack_get_installonly_limit(sack)) {
-            continue;
-        }
-        for (int k = 0; k < q.size(); ++k) {
-            Id id  = q[k];
-            Solvable *s = pool_id2solvable(pool, id);
-            if (pool->installed != s->repo) {
-                installing.pushBack(id);
-                break;
-            }
-        }
-        if (!installing.size()) {
-            continue;
-        }
-
-        struct InstallonliesSortCallback s_cb = {pool, dnf_sack_running_kernel(sack)};
-        solv_sort(q.data(), q.size(), sizeof(q[0]), sort_packages, &s_cb);
-        IdQueue same_names;
-        while (q.size() > 0) {
-            same_name_subqueue(pool, q.getQueue(), same_names.getQueue());
-            if (same_names.size() <= (int) dnf_sack_get_installonly_limit(sack))
-                continue;
-            reresolve = 1;
-            for (int j = 0; j < same_names.size(); ++j) {
-                Id id  = same_names[j];
-                Id action = SOLVER_ERASE;
-                if (j < (int) dnf_sack_get_installonly_limit(sack))
-                    action = SOLVER_INSTALL;
-                queue_push2(job, action | SOLVER_SOLVABLE, id);
-            }
-        }
-    }
-    return reresolve;
 }
 
 bool
