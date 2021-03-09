@@ -18,16 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifdef __APPLE__
-#include <stdint.h>
-#else
-#include <bits/wordsize.h>
-#endif
+#include <limits.h>
 
-#if __WORDSIZE == 32
-#include "config-32.h"
-#elif __WORDSIZE == 64
+#if (ULONG_MAX == 0xffffffffffffffff)
 #include "config-64.h"
+#elif (ULONG_MAX == 0xffffffff)
+#include "config-32.h"
 #else
 #error "Unknown word size"
 #endif
