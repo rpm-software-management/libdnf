@@ -569,6 +569,32 @@ std::unique_ptr<LrHandle> Repo::Impl::lr_handle_init_local() {
 
 template<typename ConfigT>
 static void set_handle(LrHandle * h, ConfigT & config) {
+    auto & ip_resolve = config.ip_resolve().get_value();
+    if (ip_resolve == "ipv4") {
+        handle_set_opt(h, LRO_IPRESOLVE, LR_IPRESOLVE_V4);
+    } else if (ip_resolve == "ipv6") {
+        handle_set_opt(h, LRO_IPRESOLVE, LR_IPRESOLVE_V6);
+    }
+
+    // setup username/password if needed
+    auto userpwd = config.username().get_value();
+    if (!userpwd.empty()) {
+        // TODO Use URL encoded form, needs support in librepo
+        userpwd = format_user_pass_string(userpwd, config.password().get_value(), false);
+        handle_set_opt(h, LRO_USERPWD, userpwd.c_str());
+    }
+
+    // setup ssl stuff
+    if (!config.sslcacert().get_value().empty()) {
+        handle_set_opt(h, LRO_SSLCACERT, config.sslcacert().get_value().c_str());
+    }
+    if (!config.sslclientcert().get_value().empty()) {
+        handle_set_opt(h, LRO_SSLCLIENTCERT, config.sslclientcert().get_value().c_str());
+    }
+    if (!config.sslclientkey().get_value().empty()) {
+        handle_set_opt(h, LRO_SSLCLIENTKEY, config.sslclientkey().get_value().c_str());
+    }
+
     auto minrate = config.minrate().get_value();
     handle_set_opt(h, LRO_LOWSPEEDLIMIT, static_cast<long>(minrate));
 
@@ -581,6 +607,15 @@ static void set_handle(LrHandle * h, ConfigT & config) {
             _("Maximum download speed is lower than minimum. "
                 "Please change configuration of minrate or throttle"));
     handle_set_opt(h, LRO_MAXSPEED, static_cast<int64_t>(maxspeed));
+
+    long timeout = config.timeout().get_value();
+    if (timeout > 0) {
+        handle_set_opt(h, LRO_CONNECTTIMEOUT, timeout);
+        handle_set_opt(h, LRO_LOWSPEEDTIME, timeout);
+    } else {
+        handle_set_opt(h, LRO_CONNECTTIMEOUT, LRO_CONNECTTIMEOUT_DEFAULT);
+        handle_set_opt(h, LRO_LOWSPEEDTIME, LRO_LOWSPEEDTIME_DEFAULT);
+    }
 
     if (!config.proxy().empty() && !config.proxy().get_value().empty())
         handle_set_opt(h, LRO_PROXY, config.proxy().get_value().c_str());
@@ -597,7 +632,7 @@ static void set_handle(LrHandle * h, ConfigT & config) {
         }
     }
 
-    auto sslverify = config.sslverify().get_value() ? 1L : 0L;
+    long sslverify = config.sslverify().get_value() ? 1L : 0L;
     handle_set_opt(h, LRO_SSLVERIFYHOST, sslverify);
     handle_set_opt(h, LRO_SSLVERIFYPEER, sslverify);
 }
@@ -613,13 +648,6 @@ std::unique_ptr<LrHandle> Repo::Impl::lr_handle_init_remote(const char * destdir
     handle_set_opt(h.get(), LRO_VARSUB, vars);
 
     handle_set_opt(h.get(), LRO_DESTDIR, destdir);
-
-    auto & ip_resolve = config.ip_resolve().get_value();
-    if (ip_resolve == "ipv4") {
-        handle_set_opt(h.get(), LRO_IPRESOLVE, LR_IPRESOLVE_V4);
-    } else if (ip_resolve == "ipv6") {
-        handle_set_opt(h.get(), LRO_IPRESOLVE, LR_IPRESOLVE_V6);
-    }
 
     enum class Source { NONE, METALINK, MIRRORLIST } source{Source::NONE};
     std::string tmp;
@@ -665,25 +693,6 @@ std::unique_ptr<LrHandle> Repo::Impl::lr_handle_init_remote(const char * destdir
         throw RuntimeError(fmt::format(_("Cannot find a valid baseurl for repo: {}"), id));
     }
 
-    // setup username/password if needed
-    auto userpwd = config.username().get_value();
-    if (!userpwd.empty()) {
-        // TODO Use URL encoded form, needs support in librepo
-        userpwd = format_user_pass_string(userpwd, config.password().get_value(), false);
-        handle_set_opt(h.get(), LRO_USERPWD, userpwd.c_str());
-    }
-
-    // setup ssl stuff
-    if (!config.sslcacert().get_value().empty()) {
-        handle_set_opt(h.get(), LRO_SSLCACERT, config.sslcacert().get_value().c_str());
-    }
-    if (!config.sslclientcert().get_value().empty()) {
-        handle_set_opt(h.get(), LRO_SSLCLIENTCERT, config.sslclientcert().get_value().c_str());
-    }
-    if (!config.sslclientkey().get_value().empty()) {
-        handle_set_opt(h.get(), LRO_SSLCLIENTKEY, config.sslclientkey().get_value().c_str());
-    }
-
     handle_set_opt(h.get(), LRO_PROGRESSCB, static_cast<LrProgressCb>(progress_cb));
     handle_set_opt(h.get(), LRO_PROGRESSDATA, callbacks.get());
     handle_set_opt(h.get(), LRO_FASTESTMIRRORCB, static_cast<LrFastestMirrorCb>(fastest_mirror_cb));
@@ -697,15 +706,6 @@ std::unique_ptr<LrHandle> Repo::Impl::lr_handle_init_remote(const char * destdir
 #endif
 
     set_handle(h.get(), config);
-
-    long timeout = config.timeout().get_value();
-    if (timeout > 0) {
-        handle_set_opt(h.get(), LRO_CONNECTTIMEOUT, timeout);
-        handle_set_opt(h.get(), LRO_LOWSPEEDTIME, timeout);
-    } else {
-        handle_set_opt(h.get(), LRO_CONNECTTIMEOUT, LRO_CONNECTTIMEOUT_DEFAULT);
-        handle_set_opt(h.get(), LRO_LOWSPEEDTIME, LRO_LOWSPEEDTIME_DEFAULT);
-    }
 
     return h;
 }
