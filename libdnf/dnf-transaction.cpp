@@ -1551,7 +1551,9 @@ dnf_transaction_new(DnfContext *context)
     auto install_root = dnf_context_get_install_root(context);
     std::string dbPath;
     if (dnf_context_get_write_history(context)) {
-        dbPath = g_build_filename(install_root, libdnf::Swdb::defaultPath, NULL);
+        gchar *tmp_path = g_build_filename(install_root, libdnf::Swdb::defaultPath, NULL);
+        dbPath = std::string(tmp_path);
+        g_free(tmp_path);
     } else {
         dbPath = ":memory:";
     }

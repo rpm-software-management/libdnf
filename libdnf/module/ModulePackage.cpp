@@ -220,6 +220,7 @@ std::vector<std::string> ModulePackage::getRequires(ModulemdModuleStream * mdStr
             char ** runtimeReqStreams = modulemd_dependencies_get_runtime_streams_as_strv(dependencies, *iterModule);
             auto moduleName = static_cast<char *>(*iterModule);
             if (removePlatform && strcmp(moduleName, "platform") == 0) {
+                g_strfreev(runtimeReqStreams);
                 continue;
             }
             std::ostringstream ss;
@@ -250,7 +251,11 @@ std::string ModulePackage::getYaml() const
 {
     ModulemdModuleIndex * i = modulemd_module_index_new();
     modulemd_module_index_add_module_stream(i, mdStream, NULL);
-    return modulemd_module_index_dump_to_string(i, NULL);
+    gchar *cStrYaml = modulemd_module_index_dump_to_string(i, NULL);
+    std::string yaml = std::string(cStrYaml);
+    g_free(cStrYaml);
+    g_object_unref(i);
+    return yaml;
 }
 
 bool ModulePackage::getStaticContext() const
