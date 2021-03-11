@@ -494,6 +494,64 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitLocal()
     return h;
 }
 
+template<typename ConfigT>
+static void setHandle(LrHandle * h, ConfigT & config, const char * repoId = nullptr) {
+    auto minrate = config.minrate().getValue();
+    handleSetOpt(h, LRO_LOWSPEEDLIMIT, static_cast<long>(minrate));
+
+    auto maxspeed = config.throttle().getValue();
+    if (maxspeed > 0 && maxspeed <= 1)
+        maxspeed *= config.bandwidth().getValue();
+    if (maxspeed != 0 && maxspeed < minrate)
+        throw RepoError(_("Maximum download speed is lower than minimum. "
+                          "Please change configuration of minrate or throttle"));
+    handleSetOpt(h, LRO_MAXSPEED, static_cast<int64_t>(maxspeed));
+
+    if (!config.proxy().empty() && !config.proxy().getValue().empty())
+        handleSetOpt(h, LRO_PROXY, config.proxy().getValue().c_str());
+
+    //set proxy authorization method
+    auto proxyAuthMethods = Repo::Impl::stringToProxyAuthMethods(config.proxy_auth_method().getValue());
+    handleSetOpt(h, LRO_PROXYAUTHMETHODS, static_cast<long>(proxyAuthMethods));
+
+    // setup proxy username/password if needed
+    if (!config.proxy_username().empty()) {
+        auto userpwd = config.proxy_username().getValue();
+        if (!userpwd.empty()) {
+            if (config.proxy_password().empty()) {
+                if (repoId)
+                    throw RepoError(tfm::format(_("repo '%s': 'proxy_username' is set but not 'proxy_password'"), repoId));
+                else
+                    throw RepoError(_("'proxy_username' is set but not 'proxy_password'"));
+            }
+            userpwd = formatUserPassString(userpwd, config.proxy_password().getValue(), true);
+            handleSetOpt(h, LRO_PROXYUSERPWD, userpwd.c_str());
+        }
+    }
+
+    // setup ssl stuff
+    if (!config.sslcacert().getValue().empty())
+        handleSetOpt(h, LRO_SSLCACERT, config.sslcacert().getValue().c_str());
+    if (!config.sslclientcert().getValue().empty())
+        handleSetOpt(h, LRO_SSLCLIENTCERT, config.sslclientcert().getValue().c_str());
+    if (!config.sslclientkey().getValue().empty())
+        handleSetOpt(h, LRO_SSLCLIENTKEY, config.sslclientkey().getValue().c_str());
+    long sslverify = config.sslverify().getValue() ? 1L : 0L;
+    handleSetOpt(h, LRO_SSLVERIFYHOST, sslverify);
+    handleSetOpt(h, LRO_SSLVERIFYPEER, sslverify);
+
+    // setup proxy ssl stuff
+    if (!config.proxy_sslcacert().getValue().empty())
+        handleSetOpt(h, LRO_PROXY_SSLCACERT, config.proxy_sslcacert().getValue().c_str());
+    if (!config.proxy_sslclientcert().getValue().empty())
+        handleSetOpt(h, LRO_PROXY_SSLCLIENTCERT, config.proxy_sslclientcert().getValue().c_str());
+    if (!config.proxy_sslclientkey().getValue().empty())
+        handleSetOpt(h, LRO_PROXY_SSLCLIENTKEY, config.proxy_sslclientkey().getValue().c_str());
+    long proxy_sslverify = config.proxy_sslverify().getValue() ? 1L : 0L;
+    handleSetOpt(h, LRO_PROXY_SSLVERIFYHOST, proxy_sslverify);
+    handleSetOpt(h, LRO_PROXY_SSLVERIFYPEER, proxy_sslverify);
+}
+
 std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir)
 {
     std::unique_ptr<LrHandle> h(lrHandleInitBase());
@@ -560,14 +618,6 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir)
         handleSetOpt(h.get(), LRO_USERPWD, userpwd.c_str());
     }
 
-    // setup ssl stuff
-    if (!conf->sslcacert().getValue().empty())
-        handleSetOpt(h.get(), LRO_SSLCACERT, conf->sslcacert().getValue().c_str());
-    if (!conf->sslclientcert().getValue().empty())
-        handleSetOpt(h.get(), LRO_SSLCLIENTCERT, conf->sslclientcert().getValue().c_str());
-    if (!conf->sslclientkey().getValue().empty())
-        handleSetOpt(h.get(), LRO_SSLCLIENTKEY, conf->sslclientkey().getValue().c_str());
-
     handleSetOpt(h.get(), LRO_HMFCB, static_cast<LrHandleMirrorFailureCb>(mirrorFailureCB));
     handleSetOpt(h.get(), LRO_PROGRESSCB, static_cast<LrProgressCb>(progressCB));
     handleSetOpt(h.get(), LRO_PROGRESSDATA, callbacks.get());
@@ -584,17 +634,6 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir)
     }
 #endif
 
-    auto minrate = conf->minrate().getValue();
-    handleSetOpt(h.get(), LRO_LOWSPEEDLIMIT, static_cast<long>(minrate));
-
-    auto maxspeed = conf->throttle().getValue();
-    if (maxspeed > 0 && maxspeed <= 1)
-        maxspeed *= conf->bandwidth().getValue();
-    if (maxspeed != 0 && maxspeed < minrate)
-        throw RepoError(_("Maximum download speed is lower than minimum. "
-                          "Please change configuration of minrate or throttle"));
-    handleSetOpt(h.get(), LRO_MAXSPEED, static_cast<int64_t>(maxspeed));
-
     long timeout = conf->timeout().getValue();
     if (timeout > 0) {
         handleSetOpt(h.get(), LRO_CONNECTTIMEOUT, timeout);
@@ -604,38 +643,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir)
         handleSetOpt(h.get(), LRO_LOWSPEEDTIME, LRO_LOWSPEEDTIME_DEFAULT);
     }
 
-    if (!conf->proxy().empty() && !conf->proxy().getValue().empty())
-        handleSetOpt(h.get(), LRO_PROXY, conf->proxy().getValue().c_str());
-
-    //set proxy authorization method
-    auto proxyAuthMethods = stringToProxyAuthMethods(conf->proxy_auth_method().getValue());
-    handleSetOpt(h.get(), LRO_PROXYAUTHMETHODS, static_cast<long>(proxyAuthMethods));
-
-    if (!conf->proxy_username().empty()) {
-        userpwd = conf->proxy_username().getValue();
-        if (!userpwd.empty()) {
-            if (conf->proxy_password().empty()) {
-                throw RepoError(tfm::format(_("repo '%s': 'proxy_username' is set but not 'proxy_password'"), id));
-            }
-            userpwd = formatUserPassString(userpwd, conf->proxy_password().getValue(), true);
-            handleSetOpt(h.get(), LRO_PROXYUSERPWD, userpwd.c_str());
-        }
-    }
-
-    auto sslverify = conf->sslverify().getValue() ? 1L : 0L;
-    handleSetOpt(h.get(), LRO_SSLVERIFYHOST, sslverify);
-    handleSetOpt(h.get(), LRO_SSLVERIFYPEER, sslverify);
-
-    // setup proxy ssl stuff
-    if (!conf->proxy_sslcacert().getValue().empty())
-        handleSetOpt(h.get(), LRO_PROXY_SSLCACERT, conf->proxy_sslcacert().getValue().c_str());
-    if (!conf->proxy_sslclientcert().getValue().empty())
-        handleSetOpt(h.get(), LRO_PROXY_SSLCLIENTCERT, conf->proxy_sslclientcert().getValue().c_str());
-    if (!conf->proxy_sslclientkey().getValue().empty())
-        handleSetOpt(h.get(), LRO_PROXY_SSLCLIENTKEY, conf->proxy_sslclientkey().getValue().c_str());
-    auto proxy_sslverify = conf->proxy_sslverify().getValue() ? 1L : 0L;
-    handleSetOpt(h.get(), LRO_PROXY_SSLVERIFYHOST, proxy_sslverify);
-    handleSetOpt(h.get(), LRO_PROXY_SSLVERIFYPEER, proxy_sslverify);
+    setHandle(h.get(), *conf, id.c_str());
 
     return h;
 }
@@ -1700,57 +1708,7 @@ static LrHandle * newHandle(ConfigMain * conf)
     // see dnf.repo.Repo._handle_new_remote() how to pass
     if (conf) {
         user_agent = conf->user_agent().getValue().c_str();
-        auto minrate = conf->minrate().getValue();
-        handleSetOpt(h, LRO_LOWSPEEDLIMIT, static_cast<long>(minrate));
-
-        auto maxspeed = conf->throttle().getValue();
-        if (maxspeed > 0 && maxspeed <= 1)
-            maxspeed *= conf->bandwidth().getValue();
-        if (maxspeed != 0 && maxspeed < minrate)
-            throw RepoError(_("Maximum download speed is lower than minimum. "
-                              "Please change configuration of minrate or throttle"));
-        handleSetOpt(h, LRO_MAXSPEED, static_cast<int64_t>(maxspeed));
-
-        if (!conf->proxy().empty() && !conf->proxy().getValue().empty())
-            handleSetOpt(h, LRO_PROXY, conf->proxy().getValue().c_str());
-
-        //set proxy authorization method
-        auto proxyAuthMethods = Repo::Impl::stringToProxyAuthMethods(conf->proxy_auth_method().getValue());
-        handleSetOpt(h, LRO_PROXYAUTHMETHODS, static_cast<long>(proxyAuthMethods));
-
-        if (!conf->proxy_username().empty()) {
-            auto userpwd = conf->proxy_username().getValue();
-            if (!userpwd.empty()) {
-                if (conf->proxy_password().empty()) {
-                    throw RepoError(_("'proxy_username' is set but not 'proxy_password'"));
-                }
-                userpwd = formatUserPassString(userpwd, conf->proxy_password().getValue(), true);
-                handleSetOpt(h, LRO_PROXYUSERPWD, userpwd.c_str());
-            }
-        }
-
-        // setup ssl stuff
-        if (!conf->sslcacert().getValue().empty())
-            handleSetOpt(h, LRO_SSLCACERT, conf->sslcacert().getValue().c_str());
-        if (!conf->sslclientcert().getValue().empty())
-            handleSetOpt(h, LRO_SSLCLIENTCERT, conf->sslclientcert().getValue().c_str());
-        if (!conf->sslclientkey().getValue().empty())
-            handleSetOpt(h, LRO_SSLCLIENTKEY, conf->sslclientkey().getValue().c_str());
-
-        auto sslverify = conf->sslverify().getValue() ? 1L : 0L;
-        handleSetOpt(h, LRO_SSLVERIFYHOST, sslverify);
-        handleSetOpt(h, LRO_SSLVERIFYPEER, sslverify);
-
-        // setup proxy ssl stuff
-        if (!conf->proxy_sslcacert().getValue().empty())
-            handleSetOpt(h, LRO_PROXY_SSLCACERT, conf->proxy_sslcacert().getValue().c_str());
-        if (!conf->proxy_sslclientcert().getValue().empty())
-            handleSetOpt(h, LRO_PROXY_SSLCLIENTCERT, conf->proxy_sslclientcert().getValue().c_str());
-        if (!conf->proxy_sslclientkey().getValue().empty())
-            handleSetOpt(h, LRO_PROXY_SSLCLIENTKEY, conf->proxy_sslclientkey().getValue().c_str());
-        auto proxy_sslverify = conf->proxy_sslverify().getValue() ? 1L : 0L;
-        handleSetOpt(h, LRO_PROXY_SSLVERIFYHOST, proxy_sslverify);
-        handleSetOpt(h, LRO_PROXY_SSLVERIFYPEER, proxy_sslverify);
+        setHandle(h, *conf);
     }
     handleSetOpt(h, LRO_USERAGENT, user_agent);
     return h;
