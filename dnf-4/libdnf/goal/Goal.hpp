@@ -111,18 +111,7 @@ public:
 
     std::unique_ptr<PackageSet> listConflictPkgs(DnfPackageState pkg_type);
     std::unique_ptr<PackageSet> listBrokenDependencyPkgs(DnfPackageState pkg_type);
-    std::vector<std::vector<std::string>> describeAllProblemRules(bool pkgs);
 
-    /**
-    * @brief List describing failed rules in solving problem 'i'. Caller is responsible for freeing the
-    * returned string list by g_free().
-    *
-    * @param goal HyGoal
-    * @param i ingex of problem
-    * @param pkgs if true packages problem messages, othewise module messages are used
-    * @return char**
-    */
-    std::vector<std::string> describeProblemRules(unsigned i, bool pkgs);
     int logDecisions();
     void writeDebugdata(const char *dir);
 
