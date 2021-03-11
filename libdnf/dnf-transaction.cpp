@@ -1123,7 +1123,6 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     gboolean ret = FALSE;
     gint rc;
     gint verbosity;
-    gint vs_flags;
     guint i;
     guint j;
     DnfState *state_local;
@@ -1386,8 +1385,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
         goto out;
 
     /* no signature checking, we've handled that already */
-    vs_flags = rpmtsSetVSFlags(priv->ts, _RPMVSF_NOSIGNATURES | _RPMVSF_NODIGESTS);
-    rpmtsSetVSFlags(priv->ts, vs_flags);
+    rpmtsSetVSFlags(priv->ts, _RPMVSF_NOSIGNATURES | _RPMVSF_NODIGESTS);
 
     /* filter diskspace */
     if (!dnf_context_get_check_disk_space(priv->context))
