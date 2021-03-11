@@ -496,6 +496,12 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitLocal()
 
 template<typename ConfigT>
 static void setHandle(LrHandle * h, ConfigT & config, const char * repoId = nullptr) {
+    auto & ipResolve = config.ip_resolve().getValue();
+    if (ipResolve == "ipv4")
+        handleSetOpt(h, LRO_IPRESOLVE, LR_IPRESOLVE_V4);
+    else if (ipResolve == "ipv6")
+        handleSetOpt(h, LRO_IPRESOLVE, LR_IPRESOLVE_V6);
+
     auto minrate = config.minrate().getValue();
     handleSetOpt(h, LRO_LOWSPEEDLIMIT, static_cast<long>(minrate));
 
@@ -506,6 +512,23 @@ static void setHandle(LrHandle * h, ConfigT & config, const char * repoId = null
         throw RepoError(_("Maximum download speed is lower than minimum. "
                           "Please change configuration of minrate or throttle"));
     handleSetOpt(h, LRO_MAXSPEED, static_cast<int64_t>(maxspeed));
+
+    long timeout = config.timeout().getValue();
+    if (timeout > 0) {
+        handleSetOpt(h, LRO_CONNECTTIMEOUT, timeout);
+        handleSetOpt(h, LRO_LOWSPEEDTIME, timeout);
+    } else {
+        handleSetOpt(h, LRO_CONNECTTIMEOUT, LRO_CONNECTTIMEOUT_DEFAULT);
+        handleSetOpt(h, LRO_LOWSPEEDTIME, LRO_LOWSPEEDTIME_DEFAULT);
+    }
+
+    // setup username/password if needed
+    auto userpwd = config.username().getValue();
+    if (!userpwd.empty()) {
+        // TODO Use URL encoded form, needs support in librepo
+        userpwd = formatUserPassString(userpwd, config.password().getValue(), false);
+        handleSetOpt(h, LRO_USERPWD, userpwd.c_str());
+    }
 
     if (!config.proxy().empty() && !config.proxy().getValue().empty())
         handleSetOpt(h, LRO_PROXY, config.proxy().getValue().c_str());
@@ -564,12 +587,6 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir)
 
     handleSetOpt(h.get(), LRO_DESTDIR, destdir);
 
-    auto & ipResolve = conf->ip_resolve().getValue();
-    if (ipResolve == "ipv4")
-        handleSetOpt(h.get(), LRO_IPRESOLVE, LR_IPRESOLVE_V4);
-    else if (ipResolve == "ipv6")
-        handleSetOpt(h.get(), LRO_IPRESOLVE, LR_IPRESOLVE_V6);
-
     enum class Source {NONE, METALINK, MIRRORLIST} source{Source::NONE};
     std::string tmp;
     if (!conf->metalink().empty() && !(tmp=conf->metalink().getValue()).empty())
@@ -610,14 +627,6 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir)
     if (source == Source::NONE && conf->baseurl().getValue().empty())
         throw RepoError(tfm::format(_("Cannot find a valid baseurl for repo: %s"), id));
 
-    // setup username/password if needed
-    auto userpwd = conf->username().getValue();
-    if (!userpwd.empty()) {
-        // TODO Use URL encoded form, needs support in librepo
-        userpwd = formatUserPassString(userpwd, conf->password().getValue(), false);
-        handleSetOpt(h.get(), LRO_USERPWD, userpwd.c_str());
-    }
-
     handleSetOpt(h.get(), LRO_HMFCB, static_cast<LrHandleMirrorFailureCb>(mirrorFailureCB));
     handleSetOpt(h.get(), LRO_PROGRESSCB, static_cast<LrProgressCb>(progressCB));
     handleSetOpt(h.get(), LRO_PROGRESSDATA, callbacks.get());
@@ -633,15 +642,6 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir)
         handleSetOpt(h.get(), LRO_CACHEDIR, conf->basecachedir().getValue().c_str());
     }
 #endif
-
-    long timeout = conf->timeout().getValue();
-    if (timeout > 0) {
-        handleSetOpt(h.get(), LRO_CONNECTTIMEOUT, timeout);
-        handleSetOpt(h.get(), LRO_LOWSPEEDTIME, timeout);
-    } else {
-        handleSetOpt(h.get(), LRO_CONNECTTIMEOUT, LRO_CONNECTTIMEOUT_DEFAULT);
-        handleSetOpt(h.get(), LRO_LOWSPEEDTIME, LRO_LOWSPEEDTIME_DEFAULT);
-    }
 
     setHandle(h.get(), *conf, id.c_str());
 
