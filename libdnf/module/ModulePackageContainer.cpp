@@ -1749,74 +1749,60 @@ void ModulePackageContainer::Impl::addVersion2Modules()
 
 void ModulePackageContainer::updateFailSafeData()
 {
-    auto activatedModules = pImpl->activatedModules.get();
-    if (!activatedModules) {
-        return;
-    }
-    std::vector<ModulePackage *> latest = pImpl->getLatestActiveEnabledModules();
-
     auto fileNames = getYamlFilenames(pImpl->persistDir.c_str());
-    Map map;
-    map_init(&map, fileNames.size());
-    auto begin = fileNames.begin();
-    auto end = fileNames.end();
-    if (g_mkdir_with_parents(pImpl->persistDir.c_str(), 0755) == -1) {
-        const char * errTxt = strerror(errno);
-        auto logger(Log::getLogger());
-        logger->debug(tfm::format(
-            _("Unable to create directory \"%s\" for modular Fail Safe data: %s"),
-            pImpl->persistDir.c_str(), errTxt));
-    }
 
-    // Update FailSafe data
-    for (auto modulePackage: latest) {
-        std::ostringstream ss;
-        ss << modulePackage->getNameStream();
-        ss << ":" << modulePackage->getArch() << ".yaml";
-        auto fileName = ss.str();
-        auto low = std::lower_bound(begin, end, fileName);
-        if (low != end && fileName == *low) {
-            MAPSET(&map, low - begin);
-        }
-        if (modulePackage->getRepoID() == LIBDNF_MODULE_FAIL_SAFE_REPO_NAME) {
-            continue;
-        }
-        g_autofree gchar * filePath = g_build_filename(pImpl->persistDir.c_str(), fileName.c_str(),
-                                                       NULL);
-        if (!updateFile(filePath, modulePackage->getYaml().c_str())) {
+    if (pImpl->activatedModules) {
+        std::vector<ModulePackage *> latest = pImpl->getLatestActiveEnabledModules();
+
+        auto begin = fileNames.begin();
+        auto end = fileNames.end();
+        if (g_mkdir_with_parents(pImpl->persistDir.c_str(), 0755) == -1) {
+            const char * errTxt = strerror(errno);
             auto logger(Log::getLogger());
             logger->debug(tfm::format(
-                _("Unable to save a modular Fail Safe data to '%s'"), filePath));
+                _("Unable to create directory \"%s\" for modular Fail Safe data: %s"),
+                                      pImpl->persistDir.c_str(), errTxt));
+        }
+
+        // Update FailSafe data
+        for (auto modulePackage: latest) {
+            std::ostringstream ss;
+            ss << modulePackage->getNameStream();
+            ss << ":" << modulePackage->getArch() << ".yaml";
+            auto fileName = ss.str();
+            if (modulePackage->getRepoID() == LIBDNF_MODULE_FAIL_SAFE_REPO_NAME) {
+                continue;
+            }
+            g_autofree gchar * filePath = g_build_filename(pImpl->persistDir.c_str(), fileName.c_str(), NULL);
+            if (!updateFile(filePath, modulePackage->getYaml().c_str())) {
+                auto logger(Log::getLogger());
+                logger->debug(tfm::format(_("Unable to save a modular Fail Safe data to '%s'"), filePath));
+            }
         }
     }
 
     // Remove files from not enabled modules
     for (unsigned int index = 0; index < fileNames.size(); ++index) {
-        if (!MAPTST(&map, index)) {
-            auto fileName = fileNames[index];
-            auto first = fileName.find(":");
-            if (first == std::string::npos || first == 0) {
-                continue;
-            }
-            std::string moduleName = fileName.substr(0, first);
-            auto second = fileName.find(":", ++first);
-            if (second == std::string::npos || first == second) {
-                continue;
-            }
-            std::string moduleStream = fileName.substr(first, second - first);
+        auto fileName = fileNames[index];
+        auto first = fileName.find(":");
+        if (first == std::string::npos || first == 0) {
+            continue;
+        }
+        std::string moduleName = fileName.substr(0, first);
+        auto second = fileName.find(":", ++first);
+        if (second == std::string::npos || first == second) {
+            continue;
+        }
+        std::string moduleStream = fileName.substr(first, second - first);
 
-            if (!isEnabled(moduleName, moduleStream)) {
-                g_autofree gchar * file = g_build_filename(
-                    pImpl->persistDir.c_str(), fileNames[index].c_str(), NULL);
-                if (remove(file)) {
-                    auto logger(Log::getLogger());
-                    logger->debug(tfm::format(
-                        _("Unable to remove a modular Fail Safe data in '%s'"), file));
-                }
+        if (!isEnabled(moduleName, moduleStream)) {
+            g_autofree gchar * file = g_build_filename(pImpl->persistDir.c_str(), fileNames[index].c_str(), NULL);
+            if (remove(file)) {
+                auto logger(Log::getLogger());
+                logger->debug(tfm::format(_("Unable to remove a modular Fail Safe data in '%s'"), file));
             }
         }
     }
-    map_free(&map);
 }
 
 void ModulePackageContainer::applyObsoletes(){
