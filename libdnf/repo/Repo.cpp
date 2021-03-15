@@ -562,6 +562,7 @@ static void setHandle(LrHandle * h, ConfigT & config, const char * repoId = null
     long sslverify = config.sslverify().getValue() ? 1L : 0L;
     handleSetOpt(h, LRO_SSLVERIFYHOST, sslverify);
     handleSetOpt(h, LRO_SSLVERIFYPEER, sslverify);
+    handleSetOpt(h, LRO_SSLVERIFYSTATUS, config.sslverifystatus().getValue() ? 1L : 0L);
 
     // setup proxy ssl stuff
     if (!config.proxy_sslcacert().getValue().empty())
