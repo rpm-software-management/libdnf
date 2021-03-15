@@ -166,6 +166,7 @@ public:
     OptionBool & deltarpm();
     OptionNumber<std::uint32_t> & deltarpm_percentage();
     OptionBool & skip_if_unavailable();
+    OptionBool & sslverifystatus();
 
     /**
     * @brief Adds variables from directory

@@ -1246,6 +1246,9 @@ dnf_repo_setup(DnfRepo *repo, GError **error) try
             return FALSE;
     }
 
+    if (!lr_handle_setopt(priv->repo_handle, error, LRO_SSLVERIFYSTATUS, conf->sslverifystatus().getValue() ? 1L : 0L))
+        return FALSE;
+
 #ifdef LRO_SUPPORTS_CACHEDIR
     /* Set cache dir */
     if (dnf_context_get_zchunk(priv->context)) {

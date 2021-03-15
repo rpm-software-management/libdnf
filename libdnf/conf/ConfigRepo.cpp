@@ -80,6 +80,7 @@ class ConfigRepo::Impl {
     OptionChild<OptionString> user_agent{mainConfig.user_agent()};
     OptionChild<OptionBool> countme{mainConfig.countme()};
     OptionEnum<std::string> failovermethod{"priority", {"priority", "roundrobin"}};
+    OptionChild<OptionBool> sslverifystatus{mainConfig.sslverifystatus()};
 };
 
 ConfigRepo::Impl::Impl(Config & owner, ConfigMain & mainConfig)
@@ -173,6 +174,7 @@ ConfigRepo::Impl::Impl(Config & owner, ConfigMain & mainConfig)
     owner.optBinds().add("enabled_metadata", enabled_metadata);
     owner.optBinds().add("user_agent", user_agent);
     owner.optBinds().add("countme", countme);
+    owner.optBinds().add("sslverifystatus", sslverifystatus);
 }
 
 ConfigRepo::ConfigRepo(ConfigMain & mainConfig) : pImpl(new Impl(*this, mainConfig)) {}
@@ -229,5 +231,6 @@ OptionString & ConfigRepo::enabled_metadata() { return pImpl->enabled_metadata; 
 OptionChild<OptionString> & ConfigRepo::user_agent() { return pImpl->user_agent; }
 OptionChild<OptionBool> & ConfigRepo::countme() { return pImpl->countme; }
 OptionEnum<std::string> & ConfigRepo::failovermethod() { return pImpl->failovermethod; }
+OptionChild<OptionBool> & ConfigRepo::sslverifystatus() { return pImpl->sslverifystatus; }
 
 }

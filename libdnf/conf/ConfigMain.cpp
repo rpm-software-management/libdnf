@@ -359,6 +359,7 @@ class ConfigMain::Impl {
     OptionBool deltarpm{true};
     OptionNumber<std::uint32_t> deltarpm_percentage{75};
     OptionBool skip_if_unavailable{false};
+    OptionBool sslverifystatus{false};
 };
 
 ConfigMain::Impl::Impl(Config & owner)
@@ -510,6 +511,7 @@ ConfigMain::Impl::Impl(Config & owner)
     owner.optBinds().add("deltarpm", deltarpm);
     owner.optBinds().add("deltarpm_percentage", deltarpm_percentage);
     owner.optBinds().add("skip_if_unavailable", skip_if_unavailable);
+    owner.optBinds().add("sslverifystatus", sslverifystatus);
 }
 
 ConfigMain::ConfigMain() { pImpl = std::unique_ptr<Impl>(new Impl(*this)); }
@@ -628,6 +630,7 @@ OptionString & ConfigMain::proxy_sslclientkey() { return pImpl->proxy_sslclientk
 OptionBool & ConfigMain::deltarpm() { return pImpl->deltarpm; }
 OptionNumber<std::uint32_t> & ConfigMain::deltarpm_percentage() { return pImpl->deltarpm_percentage; }
 OptionBool & ConfigMain::skip_if_unavailable() { return pImpl->skip_if_unavailable; }
+OptionBool & ConfigMain::sslverifystatus() { return pImpl->sslverifystatus; }
 
 static void DIRClose(DIR *d) { closedir(d); }
 
