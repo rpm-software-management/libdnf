@@ -68,7 +68,7 @@ START_TEST(test_split_nevra)
     g_free(arch);
 
     n = "easy-1.2.3-4.fc18.x86_64";
-    hy_split_nevra(n, &name, &epoch, &version, &release, &arch);
+    fail_if(hy_split_nevra(n, &name, &epoch, &version, &release, &arch));
     ck_assert_str_eq(name, "easy");
     fail_unless(epoch == 0);
     ck_assert_str_eq(version, "1.2.3");
