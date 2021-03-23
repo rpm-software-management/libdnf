@@ -350,35 +350,6 @@ filter_latest_sortcmp_byarch(const void *ap, const void *bp, void *dp)
 }
 
 static void
-add_latest_to_map(const Pool *pool, Map *m, Queue *samename,
-                  int start_block, int stop_block, int latest)
-{
-    Solvable *solv_element, *solv_previous_element;
-    int version_counter = 0;
-    solv_previous_element = pool->solvables + samename->elements[start_block];
-    Id id_previous_evr = solv_previous_element->evr;
-    for (int pos = start_block; pos < stop_block; ++pos) {
-        Id id_element = samename->elements[pos];
-        solv_element = pool->solvables + id_element;
-        Id id_current_evr = solv_element->evr;
-        if (id_previous_evr != id_current_evr) {
-            version_counter += 1;
-            id_previous_evr = id_current_evr;
-        }
-        if (latest > 0) {
-            if (!(version_counter < latest)) {
-                return;
-            }
-        } else {
-            if (version_counter < -latest) {
-                continue;
-            }
-        }
-        MAPSET(m, id_element);
-    }
-}
-
-static void
 add_duplicates_to_map(Pool *pool, Map *res, IdQueue & samename, int start_block, int stop_block)
 {
     Solvable *s_first, *s_second;
@@ -1044,62 +1015,6 @@ Query::Impl::filterAdvisory(const Filter & f, Map *m, int keyname)
                 ++low;
             }
         }
-    }
-}
-
-void
-Query::Impl::filterLatest(const Filter & f, Map *m)
-{
-    int keyname = f.getKeyname(); 
-    Pool *pool = dnf_sack_get_pool(sack);
-    auto resultPset = result.get();
-
-    for (auto match_in : f.getMatches()) {
-        int latest = match_in.num;
-        if (latest == 0)
-            continue;
-        Queue samename;
-
-        queue_init(&samename);
-        Id id = -1;
-        while (true) {
-            id = resultPset->next(id);
-            if (id == -1)
-                break;
-            queue_push(&samename, id);
-        }
-
-        if (keyname == HY_PKG_LATEST_PER_ARCH) {
-            solv_sort(samename.elements, samename.count, sizeof(Id),
-                      filter_latest_sortcmp_byarch, pool);
-        } else {
-            solv_sort(samename.elements, samename.count, sizeof(Id),
-                      filter_latest_sortcmp, pool);
-        }
-
-        Solvable *considered, *highest = 0;
-        int start_block = -1;
-        int i;
-        for (i = 0; i < samename.count; ++i) {
-            Id p = samename.elements[i];
-            considered = pool->solvables + p;
-            if (!highest || highest->name != considered->name ||
-                ((keyname == HY_PKG_LATEST_PER_ARCH) && highest->arch != considered->arch)) {
-                /* start of a new block */
-                if (start_block == -1) {
-                    highest = considered;
-                    start_block = i;
-                    continue;
-                }
-                add_latest_to_map(pool, m, &samename, start_block, i, latest);
-                highest = considered;
-                start_block = i;
-            }
-        }
-        if (start_block != -1) {
-            add_latest_to_map(pool, m, &samename, start_block, i, latest);
-        }
-        queue_free(&samename);
     }
 }
 
