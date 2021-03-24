@@ -18,7 +18,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#ifdef __APPLE__
+#include <stdint.h>
+#else
 #include <bits/wordsize.h>
+#endif
 
 #if __WORDSIZE == 32
 #include "config-32.h"

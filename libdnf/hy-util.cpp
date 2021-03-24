@@ -24,7 +24,23 @@
 #include <ctype.h>
 #include <sys/utsname.h>
 #include <sys/stat.h>
+
+#ifdef __APPLE__
+typedef int auxv_t;
+#ifndef AT_HWCAP2
+#define AT_HWCAP2 26
+#endif
+#ifndef AT_HWCAP
+#define AT_HWCAP 16
+#endif
+static unsigned long getauxval(unsigned long type)
+{
+  unsigned long ret = 0;
+  return ret;
+}
+#else
 #include <sys/auxv.h>
+#endif
 
 // hawkey
 #include "dnf-types.h"

@@ -22,7 +22,11 @@
 #include <errno.h>
 #include <dirent.h>
 #include <fcntl.h>
+#ifdef __APPLE__
+#include <limits.h>
+#else
 #include <linux/limits.h>
+#endif
 #include <pwd.h>
 #include <unistd.h>
 #include <stdio.h>
