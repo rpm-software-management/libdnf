@@ -249,6 +249,11 @@ gboolean         dnf_context_update                     (DnfContext     *context
                                                          GError         **error);
 gboolean         dnf_context_update_all                 (DnfContext     *context,
                                                          GError         **error);
+gboolean         dnf_context_distrosync                 (DnfContext     *context,
+                                                         const gchar    *name,
+                                                         GError         **error);
+gboolean         dnf_context_distrosync_all             (DnfContext     *context,
+                                                         GError         **error);
 gboolean         dnf_context_repo_enable                (DnfContext     *context,
                                                          const gchar    *repo_id,
                                                          GError         **error);
