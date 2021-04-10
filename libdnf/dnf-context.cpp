@@ -2540,6 +2540,79 @@ dnf_context_update_all (DnfContext  *context,
 } CATCH_TO_GERROR(FALSE)
 
 /**
+ * dnf_context_distrosync:
+ * @context: a #DnfContext instance.
+ * @name: A package or group name, e.g. "firefox" or "@gnome-desktop"
+ * @error: A #GError or %NULL
+ *
+ * Finds an installed and remote package and marks it to be synchronized with remote version.
+ *
+ * If multiple packages are available then the newest package is synchronized to.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.62.0
+ **/
+gboolean
+dnf_context_distrosync(DnfContext *context, const gchar *name, GError **error) try
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+
+    /* create sack and add repos */
+    if (priv->sack == NULL) {
+        dnf_state_reset(priv->state);
+        if (!dnf_context_setup_sack(context, priv->state, error))
+            return FALSE;
+    }
+
+    g_auto(HySubject) subject = hy_subject_create(name);
+    g_auto(HySelector) selector = hy_subject_get_best_selector(subject, priv->sack, NULL, FALSE,
+                                                               NULL);
+    g_autoptr(GPtrArray) selector_matches = hy_selector_matches(selector);
+    if (selector_matches->len == 0) {
+        g_set_error(error,
+                    DNF_ERROR,
+                    DNF_ERROR_PACKAGE_NOT_FOUND,
+                    "No package matches '%s'", name);
+        return FALSE;
+    }
+
+    if (hy_goal_distupgrade_selector(priv->goal, selector))
+        return FALSE;
+
+    return TRUE;
+} CATCH_TO_GERROR(FALSE)
+
+/**
+ * dnf_context_distrosync_all:
+ * @context: a #DnfContext instance.
+ * @error: A #GError or %NULL
+ *
+ * Distro-sync all packages.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.62.0
+ **/
+gboolean
+dnf_context_distrosync_all (DnfContext  *context,
+                        GError     **error) try
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+
+    /* create sack and add repos */
+    if (priv->sack == NULL) {
+        dnf_state_reset(priv->state);
+        if (!dnf_context_setup_sack(context, priv->state, error))
+            return FALSE;
+    }
+
+    /* distrosync whole solvables */
+    hy_goal_distupgrade_all (priv->goal);
+    return TRUE;
+} CATCH_TO_GERROR(FALSE)
+
+/**
  * dnf_context_repo_set_data:
  **/
 static gboolean
