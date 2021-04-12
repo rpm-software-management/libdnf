@@ -20,6 +20,40 @@
 ######################
 
 ====================
+0.61.1 Release Notes
+====================
+
+- Fix: Fully set ssl in newHandle function
+- [conf] Add options for working with certificates used with proxy
+- lock: Switch return-if-fail to assert to quiet gcc -fanalyzer
+- Modify module NSVCA parsing - context definition (RhBug:1926771)
+- libdnf.h: Remove overall extern "C"
+- [context] Fix: dnf_package_is_installonly (RhBug:1928056)
+- Fix problematic language
+- Add getApplicablePackages to advisory and isApplicable to advisorymodule
+- Keep isAdvisoryApplicable to preserve API
+- Run ModulePackageContainerTest tests in tmpdir, merge interdependent
+- [context] Support config file option "proxy_auth_method", defaults "any"
+
+- Security fixes:
+  - Hardening: add signature check with rpmcliVerifySignatures (RhBug:1932079)
+
+- New features:
+  - do not allow 1 as installonly_limit value (RhBug:1926261)
+  - Add a config option to check TLS certificate revocation status (using OCSP stapling), defaults to false (RhBug:1814383)
+
+- Bug fixes:
+  - Bugs fixed (RhBug:1916786)
+
+Bugs fixed in 0.61.1:
+
+* :rhbug:`1921063`
+* :rhbug:`1814383`
+* :rhbug:`1932079`
+* :rhbug:`1926261`
+* :rhbug:`1847035`
+
+====================
 0.60.0 Release Notes
 ====================
 
