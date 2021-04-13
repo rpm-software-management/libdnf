@@ -20,6 +20,15 @@
 ######################
 
 ====================
+0.62.0 Release Notes
+====================
+
+- Bump version to fix tag in upstream release
+
+Bugs fixed in 0.62.0:
+
+
+====================
 0.61.1 Release Notes
 ====================
 
