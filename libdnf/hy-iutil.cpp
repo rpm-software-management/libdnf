@@ -22,7 +22,7 @@
 #include <errno.h>
 #include <dirent.h>
 #include <fcntl.h>
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(__FreeBSD__)
 #include <limits.h>
 #else
 #include <linux/limits.h>
