@@ -852,7 +852,13 @@ dnf_repo_conf_from_gkeyfile(libdnf::ConfigRepo &config, const char *repoId, GKey
     // Reset to the initial state before reloading the configuration.
     dnf_repo_conf_reset(config);
 
-    g_auto(GStrv) keys = g_key_file_get_keys(gkeyFile, repoId, NULL, NULL);
+    g_autoptr(GError) error_local = NULL;
+    g_auto(GStrv) keys = g_key_file_get_keys(gkeyFile, repoId, NULL, &error_local);
+    if (keys == NULL) {
+        g_debug("Failed to load configuration for repo id \"%s\": %s", repoId, error_local->message);
+        return;
+    }
+
     for (auto it = keys; *it != NULL; ++it) {
         auto key = *it;
         g_autofree gchar *str = g_key_file_get_value(gkeyFile, repoId, key, NULL);
