@@ -293,8 +293,8 @@ gboolean         dnf_context_reset_all_modules          (DnfContext * context,
  * @module_specs: Module specs that should be enabled
  * @error: Error
  *
- * Enable mudules, recalculate module filtration, but do not commit modular changes.
- * To commit modular changes it requires to call dnf_context_run()
+ * Enable modules, recalculate module filtration, but do not commit modular changes.
+ * To commit modular changes, call dnf_context_run().
  * Returns FALSE when an error is set.
  *
  * Since: 0.55.0

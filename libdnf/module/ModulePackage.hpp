@@ -61,7 +61,7 @@ public:
     std::vector<std::string> getArtifacts() const;
     bool operator==(const ModulePackage &r) const;
     /**
-    * @brief Return profiles matched by name.
+    * @brief Return profiles matched by name (which is possibly a globby pattern).
     *
     * @return std::vector<ModuleProfile>
     */
