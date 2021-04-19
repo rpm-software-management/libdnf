@@ -3409,7 +3409,7 @@ dnf_context_module_enable(DnfContext * context, const char ** module_specs, GErr
                 } catch (const libdnf::ModulePackageContainer::EnableMultipleStreamsException & exception) {
                     messages.emplace_back(std::make_tuple(
                         libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_MODIFY_MULTIPLE_TIMES_MODULE_STATE,
-                        tfm::format(_("Problem during enablement of dependency tree for moduele '%1$s' stream '%2$s': %3$s"),
+                        tfm::format(_("Problem during enablement of dependency tree for module '%1$s' stream '%2$s': %3$s"),
                                      module_dict_iter.first, stream_dict_iter.first, exception.what()), pair.first));
                     messages.emplace_back(std::make_tuple(
                         libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC,
