@@ -442,6 +442,26 @@ ModulePackage::getProfiles(const std::string &name) const
     return result_profiles;
 }
 
+ModuleProfile
+ModulePackage::getDefaultProfile() const
+{
+    //TODO(amatej): replace with
+    //char ** profiles = modulemd_module_stream_v2_search_profiles((ModulemdModuleStreamV2 *) mdStream, profileNameCStr);
+    char ** profiles = modulemd_module_stream_v2_get_profile_names_as_strv((ModulemdModuleStreamV2 *) mdStream);
+    if (g_strv_length (profiles) == 1) {
+        return ModuleProfile(modulemd_module_stream_v2_get_profile((ModulemdModuleStreamV2 *) mdStream, profiles[0]));
+    }
+
+    for (char **iter = profiles; iter && *iter; iter++) {
+        auto profile = ModuleProfile(modulemd_module_stream_v2_get_profile((ModulemdModuleStreamV2 *) mdStream, *iter));
+        if (profile.isDefault()) {
+            return profile;
+        }
+    }
+
+    throw std::runtime_error("No default profile found for " + getFullIdentifier());
+}
+
 /**
  * @brief Return list of ModuleProfiles.
  *
