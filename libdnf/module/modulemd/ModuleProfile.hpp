@@ -40,6 +40,7 @@ public:
     std::string getName() const;
     std::string getDescription() const;
     std::vector<std::string> getContent() const;
+    bool isDefault() const;
 
 private:
     friend class ModulePackage;
