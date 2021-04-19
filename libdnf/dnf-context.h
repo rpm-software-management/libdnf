@@ -302,6 +302,23 @@ gboolean         dnf_context_reset_all_modules          (DnfContext * context,
 gboolean         dnf_context_module_enable              (DnfContext * context,
                                                          const char ** module_specs,
                                                          GError ** error);
+
+/**
+ * dnf_context_module_install:
+ * @context: DnfContext
+ * @module_specs: Module specs that should be installed
+ * @error: Error
+ *
+ * Enable modules and mark for installation but do not commit modular changes.
+ * To commit modular changes, call dnf_context_run().
+ * Returns FALSE when an error is set.
+ *
+ * Since: 0.63.0
+ **/
+gboolean         dnf_context_module_install              (DnfContext * context,
+                                                          const char ** module_specs,
+                                                          GError ** error);
+
 /**
  * dnf_context_module_disable:
  * @context: DnfContext

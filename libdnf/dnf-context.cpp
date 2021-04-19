@@ -3427,6 +3427,117 @@ dnf_context_module_enable(DnfContext * context, const char ** module_specs, GErr
     return TRUE;
 } CATCH_TO_GERROR(FALSE)
 
+gboolean
+dnf_context_module_install(DnfContext * context, const char ** module_specs, GError ** error) try
+{
+    DnfContextPrivate *priv = GET_PRIVATE (context);
+
+    /* create sack and add sources */
+    if (priv->sack == nullptr) {
+        dnf_state_reset (priv->state);
+        if (!dnf_context_setup_sack(context, priv->state, error)) {
+            return FALSE;
+        }
+    }
+
+    DnfSack * sack = priv->sack;
+    assert(sack);
+    assert(module_specs);
+
+    auto container = dnf_sack_get_module_container(sack);
+    if (!container) {
+        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FAILED, _("No modular data available"));
+        return FALSE;
+    }
+    std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, std::string, std::string>> messages;
+
+    std::vector<std::string> nevras_to_install;
+    for (const char ** specs = module_specs; *specs != NULL; ++specs) {
+        auto resolved_spec = resolve_module_spec(*specs, *container);
+        if (!resolved_spec.first) {
+            messages.emplace_back(
+                std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC,
+                                tfm::format(_("Unable to resolve argument '%s'"), *specs), *specs));
+            continue;
+        }
+        auto module_dict = create_module_dict(resolved_spec.second);
+        auto message = modify_module_dict_and_enable_stream(module_dict, *container, true);
+        if (!message.empty()) {
+            messages.insert(
+                messages.end(),std::make_move_iterator(message.begin()), std::make_move_iterator(message.end()));
+            messages.emplace_back(
+                std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC,
+                                tfm::format(_("Unable to resolve argument '%s'"), *specs), *specs));
+        } else {
+            for (auto module_dict_iter : module_dict) {
+                auto & stream_dict = module_dict_iter.second;
+                // this was checked in modify_module_dict_and_enable_stream()
+                assert(stream_dict.size() == 1);
+                for (const auto &iter : stream_dict) {
+                    for (const auto &modpkg : iter.second) {
+                        std::vector<libdnf::ModuleProfile> profiles;
+                        if (resolved_spec.first->getProfile() != "") {
+                            profiles = modpkg->getProfiles(resolved_spec.first->getProfile());
+                        } else {
+                            profiles.push_back(modpkg->getDefaultProfile());
+                        }
+                        std::set<std::string> pkgnames;
+                        for (const auto &profile : profiles) {
+                            container->install(modpkg, profile.getName());
+                            for (const auto &pkgname : profile.getContent()) {
+                                pkgnames.insert(pkgname);
+                            }
+                        }
+                        for (const auto &nevra : modpkg->getArtifacts()) {
+                            int epoch;
+                            char *name, *version, *release, *arch;
+                            if (hy_split_nevra(nevra.c_str(), &name, &epoch, &version, &release, &arch)) {
+                                // this really should never happen; unless the modular repodata is corrupted
+                                g_autofree char *errmsg = g_strdup_printf (_("Failed to parse module artifact NEVRA '%s'"), nevra.c_str());
+                                g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FAILED, errmsg);
+                                return FALSE;
+                            }
+                            // ignore source packages
+                            if (g_str_equal (arch, "src") || g_str_equal (arch, "nosrc"))
+                                continue;
+                            if (pkgnames.count(name) != 0) {
+                                nevras_to_install.push_back(std::string(nevra));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    std::vector<const char *> hotfixRepos;
+    // don't filter RPMs from repos with the 'module_hotfixes' flag set
+    for (unsigned int i = 0; i < priv->repos->len; i++) {
+        auto repo = static_cast<DnfRepo *>(g_ptr_array_index(priv->repos, i));
+        if (dnf_repo_get_module_hotfixes(repo)) {
+            hotfixRepos.push_back(dnf_repo_get_id(repo));
+        }
+    }
+    hotfixRepos.push_back(nullptr);
+    auto solver_error = recompute_modular_filtering(container, sack, hotfixRepos);
+    if (!solver_error.empty()) {
+        messages.insert(
+            messages.end(),std::make_move_iterator(solver_error.begin()), std::make_move_iterator(solver_error.end()));
+    }
+
+    bool return_error = report_problems(messages);
+    if (return_error) {
+        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FAILED, _("Problems appeared for module install request"));
+        return FALSE;
+    } else {
+        for (const auto &nevra : nevras_to_install) {
+            if (!dnf_context_install (context, nevra.c_str(), error))
+              return FALSE;
+        }
+    }
+    return TRUE;
+} CATCH_TO_GERROR(FALSE)
+
 static gboolean
 context_modules_reset_or_disable(DnfContext * context, const char ** module_specs, GError ** error, bool reset)
 {
