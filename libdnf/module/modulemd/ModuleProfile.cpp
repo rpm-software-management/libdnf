@@ -64,6 +64,14 @@ std::string ModuleProfile::getName() const
     return name ? name : "";
 }
 
+bool ModuleProfile::isDefault() const
+{
+    if (!profile) {
+        return {};
+    }
+    return modulemd_profile_is_default(profile);
+}
+
 std::string ModuleProfile::getDescription() const
 {
     if (!profile) {
