@@ -67,6 +67,7 @@ public:
     */
     std::vector<ModuleProfile> getProfiles(const std::string &name) const;
     std::vector<ModuleProfile> getProfiles() const;
+    ModuleProfile getDefaultProfile() const;
 
     std::vector<ModuleDependencies> getModuleDependencies() const;
 
