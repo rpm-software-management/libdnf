@@ -285,7 +285,7 @@ strlist_to_pylist(const char **slist)
         return NULL;
 
     for (const char **iter = slist; *iter; ++iter) {
-        UniquePtrPyObject str(PyUnicode_FromString(*iter));
+        UniquePtrPyObject str(PyUnicode_DecodeUTF8(*iter, strlen(*iter), "surrogateescape"));
         if (!str)
             return NULL;
         int rc = PyList_Append(list.get(), str.get());
