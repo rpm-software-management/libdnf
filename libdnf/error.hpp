@@ -13,7 +13,7 @@ namespace libdnf {
  */
 class Error : public std::runtime_error {
 public:
-    Error(const std::string & what) : runtime_error(what) {}
+    using runtime_error::runtime_error;
 };
 
 /**
@@ -33,7 +33,7 @@ public:
  */
 class Exception : public std::runtime_error {
 public:
-    Exception(const std::string & what) : runtime_error(what) {}
+    using runtime_error::runtime_error;
 };
 
 } // namespace libdnf
