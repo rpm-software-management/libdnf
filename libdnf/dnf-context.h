@@ -315,7 +315,7 @@ gboolean         dnf_context_module_enable              (DnfContext * context,
  *
  * Since: 0.63.0
  **/
-gboolean         dnf_context_module_install              (DnfContext * context,
+gboolean           dnf_context_module_install            (DnfContext * context,
                                                           const char ** module_specs,
                                                           GError ** error);
 

@@ -72,6 +72,7 @@
 #include "dnf-utils.h"
 #include "dnf-sack.h"
 #include "hy-query.h"
+#include "hy-query-private.hpp"
 #include "hy-subject.h"
 #include "hy-selector.h"
 #include "dnf-repo.hpp"
@@ -3448,7 +3449,8 @@ dnf_context_module_install(DnfContext * context, const char ** module_specs, GEr
     }
     std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, std::string, std::string>> messages;
 
-    std::vector<std::string> nevras_to_install;
+    // vec<(module spec, Nsvcap, module dict)>
+    std::vector<std::tuple<const char *, std::unique_ptr<libdnf::Nsvcap>, std::map<std::string, std::map<std::string, std::vector<libdnf::ModulePackage *>>>>> all_resolved_module_dicts;
     for (const char ** specs = module_specs; *specs != NULL; ++specs) {
         auto resolved_spec = resolve_module_spec(*specs, *container);
         if (!resolved_spec.first) {
@@ -3466,44 +3468,7 @@ dnf_context_module_install(DnfContext * context, const char ** module_specs, GEr
                 std::make_tuple(libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC,
                                 tfm::format(_("Unable to resolve argument '%s'"), *specs), *specs));
         } else {
-            for (auto module_dict_iter : module_dict) {
-                auto & stream_dict = module_dict_iter.second;
-                // this was checked in modify_module_dict_and_enable_stream()
-                assert(stream_dict.size() == 1);
-                for (const auto &iter : stream_dict) {
-                    for (const auto &modpkg : iter.second) {
-                        std::vector<libdnf::ModuleProfile> profiles;
-                        if (resolved_spec.first->getProfile() != "") {
-                            profiles = modpkg->getProfiles(resolved_spec.first->getProfile());
-                        } else {
-                            profiles.push_back(modpkg->getDefaultProfile());
-                        }
-                        std::set<std::string> pkgnames;
-                        for (const auto &profile : profiles) {
-                            container->install(modpkg, profile.getName());
-                            for (const auto &pkgname : profile.getContent()) {
-                                pkgnames.insert(pkgname);
-                            }
-                        }
-                        for (const auto &nevra : modpkg->getArtifacts()) {
-                            int epoch;
-                            char *name, *version, *release, *arch;
-                            if (hy_split_nevra(nevra.c_str(), &name, &epoch, &version, &release, &arch)) {
-                                // this really should never happen; unless the modular repodata is corrupted
-                                g_autofree char *errmsg = g_strdup_printf (_("Failed to parse module artifact NEVRA '%s'"), nevra.c_str());
-                                g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FAILED, errmsg);
-                                return FALSE;
-                            }
-                            // ignore source packages
-                            if (g_str_equal (arch, "src") || g_str_equal (arch, "nosrc"))
-                                continue;
-                            if (pkgnames.count(name) != 0) {
-                                nevras_to_install.push_back(std::string(nevra));
-                            }
-                        }
-                    }
-                }
-            }
+            all_resolved_module_dicts.emplace_back(make_tuple(*specs, std::move(resolved_spec.first), std::move(module_dict)));
         }
     }
 
@@ -3522,16 +3487,115 @@ dnf_context_module_install(DnfContext * context, const char ** module_specs, GEr
             messages.end(),std::make_move_iterator(solver_error.begin()), std::make_move_iterator(solver_error.end()));
     }
 
-    bool return_error = report_problems(messages);
-    if (return_error) {
-        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FAILED, _("Problems appeared for module install request"));
-        return FALSE;
-    } else {
-        for (const auto &nevra : nevras_to_install) {
-            if (!dnf_context_install (context, nevra.c_str(), error))
-              return FALSE;
+    // this code is based on dnf's ModuleBase.install()
+
+    for (auto it = std::make_move_iterator(all_resolved_module_dicts.begin());
+              it != std::make_move_iterator(all_resolved_module_dicts.end()); it++) {
+        auto module_spec = std::get<0>(*it);
+        auto nsvcap_obj = std::get<1>(*it);
+        auto module_dict = std::get<2>(*it);
+        for (auto module_dict_iter : module_dict) {
+            // this was checked in modify_module_dict_and_enable_stream()
+            assert(module_dict_iter.second.size() == 1);
+
+            for (auto & stream_dict_iter : module_dict_iter.second) {
+                try {
+                    container->enableDependencyTree(stream_dict_iter.second);
+
+                    std::vector<libdnf::ModulePackage*> active_modules;
+                    for (auto &modpkg : stream_dict_iter.second) {
+                        if (container->isModuleActive(modpkg)) {
+                            active_modules.push_back(modpkg);
+                        }
+                    }
+
+                    if (active_modules.empty()) {
+                        throw std::runtime_error(tfm::format(_("No active module packages found for module spec '%s'"), module_spec));
+                    }
+
+                    auto latest = container->getLatestModule(active_modules, true);
+                    if (latest->getRepoID() == LIBDNF_MODULE_FAIL_SAFE_REPO_NAME) {
+                        throw std::runtime_error(tfm::format(_("Cannot install module '%s' from fail-safe repository"), latest->getFullIdentifier().c_str()));
+                    }
+
+                    std::vector<libdnf::ModuleProfile> profiles;
+                    if (nsvcap_obj->getProfile() != "") {
+                        profiles = latest->getProfiles(nsvcap_obj->getProfile());
+                        if (profiles.empty()) {
+                            throw std::runtime_error(tfm::format(_("No profile found matching '%s'"), nsvcap_obj->getProfile().c_str()));
+                        }
+                    } else {
+                        profiles.push_back(latest->getDefaultProfile());
+                    }
+
+                    g_autoptr(GPtrArray) pkgnames = g_ptr_array_new_with_free_func (g_free);
+                    auto nsvca = latest->getFullIdentifier();
+                    for (const auto &profile : profiles) {
+                        container->install(latest, profile.getName());
+                        for (const auto &pkgname : profile.getContent()) {
+                            g_ptr_array_add(pkgnames, g_strdup(pkgname.c_str()));
+                        }
+                    }
+                    g_ptr_array_add(pkgnames, NULL);
+
+                    g_autoptr(GPtrArray) artifacts = g_ptr_array_new_with_free_func (g_free);
+                    for (auto modpkg : active_modules) {
+                        for (const auto &nevra : modpkg->getArtifacts()) {
+                            g_ptr_array_add(artifacts, g_strdup (nevra.c_str()));
+                        }
+                    }
+                    g_ptr_array_add (artifacts, NULL);
+
+                    hy_autoquery HyQuery base_nosrc_query = hy_query_create(priv->sack);
+                    const char *src_arches[] = {"src", "nosrc", NULL};
+                    hy_query_filter_in(base_nosrc_query, HY_PKG_ARCH, HY_NEQ, src_arches);
+
+                    hy_autoquery HyQuery hotfix_query = hy_query_clone(base_nosrc_query);
+                    hy_query_filter_in(hotfix_query, HY_PKG_NAME, HY_EQ, (const char**)pkgnames->pdata);
+                    hy_query_filter_in(hotfix_query, HY_PKG_REPONAME, HY_EQ, (const char**)hotfixRepos.data());
+
+                    hy_autoquery HyQuery install_base_query = hy_query_clone (base_nosrc_query);
+                    hy_query_filter_in(install_base_query, HY_PKG_NEVRA_STRICT, HY_EQ, (const char**)artifacts->pdata);
+                    hy_query_union(install_base_query, hotfix_query);
+
+                    for (char **it = (char**)pkgnames->pdata; it && *it; it++) {
+                        const char *pkgname = *it;
+                        hy_autoquery HyQuery query = hy_query_clone(install_base_query);
+                        hy_query_filter(query, HY_PKG_NAME, HY_EQ, pkgname);
+                        if (hy_query_is_empty(query)) {
+                            // package can also be non-modular or part of another stream
+                            hy_query_free(query);
+                            query = hy_query_clone(base_nosrc_query);
+                            hy_query_filter(query, HY_PKG_NAME, HY_EQ, pkgname);
+                            if (hy_query_is_empty(query)) {
+                                throw std::runtime_error(tfm::format(_("No match for package '%s' for module spec %s"), pkgname, module_spec));
+                            }
+                        }
+                        g_autoptr(GError) local_error = NULL;
+                        g_auto(HySelector) selector = hy_query_to_selector(query);
+                        if (!hy_goal_install_selector(priv->goal, selector, &local_error))
+                            throw std::runtime_error(local_error->message);
+                    }
+                } catch (const std::exception & ex) {
+                    messages.emplace_back(std::make_tuple(
+                        libdnf::ModulePackageContainer::ModuleErrorType::ERROR,
+                        tfm::format(_("Problem during install for module '%1$s' stream '%2$s': %3$s"),
+                                     module_dict_iter.first, stream_dict_iter.first, ex.what()), module_spec));
+                }
+            }
         }
     }
+
+    auto errors = report_problems(messages);
+    if (!errors.empty()) {
+        std::string final_errmsg (_("Problems appeared for module install request:"));
+        for (const auto &errmsg : errors) {
+            final_errmsg += "\n  - " + errmsg;
+        }
+        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FAILED, final_errmsg.c_str());
+        return FALSE;
+    }
+
     return TRUE;
 } CATCH_TO_GERROR(FALSE)
 
@@ -3593,7 +3657,6 @@ context_modules_reset_or_disable(DnfContext * context, const char ** module_spec
     }
     return TRUE;
 }
-
 
 gboolean
 dnf_context_module_disable(DnfContext * context, const char ** module_specs, GError ** error) try
