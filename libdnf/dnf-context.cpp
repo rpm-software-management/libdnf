@@ -3237,14 +3237,14 @@ static std::pair<std::unique_ptr<libdnf::Nsvcap>, std::vector< libdnf::ModulePac
     return {};
 }
 
-static bool
+static std::vector<std::string>
 report_problems(const std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, std::string, std::string>> & messages)
 {
     libdnf::ModulePackageContainer::ModuleErrorType typeMessage;
     std::string report;
     std::string argument;
     auto logger(libdnf::Log::getLogger());
-    bool return_error = false;
+    std::vector<std::string> errors;
     for (auto & message : messages) {
         std::tie(typeMessage, report, argument) = message;
         switch (typeMessage) {
@@ -3261,28 +3261,17 @@ report_problems(const std::vector<std::tuple<libdnf::ModulePackageContainer::Mod
                                             report.c_str()));
                 break;
             case libdnf::ModulePackageContainer::ModuleErrorType::ERROR:
-                logger->error(tfm::format(_("Modular dependency problem: %s"), report.c_str()));
-                return_error = true;
+                errors.push_back(tfm::format(_("Modular dependency problem: %s"), report.c_str()));
                 break;
             case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULES:
-                logger->error(report);
-                return_error = true;
-                break;
             case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULE_SPEC:
-                logger->error(report);
-                return_error = true;
-                break;
             case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_ENABLE_MULTIPLE_STREAMS:
-                logger->error(report);
-                return_error = true;
-                break;
             case libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_MODIFY_MULTIPLE_TIMES_MODULE_STATE:
-                logger->error(report);
-                return_error = true;
+                errors.push_back(report);
                 break;
         }
     }
-    return return_error;
+    return errors;
 }
 
 static std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, std::string, std::string>>
@@ -3422,10 +3411,14 @@ dnf_context_module_enable(DnfContext * context, const char ** module_specs, GErr
             }
         }
     }
-    bool return_error = report_problems(messages);
 
-    if (return_error) {
-        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FAILED, _("Problems appeared for module enable request"));
+    auto errors = report_problems(messages);
+    if (!errors.empty()) {
+        std::string final_errmsg (_("Problems appeared for module enable request:"));
+        for (const auto &errmsg : errors) {
+            final_errmsg += "\n  - " + errmsg;
+        }
+        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FAILED, final_errmsg.c_str());
         return FALSE;
     }
     return TRUE;
@@ -3587,14 +3580,15 @@ context_modules_reset_or_disable(DnfContext * context, const char ** module_spec
         messages.insert(
             messages.end(),std::make_move_iterator(solver_error.begin()), std::make_move_iterator(solver_error.end()));
     }
-    bool return_error = report_problems(messages);
 
-    if (return_error) {
-        if (reset) {
-            g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FAILED, _("Problems appeared for module reset request"));
-        } else {
-            g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FAILED, _("Problems appeared for module disable request"));
+    auto errors = report_problems(messages);
+    if (!errors.empty()) {
+        std::string final_errmsg (reset ? _("Problems appeared for module reset request:")
+                                        : _("Problems appeared for module disable request:"));
+        for (const auto &errmsg : errors) {
+            final_errmsg += "\n  - " + errmsg;
         }
+        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FAILED, final_errmsg.c_str());
         return FALSE;
     }
     return TRUE;
