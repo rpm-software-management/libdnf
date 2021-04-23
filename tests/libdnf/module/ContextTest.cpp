@@ -24,6 +24,17 @@ void ContextTest::tearDown()
     g_object_unref(context);
 }
 
+// XXX: look into sharing assert_list_names in the future
+static gboolean pkglist_has_nevra(GPtrArray *pkglist, const char *nevra)
+{
+    for (guint i = 0; i < pkglist->len; i++) {
+        DnfPackage *pkg = static_cast<DnfPackage *>(pkglist->pdata[i]);
+        if (g_str_equal(dnf_package_get_nevra(pkg), nevra))
+            return TRUE;
+    }
+    return FALSE;
+}
+
 void ContextTest::testLoadModules()
 {
     GError *error = nullptr;
@@ -120,6 +131,45 @@ void ContextTest::testLoadModules()
         CPPUNIT_ASSERT(dnf_packageset_count(packageSet) == 0);
         query.clear();
     }
+
+    // try to install a nonexistent module
+    const char *module_specs[] = {"nonexistent", NULL};
+    g_assert(!dnf_context_module_install(context, module_specs, &error));
+    g_assert(error);
+    g_assert(strstr(error->message, "Unable to resolve argument 'nonexistent'"));
+    g_clear_pointer(&error, g_error_free);
+
+    // wrong stream
+    module_specs[0] = "httpd:nonexistent";
+    g_assert(!dnf_context_module_install(context, module_specs, &error));
+    g_assert(error);
+    g_assert(strstr(error->message, "Unable to resolve argument 'httpd:nonexistent'"));
+    g_clear_pointer(&error, g_error_free);
+
+    // try to install without default profile
+    module_specs[0] = "httpd";
+    g_assert(!dnf_context_module_install(context, module_specs, &error));
+    g_assert(error);
+    g_assert(strstr(error->message, "No default profile found"));
+    g_clear_pointer(&error, g_error_free);
+
+    // try to install non-existent profile
+    module_specs[0] = "httpd:2.4/nonexistent";
+    g_assert(!dnf_context_module_install(context, module_specs, &error));
+    g_assert(error);
+    g_assert(strstr(error->message, "No profile found matching 'nonexistent'"));
+    g_clear_pointer(&error, g_error_free);
+
+    module_specs[0] = "httpd:2.4/default";
+    g_assert(dnf_context_module_install(context, module_specs, &error));
+    g_assert_no_error(error);
+    HyGoal goal = dnf_context_get_goal(context);
+    g_assert_cmpint(hy_goal_run_flags(goal, DNF_NONE), ==, 0);
+    g_autoptr(GPtrArray) pkgs = hy_goal_list_installs(goal, &error);
+    g_assert_no_error(error);
+    g_assert(pkgs);
+    g_assert(pkglist_has_nevra(pkgs, "httpd-2.4.25-8.x86_64"));
+    g_assert(pkglist_has_nevra(pkgs, "libnghttp2-1.21.1-1.x86_64"));
 }
 
 void ContextTest::sackHas(DnfSack * sack, libdnf::ModulePackage * pkg) const
