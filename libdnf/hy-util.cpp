@@ -160,13 +160,19 @@ hy_split_nevra(const char *nevra, char **name, int *epoch,
         return DNF_ERROR_INTERNAL_ERROR;
     libdnf::Nevra nevraObj;
     if (nevraObj.parse(nevra, HY_FORM_NEVRA)) {
-        *arch = g_strdup(nevraObj.getArch().c_str());
-        *name = g_strdup(nevraObj.getName().c_str());
-        *release = g_strdup(nevraObj.getRelease().c_str());
-        *version = g_strdup(nevraObj.getVersion().c_str());
-        *epoch = nevraObj.getEpoch();
-        if (*epoch == -1)
-            *epoch = 0;
+        if (arch)
+            *arch = g_strdup(nevraObj.getArch().c_str());
+        if (name)
+            *name = g_strdup(nevraObj.getName().c_str());
+        if (release)
+            *release = g_strdup(nevraObj.getRelease().c_str());
+        if (version)
+            *version = g_strdup(nevraObj.getVersion().c_str());
+        if (epoch) {
+            *epoch = nevraObj.getEpoch();
+            if (*epoch == -1)
+                *epoch = 0;
+        }
         return 0;
     }
     return DNF_ERROR_INTERNAL_ERROR;
