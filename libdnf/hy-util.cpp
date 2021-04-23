@@ -50,6 +50,8 @@ static unsigned long getauxval(unsigned long type)
 #include "hy-subject.h"
 #include "hy-util-private.hpp"
 
+#include "libdnf/nsvcap.hpp"
+
 #include <memory>
 
 /* ARM specific HWCAP defines may be missing on non-ARM devices */
@@ -174,6 +176,33 @@ hy_split_nevra(const char *nevra, char **name, int *epoch,
                 *epoch = 0;
         }
         return 0;
+    }
+    return DNF_ERROR_INTERNAL_ERROR;
+}
+
+int
+hy_parse_module_spec(const char *spec, char **name, char **stream,
+                     char **version, char **context, char **arch, char **profile)
+{
+    if (strlen(spec) <= 0)
+        return DNF_ERROR_INTERNAL_ERROR;
+    std::unique_ptr<libdnf::Nsvcap> nsvcapObj(new libdnf::Nsvcap);
+    for (std::size_t i = 0; HY_MODULE_FORMS_MOST_SPEC[i] != _HY_MODULE_FORM_STOP_; ++i) {
+        if (nsvcapObj->parse(spec, HY_MODULE_FORMS_MOST_SPEC[i])) {
+            if (name)
+                *name = g_strdup(nsvcapObj->getName().c_str());
+            if (stream)
+                *stream = g_strdup(nsvcapObj->getStream().c_str());
+            if (version)
+                *version = g_strdup(nsvcapObj->getVersion().c_str());
+            if (context)
+                *context = g_strdup(nsvcapObj->getContext().c_str());
+            if (arch)
+                *arch = g_strdup(nsvcapObj->getArch().c_str());
+            if (profile)
+                *profile = g_strdup(nsvcapObj->getProfile().c_str());
+            return 0;
+        }
     }
     return DNF_ERROR_INTERNAL_ERROR;
 }

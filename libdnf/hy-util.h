@@ -36,6 +36,8 @@ int hy_detect_arch(char **arch);
 
 int hy_split_nevra(const char *nevra, char **name, int *epoch,
                    char **version, char **release, char **arch);
+int hy_parse_module_spec(const char *spec, char **name, char **stream,
+                         char **version, char **context, char **arch, char **profile);
 
 G_END_DECLS
 
