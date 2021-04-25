@@ -702,33 +702,23 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackage *> & m
     std::vector<std::vector<std::string>> problems;
     auto problemType = ModulePackageContainer::ModuleErrorType::NO_ERROR;
     if (ret) {
-        // Goal run ignor problem in defaults
         problems = goal.describeAllProblemRules(false);
         ret = goal.run(DNF_FORCE_BEST);
         if (ret) {
-            // Goal run ignor problem in defaults and in latest
-            ret = goal.run(DNF_NONE);
+            // Conflicting modules has to be removed otherwice it could result than one of them will
+            // be active
+            auto conflictingPkgs = goal.listConflictPkgs(DNF_PACKAGE_STATE_AVAILABLE);
+            dnf_sack_add_excludes(moduleSack, conflictingPkgs.get());
+            ret = goalWeak.run(DNF_NONE);
             if (ret) {
-                // Conflicting modules has to be removed otherwice it could result than one of them will
-                // be active
-                auto conflictingPkgs = goal.listConflictPkgs(DNF_PACKAGE_STATE_AVAILABLE);
-                dnf_sack_add_excludes(moduleSack, conflictingPkgs.get());
-                ret = goalWeak.run(DNF_NONE);
-                if (ret) {
-                    auto logger(Log::getLogger());
-                    logger->critical("Modularity filtering totally broken\n");
-                    problemType = ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULES;
-                    activatedModules.reset();
-                } else {
-                    problemType = ModulePackageContainer::ModuleErrorType::ERROR;
-                    Query query(moduleSack, Query::ExcludeFlags::IGNORE_EXCLUDES);
-                    goal2name_query(goalWeak, query);
-                    activatedModules.reset(new PackageSet(*query.runSet()));
-                }
+                auto logger(Log::getLogger());
+                logger->critical("Modularity filtering totally broken\n");
+                problemType = ModulePackageContainer::ModuleErrorType::CANNOT_RESOLVE_MODULES;
+                activatedModules.reset();
             } else {
-                problemType = ModulePackageContainer::ModuleErrorType::ERROR_IN_DEFAULTS;
+                problemType = ModulePackageContainer::ModuleErrorType::ERROR;
                 Query query(moduleSack, Query::ExcludeFlags::IGNORE_EXCLUDES);
-                goal2name_query(goal, query);
+                goal2name_query(goalWeak, query);
                 activatedModules.reset(new PackageSet(*query.runSet()));
             }
         } else {
