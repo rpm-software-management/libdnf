@@ -1014,6 +1014,21 @@ modulePackageLatestPerRepoSorter(DnfSack * sack, const ModulePackage * first, co
     return first->getVersionNum() > second->getVersionNum();
 }
 
+static bool
+modulePackageLatestSorter(DnfSack * sack, const ModulePackage * first, const ModulePackage * second)
+{
+    int cmp = g_strcmp0(first->getNameCStr(), second->getNameCStr());
+    if (cmp != 0)
+        return cmp < 0;
+    cmp = dnf_sack_evr_cmp(sack, first->getStreamCStr(), second->getStreamCStr());
+    if (cmp != 0)
+        return cmp < 0;
+    cmp = g_strcmp0(first->getArchCStr(), second->getArchCStr());
+    if (cmp != 0)
+        return cmp < 0;
+    return first->getVersionNum() > second->getVersionNum();
+}
+
 std::vector<std::vector<std::vector<ModulePackage *>>>
 ModulePackageContainer::getLatestModulesPerRepo(ModuleState moduleFilter,
     std::vector<ModulePackage *> modulePackages)
