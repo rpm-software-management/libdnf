@@ -2297,6 +2297,7 @@ void readModuleMetadataFromRepo(DnfSack * sack, libdnf::ModulePackageContainer *
     modulePackages->add(sack);
     modulePackages->loadFailSafeData();
     if (!modulePackages->empty()) {
+        modulePackages->createConflictsBetweenStreams();
         // TODO remove hard-coded path
         try {
             std::vector<std::string> paths{"/etc/os-release", "/usr/lib/os-release"};
