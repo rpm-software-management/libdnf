@@ -197,13 +197,6 @@ private:
     class ModulePersistor;
     std::unique_ptr<ModulePersistor> persistor;
     std::map<Id, std::unique_ptr<ModulePackage>> modules;
-    /// Internal sack with module solvables
-    /// resolveContext = <moduleContext> if moduleMdVersion > 2, else generated from requires
-    /// solvable.name = <moduleName>:<moduleStream>:<resolveContext>
-    /// solvable.evr = <moduleVersion>
-    /// solvable.arch = <moduleArch>
-    /// solvable.summary = <moduleContext>
-    /// solvable.description = <moduleName>:<moduleStream>
     DnfSack * moduleSack;
     std::unique_ptr<PackageSet> activatedModules;
     std::string installRoot;
@@ -764,10 +757,8 @@ ModulePackageContainer::query(std::string name, std::string stream, std::string 
     query.available();
     std::ostringstream ss;
     ss << stringFormater(name) << ":" << stringFormater(stream);
-    query.addFilter(HY_PKG_DESCRIPTION, HY_GLOB, ss.str().c_str());
-    if (!context.empty()) {
-        query.addFilter(HY_PKG_SUMMARY, HY_GLOB, context.c_str());
-    }
+    ss << ":" << stringFormater(context);
+    query.addFilter(HY_PKG_NAME, HY_GLOB, ss.str().c_str());
     if (!arch.empty()) {
         query.addFilter(HY_PKG_ARCH, HY_GLOB, arch.c_str());
     }

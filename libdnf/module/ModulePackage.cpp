@@ -52,7 +52,7 @@ namespace libdnf {
  *   Provides: module($name:$stream)
  */
 static void setSovable(Pool * pool, Solvable * solvable, const std::string & name,
-    const std::string & stream, const std::string & version, const std::string & context, const char * arch, const std::string & original_context)
+    const std::string & stream, const std::string & version, const std::string & context, const char * arch)
 {
     std::ostringstream ss;
     //   Name: $name:$stream:$context
@@ -61,14 +61,6 @@ static void setSovable(Pool * pool, Solvable * solvable, const std::string & nam
     solvable_set_str(solvable, SOLVABLE_EVR, version.c_str());
     // TODO Test can be remove when modules will be always with arch
     solvable_set_str(solvable, SOLVABLE_ARCH, arch ? arch : "noarch");
-
-    // store original context in summary
-    solvable_set_str(solvable, SOLVABLE_SUMMARY, original_context.c_str());
-
-    // store original name:stream in description
-    ss.str(std::string());
-    ss << name << ":" << stream;
-    solvable_set_str(solvable, SOLVABLE_DESCRIPTION, ss.str().c_str());
 
     // create Provide: module($name)
     ss.str(std::string());
@@ -105,9 +97,8 @@ ModulePackage::ModulePackage(DnfSack * moduleSack, LibsolvRepo * repo,
     Pool * pool = dnf_sack_get_pool(moduleSack);
     id = repo_add_solvable(repo);
     Solvable *solvable = pool_id2solvable(pool, id);
-    std::string original_context = getContext();
-    setSovable(pool, solvable, getName(), getStream(), getVersion(), context.empty() ? original_context : context,
-               getArchCStr(), original_context);
+
+    setSovable(pool, solvable, getName(), getStream(), getVersion(), context.empty() ? getContext() : context, getArchCStr());
     createDependencies(solvable);
     HyRepo hyRepo = static_cast<HyRepo>(repo->appdata);
     libdnf::repoGetImpl(hyRepo)->needs_internalizing = 1;
@@ -649,7 +640,7 @@ ModulePackage::createPlatformSolvable(DnfSack * sack, DnfSack * moduleSack,
     repoImpl->needs_internalizing = 1;
     Id id = repo_add_solvable(repo);
     Solvable *solvable = pool_id2solvable(pool, id);
-    setSovable(pool, solvable, name, stream, version, context, "noarch", context);
+    setSovable(pool, solvable, name, stream, version, context, "noarch");
     repoImpl->needs_internalizing = 1;
     dnf_sack_set_provides_not_ready(moduleSack);
     dnf_sack_set_considered_to_update(moduleSack);
