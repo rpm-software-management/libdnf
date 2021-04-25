@@ -69,23 +69,6 @@ void goal2name_query(libdnf::Goal & goal, libdnf::Query & query)
     query.addFilter(HY_PKG_NAME, HY_EQ, module_names.data());
 }
 
-/**
- * @brief In python => ";".join(list.sort())
- */
-std::string concentrateVectorString(std::vector<std::string> & list)
-{
-    if (list.empty()) {
-        return {};
-    }
-    std::sort(list.begin(), list.end());
-    std::ostringstream ss;
-    ss << *list.begin();
-    for (auto require = std::next(list.begin()); require != list.end(); ++require) {
-        ss << ";" << *require;
-    }
-    return ss.str();
-}
-
 }
 
 namespace std {
@@ -189,8 +172,6 @@ public:
         const std::vector<ModulePackage *> & modules, bool debugSolver);
     bool insert(const std::string &moduleName, const char *path);
     std::vector<ModulePackage *> getLatestActiveEnabledModules();
-    /// Required to call after all modules v3 are in metadata
-    void addVersion2Modules();
 
 private:
     friend struct ModulePackageContainer;
@@ -204,8 +185,6 @@ private:
     ModuleMetadata moduleMetadata;
 
     std::map<std::string, std::string> moduleDefaults;
-    std::vector<std::tuple<LibsolvRepo *, ModulemdModuleStream *, std::string>> modulesV2;
-
     bool isEnabled(const std::string &name, const std::string &stream);
 };
 
@@ -339,7 +318,6 @@ ModulePackageContainer::add(DnfSack * sack)
                             exception.what()));
         }
     }
-    pImpl->addVersion2Modules();
 }
 
 void ModulePackageContainer::addDefaultsFromDisk()
@@ -375,7 +353,7 @@ ModulePackageContainer::add(const std::string &fileContent, const std::string & 
         if (strcmp(r->name, "available") == 0) {
             g_autofree gchar * path = g_build_filename(pImpl->installRoot.c_str(),
                                                       "/etc/dnf/modules.d", NULL);
-            auto packages = md.getAllModulePackages(pImpl->moduleSack, r, repoID, pImpl->modulesV2);
+            std::vector<ModulePackage *> packages = md.getAllModulePackages(pImpl->moduleSack, r, repoID);
             for(auto const& modulePackagePtr: packages) {
                 std::unique_ptr<ModulePackage> modulePackage(modulePackagePtr);
                 pImpl->modules.insert(std::make_pair(modulePackage->getId(), std::move(modulePackage)));
@@ -1699,50 +1677,6 @@ std::vector<ModulePackage *> ModulePackageContainer::Impl::getLatestActiveEnable
         }
     }
     return latest;
-}
-
-void ModulePackageContainer::Impl::addVersion2Modules()
-{
-    if (modulesV2.empty()) {
-        return;
-    }
-    std::map<std::string, std::map<std::string, std::vector<ModulePackage *>>> v3_context_map;
-    for (auto const & module_pair : modules) {
-        auto * module = module_pair.second.get();
-        auto requires = module->getRequires(true);
-        auto concentratedRequires = concentrateVectorString(requires);
-        v3_context_map[module->getNameStream()][concentratedRequires].push_back(module);
-    }
-    libdnf::LibsolvRepo * repo;
-    ModulemdModuleStream * mdStream;
-    std::string repoID;
-    g_autofree gchar * path = g_build_filename(installRoot.c_str(), "/etc/dnf/modules.d", NULL);
-    for (auto & module_tuple : modulesV2) {
-        std::tie(repo, mdStream, repoID) = module_tuple;
-        auto nameStream = ModulePackage::getNameStream(mdStream);
-        auto requires = ModulePackage::getRequires(mdStream, true);
-        auto concentratedRequires = concentrateVectorString(requires);
-        auto streamIterator = v3_context_map.find(nameStream);
-        if (streamIterator != v3_context_map.end()) {
-            auto contextIterator = streamIterator->second.find(concentratedRequires);
-            if (contextIterator != streamIterator->second.end()) {
-                auto v3_context = contextIterator->second[0]->getContext();
-                std::unique_ptr<ModulePackage> modulePackage(new ModulePackage(moduleSack, repo, mdStream, repoID, v3_context));
-                persistor->insert(modulePackage->getName(), path);
-                modules.insert(std::make_pair(modulePackage->getId(), std::move(modulePackage)));
-                g_object_unref(mdStream);
-                continue;
-            }
-        }
-        if (concentratedRequires.empty()) {
-            concentratedRequires.append("NoRequires");
-        }
-        std::unique_ptr<ModulePackage> modulePackage(new ModulePackage(moduleSack, repo, mdStream, repoID, concentratedRequires));
-        persistor->insert(modulePackage->getName(), path);
-        modules.insert(std::make_pair(modulePackage->getId(), std::move(modulePackage)));
-        g_object_unref(mdStream);
-    }
-    modulesV2.clear();
 }
 
 void ModulePackageContainer::updateFailSafeData()

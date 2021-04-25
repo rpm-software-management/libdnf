@@ -126,8 +126,7 @@ void ModuleMetadata::resolveAddedMetadata()
 
 std::vector<ModulePackage *> ModuleMetadata::getAllModulePackages(DnfSack * moduleSack,
                                                                   LibsolvRepo * repo,
-                                                                  const std::string & repoID,
-                                                                  std::vector<std::tuple<LibsolvRepo *, ModulemdModuleStream *, std::string>> & modulesV2)
+                                                                  const std::string & repoID)
 {
     std::vector<ModulePackage *> result;
     if (!resultingModuleIndex)
@@ -141,13 +140,7 @@ std::vector<ModulePackage *> ModuleMetadata::getAllModulePackages(DnfSack * modu
         //TODO(amatej): replace with
         //GPtrArray * streams = modulemd_module_index_search_streams_by_nsvca_glob(resultingModuleIndex, NULL);
         for (unsigned int i = 0; i < streams->len; i++){
-            ModulemdModuleStream * moduleMdStream = static_cast<ModulemdModuleStream *>(g_ptr_array_index(streams, i));
-            if (modulemd_module_stream_get_mdversion(moduleMdStream) > 2) {
-                result.push_back(new ModulePackage(moduleSack, repo, moduleMdStream, repoID));
-            } else {
-                g_object_ref(moduleMdStream);
-                modulesV2.push_back(std::make_tuple(repo, moduleMdStream, repoID));
-            }
+            result.push_back(new ModulePackage(moduleSack, repo, (ModulemdModuleStream *) g_ptr_array_index(streams, i), repoID));
         }
     }
 
