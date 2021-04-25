@@ -725,16 +725,23 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackage *> & m
                     goal2name_query(goalWeak, query);
                     activatedModules.reset(new PackageSet(*query.runSet()));
                 }
-                return make_pair(problems, problemType);
+            } else {
+                problemType = ModulePackageContainer::ModuleErrorType::ERROR_IN_DEFAULTS;
+                Query query(moduleSack, Query::ExcludeFlags::IGNORE_EXCLUDES);
+                goal2name_query(goal, query);
+                activatedModules.reset(new PackageSet(*query.runSet()));
             }
-            problemType = ModulePackageContainer::ModuleErrorType::ERROR_IN_LATEST;
         } else {
             problemType = ModulePackageContainer::ModuleErrorType::ERROR_IN_DEFAULTS;
+            Query query(moduleSack, Query::ExcludeFlags::IGNORE_EXCLUDES);
+            goal2name_query(goal, query);
+            activatedModules.reset(new PackageSet(*query.runSet()));
         }
+    } else {
+        Query query(moduleSack, Query::ExcludeFlags::IGNORE_EXCLUDES);
+        goal2name_query(goal, query);
+        activatedModules.reset(new PackageSet(*query.runSet()));
     }
-    Query query(moduleSack, Query::ExcludeFlags::IGNORE_EXCLUDES);
-    goal2name_query(goal, query);
-    activatedModules.reset(new PackageSet(*query.runSet()));
     return make_pair(problems, problemType);
 }
 
