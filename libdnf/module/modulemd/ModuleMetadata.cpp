@@ -142,7 +142,7 @@ std::vector<ModulePackage *> ModuleMetadata::getAllModulePackages(DnfSack * modu
         //GPtrArray * streams = modulemd_module_index_search_streams_by_nsvca_glob(resultingModuleIndex, NULL);
         for (unsigned int i = 0; i < streams->len; i++){
             ModulemdModuleStream * moduleMdStream = static_cast<ModulemdModuleStream *>(g_ptr_array_index(streams, i));
-            if (modulemd_module_stream_v2_is_static_context((ModulemdModuleStreamV2 *) moduleMdStream)) {
+            if (modulemd_module_stream_get_mdversion(moduleMdStream) > 2) {
                 result.push_back(new ModulePackage(moduleSack, repo, moduleMdStream, repoID));
             } else {
                 g_object_ref(moduleMdStream);
