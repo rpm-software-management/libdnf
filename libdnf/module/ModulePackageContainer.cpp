@@ -775,11 +775,9 @@ ModulePackageContainer::query(std::string name, std::string stream, std::string 
     Query query(pImpl->moduleSack, Query::ExcludeFlags::IGNORE_EXCLUDES);
     // platform modules are installed and not in modules std::Map.
     query.available();
-    if (!name.empty() || !stream.empty()) {
-        std::ostringstream ss;
-        ss << stringFormater(name) << ":" << stringFormater(stream);
-        query.addFilter(HY_PKG_DESCRIPTION, HY_GLOB, ss.str().c_str());
-    }
+    std::ostringstream ss;
+    ss << stringFormater(name) << ":" << stringFormater(stream);
+    query.addFilter(HY_PKG_DESCRIPTION, HY_GLOB, ss.str().c_str());
     if (!context.empty()) {
         query.addFilter(HY_PKG_SUMMARY, HY_GLOB, context.c_str());
     }
