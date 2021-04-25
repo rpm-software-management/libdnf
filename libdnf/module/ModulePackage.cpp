@@ -43,25 +43,19 @@ extern "C" {
 
 namespace libdnf {
 
-    /**
-     * @brief create solvable with:
-     *   Name: $name:$stream:$context
-     *   Version: $version
-     *   Arch: $arch (If arch is not defined, set "noarch")
-     *   Provides: module($name)
-     *   Provides: module($name:$stream)
-     */
-    static void setSovable(Pool * pool, Solvable *solvable, std::string & name,
-    std::string & stream, std::string & version, std::string & context, const char * arch)
+static void setSovable(Pool * pool, Solvable *solvable, std::string name,
+    std::string stream, std::string version, std::string context, const char * arch)
 {
     std::ostringstream ss;
-    //   Name: $name:$stream:$context
-    ss << name << ":" << stream << ":" << context;
+    // create solvable with:
+    //   Name: $name:$stream:$version:$context
+    //   Version: 0
+    //   Arch: $arch
+    ss << name << ":" << stream << ":" << version << ":" << context;
     solvable_set_str(solvable, SOLVABLE_NAME, ss.str().c_str());
-    solvable_set_str(solvable, SOLVABLE_EVR, version.c_str());
+    solvable_set_str(solvable, SOLVABLE_EVR, "0");
     // TODO Test can be remove when modules will be always with arch
     solvable_set_str(solvable, SOLVABLE_ARCH, arch ? arch : "noarch");
-
     // create Provide: module($name)
     ss.str(std::string());
     ss << "module(" << name << ")";
@@ -71,6 +65,12 @@ namespace libdnf {
     // create Provide: module($name:$stream)
     ss.str(std::string());
     ss << "module(" << name << ":" << stream << ")";
+    depId = pool_str2id(pool, ss.str().c_str(), 1);
+    solvable_add_deparray(solvable, SOLVABLE_PROVIDES, depId, -1);
+
+    // create Provide: module($name:$stream:$version)
+    ss.str(std::string());
+    ss << "module(" << name << ":" << stream << ":" << version << ")";
     depId = pool_str2id(pool, ss.str().c_str(), 1);
     solvable_add_deparray(solvable, SOLVABLE_PROVIDES, depId, -1);
 }
