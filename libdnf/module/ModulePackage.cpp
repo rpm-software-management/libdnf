@@ -50,8 +50,6 @@ namespace libdnf {
  *   Arch: $arch (If arch is not defined, set "noarch")
  *   Provides: module($name)
  *   Provides: module($name:$stream)
- *   Summary: original_context
- *   Description: name:stream
  */
 static void setSovable(Pool * pool, Solvable * solvable, const std::string & name,
     const std::string & stream, const std::string & version, const std::string & context, const char * arch, const std::string & original_context)
