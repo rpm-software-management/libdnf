@@ -75,8 +75,6 @@ static void setSovable(Pool * pool, Solvable * solvable, const std::string & nam
     ss << "module(" << name << ")";
     auto depId = pool_str2id(pool, ss.str().c_str(), 1);
     solvable_add_deparray(solvable, SOLVABLE_PROVIDES, depId, -1);
-    // create Conflicts: module($name)
-    solvable_add_deparray(solvable, SOLVABLE_CONFLICTS, depId, 0);
 
     // create Provide: module($name:$stream)
     ss.str(std::string());

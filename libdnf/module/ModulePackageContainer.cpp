@@ -204,7 +204,6 @@ private:
     /// solvable.arch = <moduleArch>
     /// solvable.summary = <moduleContext>
     /// solvable.description = <moduleName>:<moduleStream>
-    /// solvable.conflicts = module(<moduleName>)
     DnfSack * moduleSack;
     std::unique_ptr<PackageSet> activatedModules;
     std::string installRoot;

@@ -115,7 +115,6 @@ public:
     Id addPlatformPackage(const std::string &osReleasePath, const char *  platformModule);
     Id addPlatformPackage(DnfSack * sack,
         const std::vector<std::string> & osReleasePath, const char * platformModule);
-    /// DEPRECATED
     void createConflictsBetweenStreams();
 
     /**
