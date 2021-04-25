@@ -36,7 +36,7 @@ public:
     ~ModuleMetadata();
     void addMetadataFromString(const std::string & yaml, int priority);
     void resolveAddedMetadata();
-    std::vector<ModulePackage *> getAllModulePackages(DnfSack * moduleSack, LibsolvRepo * repo, const std::string & repoID, std::vector<std::tuple<LibsolvRepo *, ModulemdModuleStream *, std::string>> & modulesV2);
+    std::vector<ModulePackage *> getAllModulePackages(DnfSack * moduleSack, LibsolvRepo * repo, const std::string & repoID);
     std::map<std::string, std::string> getDefaultStreams();
     std::vector<std::string> getDefaultProfiles(std::string moduleName, std::string moduleStream);
     ModulemdObsoletes * getNewestActiveObsolete(ModulePackage *p);
