@@ -3252,10 +3252,6 @@ report_problems(const std::vector<std::tuple<libdnf::ModulePackageContainer::Mod
             case libdnf::ModulePackageContainer::ModuleErrorType::ERROR_IN_DEFAULTS:
                 logger->warning(tfm::format(_("Modular dependency problem with Defaults: %s"), report.c_str()));
                 break;
-            case libdnf::ModulePackageContainer::ModuleErrorType::ERROR_IN_LATEST:
-                logger->warning(tfm::format(_("Modular dependency problem with the lates modules: %s"),
-                                            report.c_str()));
-                break;
             case libdnf::ModulePackageContainer::ModuleErrorType::ERROR:
                 logger->error(tfm::format(_("Modular dependency problem: %s"), report.c_str()));
                 return_error = true;
