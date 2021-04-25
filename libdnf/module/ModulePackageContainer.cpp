@@ -1641,7 +1641,6 @@ ModulePackageContainer::Impl::ModulePersistor::getRemovedProfiles()
 
 void ModulePackageContainer::loadFailSafeData()
 {
-    pImpl->addVersion2Modules();
     auto persistor = pImpl->persistor->configs;
 
     std::map<std::string, std::pair<std::string, bool>> enabledStreams;
@@ -1696,21 +1695,42 @@ void ModulePackageContainer::loadFailSafeData()
 
 std::vector<ModulePackage *> ModulePackageContainer::Impl::getLatestActiveEnabledModules()
 {
-    Query query(moduleSack, Query::ExcludeFlags::IGNORE_EXCLUDES);
-    query.addFilter(HY_PKG, HY_EQ, activatedModules.get());
-    query.addFilter(HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
-    query.addFilter(HY_PKG_LATEST_PER_ARCH, HY_EQ, 1);
-    auto set = query.runSet();
-
     std::vector<ModulePackage *> activeModules;
     Id moduleId = -1;
-    while ((moduleId = set->next(moduleId)) != -1) {
+    while ((moduleId = activatedModules->next(moduleId)) != -1) {
         auto modulePackage = modules.at(moduleId).get();
         if (isEnabled(modulePackage->getName(), modulePackage->getStream())) {
             activeModules.push_back(modulePackage);
         }
     }
-    return activeModules;
+    if (activeModules.empty()) {
+        return {};
+    }
+    auto sack = moduleSack;
+    std::sort(activeModules.begin(), activeModules.end(),
+              [sack](const ModulePackage * first, const ModulePackage * second)
+              {return modulePackageLatestSorter(sack, first, second);});
+
+    auto packageFirst = activeModules[0];
+    std::vector<ModulePackage *> latest;
+    auto vectorSize = activeModules.size();
+    latest.push_back(packageFirst);
+    auto name = packageFirst->getNameCStr();
+    auto stream = packageFirst->getStreamCStr();
+    auto arch = packageFirst->getArchCStr();
+
+    for (unsigned int index = 1; index < vectorSize; ++index) {
+        auto & package = activeModules[index];
+        if (g_strcmp0(package->getNameCStr(), name) != 0 ||
+            g_strcmp0(package->getStreamCStr(), stream) != 0 ||
+            g_strcmp0(package->getArchCStr(), arch) != 0) {
+            name = package->getNameCStr();
+            stream = package->getStreamCStr();
+            arch = package->getArchCStr();
+            latest.push_back(package);
+        }
+    }
+    return latest;
 }
 
 void ModulePackageContainer::Impl::addVersion2Modules()
