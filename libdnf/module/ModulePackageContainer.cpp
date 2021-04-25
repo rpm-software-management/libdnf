@@ -49,28 +49,6 @@ extern "C" {
 #include "modulemd/ModuleMetadata.hpp"
 #include "modulemd/ModuleProfile.hpp"
 
-
-namespace {
-
-/// Requires resolved goal
-/// Takes listInstalls() from goal and keep solvables with the solvable-name (<name>:<stream>:<context>) in query 
-void goal2name_query(libdnf::Goal & goal, libdnf::Query & query)
-{
-    auto pool = dnf_sack_get_pool(goal.getSack());
-    auto installList = goal.listInstalls();
-    std::vector<const char *> module_names;
-    Id id = -1;
-    while ((id = installList.next(id)) != -1) {
-        Solvable * s = pool_id2solvable(pool, id);
-        const char * name = pool_id2str(pool, s->name);
-        module_names.push_back(name);
-    }
-    module_names.push_back(nullptr);
-    query.addFilter(HY_PKG_NAME, HY_EQ, module_names.data());
-}
-
-}
-
 namespace std {
 
 template<>
@@ -651,14 +629,14 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackage *> & m
     for (const auto &module : modules) {
         std::ostringstream ss;
         auto name = module->getName();
-        ss << "module(" << name << ":" << module->getStream() << ")";
+        ss << "module(" << name << ":" << module->getStream() << ":" << module->getVersion() << ")";
         Selector selector(moduleSack);
         bool optional = persistor->getState(name) == ModuleState::DEFAULT;
         selector.set(HY_PKG_PROVIDES, HY_EQ, ss.str().c_str());
         goal.install(&selector, optional);
         goalWeak.install(&selector, true);
     }
-    auto ret = goal.run(static_cast<DnfGoalActions>(DNF_IGNORE_WEAK | DNF_FORCE_BEST));
+    auto ret = goal.run(DNF_IGNORE_WEAK);
     if (debugSolver) {
         goal.writeDebugdata("debugdata/modules");
     }
@@ -666,7 +644,7 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackage *> & m
     auto problemType = ModulePackageContainer::ModuleErrorType::NO_ERROR;
     if (ret) {
         problems = goal.describeAllProblemRules(false);
-        ret = goal.run(DNF_FORCE_BEST);
+        ret = goal.run(DNF_NONE);
         if (ret) {
             // Conflicting modules has to be removed otherwice it could result than one of them will
             // be active
@@ -680,20 +658,14 @@ ModulePackageContainer::Impl::moduleSolve(const std::vector<ModulePackage *> & m
                 activatedModules.reset();
             } else {
                 problemType = ModulePackageContainer::ModuleErrorType::ERROR;
-                Query query(moduleSack, Query::ExcludeFlags::IGNORE_EXCLUDES);
-                goal2name_query(goalWeak, query);
-                activatedModules.reset(new PackageSet(*query.runSet()));
+                activatedModules.reset(new PackageSet(std::move(goalWeak.listInstalls())));
             }
         } else {
             problemType = ModulePackageContainer::ModuleErrorType::ERROR_IN_DEFAULTS;
-            Query query(moduleSack, Query::ExcludeFlags::IGNORE_EXCLUDES);
-            goal2name_query(goal, query);
-            activatedModules.reset(new PackageSet(*query.runSet()));
+            activatedModules.reset(new PackageSet(std::move(goal.listInstalls())));
         }
     } else {
-        Query query(moduleSack, Query::ExcludeFlags::IGNORE_EXCLUDES);
-        goal2name_query(goal, query);
-        activatedModules.reset(new PackageSet(*query.runSet()));
+        activatedModules.reset(new PackageSet(std::move(goal.listInstalls())));
     }
     return make_pair(problems, problemType);
 }
@@ -735,13 +707,11 @@ ModulePackageContainer::query(std::string name, std::string stream, std::string 
     query.available();
     std::ostringstream ss;
     ss << stringFormater(name) << ":" << stringFormater(stream);
-    ss << ":" << stringFormater(context);
+    ss << ":" << stringFormater(version) << ":";
+    ss << stringFormater(context);
     query.addFilter(HY_PKG_NAME, HY_GLOB, ss.str().c_str());
     if (!arch.empty()) {
         query.addFilter(HY_PKG_ARCH, HY_GLOB, arch.c_str());
-    }
-    if (!version.empty()) {
-        query.addFilter(HY_PKG_VERSION, HY_GLOB, version.c_str());
     }
     auto pset = query.runSet();
     Id moduleId = -1;
