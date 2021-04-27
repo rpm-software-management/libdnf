@@ -88,6 +88,9 @@ OptionStringList::ValueType OptionStringList::from_string(const std::string & va
 }
 
 void OptionStringList::set(Priority priority, const ValueType & value) {
+    if (is_locked()) {
+        throw ModifyLocked("set()");
+    }
     if (priority >= get_priority()) {
         test(value);
         this->value = value;

@@ -33,6 +33,9 @@ OptionBool::OptionBool(const OptionBool & src) : Option(src), default_value(src.
 }
 
 OptionBool & OptionBool::operator=(const OptionBool & src) {
+    if (is_locked()) {
+        throw ModifyLocked("operator=");
+    }
     if (this == &src) {
         return *this;
     }
@@ -81,6 +84,9 @@ bool OptionBool::from_string(const std::string & value) const {
 }
 
 void OptionBool::set(Priority priority, bool value) {
+    if (is_locked()) {
+        throw ModifyLocked("set()");
+    }
     if (priority >= get_priority()) {
         this->value = value;
         set_priority(priority);

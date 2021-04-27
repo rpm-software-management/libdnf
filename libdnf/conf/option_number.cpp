@@ -89,6 +89,9 @@ T OptionNumber<T>::from_string(const std::string & value) const {
 
 template <typename T>
 void OptionNumber<T>::set(Priority priority, ValueType value) {
+    if (is_locked()) {
+        throw ModifyLocked("set()");
+    }
     if (priority >= get_priority()) {
         test(value);
         this->value = value;
