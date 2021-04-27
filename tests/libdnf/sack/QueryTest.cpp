@@ -139,12 +139,9 @@ void QueryTest::testQueryFilterAdvisory()
     dnf_sack_filter_modules_v2(sack, modules, nullptr, tmpdir, nullptr, true, false, false);
     query = new libdnf::Query(sack);
     query->addFilter(HY_PKG_ADVISORY_TYPE, HY_EQ, "enhancement");
-    CPPUNIT_ASSERT(query->size() == 2);
+    CPPUNIT_ASSERT(query->size() == 1);
     libdnf::PackageSet pset2 = *(query->getResultPset());
     pkg = dnf_package_new(sack, pset2[0]);
-    CPPUNIT_ASSERT(!g_strcmp0(dnf_package_get_name(pkg), "test-perl-DBI"));
-    g_object_unref(pkg);
-    pkg = dnf_package_new(sack, pset2[1]);
     CPPUNIT_ASSERT(!g_strcmp0(dnf_package_get_name(pkg), "test-perl-DBI"));
     g_object_unref(pkg);
     delete query;
