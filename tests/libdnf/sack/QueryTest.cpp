@@ -59,12 +59,13 @@ void QueryTest::testQueryGetAdvisoryPkgs()
     HyQuery query = new libdnf::Query(sack);
     std::vector<libdnf::AdvisoryPkg> advisoryPkgs;
 
-    // When modules are not setup all advisory collections are applicable
+    // Apply advisory only from active context - receave advisory package only from releted collection
     query->getAdvisoryPkgs(HY_EQ, advisoryPkgs);
-    CPPUNIT_ASSERT(advisoryPkgs.size() == 2);
-    // We get test-perl-DBI twice because its in two collections
-    CPPUNIT_ASSERT(!g_strcmp0(advisoryPkgs[0].getNameString(), "test-perl-DBI"));
-    CPPUNIT_ASSERT(!g_strcmp0(advisoryPkgs[1].getNameString(), "test-perl-DBI"));
+    CPPUNIT_ASSERT(advisoryPkgs.size() == 1);
+
+    CPPUNIT_ASSERT_EQUAL(std::string("test-perl-DBI"), std::string(advisoryPkgs[0].getNameString()));
+    CPPUNIT_ASSERT_EQUAL(std::string("1-2.module_el8+6587+9879afr5"), std::string(advisoryPkgs[0].getEVRString()));
+    //CPPUNIT_ASSERT(!g_strcmp0(advisoryPkgs[1].getNameString(), "test-perl-DBI"));
 
     // When modules are setup but none are enabled all collections are not applicable - no enabled module
     libdnf::ModulePackageContainer * modules = dnf_sack_get_module_container(sack);
@@ -84,15 +85,15 @@ void QueryTest::testQueryGetAdvisoryPkgs()
     query->getAdvisoryPkgs(HY_EQ, advisoryPkgs);
     CPPUNIT_ASSERT(advisoryPkgs.size() == 0);
 
-    // When I enable a module from multiple collections that contain a present package I get them
+    // When I enable a module with multiple collections I will receave advisory packages only for active context
     CPPUNIT_ASSERT(modules->enable("perl-DBI", "master", false));
     dnf_sack_filter_modules_v2(sack, modules, nullptr, tmpdir, nullptr, true, false, false);
 
     advisoryPkgs.clear();
     query->getAdvisoryPkgs(HY_EQ, advisoryPkgs);
-    CPPUNIT_ASSERT(advisoryPkgs.size() == 2);
-    CPPUNIT_ASSERT(!g_strcmp0(advisoryPkgs[0].getNameString(), "test-perl-DBI"));
-    CPPUNIT_ASSERT(!g_strcmp0(advisoryPkgs[1].getNameString(), "test-perl-DBI"));
+    CPPUNIT_ASSERT(advisoryPkgs.size() == 1);
+    CPPUNIT_ASSERT_EQUAL(std::string("test-perl-DBI"), std::string(advisoryPkgs[0].getNameString()));
+    CPPUNIT_ASSERT_EQUAL(std::string("1-2.module_el8+6587+9879afr5"), std::string(advisoryPkgs[0].getEVRString()));
 
     delete query;
 }
@@ -102,14 +103,11 @@ void QueryTest::testQueryFilterAdvisory()
     // When modules are not setup all advisory collections are applicable and there is no modular filtering
     HyQuery query = new libdnf::Query(sack);
     query->addFilter(HY_PKG_ADVISORY_TYPE, HY_EQ, "enhancement");
-    CPPUNIT_ASSERT(query->size() == 2);
+    CPPUNIT_ASSERT(query->size() == 1);
 
     // We get test-perl-DBI twice because its in two collections
     libdnf::PackageSet pset = *(query->getResultPset());
     DnfPackage *pkg = dnf_package_new(sack, pset[0]);
-    CPPUNIT_ASSERT(!g_strcmp0(dnf_package_get_name(pkg), "test-perl-DBI"));
-    g_object_unref(pkg);
-    pkg = dnf_package_new(sack, pset[1]);
     CPPUNIT_ASSERT(!g_strcmp0(dnf_package_get_name(pkg), "test-perl-DBI"));
     g_object_unref(pkg);
     delete query;
