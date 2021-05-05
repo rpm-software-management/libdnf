@@ -97,11 +97,9 @@ void AdvisoryTest::testGetApplicablePackagesModulesNotSetup()
 
     // When modules are not setup all advisory collections are applicable and we get all packages
     advisory->getApplicablePackages(pkgsvector);
-    CPPUNIT_ASSERT(pkgsvector.size() == 4);
+    CPPUNIT_ASSERT_EQUAL(2, static_cast<int>(pkgsvector.size()));
     CPPUNIT_ASSERT(!g_strcmp0(pkgsvector[0].getNameString(), "test-perl-DBI"));
-    CPPUNIT_ASSERT(!g_strcmp0(pkgsvector[1].getNameString(), "test-perl-DBI-new-collection-override"));
-    CPPUNIT_ASSERT(!g_strcmp0(pkgsvector[2].getNameString(), "test-perl-DBI"));
-    CPPUNIT_ASSERT(!g_strcmp0(pkgsvector[3].getNameString(), "not-present"));
+    CPPUNIT_ASSERT(!g_strcmp0(pkgsvector[1].getNameString(), "not-present"));
 }
 
 void AdvisoryTest::testGetApplicablePackagesModulesSetupNoneEnabled()
@@ -122,16 +120,14 @@ void AdvisoryTest::testGetApplicablePackagesOneApplicableCollection()
 {
     std::vector<libdnf::AdvisoryPkg> pkgsvector;
 
-    // When I keep enabled only perl-DBI module I get packages from all collections that contain that module
+    // When I keep enabled only perl module I get packages from all collections that contain that module
     libdnf::ModulePackageContainer * modules = dnf_sack_get_module_container(sack);
-    modules->reset("perl");
+    modules->reset("perl-DBI");
     dnf_sack_filter_modules_v2(sack, modules, nullptr, tmpdir, nullptr, true, false, false);
 
     advisory->getApplicablePackages(pkgsvector);
-    CPPUNIT_ASSERT(pkgsvector.size() == 3);
-    CPPUNIT_ASSERT(!g_strcmp0(pkgsvector[0].getNameString(), "test-perl-DBI"));
-    CPPUNIT_ASSERT(!g_strcmp0(pkgsvector[1].getNameString(), "test-perl-DBI-new-collection-override"));
-    CPPUNIT_ASSERT(!g_strcmp0(pkgsvector[2].getNameString(), "test-perl-DBI"));
+    CPPUNIT_ASSERT(pkgsvector.size() == 1);
+    CPPUNIT_ASSERT(!g_strcmp0(pkgsvector[0].getNameString(), "not-present"));
 }
 
 void AdvisoryTest::testGetApplicablePackagesMultipleApplicableCollections()
@@ -141,11 +137,9 @@ void AdvisoryTest::testGetApplicablePackagesMultipleApplicableCollections()
     // When I enable modules from multiple collections -> I get packages from all applicable collections
     // Enabled - "perl-DBI:master", "perl:5.23"
     advisory->getApplicablePackages(pkgsvector);
-    CPPUNIT_ASSERT(pkgsvector.size() == 4);
+    CPPUNIT_ASSERT(pkgsvector.size() == 2);
     CPPUNIT_ASSERT(!g_strcmp0(pkgsvector[0].getNameString(), "test-perl-DBI"));
-    CPPUNIT_ASSERT(!g_strcmp0(pkgsvector[1].getNameString(), "test-perl-DBI-new-collection-override"));
-    CPPUNIT_ASSERT(!g_strcmp0(pkgsvector[2].getNameString(), "test-perl-DBI"));
-    CPPUNIT_ASSERT(!g_strcmp0(pkgsvector[3].getNameString(), "not-present"));
+    CPPUNIT_ASSERT(!g_strcmp0(pkgsvector[1].getNameString(), "not-present"));
 }
 
 void AdvisoryTest::testGetModules()

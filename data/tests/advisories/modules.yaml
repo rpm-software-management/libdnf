@@ -32,6 +32,9 @@ data:
   license:
     module:
     - MIT
+  dependencies:
+  - requires:
+      perl: ["5.23"]
   profiles:
     default:
       rpms: ["test-perl-DBI"]
@@ -52,6 +55,9 @@ data:
   license:
     module:
     - MIT
+  dependencies:
+  - requires:
+      perl: ["5.25"]
   profiles:
     default:
       rpms: ["test-perl-DBI"]
