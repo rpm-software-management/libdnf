@@ -58,12 +58,8 @@ std::string moduleSolvid2str(Pool * pool, Id source)
 {
     std::ostringstream ss;
     auto * solvable = pool_id2solvable(pool, source);
-    // Add name:stream
-    ss << solvable_lookup_str(solvable, SOLVABLE_DESCRIPTION);
-    //Add version
-    ss << ":" << pool_id2str(pool, solvable->evr);
-    // Add original context
-    ss << ":" << solvable_lookup_str(solvable, SOLVABLE_SUMMARY);
+    // Add name:stream:version:context
+    ss << pool_id2str(pool, solvable->name);
     ss << "." << pool_id2str(pool, solvable->arch);
     return ss.str();
 }
