@@ -21,15 +21,15 @@ along with dnfdaemon-client.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "../context.hpp"
 #include "../utils.hpp"
-#include "../wrappers/dbus_package_wrapper.hpp"
 #include "../wrappers/dbus_goal_wrapper.hpp"
+#include "../wrappers/dbus_package_wrapper.hpp"
+
+#include "libdnf-cli/output/transaction_table.hpp"
 
 #include <dnfdaemon-server/dbus.hpp>
 
 #include <iostream>
 #include <vector>
-
-#include "libdnf-cli/output/transaction_table.hpp"
 
 namespace dnfdaemon::client {
 
@@ -37,7 +37,8 @@ void TransactionCommand::run_transaction(Context & ctx) {
     dnfdaemon::KeyValueMap options = {};
 
     // resolve the transaction
-    options["allow_erasing"] = ctx.allow_erasing.get_value();
+    options["allow_erasing"] =
+        static_cast<libdnf::OptionBool *>(ctx.argparser_config->get_arg_value("allowerasing"))->get_value();
     std::vector<dnfdaemon::DbusTransactionItem> transaction;
     ctx.session_proxy->callMethod("resolve")
         .onInterface(dnfdaemon::INTERFACE_GOAL)

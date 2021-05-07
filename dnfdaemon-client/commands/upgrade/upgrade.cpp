@@ -24,6 +24,7 @@ along with dnfdaemon-client.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <dnfdaemon-server/dbus.hpp>
 #include <libdnf-cli/argument_parser.hpp>
+#include <libdnf-cli/argument_parser_config/upgrade.hpp>
 #include <libdnf/conf/option_bool.hpp>
 #include <libdnf/conf/option_string.hpp>
 
@@ -33,29 +34,8 @@ along with dnfdaemon-client.  If not, see <https://www.gnu.org/licenses/>.
 namespace dnfdaemon::client {
 
 void CmdUpgrade::set_argument_parser(Context & ctx) {
-    auto upgrade = ctx.arg_parser.add_new_command("upgrade");
-    upgrade->set_short_description("upgrade packages on the system");
-    upgrade->set_description("");
-    upgrade->set_named_args_help_header("Optional arguments:");
-    upgrade->set_positional_args_help_header("Positional arguments:");
-    upgrade->set_parse_hook_func([this, &ctx](
-                                     [[maybe_unused]] libdnf::cli::ArgumentParser::Argument * arg,
-                                     [[maybe_unused]] const char * option,
-                                     [[maybe_unused]] int argc,
-                                     [[maybe_unused]] const char * const argv[]) {
-        ctx.select_command(this);
-        return true;
-    });
-    ctx.arg_parser.get_root_command()->register_command(upgrade);
-
-    patterns_options = ctx.arg_parser.add_new_values();
-    auto keys = ctx.arg_parser.add_new_positional_arg(
-        "keys_to_match",
-        libdnf::cli::ArgumentParser::PositionalArg::UNLIMITED,
-        ctx.arg_parser.add_init_value(std::unique_ptr<libdnf::Option>(new libdnf::OptionString(nullptr))),
-        patterns_options);
-    keys->set_short_description("List of packages to upgrade");
-    upgrade->register_positional_arg(keys);
+    auto upgrade = ctx.argparser_config->register_subcommand(libdnf::cli::arguments::upgrade);
+    ctx.argparser_config->register_positional_arg(libdnf::cli::arguments::upgrade_patterns, upgrade);
 }
 
 void CmdUpgrade::run(Context & ctx) {
@@ -66,7 +46,9 @@ void CmdUpgrade::run(Context & ctx) {
     }
 
     // get package specs from command line and add them to the goal
+    auto selected_command = ctx.argparser_config->get_selected_command();
     std::vector<std::string> patterns;
+    auto patterns_options = selected_command->get_positional_arg("upgrade_patterns").get_linked_values();
     if (patterns_options->size() > 0) {
         patterns.reserve(patterns_options->size());
         for (auto & pattern : *patterns_options) {

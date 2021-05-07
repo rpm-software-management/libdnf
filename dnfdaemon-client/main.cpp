@@ -29,6 +29,8 @@ along with dnfdaemon-client.  If not, see <https://www.gnu.org/licenses/>.
 #include <fcntl.h>
 #include <fmt/format.h>
 #include <libdnf-cli/argument_parser.hpp>
+#include <libdnf-cli/argument_parser_config/argument_parser_config.hpp>
+#include <libdnf-cli/argument_parser_config/global_arguments.hpp>
 #include <libdnf/base/base.hpp>
 #include <libdnf/logger/memory_buffer_logger.hpp>
 #include <libdnf/logger/stream_logger.hpp>
@@ -44,105 +46,37 @@ namespace fs = std::filesystem;
 namespace dnfdaemon::client {
 
 static bool parse_args(Context & ctx, int argc, char * argv[]) {
-    auto dnfdaemon_client = ctx.arg_parser.add_new_command("dnfdaemon_client");
-    dnfdaemon_client->set_short_description("Utility for packages maintaining");
-    dnfdaemon_client->set_description("Dnfdaemon-client is a program for maintaining packages.");
-    dnfdaemon_client->set_commands_help_header("List of commands:");
-    dnfdaemon_client->set_named_args_help_header("Global arguments:");
+    // configure the root command
+    auto rc = ctx.argparser_config->get_root_command();
+    rc->set_short_description("Utility for packages maintaining");
+    rc->set_description("Dnfdaemon-client is a program for maintaining packages.");
+    rc->set_commands_help_header("List of commands:");
+    rc->set_named_args_help_header("Global arguments:");
 
-    auto help = ctx.arg_parser.add_new_named_arg("help");
-    help->set_long_name("help");
-    help->set_short_name('h');
-    help->set_short_description("Print help");
-    help->set_parse_hook_func([dnfdaemon_client](
-                                  [[maybe_unused]] libdnf::cli::ArgumentParser::NamedArg * arg,
-                                  [[maybe_unused]] const char * option,
-                                  [[maybe_unused]] const char * value) {
-        dnfdaemon_client->help();
-        return true;
-    });
-    dnfdaemon_client->register_named_arg(help);
+    // register global options
+    ctx.argparser_config->register_named_arg(libdnf::cli::arguments::help);
+    ctx.argparser_config->register_named_arg(libdnf::cli::arguments::verbose);
+    ctx.argparser_config->register_named_arg(libdnf::cli::arguments::assumeyes);
+    ctx.argparser_config->register_named_arg(libdnf::cli::arguments::assumeno);
+    ctx.argparser_config->register_named_arg(libdnf::cli::arguments::allowerasing);
+    ctx.argparser_config->register_named_arg(libdnf::cli::arguments::setopt);
 
-    // set ctx.verbose = true
-    auto verbose = ctx.arg_parser.add_new_named_arg("verbose");
-    verbose->set_short_name('v');
-    verbose->set_long_name("verbose");
-    verbose->set_short_description("increase output verbosity");
-    verbose->set_const_value("true");
-    verbose->link_value(&ctx.verbose);
-    dnfdaemon_client->register_named_arg(verbose);
-
-    auto assume_yes = ctx.arg_parser.add_new_named_arg("assumeyes");
-    assume_yes->set_long_name("assumeyes");
-    assume_yes->set_short_name('y');
-    assume_yes->set_short_description("automatically answer yes for all questions");
-    assume_yes->set_const_value("true");
-    assume_yes->link_value(&ctx.assume_yes);
-    dnfdaemon_client->register_named_arg(assume_yes);
-
-    auto assume_no = ctx.arg_parser.add_new_named_arg("assumeno");
-    assume_no->set_long_name("assumeno");
-    assume_no->set_short_description("automatically answer no for all questions");
-    assume_no->set_const_value("true");
-    assume_no->link_value(&ctx.assume_no);
-    dnfdaemon_client->register_named_arg(assume_no);
-
-    auto allow_erasing = ctx.arg_parser.add_new_named_arg("allow_erasing");
-    allow_erasing->set_long_name("allowerasing");
-    allow_erasing->set_short_description("installed package can be removed to resolve the transaction");
-    allow_erasing->set_const_value("true");
-    allow_erasing->link_value(&ctx.allow_erasing);
-    dnfdaemon_client->register_named_arg(allow_erasing);
-
-    auto setopt = ctx.arg_parser.add_new_named_arg("setopt");
-    setopt->set_long_name("setopt");
-    setopt->set_has_value(true);
-    setopt->set_arg_value_help("KEY=VALUE");
-    setopt->set_short_description("set arbitrary config and repo options");
-    setopt->set_description(
-        R"**(Override a configuration option from the configuration file. To override configuration options for repositories, use repoid.option for  the
-              <option>.  Values  for configuration options like excludepkgs, includepkgs, installonlypkgs and tsflags are appended to the original value,
-              they do not override it. However, specifying an empty value (e.g. --setopt=tsflags=) will clear the option.)**");
-
-    // --setopt option support
-    setopt->set_parse_hook_func([&ctx](
-                                    [[maybe_unused]] libdnf::cli::ArgumentParser::NamedArg * arg,
-                                    [[maybe_unused]] const char * option,
-                                    const char * value) {
-        auto val = strchr(value + 1, '=');
-        if (!val) {
-            throw std::runtime_error(std::string("setopt: Badly formated argument value") + value);
-        }
-        auto key = std::string(value, val);
-        auto dot_pos = key.rfind('.');
-        if (dot_pos != std::string::npos) {
-            if (dot_pos == key.size() - 1) {
-                throw std::runtime_error(
-                    std::string("setopt: Badly formated argument value: Last key character cannot be '.': ") + value);
-            }
-        }
-        // Store option to vector for later use
-        ctx.setopts.emplace_back(key, val + 1);
-        return true;
-    });
-    dnfdaemon_client->register_named_arg(setopt);
-
-
-    ctx.arg_parser.set_root_command(dnfdaemon_client);
-
-    for (auto & command : ctx.commands) {
-        command->set_argument_parser(ctx);
+    for (auto const & command : ctx.commands) {
+        command.second->set_argument_parser(ctx);
     }
 
     try {
-        ctx.arg_parser.parse(argc, argv);
+        ctx.argparser_config->parse(argc, argv);
     } catch (const std::exception & ex) {
         std::cout << ex.what() << std::endl;
     }
-    return help->get_parse_count() > 0;
+
+    auto & help = ctx.argparser_config->get_arg("help");
+    return help.get_parse_count() > 0;
 }
 
 }  // namespace dnfdaemon::client
+
 
 int main(int argc, char * argv[]) {
     auto connection = sdbus::createSystemBusConnection();
@@ -155,24 +89,26 @@ int main(int argc, char * argv[]) {
     //log_router.info("Dnfdaemon-client start");
 
     // Register commands
-    context.commands.push_back(std::make_unique<dnfdaemon::client::CmdRepolist>("repoinfo"));
-    context.commands.push_back(std::make_unique<dnfdaemon::client::CmdRepolist>("repolist"));
-    context.commands.push_back(std::make_unique<dnfdaemon::client::CmdRepoquery>());
-    context.commands.push_back(std::make_unique<dnfdaemon::client::CmdDowngrade>());
-    context.commands.push_back(std::make_unique<dnfdaemon::client::CmdInstall>());
-    context.commands.push_back(std::make_unique<dnfdaemon::client::CmdUpgrade>());
-    context.commands.push_back(std::make_unique<dnfdaemon::client::CmdRemove>());
+    context.commands.emplace("repoinfo", std::make_unique<dnfdaemon::client::CmdRepolist>("repoinfo"));
+    context.commands.emplace("repolist", std::make_unique<dnfdaemon::client::CmdRepolist>("repolist"));
+    context.commands.emplace("repoquery", std::make_unique<dnfdaemon::client::CmdRepoquery>());
+    context.commands.emplace("downgrade", std::make_unique<dnfdaemon::client::CmdDowngrade>());
+    context.commands.emplace("install", std::make_unique<dnfdaemon::client::CmdInstall>());
+    context.commands.emplace("upgrade", std::make_unique<dnfdaemon::client::CmdUpgrade>());
+    context.commands.emplace("remove", std::make_unique<dnfdaemon::client::CmdRemove>());
 
     // Parse command line arguments
     bool help_printed = dnfdaemon::client::parse_args(context, argc, argv);
-    if (!context.selected_command) {
+    auto argparser_selected_command = context.argparser_config->get_selected_command();
+    if (!argparser_selected_command) {
         if (help_printed) {
             return 0;
         } else {
-            context.arg_parser.get_root_command()->help();
+            context.argparser_config->get_root_command()->help();
             return 1;
         }
     }
+    context.selected_command = context.commands.at(argparser_selected_command->get_id()).get();
 
     // initialize server session using command line arguments
     context.init_session();

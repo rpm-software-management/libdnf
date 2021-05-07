@@ -81,10 +81,10 @@ dnfdaemon::RepoStatus Context::wait_for_repos() {
 
 bool userconfirm(Context & ctx) {
     // "assumeno" takes precedence over "assumeyes"
-    if (ctx.assume_no.get_value()) {
+    if (static_cast<libdnf::OptionBool *>(ctx.argparser_config->get_arg_value("assumeno"))->get_value()) {
         return false;
     }
-    if (ctx.assume_yes.get_value()) {
+    if (static_cast<libdnf::OptionBool *>(ctx.argparser_config->get_arg_value("assumeyes"))->get_value()) {
         return true;
     }
     std::string msg = "Is this ok [y/N]: ";

@@ -24,6 +24,7 @@ along with dnfdaemon-client.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <dnfdaemon-server/dbus.hpp>
 #include <libdnf-cli/argument_parser.hpp>
+#include <libdnf-cli/argument_parser_config/downgrade.hpp>
 #include <libdnf/conf/option_bool.hpp>
 #include <libdnf/conf/option_string.hpp>
 
@@ -33,29 +34,8 @@ along with dnfdaemon-client.  If not, see <https://www.gnu.org/licenses/>.
 namespace dnfdaemon::client {
 
 void CmdDowngrade::set_argument_parser(Context & ctx) {
-    auto downgrade = ctx.arg_parser.add_new_command("downgrade");
-    downgrade->set_short_description("downgrade packages on the system");
-    downgrade->set_description("");
-    downgrade->set_named_args_help_header("Optional arguments:");
-    downgrade->set_positional_args_help_header("Positional arguments:");
-    downgrade->set_parse_hook_func([this, &ctx](
-                                       [[maybe_unused]] libdnf::cli::ArgumentParser::Argument * arg,
-                                       [[maybe_unused]] const char * option,
-                                       [[maybe_unused]] int argc,
-                                       [[maybe_unused]] const char * const argv[]) {
-        ctx.select_command(this);
-        return true;
-    });
-    ctx.arg_parser.get_root_command()->register_command(downgrade);
-
-    patterns_options = ctx.arg_parser.add_new_values();
-    auto keys = ctx.arg_parser.add_new_positional_arg(
-        "keys_to_match",
-        libdnf::cli::ArgumentParser::PositionalArg::UNLIMITED,
-        ctx.arg_parser.add_init_value(std::unique_ptr<libdnf::Option>(new libdnf::OptionString(nullptr))),
-        patterns_options);
-    keys->set_short_description("List of packages to downgrade");
-    downgrade->register_positional_arg(keys);
+    auto downgrade = ctx.argparser_config->register_subcommand(libdnf::cli::arguments::downgrade);
+    ctx.argparser_config->register_positional_arg(libdnf::cli::arguments::downgrade_patterns, downgrade);
 }
 
 void CmdDowngrade::run(Context & ctx) {
@@ -66,7 +46,9 @@ void CmdDowngrade::run(Context & ctx) {
     }
 
     // get package specs from command line and add them to the goal
+    auto selected_command = ctx.argparser_config->get_selected_command();
     std::vector<std::string> patterns;
+    auto patterns_options = selected_command->get_positional_arg("downgrade_patterns").get_linked_values();
     if (patterns_options->size() > 0) {
         patterns.reserve(patterns_options->size());
         for (auto & pattern : *patterns_options) {

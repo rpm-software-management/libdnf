@@ -24,7 +24,7 @@ along with dnfdaemon-client.  If not, see <https://www.gnu.org/licenses/>.
 #include "commands/command.hpp"
 
 #include <dnfdaemon-server/dbus.hpp>
-#include <libdnf-cli/argument_parser.hpp>
+#include <libdnf-cli/argument_parser_config/argument_parser_config.hpp>
 #include <libdnf/base/base.hpp>
 #include <libdnf/conf/config.hpp>
 #include <libdnf/repo/repo.hpp>
@@ -49,7 +49,9 @@ class Context {
 public:
     Context(sdbus::IConnection & connection)
         : connection(connection)
-        , repositories_status(dnfdaemon::RepoStatus::NOT_READY){};
+        , repositories_status(dnfdaemon::RepoStatus::NOT_READY) {
+        argparser_config = std::make_unique<libdnf::cli::ArgumentParserConfig>(config);
+    };
 
     /// Initialize dbus connection and server session
     void init_session();
@@ -60,21 +62,13 @@ public:
     // signal handlers
     void on_repositories_ready(const bool & result);
 
-    /// Select command to execute
-    void select_command(Command * cmd) { selected_command = cmd; }
-
-    std::vector<std::pair<std::string, std::string>> setopts;
-    std::vector<std::unique_ptr<Command>> commands;
+    std::map<std::string, std::unique_ptr<Command>> commands;
     Command * selected_command{nullptr};
-    libdnf::cli::ArgumentParser arg_parser;
+
+    libdnf::ConfigMain config;
+    std::unique_ptr<libdnf::cli::ArgumentParserConfig> argparser_config{nullptr};
     /// proxy to dnfdaemon session
     std::unique_ptr<sdbus::IProxy> session_proxy;
-
-    // global command line arguments
-    libdnf::OptionBool verbose{false};
-    libdnf::OptionBool assume_yes{false};
-    libdnf::OptionBool assume_no{false};
-    libdnf::OptionBool allow_erasing{false};
 
 private:
     /// system d-bus connection

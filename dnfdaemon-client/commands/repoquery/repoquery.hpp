@@ -34,12 +34,6 @@ public:
     void set_argument_parser(Context & ctx) override;
     void run(Context & ctx) override;
     dnfdaemon::KeyValueMap session_config(Context &) override;
-
-private:
-    libdnf::OptionBool * available_option{nullptr};
-    libdnf::OptionBool * installed_option{nullptr};
-    libdnf::OptionBool * info_option{nullptr};
-    std::vector<std::unique_ptr<libdnf::Option>> * patterns_options{nullptr};
 };
 
 }  // namespace dnfdaemon::client

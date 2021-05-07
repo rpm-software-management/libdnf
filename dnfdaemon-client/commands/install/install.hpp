@@ -31,10 +31,6 @@ class CmdInstall : public TransactionCommand {
 public:
     void set_argument_parser(Context & ctx) override;
     void run(Context & ctx) override;
-
-private:
-    libdnf::OptionBool strict_option{false};
-    std::vector<std::unique_ptr<libdnf::Option>> * patterns_options{nullptr};
 };
 
 }  // namespace dnfdaemon::client
