@@ -134,6 +134,7 @@ public:
     std::vector<ModulePackage *> getModulePackages();
     std::vector<std::vector<std::vector<ModulePackage *>>> getLatestModulesPerRepo(
         ModuleState moduleFilter, std::vector<ModulePackage *> modulePackages);
+    ModulePackage * getLatestModule(std::vector<ModulePackage *> modulePackages, bool activeOnly);
 
     std::vector<ModulePackage *> requiresModuleEnablement(const libdnf::PackageSet & packages);
 
