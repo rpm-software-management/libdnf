@@ -3142,7 +3142,7 @@ dnf_context_reset_all_modules(DnfContext * context, DnfSack * sack, GError ** er
     return recompute_modular_filtering(context, sack, error);
 } CATCH_TO_GERROR(FALSE)
 
-/// module dict { name : {stream : [modules] }
+/// module dict { name : {stream : [module packages] }
 static std::map<std::string, std::map<std::string, std::vector<libdnf::ModulePackage *>>> create_module_dict(
     const std::vector<libdnf::ModulePackage *> & modules)
 {
@@ -3155,6 +3155,8 @@ static std::map<std::string, std::map<std::string, std::vector<libdnf::ModulePac
 
 /// Modify module_dict => Keep only single relevant stream
 /// If more streams it keeps enabled or default stream
+/// If `enable` is true, also marks the selected stream as enabled.
+///  Returns errors found as: vec<(error type, error msg, module name)>
 static std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, std::string, std::string>> modify_module_dict_and_enable_stream(std::map<std::string, std::map<std::string, std::vector<libdnf::ModulePackage *>>> & module_dict, libdnf::ModulePackageContainer & container, bool enable)
 {
     std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, std::string, std::string>> messages;
@@ -3215,6 +3217,8 @@ static std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, s
     return messages;
 }
 
+// Attempts to parse the module spec and returns the parsed Nsvcap with the list
+// of module packages which matched.
 static std::pair<std::unique_ptr<libdnf::Nsvcap>, std::vector< libdnf::ModulePackage*>> resolve_module_spec(const std::string & module_spec, libdnf::ModulePackageContainer & container)
 {
     std::unique_ptr<libdnf::Nsvcap> nsvcapObj(new libdnf::Nsvcap);
