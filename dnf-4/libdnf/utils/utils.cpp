@@ -46,58 +46,6 @@ bool isAdvisoryApplicable(libdnf::Advisory & advisory, DnfSack * sack)
 
 namespace string {
 
-std::vector<std::string> split(const std::string &source, const char *delimiter, int maxSplit)
-{
-    if (source.empty())
-        throw std::runtime_error{"Source cannot be empty"};
-
-    std::string::size_type tokenBeginIndex = 0;
-    std::vector<std::string> container;
-
-    while ((tokenBeginIndex = source.find_first_not_of(delimiter, tokenBeginIndex)) != source.npos) {
-        if (maxSplit != -1 && ((int) (container.size() + 1 )) == maxSplit) {
-            container.emplace_back(source.substr(tokenBeginIndex));
-            break;
-        }
-
-        auto tokenEndIndex = source.find_first_of(delimiter, tokenBeginIndex);
-        container.emplace_back(source.substr(tokenBeginIndex, tokenEndIndex - tokenBeginIndex));
-        tokenBeginIndex = tokenEndIndex;
-    }
-
-    if (container.empty()) {
-        throw std::runtime_error{"No delimiter found in source: " + source};
-    }
-
-    return container;
-}
-
-std::vector<std::string> rsplit(const std::string &source, const char *delimiter, int maxSplit)
-{
-    if (source.empty())
-        throw std::runtime_error{"Source cannot be empty"};
-
-    std::string sequence = source;
-    std::string::size_type tokenBeginIndex = 0;
-    std::vector<std::string> container;
-
-    while ((tokenBeginIndex = sequence.find_last_of(delimiter)) != sequence.npos) {
-        if (maxSplit != -1 && ((int) (container.size() + 1 )) == maxSplit) {
-            container.emplace_back(source.substr(0, tokenBeginIndex));
-            break;
-        }
-
-        container.emplace(container.begin(), source.substr(tokenBeginIndex + 1));
-        sequence = sequence.substr(0, tokenBeginIndex);
-    }
-
-    if (container.empty()) {
-        throw std::runtime_error{"No delimiter found in source: " + source};
-    }
-
-    return container;
-}
-
 std::string trimSuffix(const std::string &source, const std::string &suffix)
 {
     if (source.length() < suffix.length())

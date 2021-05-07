@@ -40,8 +40,6 @@ bool isAdvisoryApplicable(Advisory & advisory, DnfSack * sack);
 
 namespace string {
 inline std::string fromCstring(const char * cstring) { return cstring ? cstring : ""; }
-std::vector<std::string> split(const std::string &source, const char *delimiter, int maxSplit = -1);
-std::vector<std::string> rsplit(const std::string &source, const char *delimiter, int maxSplit = -1);
 std::string trimSuffix(const std::string &source, const std::string &suffix);
 std::string trimPrefix(const std::string &source, const std::string &prefix);
 std::string trim(const std::string &source);
