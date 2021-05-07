@@ -851,6 +851,24 @@ ModulePackageContainer::getModuleState(const std::string& name)
     }
 }
 
+ModulePackage * ModulePackageContainer::getLatestModule(std::vector<ModulePackage *> modulePackages, bool activeOnly)
+{
+    ModulePackage * latest = nullptr;
+    for (ModulePackage * module: modulePackages) {
+        if (!activeOnly || isModuleActive(module->getId())) {
+            if (!latest) {
+                latest = module;
+            } else {
+                if (module->getVersion() > latest->getVersion()) {
+                    latest = module;
+                }
+            }
+        }
+    }
+
+    return latest;
+}
+
 std::set<std::string> ModulePackageContainer::getInstalledPkgNames()
 {
     pImpl->addVersion2Modules();
@@ -869,28 +887,9 @@ std::set<std::string> ModulePackageContainer::getInstalledPkgNames()
         nameStream += ":";
         nameStream += stream;
         auto modules = query(nameStream);
-        const ModulePackage * latest = nullptr;
-        for (const ModulePackage * module: modules) {
-            if (isModuleActive(module->getId())) {
-                if (!latest) {
-                    latest = module;
-                } else {
-                    if (module->getVersion() > latest->getVersion()) {
-                        latest = module;
-                    }
-                }
-            }
-        }
+        const ModulePackage * latest = getLatestModule(modules, true);
         if (!latest) {
-            for (auto module: modules) {
-                if (!latest) {
-                    latest = module;
-                } else {
-                    if (module->getVersion() > latest->getVersion()) {
-                        latest = module;
-                    }
-                }
-            }
+            latest = getLatestModule(modules, false);
         }
         if (!latest) {
             continue;
