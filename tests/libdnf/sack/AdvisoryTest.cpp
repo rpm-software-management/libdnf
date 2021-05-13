@@ -91,17 +91,6 @@ void AdvisoryTest::testGetPackages()
     CPPUNIT_ASSERT(pkgsvector.size() == 4);
 }
 
-void AdvisoryTest::testGetApplicablePackagesModulesNotSetup()
-{
-    std::vector<libdnf::AdvisoryPkg> pkgsvector;
-
-    // When modules are not setup all advisory collections are applicable and we get all packages
-    advisory->getApplicablePackages(pkgsvector);
-    CPPUNIT_ASSERT_EQUAL(2, static_cast<int>(pkgsvector.size()));
-    CPPUNIT_ASSERT(!g_strcmp0(pkgsvector[0].getNameString(), "test-perl-DBI"));
-    CPPUNIT_ASSERT(!g_strcmp0(pkgsvector[1].getNameString(), "not-present"));
-}
-
 void AdvisoryTest::testGetApplicablePackagesModulesSetupNoneEnabled()
 {
     std::vector<libdnf::AdvisoryPkg> pkgsvector;
