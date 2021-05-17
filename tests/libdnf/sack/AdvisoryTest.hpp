@@ -19,7 +19,6 @@ class AdvisoryTest : public CppUnit::TestCase
         CPPUNIT_TEST(testGetSeverity);
         CPPUNIT_TEST(testGetTitle);
         CPPUNIT_TEST(testGetPackages);
-        CPPUNIT_TEST(testGetApplicablePackagesModulesNotSetup);
         CPPUNIT_TEST(testGetApplicablePackagesModulesSetupNoneEnabled);
         CPPUNIT_TEST(testGetApplicablePackagesOneApplicableCollection);
         CPPUNIT_TEST(testGetApplicablePackagesMultipleApplicableCollections);
@@ -38,7 +37,6 @@ public:
     void testGetSeverity();
     void testGetTitle();
     void testGetPackages();
-    void testGetApplicablePackagesModulesNotSetup();
     void testGetApplicablePackagesModulesSetupNoneEnabled();
     void testGetApplicablePackagesOneApplicableCollection();
     void testGetApplicablePackagesMultipleApplicableCollections();
