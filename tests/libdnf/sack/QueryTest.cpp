@@ -59,7 +59,7 @@ void QueryTest::testQueryGetAdvisoryPkgs()
     HyQuery query = new libdnf::Query(sack);
     std::vector<libdnf::AdvisoryPkg> advisoryPkgs;
 
-    // When modules are not setup all advisory collections are applicable
+    // Starting with perl and perl-DBI enabled
     query->getAdvisoryPkgs(HY_EQ, advisoryPkgs);
     CPPUNIT_ASSERT(advisoryPkgs.size() == 2);
     // We get test-perl-DBI twice because its in two collections
@@ -84,7 +84,7 @@ void QueryTest::testQueryGetAdvisoryPkgs()
     query->getAdvisoryPkgs(HY_EQ, advisoryPkgs);
     CPPUNIT_ASSERT(advisoryPkgs.size() == 0);
 
-    // When I enable a module from multiple collections that contain a present package I get them
+    // When I enable a module with multiple collections I will receave advisory packages only for active context
     CPPUNIT_ASSERT(modules->enable("perl-DBI", "master", false));
     dnf_sack_filter_modules_v2(sack, modules, nullptr, tmpdir, nullptr, true, false, false);
 
@@ -99,7 +99,7 @@ void QueryTest::testQueryGetAdvisoryPkgs()
 
 void QueryTest::testQueryFilterAdvisory()
 {
-    // When modules are not setup all advisory collections are applicable and there is no modular filtering
+    // Starting with perl and perl-DBI enabled
     HyQuery query = new libdnf::Query(sack);
     query->addFilter(HY_PKG_ADVISORY_TYPE, HY_EQ, "enhancement");
     CPPUNIT_ASSERT(query->size() == 2);
