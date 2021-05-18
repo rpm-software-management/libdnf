@@ -20,6 +20,23 @@
 ######################
 
 ====================
+0.63.0 Release Notes
+====================
+
+- ModuleProfile: add isDefault()
+- ModulePackage: add getDefaultProfile()
+
+- New features:
+  - Add new dnf_context_module_install() C API
+
+- Bug fixes:
+  - Fix a crash when [media] section in .treeinfo is missing for bootable media (RhBug:1946024)
+
+Bugs fixed in 0.63.0:
+
+* :rhbug:`1946024`
+
+====================
 0.62.0 Release Notes
 ====================
 
