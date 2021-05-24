@@ -137,6 +137,7 @@ public:
     OptionBool & fastestmirror();
     OptionStringList & excludepkgs();
     OptionStringList & includepkgs();
+    OptionStringList & weakexcludes();
     OptionString & proxy();
     OptionString & proxy_username();
     OptionString & proxy_password();
