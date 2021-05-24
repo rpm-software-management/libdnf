@@ -37,6 +37,8 @@ private:
 
     DnfSack *sack;
     Queue staging;
+    IdQueue disfavor;
+    IdQueue disfavor_one_of;
     Solver *solv{nullptr};
     ::Transaction *trans{nullptr};
     DnfGoalActions actions{DNF_NONE};
