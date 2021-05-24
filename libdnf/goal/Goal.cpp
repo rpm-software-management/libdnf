@@ -635,7 +635,7 @@ erase_flags2libsolv(int flags)
 Goal::Goal(const Goal & goal_src) : pImpl(new Impl(*goal_src.pImpl)) {}
 
 Goal::Impl::Impl(const Goal::Impl & goal_src)
-: sack(goal_src.sack)
+: sack(goal_src.sack), disfavor(goal_src.disfavor)
 {
     queue_init_clone(&staging, const_cast<Queue *>(&goal_src.staging));
 
@@ -796,7 +796,13 @@ Goal::favor(DnfPackage *pkg)
 void
 Goal::disfavor(DnfPackage *pkg)
 {
-    queue_push2(&pImpl->staging, SOLVER_SOLVABLE|SOLVER_DISFAVOR, dnf_package_get_id(pkg));
+    pImpl->disfavor.pushBack(dnf_package_get_id(pkg));
+}
+
+void
+Goal::reset_disfavor()
+{
+    pImpl->disfavor.clear();
 }
 
 void
@@ -1259,6 +1265,11 @@ Goal::Impl::constructJob(DnfGoalActions flags)
     if (flags & DNF_FORCE_BEST)
         for (int i = 0; i < job->size(); i += 2) {
             elements[i] |= SOLVER_FORCEBEST;
+    }
+
+    // Add disfavors to the job
+    for (int i = 0; i < (int) disfavor.size(); i++) {
+        job->pushBack(SOLVER_SOLVABLE|SOLVER_DISFAVOR, disfavor[i]);
     }
 
     /* turn off implicit obsoletes for installonly packages */

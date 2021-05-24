@@ -376,6 +376,31 @@ add_protected(_GoalObject *self, PyObject *seq) try
 } CATCH_TO_PYTHON
 
 static PyObject *
+add_disfavor(_GoalObject *self, PyObject *seq) try
+{
+    HyGoal goal = self->goal;
+    DnfSack * sack = goal->getSack();
+    auto pset = pyseq_to_packageset(seq, hy_goal_get_sack(goal));
+    if (!pset)
+        return NULL;
+    Id id = -1;
+    while ((id = pset->next(id)) != -1) {
+        DnfPackage * pkg = dnf_package_new(sack, id);
+        goal->disfavor(pkg);
+        g_object_unref(pkg);
+    }
+    Py_RETURN_NONE;
+} CATCH_TO_PYTHON
+
+static PyObject *
+reset_disfavor(_GoalObject *self, PyObject *unused) try
+{
+    HyGoal goal = self->goal;
+    goal->reset_disfavor();
+    Py_RETURN_NONE;
+} CATCH_TO_PYTHON
+
+static PyObject *
 run(_GoalObject *self, PyObject *args, PyObject *kwds) try
 {
     int flags = 0;
@@ -597,6 +622,8 @@ static struct PyMethodDef goal_methods[] = {
      NULL},
     {"add_protected", (PyCFunction)add_protected, METH_O,
      NULL},
+    {"add_disfavor", (PyCFunction)add_disfavor, METH_O, NULL},
+    {"reset_disfavor", (PyCFunction)reset_disfavor, METH_NOARGS, NULL},
     {"distupgrade_all",        (PyCFunction)distupgrade_all,        METH_NOARGS,        NULL},
     {"distupgrade",                (PyCFunction)distupgrade,
      METH_VARARGS | METH_KEYWORDS, NULL},

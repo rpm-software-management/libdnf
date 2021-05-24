@@ -77,6 +77,7 @@ public:
     void lock(DnfPackage *new_pkg);
     void favor(DnfPackage *new_pkg);
     void disfavor(DnfPackage *new_pkg);
+    void reset_disfavor();
 
     /**
     * @brief If selector ill formed, it rises std::runtime_error()
