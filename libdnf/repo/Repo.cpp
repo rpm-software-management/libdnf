@@ -1227,6 +1227,7 @@ bool Repo::Impl::isRepomdInSync()
     std::unique_ptr<LrHandle> h(lrHandleInitRemote(tmpdir));
 
     handleSetOpt(h.get(), LRO_YUMDLIST, dlist);
+    handleSetOpt(h.get(), LRO_CURRENTREPOMDPATH, repomdFn.c_str());
     auto r = lrHandlePerform(h.get(), tmpdir, conf->repo_gpgcheck().getValue());
     resultGetInfo(r.get(), LRR_YUM_REPO, &yum_repo);
 
