@@ -69,6 +69,12 @@ dnf_advisorypkg_compare_solvable(DnfAdvisoryPkg *advisorypkg, Pool *pool, Solvab
     return !advisorypkg->nevraEQ(s);
 }
 
+DnfAdvisory *
+dnf_advisorypkg_get_advisory     (DnfAdvisoryPkg *advisorypkg)
+{
+    return advisorypkg->getAdvisory();
+}
+
 /**
  * dnf_advisorypkg_free:
  * @advisorypkg: a #DnfAdvisoryPkg instance.

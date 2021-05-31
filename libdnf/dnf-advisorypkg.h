@@ -22,6 +22,8 @@
 #ifndef __DNF_ADVISORYPKG_H
 #define __DNF_ADVISORYPKG_H
 
+#include "dnf-advisory.h"
+
 #include <solv/pool.h>
 #include <glib-object.h>
 
@@ -49,6 +51,8 @@ int              dnf_advisorypkg_compare          (DnfAdvisoryPkg *left,
 gboolean         dnf_advisorypkg_compare_solvable (DnfAdvisoryPkg *advisorypkg,
                                                    Pool           *pool,
                                                    Solvable       *s);
+DnfAdvisory *    dnf_advisorypkg_get_advisory     (DnfAdvisoryPkg *advisorypkg);
+
 #ifdef __cplusplus
 }
 #endif
