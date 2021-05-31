@@ -23,6 +23,8 @@
 #include "hy-iutil-private.hpp"
 #include "hy-query-private.hpp"
 #include "hy-selector.h"
+#include "dnf-advisorypkg.h"
+#include "sack/advisorypkg.hpp"
 #include "sack/packageset.hpp"
 #include "sack/query.hpp"
 #include "repo/DependencySplitter.hpp"
@@ -317,6 +319,19 @@ void
 hy_filter_duplicated(HyQuery query)
 {
     query->filterDuplicated();
+}
+
+GPtrArray *
+hy_query_get_advisory_pkgs(HyQuery query, int cmp_type)
+{
+    std::vector<libdnf::AdvisoryPkg> advisory_pkgs;
+
+    query->getAdvisoryPkgs(cmp_type, advisory_pkgs);
+    GPtrArray * advisorylist = g_ptr_array_new_full (advisory_pkgs.size(), (GDestroyNotify) dnf_advisorypkg_free);
+    for (auto & advisory_pkg : advisory_pkgs) {
+        g_ptr_array_add(advisorylist, new libdnf::AdvisoryPkg(advisory_pkg));
+    }
+    return advisorylist;
 }
 
 HySelector

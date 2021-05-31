@@ -106,6 +106,7 @@ void hy_add_filter_nevra_object(HyQuery query, HyNevra nevra, bool icase);
 void hy_add_filter_extras(HyQuery query);
 void hy_filter_recent(HyQuery query, const long unsigned int recent_limit);
 void hy_filter_duplicated(HyQuery query);
+GPtrArray * hy_query_get_advisory_pkgs(HyQuery query, int cmp_type);
 
 static inline void
 hy_query_autofree (void *v)
