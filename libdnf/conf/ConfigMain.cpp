@@ -299,6 +299,7 @@ class ConfigMain::Impl {
     OptionStringList excludepkgs{std::vector<std::string>{}};
     OptionStringList includepkgs{std::vector<std::string>{}};
     OptionStringList exclude_from_weak{std::vector<std::string>{}};
+    OptionBool exclude_from_weak_autodetect{true};
     OptionString proxy{""};
     OptionString proxy_username{nullptr};
     OptionString proxy_password{nullptr};
@@ -482,6 +483,7 @@ ConfigMain::Impl::Impl(Config & owner)
         }, nullptr, true
     );
 
+    owner.optBinds().add("exclude_from_weak_autodetect", exclude_from_weak_autodetect);
     owner.optBinds().add("proxy", proxy);
     owner.optBinds().add("proxy_username", proxy_username);
     owner.optBinds().add("proxy_password", proxy_password);
@@ -608,6 +610,7 @@ OptionBool & ConfigMain::fastestmirror() { return pImpl->fastestmirror; }
 OptionStringList & ConfigMain::excludepkgs() { return pImpl->excludepkgs; }
 OptionStringList & ConfigMain::includepkgs() { return pImpl->includepkgs; }
 OptionStringList & ConfigMain::exclude_from_weak() { return pImpl->exclude_from_weak; }
+OptionBool & ConfigMain::exclude_from_weak_autodetect() { return pImpl->exclude_from_weak_autodetect; }
 OptionString & ConfigMain::proxy() { return pImpl->proxy; }
 OptionString & ConfigMain::proxy_username() { return pImpl->proxy_username; }
 OptionString & ConfigMain::proxy_password() { return pImpl->proxy_password; }

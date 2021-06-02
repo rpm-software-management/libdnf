@@ -138,6 +138,7 @@ public:
     OptionStringList & excludepkgs();
     OptionStringList & includepkgs();
     OptionStringList & exclude_from_weak();
+    OptionBool & exclude_from_weak_autodetect();
     OptionString & proxy();
     OptionString & proxy_username();
     OptionString & proxy_password();
