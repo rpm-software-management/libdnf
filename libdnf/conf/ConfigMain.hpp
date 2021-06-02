@@ -138,6 +138,7 @@ public:
     OptionStringList & excludepkgs();
     OptionStringList & includepkgs();
     OptionStringList & disfavor();
+    OptionBool & disfavor_unmet_weak_deps();
     OptionString & proxy();
     OptionString & proxy_username();
     OptionString & proxy_password();

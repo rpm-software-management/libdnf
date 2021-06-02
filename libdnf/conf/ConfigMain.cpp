@@ -299,6 +299,7 @@ class ConfigMain::Impl {
     OptionStringList excludepkgs{std::vector<std::string>{}};
     OptionStringList includepkgs{std::vector<std::string>{}};
     OptionStringList disfavor{std::vector<std::string>{}};
+    OptionBool disfavor_unmet_weak_deps{true};
     OptionString proxy{""};
     OptionString proxy_username{nullptr};
     OptionString proxy_password{nullptr};
@@ -481,7 +482,7 @@ ConfigMain::Impl::Impl(Config & owner)
             optionTListAppend(disfavor, priority, value);
         }, nullptr, true
     );
-
+    owner.optBinds().add("disfavor_unmet_weak_deps", disfavor_unmet_weak_deps);
     owner.optBinds().add("proxy", proxy);
     owner.optBinds().add("proxy_username", proxy_username);
     owner.optBinds().add("proxy_password", proxy_password);
@@ -608,6 +609,7 @@ OptionBool & ConfigMain::fastestmirror() { return pImpl->fastestmirror; }
 OptionStringList & ConfigMain::excludepkgs() { return pImpl->excludepkgs; }
 OptionStringList & ConfigMain::includepkgs() { return pImpl->includepkgs; }
 OptionStringList & ConfigMain::disfavor() { return pImpl->disfavor; }
+OptionBool & ConfigMain::disfavor_unmet_weak_deps() { return pImpl->disfavor_unmet_weak_deps; }
 OptionString & ConfigMain::proxy() { return pImpl->proxy; }
 OptionString & ConfigMain::proxy_username() { return pImpl->proxy_username; }
 OptionString & ConfigMain::proxy_password() { return pImpl->proxy_password; }
