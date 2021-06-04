@@ -220,6 +220,26 @@ reldep_richcompare(PyObject *self, PyObject *other, int op) try
     return result;
 } CATCH_TO_PYTHON
 
+static PyObject *
+get_str(_ReldepObject *self, void *closure) try
+{
+    const char *(*func)(DnfReldep*);
+    const char *cstr;
+
+    func = (const char *(*)(DnfReldep*))closure;
+    cstr = func(self->reldep);
+    if (cstr == NULL)
+        Py_RETURN_NONE;
+    return PyUnicode_FromString(cstr);
+} CATCH_TO_PYTHON
+
+static PyGetSetDef reldep_getsetters[] = {
+    {(char*)"name", (getter)get_str, NULL, NULL, (void *)dnf_reldep_get_name},
+    {(char*)"relation", (getter)get_str, NULL, NULL, (void *)dnf_reldep_get_relation},
+    {(char*)"version", (getter)get_str, NULL, NULL, (void *)dnf_reldep_get_version},
+    {NULL}                        /* sentinel */
+};
+
 PyTypeObject reldep_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "_hawkey.Reldep",                /*tp_name*/
@@ -250,7 +270,7 @@ PyTypeObject reldep_Type = {
     0,                                 /* tp_iternext */
     0,                                /* tp_methods */
     0,                                /* tp_members */
-    0,                                /* tp_getset */
+    reldep_getsetters,                /* tp_getset */
     0,                                /* tp_base */
     0,                                /* tp_dict */
     0,                                /* tp_descr_get */
