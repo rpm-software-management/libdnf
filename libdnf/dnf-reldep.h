@@ -31,6 +31,9 @@ extern "C" {
 DnfReldep *dnf_reldep_new(DnfSack *sack, const char *name, int cmp_type, const char *evr);
 const char *dnf_reldep_to_string(DnfReldep *reldep);
 Id dnf_reldep_get_id(DnfReldep *reldep);
+const char * dnf_reldep_get_name(DnfReldep * reldep);
+const char * dnf_reldep_get_relation(DnfReldep * reldep);
+const char * dnf_reldep_get_version(DnfReldep * reldep);
 void dnf_reldep_free(DnfReldep *reldep);
 
 #ifdef __cplusplus
