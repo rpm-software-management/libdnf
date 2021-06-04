@@ -60,6 +60,24 @@ dnf_reldep_get_id (DnfReldep *reldep)
     return reldep->getId();
 }
 
+const char *
+dnf_reldep_get_name(DnfReldep * reldep)
+{
+    return reldep->getName();
+}
+
+const char *
+dnf_reldep_get_relation(DnfReldep * reldep)
+{
+    return reldep->getRelation();
+}
+
+const char *
+dnf_reldep_get_version(DnfReldep * reldep)
+{
+    return reldep->getVersion();
+}
+
 void dnf_reldep_free(DnfReldep *reldep)
 {
     delete reldep;
