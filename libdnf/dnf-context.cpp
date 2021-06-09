@@ -3160,7 +3160,7 @@ static std::map<std::string, std::map<std::string, std::vector<libdnf::ModulePac
 static std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, std::string, std::string>> modify_module_dict_and_enable_stream(std::map<std::string, std::map<std::string, std::vector<libdnf::ModulePackage *>>> & module_dict, libdnf::ModulePackageContainer & container, bool enable)
 {
     std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, std::string, std::string>> messages;
-    for (auto module_dict_iter : module_dict) {
+    for (auto & module_dict_iter : module_dict) {
         auto & name = module_dict_iter.first;
         auto & stream_dict = module_dict_iter.second;
         auto moduleState = container.getModuleState(name);
