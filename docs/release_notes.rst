@@ -20,6 +20,22 @@
 ######################
 
 ====================
+0.63.1 Release Notes
+====================
+
+- Add hy_query_get_advisory_pkgs to C API (RhBug:1960561)
+- Add dnf_advisorypkg_get_advisory()
+
+- Bug fixes:
+  - DNF does not fail on non UTF-8 file names in a package (RhBug:1893176)
+  - Improve error-reporting for modular functions
+
+Bugs fixed in 0.63.1:
+
+* :rhbug:`1893176`
+* :rhbug:`1960561`
+
+====================
 0.63.0 Release Notes
 ====================
 
