@@ -3,21 +3,24 @@
 # Daniel Lara <danniel@fedoraproject.org>, 2017. #zanata
 # Frederico Henrique Gonçalves Lima <fred@fredericolima.com.br>, 2017. #zanata
 # Ludek Janda <ljanda@redhat.com>, 2018. #zanata
-# Fábio Rodrigues Ribeiro <farribeiro@gmail.com>, 2020.
+# Fábio Rodrigues Ribeiro <farribeiro@gmail.com>, 2020, 2021.
+# Gustavo Costa <gusta@null.net>, 2020.
+# Henrique Roberto Gattermann Mittelstaedt <henrique.roberto97@gmail.com>, 2020.
+# Gustavo Costa <xfgusta@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-05 09:18-0400\n"
-"PO-Revision-Date: 2020-08-05 17:29+0000\n"
-"Last-Translator: Fábio Rodrigues Ribeiro <farribeiro@gmail.com>\n"
+"POT-Creation-Date: 2021-05-16 09:18-0400\n"
+"PO-Revision-Date: 2021-05-12 11:47+0000\n"
+"Last-Translator: Gustavo Costa <xfgusta@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://translate.fedoraproject.org/projects/dnf/libdnf-dnf-4-master/pt_BR/>\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Weblate 4.1.1\n"
+"X-Generator: Weblate 4.6.2\n"
 
 #: libdnf/conf/ConfigMain.cpp:62 libdnf/conf/OptionSeconds.cpp:40
 msgid "no value specified"
@@ -31,24 +34,39 @@ msgstr "valor de segundos '%s' não deve ser negativo"
 #: libdnf/conf/ConfigMain.cpp:71
 #, c-format
 msgid "could not convert '%s' to bytes"
-msgstr "não foi possível converter '%s'para bytes"
+msgstr "não foi possível converter '%s' para bytes"
 
 #: libdnf/conf/ConfigMain.cpp:83 libdnf/conf/OptionSeconds.cpp:66
 #, c-format
 msgid "unknown unit '%s'"
 msgstr "unidade desconhecida '%s'"
 
-#: libdnf/conf/ConfigMain.cpp:332
+#: libdnf/conf/ConfigMain.cpp:204 libdnf/conf/OptionEnum.cpp:83
+#: libdnf/conf/OptionNumber.cpp:88
+msgid "invalid value"
+msgstr "valor inválido"
+
+#: libdnf/conf/ConfigMain.cpp:207
+#, fuzzy
+#| msgid "'%s' is not an allowed value"
+msgid "value 1 is not allowed"
+msgstr "'%s' não é um valor permitido"
+
+#: libdnf/conf/ConfigMain.cpp:209
+msgid "negative value is not allowed"
+msgstr ""
+
+#: libdnf/conf/ConfigMain.cpp:341
 #, c-format
 msgid "percentage '%s' is out of range"
 msgstr "porcentagem '%s' está fora do intervalo"
 
-#: libdnf/conf/OptionBinds.cpp:76
+#: libdnf/conf/OptionBinds.cpp:85
 #, c-format
 msgid "Configuration: OptionBinding with id \"%s\" does not exist"
 msgstr "Configuração: OptionBinding com id \"%s\" não existe"
 
-#: libdnf/conf/OptionBinds.cpp:88
+#: libdnf/conf/OptionBinds.cpp:97
 #, c-format
 msgid "Configuration: OptionBinding with id \"%s\" already exists"
 msgstr "Configuração: OptionBinding com id \"%s\" já existe"
@@ -59,14 +77,10 @@ msgid "invalid boolean value '%s'"
 msgstr "valor booleano inválido '%s'"
 
 #: libdnf/conf/OptionEnum.cpp:72 libdnf/conf/OptionEnum.cpp:158
-#: libdnf/conf/OptionString.cpp:59 libdnf/conf/OptionStringList.cpp:59
+#: libdnf/conf/OptionString.cpp:64 libdnf/conf/OptionStringList.cpp:59
 #, c-format
 msgid "'%s' is not an allowed value"
 msgstr "'%s' não é um valor permitido"
-
-#: libdnf/conf/OptionEnum.cpp:83 libdnf/conf/OptionNumber.cpp:88
-msgid "invalid value"
-msgstr "valor inválido"
 
 #: libdnf/conf/OptionNumber.cpp:73
 #, c-format
@@ -93,33 +107,152 @@ msgstr "caminho informado '%s' não existe."
 msgid "could not convert '%s' to seconds"
 msgstr "não foi possível converter '%s'para segundos"
 
-#: libdnf/conf/OptionString.cpp:74
+#: libdnf/conf/OptionString.cpp:79
 msgid "GetValue(): Value not set"
 msgstr "GetValue (): valor não definido"
 
-#: libdnf/dnf-goal.cpp:68
-msgid "Could not depsolve transaction; "
+#: libdnf/dnf-context.cpp:3170 libdnf/dnf-context.cpp:3179
+#, fuzzy, c-format
+msgid "Cannot enable more streams from module '%s' at the same time"
+msgstr "Não é possível habilitar mais fluxos do módulo '%s' ao mesmo tempo"
+
+#: libdnf/dnf-context.cpp:3188 libdnf/dnf-context.cpp:3206
+#, fuzzy, c-format
+msgid ""
+"Cannot enable module '%1$s' stream '%2$s': State of module already modified"
+msgstr ""
+"Não é possível habilitar o módulo '%1$s' stream '%2$s': Estado do módulo já "
+"modificado"
+
+#: libdnf/dnf-context.cpp:3253
+#, fuzzy, c-format
+msgid "Modular dependency problem with Defaults: %s"
+msgstr "Problema de dependência modular com padrões: %s"
+
+#: libdnf/dnf-context.cpp:3256
+#, fuzzy, c-format
+#| msgid "Modular dependency problem: %s"
+msgid "Modular dependency problem with the latest modules: %s"
+msgstr "Problema de dependência modular com os módulos mais recentes: %s"
+
+#: libdnf/dnf-context.cpp:3260
+#, c-format
+msgid "Modular dependency problem: %s"
+msgstr "Problema de dependência modular: %s"
+
+#: libdnf/dnf-context.cpp:3294 libdnf/dnf-context.cpp:3318
+#: libdnf/dnf-context.cpp:3329 libdnf/dnf-context.cpp:3368
+#: libdnf/dnf-context.cpp:3384 libdnf/dnf-context.cpp:3416
+#: libdnf/dnf-context.cpp:3460 libdnf/dnf-context.cpp:3470
+#, c-format
+msgid "Unable to resolve argument '%s'"
+msgstr "Não foi possível resolver o argumento '%s'"
+
+#: libdnf/dnf-context.cpp:3301
+#, c-format
+msgid ""
+"Only module name is required. Ignoring unneeded information in argument: "
+"'%s'"
+msgstr ""
+"Somente o nome do módulo é necessário. Ignorando informações desnecessárias "
+"no argumento: '%s'"
+
+#: libdnf/dnf-context.cpp:3315
+#, fuzzy, c-format
+msgid "Cannot reset module '%s': State of module already modified"
+msgstr "Não pode desabilitar módulo '%s': Estado do módulo já modificado"
+
+#: libdnf/dnf-context.cpp:3326
+#, c-format
+msgid "Cannot disable module '%s': State of module already modified"
+msgstr "Não pode desabilitar módulo '%s': Estado do módulo já modificado"
+
+#: libdnf/dnf-context.cpp:3357 libdnf/dnf-context.cpp:3449
+#: libdnf/dnf-context.cpp:3559
+msgid "No modular data available"
+msgstr "Nenhum dado modular disponível"
+
+#: libdnf/dnf-context.cpp:3374
+#, c-format
+msgid "Ignoring unneeded information in argument: '%s'"
+msgstr "Ignorando informação desnecessária no argumento: '%s'"
+
+#: libdnf/dnf-context.cpp:3412
+#, fuzzy, c-format
+msgid ""
+"Problem during enablement of dependency tree for module '%1$s' stream "
+"'%2$s': %3$s"
+msgstr ""
+"problema durante a ativação da árvore de dependências para o fluxo do módulo"
+" '%1$s' de '%2$s': %3$s"
+
+#: libdnf/dnf-context.cpp:3424
+#, fuzzy
+msgid "Problems appeared for module enable request"
+msgstr "Apareceram problemas para a solicitação de ativação do módulo"
+
+#. this really should never happen; unless the modular repodata is corrupted
+#: libdnf/dnf-context.cpp:3496
+#, c-format
+msgid "Failed to parse module artifact NEVRA '%s'"
 msgstr ""
 
-#: libdnf/dnf-goal.cpp:70
+#: libdnf/dnf-context.cpp:3530
+#, fuzzy
+msgid "Problems appeared for module install request"
+msgstr "Apareceram problemas para a solicitação de desativação do módulo"
+
+#: libdnf/dnf-context.cpp:3590
+#, fuzzy
+msgid "Problems appeared for module reset request"
+msgstr "Apareceram problemas para a solicitação de redefinição do módulo"
+
+#: libdnf/dnf-context.cpp:3592
+#, fuzzy
+msgid "Problems appeared for module disable request"
+msgstr "Apareceram problemas para a solicitação de desativação do módulo"
+
+#: libdnf/dnf-context.cpp:3628
 #, fuzzy, c-format
+msgid ""
+"The operation would result in switching of module '%s' stream '%s' to stream"
+" '%s'"
+msgstr ""
+"A operação resultaria na mudança do módulo '%s' do fluxo '%s' para o '%s'"
+
+#: libdnf/dnf-context.cpp:3632
+#, fuzzy
+msgid ""
+"It is not possible to switch enabled streams of a module.\n"
+"It is recommended to remove all installed content from the module, and reset the module using 'microdnf module reset <module_name>' command. After you reset the module, you can install the other stream."
+msgstr ""
+"Não é possível alternar fluxos ativados de um módulo.\n"
+"É recomendável remover todo o conteúdo instalado do módulo e redefinir o módulo usando o comando '{prog} module reset <nome_do_módulo>'. Depois de redefinir o módulo, você pode instalar o outro fluxo."
+
+#: libdnf/dnf-goal.cpp:85
+#, fuzzy
+msgid "Could not depsolve transaction; "
+msgstr "Não foi possível resolver a transação; "
+
+#: libdnf/dnf-goal.cpp:87
+#, c-format
 msgid "%i problem detected:\n"
 msgid_plural "%i problems detected:\n"
 msgstr[0] "%i problema detectado:\n"
 msgstr[1] "%i problemas detectados:\n"
 
-#: libdnf/dnf-goal.cpp:78
-#, fuzzy, c-format
+#: libdnf/dnf-goal.cpp:95
+#, c-format
 msgid " Problem %1$i: %2$s\n"
 msgstr " Problema %1$i: %2$s\n"
 
-#: libdnf/dnf-goal.cpp:80
-#, fuzzy, c-format
+#: libdnf/dnf-goal.cpp:97
+#, c-format
 msgid " Problem: %s\n"
 msgstr " Problema: %s\n"
 
 #: libdnf/dnf-rpmts.cpp:79
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "No available modular metadata for modular package '%s'; cannot be installed "
 "on the system"
@@ -180,86 +313,85 @@ msgstr "não encontrou o pacote %s"
 msgid "could not add erase element %1$s(%2$i)"
 msgstr "não foi possível adicionar o elemento apagar %1$s(%2$i)"
 
-#: libdnf/dnf-sack.cpp:381
-#, fuzzy, c-format
-msgid "no %1$s string for %2$s"
-msgstr "nenhuma string %1$s para %2$s"
-
-#: libdnf/dnf-sack.cpp:404
+#: libdnf/dnf-sack.cpp:395
 msgid "failed to add solv"
 msgstr "não conseguiu adicionar solv"
 
-#: libdnf/dnf-sack.cpp:422
+#: libdnf/dnf-sack.cpp:414
+#, c-format
+msgid "no %1$s string for %2$s"
+msgstr "nenhuma string %1$s para %2$s"
+
+#: libdnf/dnf-sack.cpp:424
 #, c-format
 msgid "failed to open: %s"
 msgstr "falhou para abrir: %s"
 
-#: libdnf/dnf-sack.cpp:501
+#: libdnf/dnf-sack.cpp:503
 #, c-format
 msgid "cannot create temporary file: %s"
 msgstr "não é possível criar um arquivo temporário: %s"
 
-#: libdnf/dnf-sack.cpp:511
+#: libdnf/dnf-sack.cpp:513
 #, c-format
 msgid "failed opening tmp file: %s"
 msgstr "Falha ao abrir o arquivo tmp: %s"
 
-#: libdnf/dnf-sack.cpp:523
+#: libdnf/dnf-sack.cpp:525
 #, c-format
 msgid "write_main() failed writing data: %i"
 msgstr "write_main () falhou ao gravar dados: %i"
 
-#: libdnf/dnf-sack.cpp:540
+#: libdnf/dnf-sack.cpp:542
 msgid "write_main() failed to re-load written solv file"
 msgstr "write_main () falhou ao recarregar um arquivo resolvido por escrito"
 
-#: libdnf/dnf-sack.cpp:605
+#: libdnf/dnf-sack.cpp:607
 #, c-format
 msgid "can not create temporary file %s"
 msgstr "não pode criar um arquivo temporário %s"
 
-#: libdnf/dnf-sack.cpp:623
-#, fuzzy, c-format
+#: libdnf/dnf-sack.cpp:625
+#, c-format
 msgid "write_ext(%1$d) has failed: %2$d"
 msgstr "write_ext(%1$d) falhou: %2$d"
 
-#: libdnf/dnf-sack.cpp:678
+#: libdnf/dnf-sack.cpp:680
 msgid "null repo md file"
 msgstr "arquivo nulo repo md"
 
-#: libdnf/dnf-sack.cpp:687
+#: libdnf/dnf-sack.cpp:689
 #, c-format
 msgid "can not read file %1$s: %2$s"
 msgstr "não consigo ler o arquivo %1$s: %2$s"
 
-#: libdnf/dnf-sack.cpp:701
+#: libdnf/dnf-sack.cpp:703
 msgid "repo_add_solv() has failed."
 msgstr "repo_add_solv () falhou."
 
-#: libdnf/dnf-sack.cpp:714
-#, fuzzy
+#: libdnf/dnf-sack.cpp:716
 msgid "loading of MD_TYPE_PRIMARY has failed."
 msgstr "o carregamento de MD_TYPE_PRIMARY falhou."
 
-#: libdnf/dnf-sack.cpp:727
+#: libdnf/dnf-sack.cpp:729
 msgid "repo_add_repomdxml/rpmmd() has failed."
 msgstr "repo_add_repomdxml / rpmmd () falhou."
 
-#: libdnf/dnf-sack.cpp:794
+#: libdnf/dnf-sack.cpp:796
 msgid "failed to auto-detect architecture"
 msgstr "Falha ao detectar automaticamente a arquitetura"
 
-#: libdnf/dnf-sack.cpp:919
+#: libdnf/dnf-sack.cpp:961
 #, c-format
 msgid "failed creating cachedir %s"
 msgstr "Falha ao criar o Cachedir %s"
 
-#: libdnf/dnf-sack.cpp:1696
+#: libdnf/dnf-sack.cpp:1738
 msgid "failed loading RPMDB"
 msgstr "falha ao carregar o RPMDB"
 
-#: libdnf/dnf-sack.cpp:2403
-#, fuzzy, c-format
+#: libdnf/dnf-sack.cpp:2462
+#, c-format
 msgid "No module defaults found: %s"
 msgstr "Nenhum padrão de módulo encontrado: %s"
 
@@ -334,28 +466,28 @@ msgstr "Falha ao obter tamanho livre do sistema de arquivos para %s"
 msgid "Not enough free space in %1$s: needed %2$s, available %3$s"
 msgstr "Não há espaço livre suficiente %1$s: necessário %2$s, acessível %3$s"
 
-#: libdnf/dnf-transaction.cpp:1196
+#: libdnf/dnf-transaction.cpp:1195
 msgid "failed to set root"
 msgstr "não conseguiu definir raiz"
 
-#: libdnf/dnf-transaction.cpp:1418
+#: libdnf/dnf-transaction.cpp:1416
 #, c-format
 msgid "Error %i running transaction test"
 msgstr "Erro %i executando o teste de transação"
 
-#: libdnf/dnf-transaction.cpp:1458
+#: libdnf/dnf-transaction.cpp:1456
 #, c-format
 msgid "Error %i running transaction"
 msgstr "Erro %i transação em execução"
 
-#: libdnf/dnf-transaction.cpp:1473
+#: libdnf/dnf-transaction.cpp:1472
 #, c-format
 msgid "Transaction did not go to writing phase, but returned no error(%i)"
 msgstr ""
 "A transação não foi para a fase de escrita, mas não retornou nenhum erro "
 "(%i)"
 
-#: libdnf/dnf-utils.cpp:111 libdnf/hy-iutil.cpp:399
+#: libdnf/dnf-utils.cpp:111 libdnf/hy-iutil.cpp:403
 #, c-format
 msgid "cannot open directory %1$s: %2$s"
 msgstr "não pode abrir o diretório %1$s: %2$s"
@@ -365,316 +497,356 @@ msgstr "não pode abrir o diretório %1$s: %2$s"
 msgid "failed to remove %s"
 msgstr "não foi possível remover %s"
 
-#: libdnf/goal/Goal.cpp:55
+#: libdnf/goal/Goal.cpp:78
+#, fuzzy
 msgid "Ill-formed Selector, presence of multiple match objects in the filter"
 msgstr ""
+"Seletor malformado, presença de vários objetos de correspondência no filtro"
 
-#: libdnf/goal/Goal.cpp:56
+#: libdnf/goal/Goal.cpp:79
+#, fuzzy
 msgid "Ill-formed Selector used for the operation, incorrect comparison type"
 msgstr ""
+"Seletor malformado usado para a operação, tipo de comparação incorreto"
 
-#: libdnf/goal/Goal.cpp:67 libdnf/goal/Goal.cpp:94
-msgid " does not belong to a distupgrade repository"
-msgstr ""
-
-#: libdnf/goal/Goal.cpp:68 libdnf/goal/Goal.cpp:95
+#: libdnf/goal/Goal.cpp:90 libdnf/goal/Goal.cpp:117
 #, fuzzy
+msgid " does not belong to a distupgrade repository"
+msgstr " não pertence a um repositório distupgrade"
+
+#: libdnf/goal/Goal.cpp:91 libdnf/goal/Goal.cpp:118
 msgid " has inferior architecture"
 msgstr " tem arquitetura inferior"
 
-#: libdnf/goal/Goal.cpp:69
-#, fuzzy
+#: libdnf/goal/Goal.cpp:92
 msgid "problem with installed package "
 msgstr "problema com o pacote instalado "
 
-#: libdnf/goal/Goal.cpp:70 libdnf/goal/Goal.cpp:97
-#, fuzzy
+#: libdnf/goal/Goal.cpp:93 libdnf/goal/Goal.cpp:120
 msgid "conflicting requests"
 msgstr "solicitações conflitantes"
 
-#: libdnf/goal/Goal.cpp:71 libdnf/goal/Goal.cpp:98
-#, fuzzy
+#: libdnf/goal/Goal.cpp:94 libdnf/goal/Goal.cpp:121
 msgid "unsupported request"
 msgstr "solicitação não suportada"
 
-#: libdnf/goal/Goal.cpp:72 libdnf/goal/Goal.cpp:99
+#: libdnf/goal/Goal.cpp:95 libdnf/goal/Goal.cpp:122
 msgid "nothing provides requested "
 msgstr ""
 
-#: libdnf/goal/Goal.cpp:73
-#, fuzzy, c-format
+#: libdnf/goal/Goal.cpp:96
+#, c-format
 msgid "package %s does not exist"
 msgstr "o pacote %s não existe"
 
-#: libdnf/goal/Goal.cpp:74 libdnf/goal/Goal.cpp:101
-#, fuzzy
+#: libdnf/goal/Goal.cpp:97 libdnf/goal/Goal.cpp:124
 msgid " is provided by the system"
 msgstr " é fornecido pelo sistema"
 
-#: libdnf/goal/Goal.cpp:75 libdnf/goal/Goal.cpp:102
-#, fuzzy
+#: libdnf/goal/Goal.cpp:98 libdnf/goal/Goal.cpp:125
 msgid "some dependency problem"
 msgstr "algum problema de dependência"
 
-#: libdnf/goal/Goal.cpp:76
-#, fuzzy
+#: libdnf/goal/Goal.cpp:99
 msgid "cannot install the best update candidate for package "
 msgstr ""
-"Não é possível instalar o melhor candidato à atualização para o pacote "
+"não é possível instalar o melhor candidato à atualização para o pacote "
 
-#: libdnf/goal/Goal.cpp:77 libdnf/goal/Goal.cpp:104
+#: libdnf/goal/Goal.cpp:100 libdnf/goal/Goal.cpp:127
 msgid "cannot install the best candidate for the job"
-msgstr ""
+msgstr "não é possível instalar o melhor candidato para a tarefa"
 
-#: libdnf/goal/Goal.cpp:78
-#, c-format
+#: libdnf/goal/Goal.cpp:101
+#, fuzzy, c-format
 msgid "package %s is filtered out by modular filtering"
-msgstr ""
+msgstr "o pacote %s é filtrado por filtragem modular"
 
-#: libdnf/goal/Goal.cpp:79
-#, fuzzy, c-format
+#: libdnf/goal/Goal.cpp:102
+#, c-format
 msgid "package %s does not have a compatible architecture"
-msgstr "O pacote %s não possui uma arquitetura compatível"
-
-#: libdnf/goal/Goal.cpp:80
-#, c-format
-msgid "package %s is not installable"
-msgstr ""
-
-#: libdnf/goal/Goal.cpp:81
-#, c-format
-msgid "package %s is filtered out by exclude filtering"
-msgstr ""
-
-#: libdnf/goal/Goal.cpp:82
-#, c-format
-msgid "nothing provides %s needed by %s"
-msgstr ""
-
-#: libdnf/goal/Goal.cpp:83
-#, fuzzy, c-format
-msgid "cannot install both %s and %s"
-msgstr "Não é possível instalar ambos %s e %s"
-
-#: libdnf/goal/Goal.cpp:84
-#, c-format
-msgid "package %s conflicts with %s provided by %s"
-msgstr ""
-
-#: libdnf/goal/Goal.cpp:85
-#, c-format
-msgid "package %s obsoletes %s provided by %s"
-msgstr ""
-
-#: libdnf/goal/Goal.cpp:86
-#, c-format
-msgid "installed package %s obsoletes %s provided by %s"
-msgstr ""
-
-#: libdnf/goal/Goal.cpp:87
-#, c-format
-msgid "package %s implicitly obsoletes %s provided by %s"
-msgstr ""
-
-#: libdnf/goal/Goal.cpp:88
-#, c-format
-msgid "package %s requires %s, but none of the providers can be installed"
-msgstr ""
-
-#: libdnf/goal/Goal.cpp:89
-#, c-format
-msgid "package %s conflicts with %s provided by itself"
-msgstr ""
-
-#: libdnf/goal/Goal.cpp:90
-#, c-format
-msgid "both package %s and %s obsolete %s"
-msgstr ""
-
-#: libdnf/goal/Goal.cpp:96
-msgid "problem with installed module "
-msgstr ""
-
-#: libdnf/goal/Goal.cpp:100
-#, c-format
-msgid "module %s does not exist"
-msgstr ""
+msgstr "o pacote %s não possui uma arquitetura compatível"
 
 #: libdnf/goal/Goal.cpp:103
-msgid "cannot install the best update candidate for module "
-msgstr ""
-
-#: libdnf/goal/Goal.cpp:105 libdnf/goal/Goal.cpp:108
 #, c-format
-msgid "module %s is disabled"
-msgstr ""
+msgid "package %s is not installable"
+msgstr "pacote %s não é instalável"
+
+#: libdnf/goal/Goal.cpp:104
+#, fuzzy, c-format
+msgid "package %s is filtered out by exclude filtering"
+msgstr "o pacote %s é filtrado pela filtragem de exclusão"
+
+#: libdnf/goal/Goal.cpp:105
+#, fuzzy, c-format
+msgid "nothing provides %s needed by %s"
+msgstr "nada fornece %s necessário para %s"
 
 #: libdnf/goal/Goal.cpp:106
 #, c-format
-msgid "module %s does not have a compatible architecture"
-msgstr ""
+msgid "cannot install both %s and %s"
+msgstr "não é possível instalar %s e %s"
 
 #: libdnf/goal/Goal.cpp:107
 #, c-format
-msgid "module %s is not installable"
-msgstr ""
+msgid "package %s conflicts with %s provided by %s"
+msgstr "pacote %s conflita com %s oferecido por %s"
+
+#: libdnf/goal/Goal.cpp:108
+#, c-format
+msgid "package %s obsoletes %s provided by %s"
+msgstr "pacote %s torna obsoleto %s oferecido por %s"
 
 #: libdnf/goal/Goal.cpp:109
+#, c-format
+msgid "installed package %s obsoletes %s provided by %s"
+msgstr "pacote instalado %s torna obsoleto %s oferecido por %s"
+
+#: libdnf/goal/Goal.cpp:110
+#, fuzzy, c-format
+msgid "package %s implicitly obsoletes %s provided by %s"
+msgstr "o pacote %s torna obsoleto implicitamente %s fornecido por %s"
+
+#: libdnf/goal/Goal.cpp:111
+#, c-format
+msgid "package %s requires %s, but none of the providers can be installed"
+msgstr "pacote %s requer %s, mas nenhum dos provedores pode ser instalado"
+
+#: libdnf/goal/Goal.cpp:112
+#, c-format
+msgid "package %s conflicts with %s provided by itself"
+msgstr "pacote %s conflita com %s oferecido por si mesmo"
+
+#: libdnf/goal/Goal.cpp:113
+#, c-format
+msgid "both package %s and %s obsolete %s"
+msgstr "ambos os pacotes %s e %s tornam obsoleto %s"
+
+#: libdnf/goal/Goal.cpp:119
+msgid "problem with installed module "
+msgstr "problema com módulo instalado "
+
+#: libdnf/goal/Goal.cpp:123
+#, c-format
+msgid "module %s does not exist"
+msgstr "módulo %s não existe"
+
+#: libdnf/goal/Goal.cpp:126
+msgid "cannot install the best update candidate for module "
+msgstr ""
+"não é possível instalar o melhor candidato de atualização para o módulo "
+
+#: libdnf/goal/Goal.cpp:128 libdnf/goal/Goal.cpp:131
+#, c-format
+msgid "module %s is disabled"
+msgstr "módulo %s está desabilitado"
+
+#: libdnf/goal/Goal.cpp:129
+#, c-format
+msgid "module %s does not have a compatible architecture"
+msgstr "módulo %s não possui uma arquitetura compatível"
+
+#: libdnf/goal/Goal.cpp:130
+#, c-format
+msgid "module %s is not installable"
+msgstr "módulo %s não é instalável"
+
+#: libdnf/goal/Goal.cpp:132
 #, c-format
 msgid "nothing provides %s needed by module %s"
 msgstr ""
 
-#: libdnf/goal/Goal.cpp:110
+#: libdnf/goal/Goal.cpp:133
 #, c-format
 msgid "cannot install both modules %s and %s"
-msgstr ""
+msgstr "não é possível instalar ambos os módulos %s e %s"
 
-#: libdnf/goal/Goal.cpp:111
+#: libdnf/goal/Goal.cpp:134
 #, c-format
 msgid "module %s conflicts with %s provided by %s"
-msgstr ""
+msgstr "módulo %s conflita com %s oferecido por %s"
 
-#: libdnf/goal/Goal.cpp:112
+#: libdnf/goal/Goal.cpp:135
 #, c-format
 msgid "module %s obsoletes %s provided by %s"
-msgstr ""
+msgstr "módulo %s torna obsoleto %s oferecido por %s"
 
-#: libdnf/goal/Goal.cpp:113
+#: libdnf/goal/Goal.cpp:136
 #, c-format
 msgid "installed module %s obsoletes %s provided by %s"
-msgstr ""
+msgstr "módulo instalado %s torna obsoleto %s oferecido por %s"
 
-#: libdnf/goal/Goal.cpp:114
-#, c-format
+#: libdnf/goal/Goal.cpp:137
+#, fuzzy, c-format
 msgid "module %s implicitly obsoletes %s provided by %s"
-msgstr ""
+msgstr "o módulo %s torna obsoleto implicitamente %s fornecido por %s"
 
-#: libdnf/goal/Goal.cpp:115
+#: libdnf/goal/Goal.cpp:138
 #, c-format
 msgid "module %s requires %s, but none of the providers can be installed"
-msgstr ""
+msgstr "módulo %s requer %s, mas nenhum dos provedores pode ser instalado"
 
-#: libdnf/goal/Goal.cpp:116
+#: libdnf/goal/Goal.cpp:139
 #, c-format
 msgid "module %s conflicts with %s provided by itself"
-msgstr ""
+msgstr "módulo %s conflita com %s oferecido por si mesmo"
 
-#: libdnf/goal/Goal.cpp:117
+#: libdnf/goal/Goal.cpp:140
 #, c-format
 msgid "both module %s and %s obsolete %s"
-msgstr ""
+msgstr "ambos os módulos %s e %s tornam obsoleto %s"
 
-#: libdnf/goal/Goal.cpp:1038
+#: libdnf/goal/Goal.cpp:1055
+#, fuzzy
 msgid "no solver set"
-msgstr ""
+msgstr "nenhum solucionador definido"
 
-#: libdnf/goal/Goal.cpp:1043
-#, c-format
+#: libdnf/goal/Goal.cpp:1060
+#, fuzzy, c-format
 msgid "failed to make %s absolute"
-msgstr ""
+msgstr "falhou em tornar %s absoluto"
 
-#: libdnf/goal/Goal.cpp:1050
-#, c-format
+#: libdnf/goal/Goal.cpp:1067
+#, fuzzy, c-format
 msgid "failed writing debugdata to %1$s: %2$s"
-msgstr ""
+msgstr "falha ao gravar dados de depuração em %1$s: %2$s"
 
-#: libdnf/goal/Goal.cpp:1062
+#: libdnf/goal/Goal.cpp:1079
 msgid "no solv in the goal"
 msgstr ""
 
-#: libdnf/goal/Goal.cpp:1064
+#: libdnf/goal/Goal.cpp:1081
 msgid "no solution, cannot remove protected package"
-msgstr ""
+msgstr "sem solução, não é possível remover pacote protegido"
 
-#: libdnf/goal/Goal.cpp:1067
+#: libdnf/goal/Goal.cpp:1084
 msgid "no solution possible"
-msgstr ""
+msgstr "sem solução possível"
 
-#: libdnf/goal/Goal.cpp:1479
+#: libdnf/goal/Goal.cpp:1210
+msgid "Problem: "
+msgstr "Problema: "
+
+#: libdnf/goal/Goal.cpp:1215
+#, c-format
+msgid "Problem %d: "
+msgstr "Problema %d: "
+
+#: libdnf/goal/Goal.cpp:1542
 msgid ""
 "The operation would result in removing the following protected packages: "
-msgstr ""
+msgstr "A operação resultaria na remoção dos seguintes pacotes protegidos: "
 
-#: libdnf/hy-iutil.cpp:322
+#: libdnf/hy-iutil.cpp:326
 #, c-format
 msgid "Failed renaming %1$s to %2$s: %3$s"
-msgstr ""
+msgstr "Falha ao renomear %1$s para %2$s: %3$s"
 
-#: libdnf/hy-iutil.cpp:330
+#: libdnf/hy-iutil.cpp:334
 #, c-format
 msgid "Failed setting perms on %1$s: %2$s"
 msgstr ""
 
-#: libdnf/hy-iutil.cpp:376
+#: libdnf/hy-iutil.cpp:380
 #, c-format
 msgid "cannot create directory %1$s: %2$s"
-msgstr ""
+msgstr "não é possível criar o diretório %1$s: %2$s"
 
-#: libdnf/hy-iutil.cpp:411
+#: libdnf/hy-iutil.cpp:415
 #, c-format
 msgid "cannot stat path %1$s: %2$s"
 msgstr ""
 
-#: libdnf/module/ModulePackage.cpp:499
+#: libdnf/module/ModulePackage.cpp:573
 #, c-format
 msgid "Invalid format of Platform module: %s"
-msgstr ""
+msgstr "Formato inválido da Plataforma do módulo: %s"
 
-#: libdnf/module/ModulePackage.cpp:514
+#: libdnf/module/ModulePackage.cpp:588
 msgid "Multiple module platforms provided by available packages\n"
-msgstr ""
+msgstr "Múltiplas plataformas de módulo oferecidas pelos pacotes disponíveis\n"
 
-#: libdnf/module/ModulePackage.cpp:527
+#: libdnf/module/ModulePackage.cpp:601
 msgid "Multiple module platforms provided by installed packages\n"
-msgstr ""
+msgstr "Múltiplas plataformas de módulo oferecidas pelos pacotes instalados\n"
 
-#: libdnf/module/ModulePackage.cpp:554
+#: libdnf/module/ModulePackage.cpp:628
 #, c-format
 msgid "Detection of Platform Module in %s failed: %s"
-msgstr ""
+msgstr "Detecção do Módulo de Plataforma em %s falhou: %s"
 
-#: libdnf/module/ModulePackage.cpp:563
+#: libdnf/module/ModulePackage.cpp:637
 #, c-format
 msgid "Missing PLATFORM_ID in %s"
 msgstr ""
 
-#: libdnf/module/ModulePackage.cpp:568
+#: libdnf/module/ModulePackage.cpp:642
 msgid "No valid Platform ID detected"
-msgstr ""
+msgstr "Nenhum ID de Plataforma válido detectado"
 
-#: libdnf/module/ModulePackageContainer.cpp:68
+#: libdnf/module/ModulePackageContainer.cpp:107
 #, c-format
 msgid "Cannot enable multiple streams for module '%s'"
 msgstr ""
 
-#: libdnf/module/ModulePackageContainer.cpp:294
+#: libdnf/module/ModulePackageContainer.cpp:346
 #, c-format
 msgid "Conflicting defaults with repo '%s': %s"
 msgstr ""
 
-#: libdnf/module/ModulePackageContainer.cpp:1569
+#: libdnf/module/ModulePackageContainer.cpp:918
+msgid "Installing module profiles:\n"
+msgstr "Instalando perfis de módulo:\n"
+
+#: libdnf/module/ModulePackageContainer.cpp:933
+msgid "Disabling module profiles:\n"
+msgstr "Desativando perfis de módulo:\n"
+
+#: libdnf/module/ModulePackageContainer.cpp:948
+msgid "Enabling module streams:\n"
+msgstr ""
+
+#: libdnf/module/ModulePackageContainer.cpp:962
+msgid "Switching module streams:\n"
+msgstr ""
+
+#: libdnf/module/ModulePackageContainer.cpp:980
+msgid "Disabling modules:\n"
+msgstr ""
+
+#: libdnf/module/ModulePackageContainer.cpp:991
+msgid "Resetting modules:\n"
+msgstr ""
+
+#: libdnf/module/ModulePackageContainer.cpp:1674
 #, c-format
 msgid "Unable to load modular Fail-Safe data at '%s'"
 msgstr ""
 
-#: libdnf/module/ModulePackageContainer.cpp:1575
+#: libdnf/module/ModulePackageContainer.cpp:1680
 #, c-format
 msgid "Unable to load modular Fail-Safe data for module '%s:%s'"
 msgstr ""
 
-#: libdnf/module/ModulePackageContainer.cpp:1639
+#: libdnf/module/ModulePackageContainer.cpp:1763
 #, c-format
 msgid "Unable to create directory \"%s\" for modular Fail Safe data: %s"
 msgstr ""
 
-#: libdnf/module/ModulePackageContainer.cpp:1661
+#: libdnf/module/ModulePackageContainer.cpp:1779
 #, c-format
 msgid "Unable to save a modular Fail Safe data to '%s'"
 msgstr ""
 
-#: libdnf/module/ModulePackageContainer.cpp:1686
+#: libdnf/module/ModulePackageContainer.cpp:1802
 #, c-format
 msgid "Unable to remove a modular Fail Safe data in '%s'"
+msgstr ""
+
+#: libdnf/module/ModulePackageContainer.cpp:1834
+#, c-format
+msgid ""
+"Unable to apply modular obsoletes to '%s:%s' because target module '%s' is "
+"disabled"
 msgstr ""
 
 #: libdnf/module/modulemd/ModuleMetadata.cpp:86
@@ -685,7 +857,7 @@ msgstr ""
 #: libdnf/module/modulemd/ModuleMetadata.cpp:110
 #, c-format
 msgid "Failed to resolve: %s"
-msgstr ""
+msgstr "Falha em resolver: %s"
 
 #: libdnf/module/modulemd/ModuleMetadata.cpp:115
 #, c-format
@@ -702,21 +874,26 @@ msgstr ""
 msgid "Failed to upgrade streams: %s"
 msgstr ""
 
+#: libdnf/module/modulemd/ModuleMetadata.cpp:219
+#, c-format
+msgid "Cannot retrieve module obsoletes because no stream matching %s: %s"
+msgstr ""
+
 #: libdnf/plugin/plugin.cpp:46
 #, c-format
 msgid "Can't load shared library \"%s\": %s"
-msgstr ""
+msgstr "Não é possível carregar biblioteca compartilhada \"%s\": %s"
 
 #: libdnf/plugin/plugin.cpp:61 libdnf/plugin/plugin.cpp:67
 #: libdnf/plugin/plugin.cpp:73 libdnf/plugin/plugin.cpp:79
 #, c-format
 msgid "Can't obtain address of symbol \"%s\": %s"
-msgstr ""
+msgstr "Não é possível obter o endereço do símbolo \"%s\": %s"
 
 #: libdnf/plugin/plugin.cpp:86
 #, c-format
 msgid "Loading plugin file=\"%s\""
-msgstr ""
+msgstr "Carregando arquivo plugin=\"%s\""
 
 #: libdnf/plugin/plugin.cpp:89
 #, c-format
@@ -730,12 +907,12 @@ msgstr ""
 #: libdnf/plugin/plugin.cpp:105
 #, c-format
 msgid "Can't read plugin directory \"%s\": %s"
-msgstr ""
+msgstr "Não é possível ler o diretório do plugin \"%s\": %s"
 
 #: libdnf/plugin/plugin.cpp:114
 #, c-format
 msgid "Can't load plugin \"%s\": %s"
-msgstr ""
+msgstr "Não é possível carregar o plugin \"%s\": %s"
 
 #: libdnf/repo/DependencySplitter.cpp:50
 msgid ""
@@ -752,14 +929,15 @@ msgstr "Repositório %s não possui espelho ou baseurl definido."
 #: libdnf/repo/Repo.cpp:330
 #, c-format
 msgid "Repository '%s' has unsupported type: 'type=%s', skipping."
+msgstr "O repositório '%s' tem um tipo não suportado: 'type=%s', pulando."
+
+#: libdnf/repo/Repo.cpp:489 libdnf/repo/Repo.cpp:610 libdnf/repo/Repo.cpp:641
+#: libdnf/repo/Repo.cpp:1382
+#, c-format
+msgid "repo '%s': 'basecachedir' is not set"
 msgstr ""
 
-#: libdnf/repo/Repo.cpp:546
-#, c-format
-msgid "Cannot find a valid baseurl for repo: %s"
-msgstr "Impossível encontrar uma baseurl válida para o repo: %s"
-
-#: libdnf/repo/Repo.cpp:583 libdnf/repo/Repo.cpp:1672
+#: libdnf/repo/Repo.cpp:512
 msgid ""
 "Maximum download speed is lower than minimum. Please change configuration of"
 " minrate or throttle"
@@ -767,136 +945,150 @@ msgstr ""
 "A velocidade máxima de download é menor que a mínima. Por favor altere a "
 "configuração de minrate ou throttle"
 
-#: libdnf/repo/Repo.cpp:633 libdnf/repo/Repo.cpp:655
+#: libdnf/repo/Repo.cpp:546
+#, c-format
+msgid "repo '%s': 'proxy_username' is set but not 'proxy_password'"
+msgstr ""
+
+#: libdnf/repo/Repo.cpp:548
+msgid "'proxy_username' is set but not 'proxy_password'"
+msgstr ""
+
+#: libdnf/repo/Repo.cpp:629
+#, c-format
+msgid "Cannot find a valid baseurl for repo: %s"
+msgstr "Impossível encontrar uma baseurl válida para o repo: %s"
+
+#: libdnf/repo/Repo.cpp:660 libdnf/repo/Repo.cpp:682
 #, c-format
 msgid "%s: gpgme_data_new_from_fd(): %s"
 msgstr "%s: gpgme_data_new_from_fd(): %s"
 
-#: libdnf/repo/Repo.cpp:641 libdnf/repo/Repo.cpp:663
+#: libdnf/repo/Repo.cpp:668 libdnf/repo/Repo.cpp:690
 #, c-format
 msgid "%s: gpgme_op_import(): %s"
 msgstr "%s: gpgme_op_import(): %s"
 
-#: libdnf/repo/Repo.cpp:686 libdnf/repo/Repo.cpp:752 libdnf/repo/Repo.cpp:880
+#: libdnf/repo/Repo.cpp:713 libdnf/repo/Repo.cpp:779 libdnf/repo/Repo.cpp:907
 #, c-format
 msgid "%s: gpgme_ctx_set_engine_info(): %s"
 msgstr "%s: gpgme_ctx_set_engine_info(): %s"
 
-#: libdnf/repo/Repo.cpp:713 libdnf/repo/Repo.cpp:777
+#: libdnf/repo/Repo.cpp:740 libdnf/repo/Repo.cpp:804
 #, c-format
 msgid "can not list keys: %s"
 msgstr "não pode listar chaves: %s"
 
-#: libdnf/repo/Repo.cpp:806
-#, fuzzy, c-format
+#: libdnf/repo/Repo.cpp:833
+#, c-format
 msgid "Failed to retrieve GPG key for repo '%s': %s"
-msgstr "Falha ao recuperar a chave GPG para o repo '%s': %s"
+msgstr "Falha ao recuperar a chave GPG para o repo. '%s': %s"
 
-#: libdnf/repo/Repo.cpp:859
+#: libdnf/repo/Repo.cpp:886
 #, c-format
 msgid "repo %s: 0x%s already imported"
 msgstr "repo %s: 0 x%s já importado"
 
-#: libdnf/repo/Repo.cpp:887
+#: libdnf/repo/Repo.cpp:914
 #, c-format
 msgid "repo %s: imported key 0x%s."
 msgstr "repo %s: chave importada 0x%s."
 
-#: libdnf/repo/Repo.cpp:1131
+#: libdnf/repo/Repo.cpp:1162
 #, c-format
 msgid "reviving: repo '%s' skipped, no metalink."
 msgstr "reativando: repo '%s' ignorado, sem metalink."
 
-#: libdnf/repo/Repo.cpp:1150
+#: libdnf/repo/Repo.cpp:1181
 #, c-format
 msgid "reviving: repo '%s' skipped, no usable hash."
 msgstr "reativando: repo '%s' ignorado, nenhum hash utilizável."
 
-#: libdnf/repo/Repo.cpp:1173
+#: libdnf/repo/Repo.cpp:1204
 #, c-format
 msgid "reviving: failed for '%s', mismatched %s sum."
 msgstr "reativando: falhou por '%s', checksum %s não coincide."
 
-#: libdnf/repo/Repo.cpp:1179
+#: libdnf/repo/Repo.cpp:1210
 #, c-format
 msgid "reviving: '%s' can be revived - metalink checksums match."
 msgstr "reativando: '%s' pode ser reativado - checksum do metalink coincide."
 
-#: libdnf/repo/Repo.cpp:1204
+#: libdnf/repo/Repo.cpp:1235
 #, c-format
 msgid "reviving: '%s' can be revived - repomd matches."
 msgstr "reativando: '%s' pode ser reativado - repomd coincide."
 
-#: libdnf/repo/Repo.cpp:1206
+#: libdnf/repo/Repo.cpp:1237
 #, c-format
 msgid "reviving: failed for '%s', mismatched repomd."
 msgstr "reativando: falhou por '%s', repomd não coincide."
 
-#: libdnf/repo/Repo.cpp:1224
+#: libdnf/repo/Repo.cpp:1255
 #, c-format
 msgid "Cannot create repo destination directory \"%s\": %s"
 msgstr ""
 
-#: libdnf/repo/Repo.cpp:1230
+#: libdnf/repo/Repo.cpp:1261
 #, c-format
 msgid "Cannot create repo temporary directory \"%s\": %s"
 msgstr "Não é possível criar o diretório temporário do repositório \"%s\": %s"
 
-#: libdnf/repo/Repo.cpp:1244
+#: libdnf/repo/Repo.cpp:1275
 #, c-format
 msgid "Cannot create directory \"%s\": %s"
 msgstr "Não é possível criar o diretório \"%s\": %s"
 
-#: libdnf/repo/Repo.cpp:1267
+#: libdnf/repo/Repo.cpp:1298
 #, c-format
 msgid "Cannot rename directory \"%s\" to \"%s\": %s"
 msgstr "Não é possível renomear o diretório \"%s\" para \"%s\": %s"
 
-#: libdnf/repo/Repo.cpp:1290
+#: libdnf/repo/Repo.cpp:1321
 #, c-format
 msgid "repo: using cache for: %s"
 msgstr "repo: utilizando cache para: %s"
 
-#: libdnf/repo/Repo.cpp:1302
+#: libdnf/repo/Repo.cpp:1333
 #, c-format
 msgid "Cache-only enabled but no cache for '%s'"
 msgstr "Cache-only habilitado mas sem cache para '%s'"
 
-#: libdnf/repo/Repo.cpp:1306
+#: libdnf/repo/Repo.cpp:1337
 #, c-format
 msgid "repo: downloading from remote: %s"
 msgstr "repo: download do controle remoto: %s"
 
-#: libdnf/repo/Repo.cpp:1312
-#, fuzzy, c-format
+#: libdnf/repo/Repo.cpp:1344
+#, c-format
 msgid "Failed to download metadata for repo '%s': %s"
-msgstr "Falha ao baixar os metadados do repositório '%s': %s"
+msgstr "Falha ao baixar os metadados do repo. '%s': %s"
 
-#: libdnf/repo/Repo.cpp:1338
+#: libdnf/repo/Repo.cpp:1370
 msgid "getCachedir(): Computation of SHA256 failed"
 msgstr "getCachedir (): Falha na computação de SHA256"
 
-#: libdnf/repo/Repo.cpp:1363
+#: libdnf/repo/Repo.cpp:1398
 #, c-format
 msgid "Cannot create persistdir \"%s\": %s"
 msgstr ""
 
-#: libdnf/repo/Repo.cpp:1763
+#: libdnf/repo/Repo.cpp:1775
 msgid "resume cannot be used simultaneously with the byterangestart param"
 msgstr ""
 "currículo não pode ser usado simultaneamente com o parâmetro byterangestart"
 
-#: libdnf/repo/Repo.cpp:1780
+#: libdnf/repo/Repo.cpp:1792
 #, c-format
 msgid "PackageTarget initialization failed: %s"
 msgstr "Falha na inicialização do PackageTarget: %s"
 
-#: libdnf/repo/Repo.cpp:1886
+#: libdnf/repo/Repo.cpp:1898
 #, c-format
 msgid "Cannot open %s: %s"
 msgstr "Não pode abrir %s: %s"
 
-#: libdnf/repo/Repo.cpp:1930
+#: libdnf/repo/Repo.cpp:1942
 #, c-format
 msgid "Log handler with id %ld doesn't exist"
 msgstr "Manipulador de log com id %ld não existe"
@@ -905,13 +1097,13 @@ msgstr "Manipulador de log com id %ld não existe"
 msgid "In progress"
 msgstr "Em andamento"
 
-#: libdnf/transaction/Swdb.cpp:188 libdnf/transaction/Swdb.cpp:216
-#: libdnf/transaction/Swdb.cpp:228 libdnf/transaction/Swdb.cpp:245
-#: libdnf/transaction/Swdb.cpp:384 libdnf/transaction/Swdb.cpp:394
+#: libdnf/transaction/Swdb.cpp:187 libdnf/transaction/Swdb.cpp:215
+#: libdnf/transaction/Swdb.cpp:227 libdnf/transaction/Swdb.cpp:244
+#: libdnf/transaction/Swdb.cpp:383 libdnf/transaction/Swdb.cpp:393
 msgid "Not in progress"
 msgstr "Não em progresso"
 
-#: libdnf/transaction/Swdb.cpp:255
+#: libdnf/transaction/Swdb.cpp:254
 msgid "No transaction in progress"
 msgstr "Nenhuma transação em andamento"
 
