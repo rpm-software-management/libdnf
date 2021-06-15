@@ -26,6 +26,7 @@ along with dnfdaemon-server.  If not, see <https://www.gnu.org/licenses/>.
 #include "dnfdaemon-server/utils.hpp"
 
 #include <fmt/format.h>
+#include <libdnf/common/proc.hpp>
 #include <libdnf/rpm/transaction.hpp>
 #include <libdnf/transaction/transaction_item.hpp>
 #include <sdbus-c++/sdbus-c++.h>
@@ -85,11 +86,13 @@ sdbus::MethodReply Goal::resolve(sdbus::MethodCall && call) {
     return reply;
 }
 
-libdnf::transaction::TransactionWeakPtr new_db_transaction(libdnf::Base * base, const std::string & comment) {
+libdnf::transaction::TransactionWeakPtr new_db_transaction(
+    libdnf::Base * base, const std::string & comment, const uid_t uid) {
     auto transaction_sack = base->get_transaction_sack();
     auto transaction = transaction_sack->new_transaction();
-    // TODO(mblaha): user id
-    //transaction->set_user_id(get_login_uid());
+    if (uid != libdnf::INVALID_UID) {
+        transaction->set_user_id(uid);
+    }
     if (!comment.empty()) {
         transaction->set_comment(comment);
     }
@@ -231,18 +234,28 @@ sdbus::MethodReply Goal::do_transaction(sdbus::MethodCall && call) {
     // read options from dbus call
     dnfdaemon::KeyValueMap options;
     call >> options;
-    std::string comment = key_value_map_get<std::string>(options, "comment", "");
 
     // TODO(mblaha): ensure that system repo is not loaded twice
     //session.fill_sack();
 
     auto base = session.get_base();
     auto & goal = session.get_goal();
+    auto & logger = *base->get_logger();
 
     download_packages(session, goal);
 
     libdnf::rpm::Transaction rpm_transaction(*base);
-    auto db_transaction = new_db_transaction(base, comment);
+
+    uid_t uid = libdnf::INVALID_UID;
+    // try to get login uid from client process id
+    try {
+        auto pid = call.getCredsPid();
+        uid = libdnf::read_login_uid_from_proc(pid);
+    } catch (const std::exception & ex) {
+        logger.warning(fmt::format("Cannot get client pid: {}", ex.what()));
+    }
+    std::string comment = key_value_map_get<std::string>(options, "comment", "");
+    auto db_transaction = new_db_transaction(base, comment, uid);
 
     std::vector<std::unique_ptr<dnfdaemon::RpmTransactionItem>> transaction_items;
 
