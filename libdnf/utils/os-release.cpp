@@ -80,12 +80,10 @@ std::map<std::string, std::string> getOsReleaseData()
 
 static void initLibRpm()
 {
-    static bool libRpmInitiated{false};
-    if (libRpmInitiated) return;
-    if (rpmReadConfigFiles(NULL, NULL) != 0) {
-        throw std::runtime_error("failed to read rpm config files\n");
-    }
-    libRpmInitiated = true;
+    // call dnf_context_globals_init to ensure this only happens once
+    g_autoptr(GError) local_error = NULL;
+    if (!dnf_context_globals_init(&local_error))
+        throw std::runtime_error(local_error->message);
 }
 
 static std::string getBaseArch()
