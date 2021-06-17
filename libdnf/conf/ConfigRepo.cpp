@@ -79,7 +79,6 @@ class ConfigRepo::Impl {
     OptionString enabled_metadata{""};
     OptionChild<OptionString> user_agent{mainConfig.user_agent()};
     OptionChild<OptionBool> countme{mainConfig.countme()};
-    OptionEnum<std::string> failovermethod{"priority", {"priority", "roundrobin"}};
     OptionChild<OptionBool> sslverifystatus{mainConfig.sslverifystatus()};
 };
 
@@ -230,7 +229,6 @@ OptionChild<OptionBool> & ConfigRepo::skip_if_unavailable() { return pImpl->skip
 OptionString & ConfigRepo::enabled_metadata() { return pImpl->enabled_metadata; }
 OptionChild<OptionString> & ConfigRepo::user_agent() { return pImpl->user_agent; }
 OptionChild<OptionBool> & ConfigRepo::countme() { return pImpl->countme; }
-OptionEnum<std::string> & ConfigRepo::failovermethod() { return pImpl->failovermethod; }
 OptionChild<OptionBool> & ConfigRepo::sslverifystatus() { return pImpl->sslverifystatus; }
 
 }

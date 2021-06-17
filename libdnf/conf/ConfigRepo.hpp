@@ -95,7 +95,6 @@ public:
     OptionChild<OptionString> & user_agent();
     OptionChild<OptionBool> & countme();
     // yum compatibility options
-    OptionEnum<std::string> & failovermethod();
     OptionChild<OptionBool> & sslverifystatus();
 
 private:
