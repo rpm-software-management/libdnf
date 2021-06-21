@@ -1966,9 +1966,12 @@ out:
     g_free(updatedata.last_mirror_failure_message);
     g_free(updatedata.last_mirror_url);
     dnf_state_release_locks(state);
-    lr_handle_setopt(priv->repo_handle, NULL, LRO_PROGRESSCB, NULL);
-    lr_handle_setopt(priv->repo_handle, NULL, LRO_HMFCB, NULL);
-    lr_handle_setopt(priv->repo_handle, NULL, LRO_PROGRESSDATA, 0xdeadbeef);
+    if (!lr_handle_setopt(priv->repo_handle, NULL, LRO_PROGRESSCB, NULL))
+            g_debug("Failed to reset LRO_PROGRESSCB to NULL");
+    if (!lr_handle_setopt(priv->repo_handle, NULL, LRO_HMFCB, NULL))
+            g_debug("Failed to reset LRO_HMFCB to NULL");
+    if (!lr_handle_setopt(priv->repo_handle, NULL, LRO_PROGRESSDATA, 0xdeadbeef))
+            g_debug("Failed to set LRO_PROGRESSDATA to 0xdeadbeef");
     return ret;
 } CATCH_TO_GERROR(FALSE)
 
@@ -2296,8 +2299,10 @@ dnf_repo_download_packages(DnfRepo *repo,
 
     ret = TRUE;
 out:
-    lr_handle_setopt(priv->repo_handle, NULL, LRO_PROGRESSCB, NULL);
-    lr_handle_setopt(priv->repo_handle, NULL, LRO_PROGRESSDATA, 0xdeadbeef);
+    if (!lr_handle_setopt(priv->repo_handle, NULL, LRO_PROGRESSCB, NULL))
+            g_debug("Failed to reset LRO_PROGRESSCB to NULL");
+    if (!lr_handle_setopt(priv->repo_handle, NULL, LRO_PROGRESSDATA, 0xdeadbeef))
+            g_debug("Failed to set LRO_PROGRESSDATA to 0xdeadbeef");
     g_free(global_data.last_mirror_failure_message);
     g_free(global_data.last_mirror_url);
     g_slist_free_full(package_targets, (GDestroyNotify)lr_packagetarget_free);

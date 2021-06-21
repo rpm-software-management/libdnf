@@ -1523,8 +1523,6 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
 
     /* this section done */
     ret = dnf_state_done(state, error);
-    if (!ret)
-        goto out;
 out:
     dnf_transaction_reset(transaction);
     dnf_state_release_locks(state);

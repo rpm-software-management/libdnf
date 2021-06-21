@@ -1753,8 +1753,6 @@ void ModulePackageContainer::updateFailSafeData()
     if (pImpl->activatedModules) {
         std::vector<ModulePackage *> latest = pImpl->getLatestActiveEnabledModules();
 
-        auto begin = fileNames.begin();
-        auto end = fileNames.end();
         if (g_mkdir_with_parents(pImpl->persistDir.c_str(), 0755) == -1) {
             const char * errTxt = strerror(errno);
             auto logger(Log::getLogger());
