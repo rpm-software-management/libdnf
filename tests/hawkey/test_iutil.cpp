@@ -79,11 +79,13 @@ START_TEST(test_checksum)
     /* the taken checksum are not zeros anymore */
     fail_if(checksum_cmp(cs1, cs2) == 0);
     fail_if(checksum_cmp(cs1_sum, cs2_sum) == 0);
+    fp = NULL;
 
     /* append something */
     fail_if((fp = fopen(new_file, "a")) == NULL);
     fail_unless(fwrite("X", 1, 1, fp) == 1);
     fclose(fp);
+    fp = NULL;
 
     /* take the second checksums */
     fail_if((fp = fopen(new_file, "r")) == NULL);

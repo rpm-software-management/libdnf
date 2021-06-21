@@ -704,7 +704,11 @@ static std::vector<Key> rawkey2infos(int fd) {
 
     // set GPG home dir
     char tmpdir[] = "/tmp/tmpdir.XXXXXX";
-    mkdtemp(tmpdir);
+    if (!mkdtemp(tmpdir)) {
+        const char * errTxt = strerror(errno);
+        throw RepoError(tfm::format(_("Cannot create repo temporary directory \"%s\": %s"),
+                                      tmpdir, errTxt));
+    }
     Finalizer tmpDirRemover([&tmpdir](){
         dnf_remove_recursive(tmpdir, NULL);
     });
@@ -894,8 +898,14 @@ void Repo::Impl::importRepoKeys()
             }
 
             struct stat sb;
-            if (stat(gpgDir.c_str(), &sb) != 0 || !S_ISDIR(sb.st_mode))
-                mkdir(gpgDir.c_str(), 0777);
+            if (stat(gpgDir.c_str(), &sb) != 0 || !S_ISDIR(sb.st_mode)) {
+                int res = mkdir(gpgDir.c_str(), 0777);
+                if (res != 0 && errno != EEXIST) {
+                    auto msg = tfm::format(_("Failed to create directory \"%s\": %d - %s"),
+                                           gpgDir, errno, strerror(errno));
+                    throw RepoError(msg);
+                }
+            }
 
             gpgme_ctx_t ctx;
             gpgme_new(&ctx);
@@ -1147,7 +1157,11 @@ bool Repo::Impl::isMetalinkInSync()
 {
     auto logger(Log::getLogger());
     char tmpdir[] = "/tmp/tmpdir.XXXXXX";
-    mkdtemp(tmpdir);
+    if (!mkdtemp(tmpdir)) {
+        const char * errTxt = strerror(errno);
+        throw RepoError(tfm::format(_("Cannot create repo temporary directory \"%s\": %s"),
+                                      tmpdir, errTxt));
+    }
     Finalizer tmpDirRemover([&tmpdir](){
         dnf_remove_recursive(tmpdir, NULL);
     });
@@ -1217,7 +1231,11 @@ bool Repo::Impl::isRepomdInSync()
     auto logger(Log::getLogger());
     LrYumRepo *yum_repo;
     char tmpdir[] = "/tmp/tmpdir.XXXXXX";
-    mkdtemp(tmpdir);
+    if (!mkdtemp(tmpdir)) {
+        const char * errTxt = strerror(errno);
+        throw RepoError(tfm::format(_("Cannot create repo temporary directory \"%s\": %s"),
+                                      tmpdir, errTxt));
+    }
     Finalizer tmpDirRemover([&tmpdir](){
         dnf_remove_recursive(tmpdir, NULL);
     });

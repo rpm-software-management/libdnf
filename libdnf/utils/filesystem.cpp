@@ -24,6 +24,8 @@
 #include <cerrno>
 #include <cstring>
 
+#include "bgettext/bgettext-lib.h"
+#include "tinyformat/tinyformat.hpp"
 #include "filesystem.hpp"
 #include "../error.hpp"
 
@@ -72,7 +74,12 @@ makeDirPath(std::string filePath)
         previous = position;
         // create directory if necessary
         if (!pathExists(directory.c_str())) {
-            mkdir(directory.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+            int res = mkdir(directory.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+            if (res != 0 && errno != EEXIST) {
+                auto msg = tfm::format(_("Failed to create directory \"%s\": %d - %s"),
+                                       directory, errno, strerror(errno));
+                throw Error(msg);
+            }
         }
     }
 }
