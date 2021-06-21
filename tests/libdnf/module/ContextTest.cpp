@@ -146,13 +146,6 @@ void ContextTest::testLoadModules()
     g_assert(strstr(error->message, "Unable to resolve argument 'httpd:nonexistent'"));
     g_clear_pointer(&error, g_error_free);
 
-    // try to install without default profile
-    module_specs[0] = "httpd";
-    g_assert(!dnf_context_module_install(context, module_specs, &error));
-    g_assert(error);
-    g_assert(strstr(error->message, "No default profile found"));
-    g_clear_pointer(&error, g_error_free);
-
     // try to install non-existent profile
     module_specs[0] = "httpd:2.4/nonexistent";
     g_assert(!dnf_context_module_install(context, module_specs, &error));
@@ -160,7 +153,8 @@ void ContextTest::testLoadModules()
     g_assert(strstr(error->message, "No profile found matching 'nonexistent'"));
     g_clear_pointer(&error, g_error_free);
 
-    module_specs[0] = "httpd:2.4/default";
+    // install default profile from modulemd-defaults
+    module_specs[0] = "httpd:2.4";
     g_assert(dnf_context_module_install(context, module_specs, &error));
     g_assert_no_error(error);
     HyGoal goal = dnf_context_get_goal(context);
@@ -170,6 +164,13 @@ void ContextTest::testLoadModules()
     g_assert(pkgs);
     g_assert(pkglist_has_nevra(pkgs, "httpd-2.4.25-8.x86_64"));
     g_assert(pkglist_has_nevra(pkgs, "libnghttp2-1.21.1-1.x86_64"));
+
+    // Verify we can install the default stream from modulemd-defaults.
+    // This would fail with EnableMultipleStreamsException if it didn't match
+    // the 2.4 stream since we enabled the 2.4 stream just above.
+    module_specs[0] = "httpd";
+    g_assert(dnf_context_module_install(context, module_specs, &error));
+    g_assert_no_error(error);
 }
 
 void ContextTest::sackHas(DnfSack * sack, libdnf::ModulePackage * pkg) const
