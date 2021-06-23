@@ -376,6 +376,25 @@ add_protected(_GoalObject *self, PyObject *seq) try
 } CATCH_TO_PYTHON
 
 static PyObject *
+add_exclude_from_weak(_GoalObject *self, PyObject *seq) try
+{
+    HyGoal goal = self->goal;
+    auto pset = pyseq_to_packageset(seq, hy_goal_get_sack(goal));
+    if (!pset)
+        return NULL;
+    goal->add_exclude_from_weak(*(pset.get()));
+    Py_RETURN_NONE;
+} CATCH_TO_PYTHON
+
+static PyObject *
+reset_exclude_from_weak(_GoalObject *self, PyObject *unused) try
+{
+    HyGoal goal = self->goal;
+    goal->reset_exclude_from_weak();
+    Py_RETURN_NONE;
+} CATCH_TO_PYTHON
+
+static PyObject *
 run(_GoalObject *self, PyObject *args, PyObject *kwds) try
 {
     int flags = 0;
@@ -597,6 +616,8 @@ static struct PyMethodDef goal_methods[] = {
      NULL},
     {"add_protected", (PyCFunction)add_protected, METH_O,
      NULL},
+    {"add_exclude_from_weak", (PyCFunction)add_exclude_from_weak, METH_O, NULL},
+    {"reset_exclude_from_weak", (PyCFunction)reset_exclude_from_weak, METH_NOARGS, NULL},
     {"distupgrade_all",        (PyCFunction)distupgrade_all,        METH_NOARGS,        NULL},
     {"distupgrade",                (PyCFunction)distupgrade,
      METH_VARARGS | METH_KEYWORDS, NULL},

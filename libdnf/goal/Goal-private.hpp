@@ -23,6 +23,7 @@
 
 #include "Goal.hpp"
 #include "IdQueue.hpp"
+#include "../sack/packageset.hpp"
 
 namespace libdnf {
 
@@ -37,6 +38,7 @@ private:
 
     DnfSack *sack;
     Queue staging;
+    PackageSet exclude_from_weak;
     Solver *solv{nullptr};
     ::Transaction *trans{nullptr};
     DnfGoalActions actions{DNF_NONE};
