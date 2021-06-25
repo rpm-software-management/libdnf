@@ -395,6 +395,14 @@ reset_exclude_from_weak(_GoalObject *self, PyObject *unused) try
 } CATCH_TO_PYTHON
 
 static PyObject *
+exclude_from_weak_autodetect(_GoalObject *self, PyObject *unused) try
+{
+    HyGoal goal = self->goal;
+    goal->exclude_from_weak_autodetect();
+    Py_RETURN_NONE;
+} CATCH_TO_PYTHON
+
+static PyObject *
 run(_GoalObject *self, PyObject *args, PyObject *kwds) try
 {
     int flags = 0;
@@ -618,6 +626,7 @@ static struct PyMethodDef goal_methods[] = {
      NULL},
     {"add_exclude_from_weak", (PyCFunction)add_exclude_from_weak, METH_O, NULL},
     {"reset_exclude_from_weak", (PyCFunction)reset_exclude_from_weak, METH_NOARGS, NULL},
+    {"exclude_from_weak_autodetect", (PyCFunction)exclude_from_weak_autodetect, METH_NOARGS, NULL},
     {"distupgrade_all",        (PyCFunction)distupgrade_all,        METH_NOARGS,        NULL},
     {"distupgrade",                (PyCFunction)distupgrade,
      METH_VARARGS | METH_KEYWORDS, NULL},
