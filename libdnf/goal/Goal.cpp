@@ -800,9 +800,83 @@ Goal::add_exclude_from_weak(const DnfPackageSet & pset)
 }
 
 void
+Goal::add_exclude_from_weak(DnfPackage *pkg)
+{
+    // ensure that the map has a corrent size before set to prevent memory corruption
+    map_grow(pImpl->exclude_from_weak.getMap(), dnf_sack_get_pool(pImpl->sack)->nsolvables);
+    pImpl->exclude_from_weak.set(pkg);
+}
+
+void
 Goal::reset_exclude_from_weak()
 {
     pImpl->exclude_from_weak.clear();
+}
+
+void
+Goal::exclude_from_weak_autodetect()
+{
+    Query installed_query(pImpl->sack, Query::ExcludeFlags::IGNORE_EXCLUDES);
+    installed_query.installed();
+    if (installed_query.empty()) {
+        return;
+    }
+    Query base_query(pImpl->sack);
+    base_query.apply();
+    auto * installed_pset = installed_query.getResultPset();
+    Id installed_id = -1;
+
+    std::vector<const char *> installed_names;
+    installed_names.reserve(installed_pset->size() + 1);
+
+    // Iterate over installed packages to detect unmet weak deps
+    while ((installed_id = installed_pset->next(installed_id)) != -1) {
+        g_autoptr(DnfPackage) pkg = dnf_package_new(pImpl->sack, installed_id);
+        installed_names.push_back(dnf_package_get_name(pkg));
+        std::unique_ptr<libdnf::DependencyContainer> recommends(dnf_package_get_recommends(pkg));
+        for (int i = 0; i < recommends->count(); ++i) {
+            Query query(base_query);
+            std::unique_ptr<libdnf::Dependency> dep(recommends->getPtr(i));
+            const char * version = dep->getVersion();
+            //  There can be installed provider in different version or upgraded packed can recommend a different version
+            //  Ignore version and search only by reldep name
+            if (version && strlen(version) > 0) {
+                query.addFilter(HY_PKG_PROVIDES, HY_EQ, dep->getName());
+            } else {
+                query.addFilter(HY_PKG_PROVIDES, dep.get());
+            }
+            // No providers of recommend => continue
+            if (query.empty()) {
+                continue;
+            }
+            Query test_installed(query);
+            test_installed.installed();
+            // when there is not installed any provider of recommend, exclude it
+            if (test_installed.empty()) {
+                add_exclude_from_weak(*query.getResultPset());
+            }
+        }
+    }
+
+    // Invesigate supplements of only available packages with a different name to installed packages
+    installed_names.push_back(nullptr);
+    base_query.addFilter(HY_PKG_NAME, HY_NEQ, installed_names.data());
+    auto * available_pset = base_query.getResultPset();
+    *available_pset -= *installed_pset;
+    Id available_id = -1;
+    while ((available_id = available_pset->next(available_id)) != -1) {
+        g_autoptr(DnfPackage) pkg = dnf_package_new(pImpl->sack, available_id);
+        std::unique_ptr<libdnf::DependencyContainer> supplements(dnf_package_get_supplements(pkg));
+        if (supplements->count() == 0) {
+            continue;
+        }
+        Query query(installed_query);
+        query.addFilter(HY_PKG_PROVIDES, supplements.get());
+        // When supplemented package already installed, exclude_from_weak available package
+        if (!query.empty()) {
+            add_exclude_from_weak(pkg);
+        }
+    }
 }
 
 void
