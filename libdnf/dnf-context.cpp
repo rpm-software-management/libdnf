@@ -3531,10 +3531,8 @@ dnf_context_module_install(DnfContext * context, const char ** module_specs, GEr
                             auto matching = latest->getProfiles(profileName);
                             profiles.insert(profiles.begin(), matching.begin(), matching.end());
                         }
-                        // Fallback to the new `default` knob in the modulemd proper.
-                        // This isn't actually used yet, at least in Fedora.
                         if (profiles.empty()) {
-                            profiles.push_back(latest->getDefaultProfile());
+                            throw std::runtime_error("No default profile found for " + latest->getFullIdentifier());
                         }
                     }
 

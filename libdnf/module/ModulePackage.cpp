@@ -442,6 +442,19 @@ ModulePackage::getProfiles(const std::string &name) const
     return result_profiles;
 }
 
+/* @brief Return default profiles as defined in the modulemd itself.
+ *
+ * Note this is probably not the function you want. You likely want to use
+ * ModulePackageContainer::getDefaultProfiles() instead, which sources the
+ * distro-level modulemd-defaults.
+ *
+ * Also, this function returns the first default profile, but instead we want it
+ * to return all default profiles. So supporting this properly in the future
+ * would require a new ModulePackage::getDefaultProfiles() which returns an
+ * std::vec<ModuleProfile> instead.
+ *
+ * @return ModuleProfile
+ */
 ModuleProfile
 ModulePackage::getDefaultProfile() const
 {
