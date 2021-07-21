@@ -301,7 +301,7 @@ void decompress(const char * inPath, const char * outPath, mode_t outMode, const
     fclose(inFile);
 }
 
-void checksum(const char * type, const char * inPath, const char * checksum_valid, bool * valid_out, gchar ** calculated_out)
+static void checksum(const char * type, const char * inPath, const char * checksum_valid, bool * valid_out, gchar ** calculated_out)
 {
     GError * errP{nullptr};
     gboolean valid;

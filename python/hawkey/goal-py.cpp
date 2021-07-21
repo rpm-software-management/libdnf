@@ -281,15 +281,15 @@ install(_GoalObject *self, PyObject *args, PyObject *kwds) try
 
     if (flags & HY_WEAK_SOLV) {
         if (pkg) {
-            hy_goal_install_optional(self->goal, pkg);
+            (void)hy_goal_install_optional(self->goal, pkg);
         } else {
-            hy_goal_install_selector_optional(self->goal, sltr, &error);
+            (void)hy_goal_install_selector_optional(self->goal, sltr, &error);
         }
     } else {
         if (pkg) {
-            hy_goal_install(self->goal, pkg);
+            (void)hy_goal_install(self->goal, pkg);
         } else {
-            hy_goal_install_selector(self->goal, sltr, &error);
+            (void)hy_goal_install_selector(self->goal, sltr, &error);
         }
     }
     return op_error2exc(error);
