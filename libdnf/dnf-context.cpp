@@ -3486,7 +3486,10 @@ dnf_context_module_install(DnfContext * context, const char ** module_specs, GEr
                         }
                         for (const auto &nevra : modpkg->getArtifacts()) {
                             int epoch;
-                            char *name, *version, *release, *arch;
+                            g_autofree char *name = nullptr;
+                            g_autofree char *version = nullptr;
+                            g_autofree char *release = nullptr;
+                            g_autofree char *arch = nullptr;
                             if (hy_split_nevra(nevra.c_str(), &name, &epoch, &version, &release, &arch)) {
                                 // this really should never happen; unless the modular repodata is corrupted
                                 g_autofree char *errmsg = g_strdup_printf (_("Failed to parse module artifact NEVRA '%s'"), nevra.c_str());
