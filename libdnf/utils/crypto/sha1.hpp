@@ -1,5 +1,6 @@
 #include <string>
 #include <openssl/sha.h>
+#include <openssl/evp.h>
 
 
 /*
@@ -20,5 +21,5 @@ public:
     static constexpr int digestLength = SHA_DIGEST_LENGTH;
 
 private:
-    SHA_CTX ctx;
+    EVP_MD_CTX *md_ctx;
 };
