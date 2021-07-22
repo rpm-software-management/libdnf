@@ -17,7 +17,7 @@ void ModulePackageContainerTest::setUp()
     char *retptr = mkdtemp(tmpdir);
     CPPUNIT_ASSERT(retptr);
     char * etc_target = g_strjoin(NULL, tmpdir, "/etc", NULL);
-    dnf_copy_recursive(TESTDATADIR "/modules/etc", etc_target, &error);
+    CPPUNIT_ASSERT(dnf_copy_recursive(TESTDATADIR "/modules/etc", etc_target, &error));
     g_assert_no_error(error);
     g_free(etc_target);
 
