@@ -181,6 +181,8 @@ std::vector<std::string> ModuleMetadata::getDefaultProfiles(std::string moduleNa
 
     ModulemdModule * myModule = modulemd_module_index_get_module(resultingModuleIndex, moduleName.c_str());
     ModulemdDefaultsV1 * myDefaults = (ModulemdDefaultsV1 *) modulemd_module_get_defaults(myModule);
+    if (!myDefaults)
+        return output;
 
     char ** list = modulemd_defaults_v1_get_default_profiles_for_stream_as_strv(myDefaults, moduleStream.c_str(), NULL);
 
