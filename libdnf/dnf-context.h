@@ -325,7 +325,7 @@ gboolean           dnf_context_module_install            (DnfContext * context,
  * @module_specs: Module specs that should be enabled
  * @error: Error
  *
- * Disable mudules, recalculate module filtration, but do not commit modular changes.
+ * Disable modules, recalculate module filtration, but do not commit modular changes.
  * To commit modular changes it requires to call dnf_context_run()
  * Returns FALSE when an error is set.
  *
@@ -334,6 +334,22 @@ gboolean           dnf_context_module_install            (DnfContext * context,
 gboolean         dnf_context_module_disable             (DnfContext * context,
                                                          const char ** module_specs,
                                                          GError ** error);
+
+/**
+ * dnf_context_module_disable_all:
+ * @context: DnfContext
+ * @module_specs: Module specs that should be enabled
+ * @error: Error
+ *
+ * Disable all modules, recalculate module filtration, but do not commit modular
+ * changes.  To commit modular changes it requires to call dnf_context_run()
+ * Returns FALSE when an error is set.
+ *
+ * Since: 0.64.0
+ **/
+gboolean         dnf_context_module_disable_all         (DnfContext * context,
+                                                         GError ** error);
+
 /**
  * dnf_context_module_reset:
  * @context: DnfContext
