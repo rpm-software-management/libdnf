@@ -3673,6 +3673,32 @@ dnf_context_module_disable(DnfContext * context, const char ** module_specs, GEr
 } CATCH_TO_GERROR(FALSE)
 
 gboolean
+dnf_context_module_disable_all(DnfContext * context, GError ** error) try
+{
+    DnfContextPrivate *priv = GET_PRIVATE (context);
+
+    /* create sack and add sources */
+    if (priv->sack == nullptr) {
+        dnf_state_reset (priv->state);
+        if (!dnf_context_setup_sack(context, priv->state, error)) {
+            return FALSE;
+        }
+    }
+
+    DnfSack * sack = priv->sack;
+    auto container = dnf_sack_get_module_container(sack);
+    if (!container) {
+        return TRUE;
+    }
+
+    auto all_modules = container->getModulePackages();
+    for (auto & module: all_modules) {
+        container->disable(module->getName());
+    }
+    return recompute_modular_filtering(context, sack, error);
+} CATCH_TO_GERROR(FALSE)
+
+gboolean
 dnf_context_module_reset(DnfContext * context, const char ** module_specs, GError ** error) try
 {
     return context_modules_reset_or_disable(context, module_specs, error, true);
