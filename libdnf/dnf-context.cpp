@@ -1007,6 +1007,23 @@ dnf_context_get_keep_cache(DnfContext *context)
 }
 
 /**
+ * dnf_context_get_ignore_arch:
+ * @context: a #DnfContext instance.
+ *
+ * Gets if we ignore the CPU's architecture.
+ *
+ * Returns: %TRUE if we ignore the CPU arch
+ *
+ * Since: 0.63.2
+ **/
+gboolean
+dnf_context_get_ignore_arch(DnfContext *context)
+{
+    auto & mainConf = libdnf::getGlobalMainConfig();
+    return mainConf.ignorearch().getValue();
+}
+
+/**
  * dnf_context_get_only_trusted:
  * @context: a #DnfContext instance.
  *
@@ -1534,6 +1551,22 @@ dnf_context_set_keep_cache(DnfContext *context, gboolean keep_cache)
 {
     auto & mainConf = libdnf::getGlobalMainConfig(false);
     mainConf.keepcache().set(libdnf::Option::Priority::RUNTIME, keep_cache);
+}
+
+/**
+ * dnf_context_set_ignore_arch:
+ * @context: a #DnfContext instance.
+ * @ignorearch: %TRUE allow installation of architecture incompatible packages
+ *
+ * Enables or disables ignoring CPU architecture for package installation.
+ *
+ * Since: 0.63.2
+ **/
+void
+dnf_context_set_ignore_arch(DnfContext *context, gboolean ignore_arch)
+{
+    auto & mainConf = libdnf::getGlobalMainConfig(false);
+    mainConf.ignorearch().set(libdnf::Option::Priority::RUNTIME, ignore_arch);
 }
 
 /**

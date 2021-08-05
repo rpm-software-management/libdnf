@@ -887,6 +887,10 @@ dnf_context_func(void)
     g_assert(dnf_context_get_check_transaction(ctx));
     dnf_context_set_keep_cache(ctx, FALSE);
     g_assert(!dnf_context_get_keep_cache(ctx));
+    dnf_context_set_ignore_arch(ctx, TRUE);
+    g_assert(dnf_context_get_ignore_arch(ctx));
+    dnf_context_set_ignore_arch(ctx, FALSE);
+    g_assert(!dnf_context_get_ignore_arch(ctx));
 
     dnf_context_set_cache_dir(ctx, "/var");
     dnf_context_set_repo_dir(ctx, "/etc");

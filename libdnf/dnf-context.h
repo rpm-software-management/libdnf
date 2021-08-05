@@ -137,6 +137,7 @@ gboolean         dnf_context_get_cache_only             (DnfContext     *context
 gboolean         dnf_context_get_check_disk_space       (DnfContext     *context);
 gboolean         dnf_context_get_check_transaction      (DnfContext     *context);
 gboolean         dnf_context_get_keep_cache             (DnfContext     *context);
+gboolean         dnf_context_get_ignore_arch            (DnfContext     *context);
 gboolean         dnf_context_get_only_trusted           (DnfContext     *context);
 gboolean         dnf_context_get_zchunk                 (DnfContext     *context);
 gboolean         dnf_context_get_write_history          (DnfContext     *context);
@@ -195,6 +196,8 @@ void             dnf_context_set_check_transaction      (DnfContext     *context
                                                          gboolean        check_transaction);
 void             dnf_context_set_keep_cache             (DnfContext     *context,
                                                          gboolean        keep_cache);
+void             dnf_context_set_ignore_arch            (DnfContext     *context,
+                                                         gboolean        ignore_arch);
 void             dnf_context_set_enable_filelists       (DnfContext     *context,
                                                          gboolean        enable_filelists);
 void             dnf_context_set_only_trusted           (DnfContext     *context,
