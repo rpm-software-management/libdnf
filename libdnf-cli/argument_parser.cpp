@@ -29,6 +29,15 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 namespace libdnf::cli {
 
+void ArgumentParser::Group::register_argument(Argument * arg) {
+    for (auto * item : arguments) {
+        if (item->id == arg->id) {
+            throw ArgumentIdExists(arg->id);
+        }
+    }
+    arguments.push_back(arg);
+}
+
 ArgumentParser::Argument::Argument(ArgumentParser & owner, std::string id) : owner(owner) {
     if (id.find('.') != id.npos) {
         throw InvalidId(id);
@@ -236,6 +245,24 @@ void ArgumentParser::Command::register_positional_arg(PositionalArg * arg) {
         }
     }
     pos_args.push_back(arg);
+}
+
+void ArgumentParser::Command::register_group(Group * grp) {
+    for (auto * item : groups) {
+        if (item->id == grp->id) {
+            throw GroupIdExists(grp->id);
+        }
+    }
+    for (auto * arg : grp->get_arguments()) {
+        if (auto cmd = dynamic_cast<Command *>(arg)) {
+            register_command(cmd);
+        } else if (auto * named_arg = dynamic_cast<NamedArg *>(arg)) {
+            register_named_arg(named_arg);
+        } else if (auto * pos_arg = dynamic_cast<PositionalArg *>(arg)) {
+            register_positional_arg(pos_arg);
+        }
+    }
+    groups.push_back(grp);
 }
 
 template <class Arg>
@@ -462,6 +489,13 @@ ArgumentParser::PositionalArg * ArgumentParser::add_new_positional_arg(
     std::unique_ptr<PositionalArg> arg(new PositionalArg(*this, id, nargs, init_value, values));
     auto * ptr = arg.get();
     pos_args.push_back(std::move(arg));
+    return ptr;
+}
+
+ArgumentParser::Group * ArgumentParser::add_new_group(const std::string & id) {
+    std::unique_ptr<Group> group(new Group(id));
+    auto * ptr = group.get();
+    groups.push_back(std::move(group));
     return ptr;
 }
 
