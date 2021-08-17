@@ -26,6 +26,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstring>
 #include <iomanip>
 #include <iostream>
+#include <set>
 
 namespace libdnf::cli {
 
@@ -253,15 +254,6 @@ void ArgumentParser::Command::register_group(Group * grp) {
             throw GroupIdExists(grp->id);
         }
     }
-    for (auto * arg : grp->get_arguments()) {
-        if (auto cmd = dynamic_cast<Command *>(arg)) {
-            register_command(cmd);
-        } else if (auto * named_arg = dynamic_cast<NamedArg *>(arg)) {
-            register_named_arg(named_arg);
-        } else if (auto * pos_arg = dynamic_cast<PositionalArg *>(arg)) {
-            register_positional_arg(pos_arg);
-        }
-    }
     groups.push_back(grp);
 }
 
@@ -396,6 +388,8 @@ void ArgumentParser::Command::help() const noexcept {
     bool print = false;
     std::cout.flags(std::ios::left);
 
+    std::set<Argument *> used_arguments;
+
     if (!description.empty()) {
         std::cout << description << '\n';
         print = true;
@@ -403,14 +397,42 @@ void ArgumentParser::Command::help() const noexcept {
 
     if (!commands_help_header.empty() && !cmds.empty()) {
         auto * table = libdnf::cli::output::create_help_table(commands_help_header);
-        auto * out = libdnf::cli::output::get_stream(table);
+/*        auto * out = libdnf::cli::output::get_stream(table);
         if (print) {
             fputs("\n", out);
+        }*/
+
+        std::set<Argument *> cmds_set(cmds.begin(), cmds.end());
+
+        // Processing commands in groups.
+        for (auto * grp : groups) {
+            struct libscols_line * header{nullptr};
+            for (auto * arg : grp->get_arguments()) {
+                if (dynamic_cast<Command *>(arg) && cmds_set.count(arg) > 0) {
+                    if (!header) {
+                        scols_table_new_line(table, nullptr);
+                        header = scols_table_new_line(table, nullptr);
+                        scols_line_set_data(header, 0, grp->get_header().c_str());
+                        print = true;
+                    }
+                    used_arguments.insert(arg);
+                    libdnf::cli::output::add_line_into_help_table(table, "  " + arg->get_id(), arg->get_short_description(), header);
+                }
+            }
         }
-        fputs((commands_help_header + '\n').c_str(), out);
-        for (const auto * arg : cmds) {
-            libdnf::cli::output::add_line_into_help_table(table, "  " + arg->get_id(), arg->get_short_description());
+
+        // Processing ungrouped commands.
+        if (print) {
+            scols_table_new_line(table, nullptr);
         }
+        struct libscols_line * header = scols_table_new_line(table, nullptr);
+        scols_line_set_data(header, 0, commands_help_header.c_str());
+        for (auto * arg : cmds) {
+            if (used_arguments.count(arg) == 0) {
+                libdnf::cli::output::add_line_into_help_table(table, "  " + arg->get_id(), arg->get_short_description(), header);
+            }
+        }
+
         libdnf::cli::output::print_and_unref_help_table(table);
         print = true;
     }
