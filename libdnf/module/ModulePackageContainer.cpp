@@ -1051,13 +1051,15 @@ ModulePackageContainer::getLatestModulesPerRepo(ModuleState moduleFilter,
     if (modulePackages.empty()) {
         return {};
     }
-    auto & packageFirst = modulePackages[0];
+
     std::vector<std::vector<std::vector<ModulePackage *>>> output;
     auto sack = pImpl->moduleSack;
     std::sort(modulePackages.begin(), modulePackages.end(),
               [sack](const ModulePackage * first, const ModulePackage * second)
               {return modulePackageLatestPerRepoSorter(sack, first, second);});
     auto vectorSize = modulePackages.size();
+
+    auto & packageFirst = modulePackages[0];
     output.push_back(
         std::vector<std::vector<ModulePackage *>>{std::vector<ModulePackage *> {packageFirst}});
     int repoIndex = 0;
