@@ -59,6 +59,10 @@ public:
     std::string getDescription() const;
 
     std::vector<std::string> getArtifacts() const;
+
+    /// Return sorted list of RPM names that are demodularized.
+    std::vector<std::string> getDemodularizedRpms() const;
+
     bool operator==(const ModulePackage &r) const;
     /**
     * @brief Return profiles matched by name (which is possibly a globby pattern).

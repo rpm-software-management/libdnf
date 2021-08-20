@@ -418,6 +418,24 @@ std::vector<std::string> ModulePackage::getArtifacts() const
     return result_rpms;
 }
 
+/**
+ * @brief Return sorted list of RPM names that are demodularized.
+ *
+ * @return std::vector<std::string>
+ */
+std::vector<std::string> ModulePackage::getDemodularizedRpms() const
+{
+    std::vector<std::string> result_rpms;
+    char ** rpms = modulemd_module_stream_v2_get_demodularized_rpms((ModulemdModuleStreamV2 *) mdStream);
+
+    for (char **iter = rpms; iter && *iter; iter++) {
+        result_rpms.emplace_back(std::string(*iter));
+    }
+
+    g_strfreev(rpms);
+    return result_rpms;
+}
+
 std::vector<ModuleProfile>
 ModulePackage::getProfiles(const std::string &name) const
 {
