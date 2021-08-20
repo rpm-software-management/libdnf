@@ -859,7 +859,7 @@ ModulePackage * ModulePackageContainer::getLatestModule(std::vector<ModulePackag
             if (!latest) {
                 latest = module;
             } else {
-                if (module->getVersion() > latest->getVersion()) {
+                if (module->getVersionNum() > latest->getVersionNum()) {
                     latest = module;
                 }
             }
