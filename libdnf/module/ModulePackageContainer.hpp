@@ -134,6 +134,16 @@ public:
     std::vector<ModulePackage *> getModulePackages();
     std::vector<std::vector<std::vector<ModulePackage *>>> getLatestModulesPerRepo(
         ModuleState moduleFilter, std::vector<ModulePackage *> modulePackages);
+
+    /**
+    * @brief Return all latest ModulePackages for each module Name, stream, context and architecture. In case of
+    * multiple latest packages, all will be returned. When activeOnly is true, it returns only the latest active
+    * packages.
+    *
+    * @return std::vector<ModulePackage *>
+    */
+    std::vector<ModulePackage *> getLatestModules(const std::vector<ModulePackage *> modulePackages, bool activeOnly);
+
     ModulePackage * getLatestModule(std::vector<ModulePackage *> modulePackages, bool activeOnly);
 
     std::vector<ModulePackage *> requiresModuleEnablement(const libdnf::PackageSet & packages);
