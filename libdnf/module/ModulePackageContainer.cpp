@@ -1101,6 +1101,35 @@ ModulePackageContainer::getLatestModulesPerRepo(ModuleState moduleFilter,
     return output;
 }
 
+std::vector<ModulePackage *>
+ModulePackageContainer::getLatestModules(const std::vector<ModulePackage *> modulePackages, bool activeOnly)
+{
+    // Because modular sovables uses as name combination of module $name:$stream:$context, we can use to get the lates
+    // Query
+    std::vector<ModulePackage *> latestModules;
+    Query query(pImpl->moduleSack, Query::ExcludeFlags::IGNORE_EXCLUDES);
+    if (activeOnly) {
+        // When no active module return
+        if (!pImpl->activatedModules) {
+            return latestModules;
+        }
+        query.addFilter(HY_PKG, HY_EQ, pImpl->activatedModules.get());
+    }
+
+    PackageSet inputModulePackages(pImpl->moduleSack);
+    for (auto modulePackage : modulePackages) {
+        inputModulePackages.set(modulePackage->getId());
+    }
+    query.addFilter(HY_PKG, HY_EQ, &inputModulePackages);
+    query.addFilter(HY_PKG_LATEST_PER_ARCH, HY_EQ, 1);
+    auto set = query.runSet();
+
+    Id moduleId = -1;
+    while ((moduleId = set->next(moduleId)) != -1) {
+        latestModules.push_back(pImpl->modules.at(moduleId).get());
+    }
+    return latestModules;
+}
 
 std::pair<std::vector<std::vector<std::string>>, ModulePackageContainer::ModuleErrorType>
 ModulePackageContainer::resolveActiveModulePackages(bool debugSolver)
