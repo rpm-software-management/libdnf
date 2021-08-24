@@ -153,7 +153,21 @@ void ContextTest::testLoadModules()
     g_assert(strstr(error->message, "No profile found matching 'nonexistent'"));
     g_clear_pointer(&error, g_error_free);
 
-    // install default profile from modulemd-defaults
+    // disable all modules
+    g_assert(dnf_context_module_disable_all(context, &error));
+    g_assert_no_error(error);
+
+    // installing a modular package should fail
+    g_assert(!dnf_context_install(context, "httpd-2.4.25-8.x86_64", &error));
+    g_assert(error);
+    g_assert(strstr(error->message, "No package matches 'httpd-2.4.25-8.x86_64'"));
+    g_clear_pointer(&error, g_error_free);
+
+    // reset all modules
+    g_assert(dnf_context_reset_all_modules(context, sack, &error));
+    g_assert_no_error(error);
+
+    // enable and install default profile from modulemd-defaults
     module_specs[0] = "httpd:2.4";
     g_assert(dnf_context_module_install(context, module_specs, &error));
     g_assert_no_error(error);
