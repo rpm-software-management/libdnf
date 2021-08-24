@@ -2308,47 +2308,107 @@ void readModuleMetadataFromRepo(DnfSack * sack, libdnf::ModulePackageContainer *
     }
 }
 
-static std::tuple<std::vector<std::string>, std::vector<std::string>>
-collectNevraForInclusionExclusion(libdnf::ModulePackageContainer &modulePackageContainer)
+/// @return std::map<name:stream.arch, std::vector<std::string>>
+static std::map<std::string, std::vector<std::string>> getDemodularizedRpms(
+    libdnf::ModulePackageContainer & moduleContainer, const std::vector<libdnf::ModulePackage *> & allPackages)
 {
+    std::map<std::string, std::vector<std::string>> ret;
+    auto latest = moduleContainer.getLatestModules(allPackages, true);
+    for (auto modulePackage : latest) {
+        auto demodularized = modulePackage->getDemodularizedRpms();
+        if (demodularized.empty()) {
+            continue;
+        }
+        std::string packageID{modulePackage->getNameStream()};
+        packageID.append(".");
+        packageID.append(modulePackage->getArch());
+        auto & data = ret[packageID];
+        data.insert(data.end(), demodularized.begin(), demodularized.end());
+    }
+    return ret;
+}
+
+/// Return <includeNEVRAs>, <excludeNEVRAs>, <names>, <srcNames>, <name dependency container>
+static std::tuple<std::vector<std::string>, std::vector<std::string>, std::vector<std::string>, std::vector<std::string>, libdnf::DependencyContainer>
+collectNevraForInclusionExclusion(DnfSack *sack, libdnf::ModulePackageContainer &modulePackageContainer)
+{
+    auto allPackages = modulePackageContainer.getModulePackages();
+    auto demodularizedNames = getDemodularizedRpms(modulePackageContainer, allPackages);
+
     std::vector<std::string> includeNEVRAs;
     std::vector<std::string> excludeNEVRAs;
+    std::vector<std::string> names;
+    std::vector<std::string> srcNames;
+    libdnf::DependencyContainer nameDependencies{sack};
+    libdnf::Nevra nevra;
     // TODO: turn into std::vector<const char *> to prevent unnecessary conversion?
-    for (const auto &module : modulePackageContainer.getModulePackages()) {
+    for (const auto & module : allPackages) {
         auto artifacts = module->getArtifacts();
         // TODO use Goal::listInstalls() to not requires filtering out Platform
         if (modulePackageContainer.isModuleActive(module->getId())) {
+            std::string packageID{module->getNameStream()};
+            packageID.append(".");
+            packageID.append(module->getArch());
+            auto it = demodularizedNames.find(packageID);
+            if (it == demodularizedNames.end()) {
+                for (const auto &rpm : artifacts) {
+                    if (nevra.parse(rpm.c_str(), HY_FORM_NEVRA)) {
+                        auto arch = nevra.getArch();
+                        // source packages do not provide anything and must not cause excluding binary packages
+                        if (arch == "src" || arch == "nosrc") {
+                            srcNames.push_back(nevra.getName());
+                        } else {
+                            names.push_back(nevra.getName());
+                            nameDependencies.addReldep(nevra.getName().c_str());
+                        }
+                    }
+                }
+            } else {
+                for (const auto &rpm : artifacts) {
+                    if (nevra.parse(rpm.c_str(), HY_FORM_NEVRA)) {
+                        bool found = false;
+                        for ( auto & demodularized : it->second) {
+                            if (nevra.getName() == demodularized) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (found) {
+                            continue;
+                        }
+                        auto arch = nevra.getArch();
+                        // source packages do not provide anything and must not cause excluding binary packages
+                        if (arch == "src" || arch == "nosrc") {
+                            srcNames.push_back(nevra.getName());
+                        } else {
+                            names.push_back(nevra.getName());
+                            nameDependencies.addReldep(nevra.getName().c_str());
+                        }
+                    }
+                }
+            }
             copy(std::begin(artifacts), std::end(artifacts), std::back_inserter(includeNEVRAs));
         } else {
             copy(std::begin(artifacts), std::end(artifacts), std::back_inserter(excludeNEVRAs));
         }
     }
 
-    return std::tuple<std::vector<std::string>,
-    std::vector<std::string>>{includeNEVRAs, excludeNEVRAs};
+    return std::make_tuple(std::move(includeNEVRAs), std::move(excludeNEVRAs), std::move(names), std::move(srcNames),
+                           std::move(nameDependencies));
 }
 
-static void
-setModuleExcludes(DnfSack *sack, const char ** hotfixRepos,
-    const std::vector<std::string> &includeNEVRAs, const std::vector<std::string> &excludeNEVRAs)
+void
+setModuleExcludes(DnfSack * sack, const char ** hotfixRepos, libdnf::ModulePackageContainer & modulePackageContainer)
 {
     dnf_sack_set_module_excludes(sack, nullptr);
-    std::vector<std::string> names;
-    std::vector<std::string> srcNames;
-    libdnf::DependencyContainer nameDependencies{sack};
-    libdnf::Nevra nevra;
-    for (const auto &rpm : includeNEVRAs) {
-        if (nevra.parse(rpm.c_str(), HY_FORM_NEVRA)) {
-            auto arch = nevra.getArch();
-            // source packages do not provide anything and must not cause excluding binary packages
-            if (arch == "src" || arch == "nosrc") {
-                srcNames.push_back(nevra.getName());
-            } else {
-                names.push_back(nevra.getName());
-                nameDependencies.addReldep(nevra.getName().c_str());
-            }
-        }
-    }
+
+    auto data = collectNevraForInclusionExclusion(sack, modulePackageContainer);
+
+    auto & includeNEVRAs = std::get<0>(data);
+    auto & excludeNEVRAs = std::get<1>(data);
+    auto & names = std::get<2>(data);
+    auto & srcNames = std::get<3>(data);
+    auto & nameDependencies = std::get<4>(data);
 
     std::vector<const char *> namesCString(names.size() + 1);
     std::vector<const char *> srcNamesCString(srcNames.size() + 1);
@@ -2471,9 +2531,8 @@ std::pair<std::vector<std::vector<std::string>>, libdnf::ModulePackageContainer:
         moduleContainer->applyObsoletes();
     }
     auto ret = moduleContainer->resolveActiveModulePackages(debugSolver);
-    auto nevraTuple = collectNevraForInclusionExclusion(*moduleContainer);
 
-    setModuleExcludes(sack, hotfixRepos, std::get<0>(nevraTuple), std::get<1>(nevraTuple));
+    setModuleExcludes(sack, hotfixRepos, *moduleContainer);
     return ret;
 }
 
