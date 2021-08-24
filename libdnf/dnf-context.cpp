@@ -3075,6 +3075,10 @@ recompute_modular_filtering(libdnf::ModulePackageContainer * moduleContainer, Dn
     return ret;
 }
 
+/* This is subtly different from the C++ version above: it passes NULL as the
+ * modular container to `dnf_sack_filter_modules_v2` which has the effect of
+ * throwing away all transient modular changes and reloading from disk. This is
+ * used by dnf_context_reset_all_modules(). */
 static gboolean
 recompute_modular_filtering(DnfContext * context, DnfSack * sack, GError ** error)
 {
@@ -3696,7 +3700,34 @@ dnf_context_module_disable_all(DnfContext * context, GError ** error) try
     for (auto & module: all_modules) {
         container->disable(module->getName());
     }
-    return recompute_modular_filtering(context, sack, error);
+
+    std::vector<const char *> hotfixRepos;
+    // don't filter RPMs from repos with the 'module_hotfixes' flag set
+    for (unsigned int i = 0; i < priv->repos->len; i++) {
+        auto repo = static_cast<DnfRepo *>(g_ptr_array_index(priv->repos, i));
+        if (dnf_repo_get_module_hotfixes(repo)) {
+            hotfixRepos.push_back(dnf_repo_get_id(repo));
+        }
+    }
+    hotfixRepos.push_back(nullptr);
+
+    std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, std::string, std::string>> messages;
+    auto solver_error = recompute_modular_filtering(container, sack, hotfixRepos);
+    if (!solver_error.empty()) {
+        messages.insert(
+            messages.end(),std::make_move_iterator(solver_error.begin()), std::make_move_iterator(solver_error.end()));
+    }
+
+    auto errors = report_problems(messages);
+    if (!errors.empty()) {
+        std::string final_errmsg (_("Problems appeared for module disable request:"));
+        for (const auto &errmsg : errors) {
+            final_errmsg += "\n  - " + errmsg;
+        }
+        g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FAILED, final_errmsg.c_str());
+        return FALSE;
+    }
+    return TRUE;
 } CATCH_TO_GERROR(FALSE)
 
 gboolean
