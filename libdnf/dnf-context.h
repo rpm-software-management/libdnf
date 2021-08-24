@@ -280,13 +280,41 @@ bool             dnf_context_plugin_hook                (DnfContext     *context
                                                          DnfPluginError *error);
 /// String must be dealocated by g_free()
 gchar *          dnf_context_get_module_report          (DnfContext * context);
+
+/**
+ * dnf_context_reset_modules:
+ * @context: DnfContext
+ * @sack: DnfSack
+ * @module_names: Names of modules to reset
+ * @error: Error
+ *
+ * Reset modules, commit modular changes, and recalculate module filtration.
+ * Note you likely want to use dnf_context_module_reset instead which matches
+ * the behaviour of other modular APIs to not commit modular changes to disk
+ * until dnf_context_run(). Returns FALSE when an error is set.
+ *
+ * Since: 0.38.1
+ **/
 gboolean         dnf_context_reset_modules              (DnfContext * context,
                                                          DnfSack * sack,
                                                          const char ** module_names,
                                                          GError ** error);
+
+/**
+ * dnf_context_reset_all_modules:
+ * @context: DnfContext
+ * @sack: DnfSack
+ * @error: Error
+ *
+ * Reset all modules and recalculate module filtration.
+ * Returns FALSE when an error is set.
+ *
+ * Since: 0.46.2
+ **/
 gboolean         dnf_context_reset_all_modules          (DnfContext * context,
                                                          DnfSack * sack,
                                                          GError ** error);
+
 /**
  * dnf_context_module_enable:
  * @context: DnfContext
