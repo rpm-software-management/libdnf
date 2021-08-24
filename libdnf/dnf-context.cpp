@@ -3098,6 +3098,7 @@ recompute_modular_filtering(DnfContext * context, DnfSack * sack, GError ** erro
     return TRUE;
 }
 
+/* See header docstring; you likely want dnf_context_module_reset instead. */
 gboolean
 dnf_context_reset_modules(DnfContext * context, DnfSack * sack, const char ** module_names, GError ** error) try
 {
