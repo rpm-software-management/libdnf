@@ -35,6 +35,12 @@ DependencyContainer::DependencyContainer(const DependencyContainer &src)
     queue_init_clone(&queue, &src.queue);
 }
 
+DependencyContainer::DependencyContainer(DependencyContainer &&src)
+        : sack(src.sack)
+{
+    queue_init(&queue);
+    std::swap(queue, src.queue);
+}
 
 DependencyContainer::DependencyContainer(DnfSack *sack)
         : sack(sack)
@@ -55,6 +61,16 @@ DependencyContainer::DependencyContainer(DnfSack *sack, Queue &&queue)
 DependencyContainer::~DependencyContainer()
 {
     queue_free(&queue);
+}
+
+DependencyContainer &DependencyContainer::operator=(const DependencyContainer &src)
+{
+    if (this != &src) {
+        sack = src.sack;
+        queue_free(&queue);
+        queue_init_clone(&queue, &src.queue);
+    }
+    return *this;
 }
 
 DependencyContainer &DependencyContainer::operator=(DependencyContainer &&src) noexcept
