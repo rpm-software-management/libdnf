@@ -34,11 +34,13 @@ struct DependencyContainer
 {
 public:
     DependencyContainer(const DependencyContainer &src);
+    DependencyContainer(DependencyContainer &&src);
     explicit DependencyContainer(DnfSack *sack);
     DependencyContainer(DnfSack *sack, const Queue &queue);
     DependencyContainer(DnfSack *sack, Queue &&queue);
     ~DependencyContainer();
 
+    DependencyContainer &operator=(const DependencyContainer &src);
     DependencyContainer &operator=(DependencyContainer &&src) noexcept;
     bool operator==(const DependencyContainer &r) const;
     bool operator!=(const DependencyContainer &r) const;
