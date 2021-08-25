@@ -32,7 +32,7 @@ namespace libdnf {
 DependencyContainer::DependencyContainer(const DependencyContainer &src)
         : sack(src.sack)
 {
-    queue_init_clone(&this->queue, &queue);
+    queue_init_clone(&queue, &src.queue);
 }
 
 
