@@ -59,8 +59,10 @@ DependencyContainer::~DependencyContainer()
 
 DependencyContainer &DependencyContainer::operator=(DependencyContainer &&src) noexcept
 {
-    sack = src.sack;
-    queue_init_clone(&queue, &src.queue);
+    if (this != &src) {
+        sack = src.sack;
+        std::swap(queue, src.queue);
+    }
     return *this;
 }
 
