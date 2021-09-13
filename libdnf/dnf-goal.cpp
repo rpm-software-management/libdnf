@@ -48,6 +48,26 @@
 
 #include <vector>
 
+static void set_excludes_from_weak_to_goal(HyGoal goal)
+{
+    DnfSack * sack = hy_goal_get_sack(goal);
+
+    goal->reset_exclude_from_weak();
+
+    const auto & exclude_from_weak_autodetect = libdnf::getGlobalMainConfig().exclude_from_weak_autodetect().getValue();
+    if (exclude_from_weak_autodetect) {
+        goal->exclude_from_weak_autodetect();
+    }
+
+    const auto & exclude_from_weak = libdnf::getGlobalMainConfig().exclude_from_weak().getValue();
+
+    for (auto & exclude : exclude_from_weak) {
+        libdnf::Query query(sack);
+        auto ret = query.filterSubject(exclude.c_str(), nullptr, false, true, false, false);
+        goal->add_exclude_from_weak(*query.getResultPset());
+    }
+}
+
 /**
  * dnf_goal_depsolve:
  * @goal: a #HyGoal.
@@ -79,6 +99,8 @@ dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError **error) try
     query.addFilter(HY_PKG_NAME, HY_EQ, cprotected_packages.data());
     auto pkgset = *query.runSet();
     goal->addProtected(pkgset);
+
+    set_excludes_from_weak_to_goal(goal);
 
     rc = hy_goal_run_flags(goal, flags);
     if (rc) {
