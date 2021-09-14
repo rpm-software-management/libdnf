@@ -29,7 +29,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <dnfdaemon-server/dbus.hpp>
 #include <fcntl.h>
 #include <fmt/format.h>
-#include <libdnf-cli/argument_parser.hpp>
+#include <libdnf-cli/session.hpp>
 #include <libdnf/base/base.hpp>
 #include <libdnf/logger/memory_buffer_logger.hpp>
 #include <libdnf/logger/stream_logger.hpp>
@@ -196,7 +196,7 @@ int main(int argc, char * argv[]) {
 
     // print help of the selected command if --help was used
     if (print_help) {
-        context.arg_parser.get_selected_command()->help();
+        context.get_argument_parser().get_selected_command()->help();
         return 0;
     }
 
