@@ -20,6 +20,20 @@
 ######################
 
 ====================
+0.64.0 Release Notes
+====================
+
+- Implement logic for demodularization of modular rpms (RhBug:1805260)
+- DnfContext: fix handling of default module profiles
+- ModuleMetadata: gracefully handle modules with no defaults
+- Remove failovermethod config option (RhBug:1961083)
+
+Bugs fixed in 0.64.0:
+
+* :rhbug:`1961083`
+* :rhbug:`1805260`
+
+====================
 0.63.1 Release Notes
 ====================
 
