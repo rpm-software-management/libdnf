@@ -78,7 +78,7 @@ void ModuleMetadata::addMetadataFromString(const std::string & yaml, int priorit
     g_autoptr(GPtrArray) failures = NULL;
 
     ModulemdModuleIndex * mi = modulemd_module_index_new();
-    gboolean success = modulemd_module_index_update_from_string(mi, yaml.c_str(), TRUE, &failures, &error);
+    gboolean success = modulemd_module_index_update_from_string(mi, yaml.c_str(), FALSE, &failures, &error);
     if(!success){
         ModuleMetadata::reportFailures(failures);
     }
