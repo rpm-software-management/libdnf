@@ -9,6 +9,7 @@ Welcome to libdnf's documentation!
     tutorial/index
     api/index
     contributing/index
+    design/index
     migration_guide
 
 
