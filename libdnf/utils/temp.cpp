@@ -21,9 +21,8 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "temp.hpp"
 
 #include "libdnf/common/exception.hpp"
+#include "libdnf/common/format.hpp"
 #include "libdnf/utils/bgettext/bgettext-lib.h"
-
-#include <fmt/format.h>
 
 #include <cstdlib>
 
@@ -42,7 +41,7 @@ TempDir::TempDir(const std::string & destdir, const std::string & prefix) {
     if (temp_path == nullptr) {
         // TODO(lukash) use a specific exception class
         throw RuntimeError(
-            fmt::format(_("Cannot create temporary directory \"{}\": {}"), dir.native().c_str(), strerror(errno)));
+            format_runtime(_("Cannot create temporary directory \"{}\": {}"), dir.native().c_str(), strerror(errno)));
     }
     path = temp_path;
 }

@@ -19,13 +19,13 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "repo_downloader.hpp"
 
+#include "libdnf/common/format.hpp"
 #include "libdnf/base/base.hpp"
 #include "libdnf/utils/bgettext/bgettext-lib.h"
 #include "libdnf/utils/fs.hpp"
 #include "libdnf/utils/string.hpp"
 #include "libdnf/utils/temp.hpp"
 
-#include <fmt/format.h>
 #include <librepo/librepo.h>
 #include <solv/chksum.h>
 #include <solv/util.h>
@@ -354,7 +354,7 @@ void RepoDownloader::download_metadata(const std::string & destdir) {
     // TODO(lukash) replace all of these with std::filesystem
     if (g_mkdir_with_parents(destdir.c_str(), 0755) == -1) {
         const char * err_txt = strerror(errno);
-        throw RuntimeError(fmt::format(_("Cannot create repo destination directory \"{}\": {}"), destdir, err_txt));
+        throw RuntimeError(format_runtime(_("Cannot create repo destination directory \"{}\": {}"), destdir, err_txt));
     }
 
     libdnf::utils::TempDir tmpdir(destdir, "tmpdir.");
@@ -368,7 +368,7 @@ void RepoDownloader::download_metadata(const std::string & destdir) {
     std::filesystem::remove_all(repodir);
     if (g_mkdir_with_parents(repodir.c_str(), 0755) == -1) {
         const char * err_txt = strerror(errno);
-        throw RuntimeError(fmt::format(_("Cannot create directory \"{}\": {}"), repodir, err_txt));
+        throw RuntimeError(format_runtime(_("Cannot create directory \"{}\": {}"), repodir, err_txt));
     }
     // move all downloaded object from tmpdir to destdir
     if (auto * dir = opendir(tmpdir.get_path().c_str())) {
@@ -385,7 +385,7 @@ void RepoDownloader::download_metadata(const std::string & destdir) {
             try {
                 move_recursive(tempElement.c_str(), target_element.c_str());
             } catch (const std::filesystem::filesystem_error & ex) {
-                std::string err_txt = fmt::format(
+                std::string err_txt = format_runtime(
                     _("Cannot rename directory \"{}\" to \"{}\": {}"), tempElement.string(), target_element, ex.what());
                 throw RuntimeError(err_txt);
             }
@@ -407,7 +407,7 @@ bool RepoDownloader::is_metalink_in_sync() {
     LrMetalink * metalink;
     handle_get_info(h.get(), LRI_METALINK, &metalink);
     if (!metalink) {
-        logger.debug(fmt::format(_("reviving: repo '{}' skipped, no metalink."), config.get_id()));
+        logger.debug(format_runtime(_("reviving: repo '{}' skipped, no metalink."), config.get_id()));
         return false;
     }
 
@@ -426,7 +426,7 @@ bool RepoDownloader::is_metalink_in_sync() {
         }
     }
     if (hashes.empty()) {
-        logger.debug(fmt::format(_("reviving: repo '{}' skipped, no usable hash."), config.get_id()));
+        logger.debug(format_runtime(_("reviving: repo '{}' skipped, no usable hash."), config.get_id()));
         return false;
     }
 
@@ -450,12 +450,12 @@ bool RepoDownloader::is_metalink_in_sync() {
         solv_bin2hex(chksum, chksumLen, chksumHex);
         if (strcmp(chksumHex, hash.lr_metalink_hash->value) != 0) {
             logger.debug(
-                fmt::format(_("reviving: failed for '{}', mismatched {} sum."), config.get_id(), hash.lr_metalink_hash->type));
+                format_runtime(_("reviving: failed for '{}', mismatched {} sum."), config.get_id(), hash.lr_metalink_hash->type));
             return false;
         }
     }
 
-    logger.debug(fmt::format(_("reviving: '{}' can be revived - metalink checksums match."), config.get_id()));
+    logger.debug(format_runtime(_("reviving: '{}' can be revived - metalink checksums match."), config.get_id()));
     return true;
 }
 
@@ -477,9 +477,9 @@ bool RepoDownloader::is_repomd_in_sync() {
 
     auto same = utils::fs::have_files_same_content_noexcept(repomd_filename.c_str(), yum_repo->repomd);
     if (same)
-        logger.debug(fmt::format(_("reviving: '{}' can be revived - repomd matches."), config.get_id()));
+        logger.debug(format_runtime(_("reviving: '{}' can be revived - repomd matches."), config.get_id()));
     else
-        logger.debug(fmt::format(_("reviving: failed for '{}', mismatched repomd."), config.get_id()));
+        logger.debug(format_runtime(_("reviving: failed for '{}', mismatched repomd."), config.get_id()));
     return same;
 }
 
@@ -667,7 +667,7 @@ std::unique_ptr<LrHandle> RepoDownloader::init_remote_handle(const char * destdi
         str_vector_to_char_array(config.baseurl().get_value(), urls);
         handle_set_opt(h.get(), LRO_URLS, urls);
     } else {
-        throw RuntimeError(fmt::format(_("Cannot find a valid baseurl for repo: {}"), config.get_id()));
+        throw RuntimeError(format_runtime(_("Cannot find a valid baseurl for repo: {}"), config.get_id()));
     }
 
     handle_set_opt(h.get(), LRO_PROGRESSCB, static_cast<LrProgressCb>(progress_cb));
@@ -818,7 +818,7 @@ void RepoDownloader::import_repo_keys() {
         char tmp_key_file[] = "/tmp/repokey.XXXXXX";
         auto fd = mkstemp(tmp_key_file);
         if (fd == -1) {
-            auto msg = fmt::format(
+            auto msg = format_runtime(
                 "Error creating temporary file \"{}\": {}", tmp_key_file, std::system_category().message(errno));
             logger.debug(msg);
             throw LrException(LRE_GPGERROR, msg);
@@ -829,7 +829,7 @@ void RepoDownloader::import_repo_keys() {
         try {
             download_url(gpgkey_url.c_str(), fd);
         } catch (const LrExceptionWithSourceUrl & e) {
-            auto msg = fmt::format(_("Failed to retrieve GPG key for repo '{}': {}"), config.get_id(), e.what());
+            auto msg = format_runtime(_("Failed to retrieve GPG key for repo '{}': {}"), config.get_id(), e.what());
             throw RuntimeError(msg);
         }
         lseek(fd, SEEK_SET, 0);
@@ -898,7 +898,7 @@ void RepoDownloader::add_countme_flag(LrHandle * handle) {
         } catch (std::exception & e) {
             // TODO(lukash) throw proper exception
             throw RuntimeError(
-                fmt::format(_("Cannot create repository persistent directory \"{}\": {}"),
+                format_runtime(_("Cannot create repository persistent directory \"{}\": {}"),
                 config.get_persistdir(), e.what()));
         }
     }
@@ -915,7 +915,7 @@ void RepoDownloader::add_countme_flag(LrHandle * handle) {
     time_t now = time(nullptr);
     time_t delta = now - win;
     if (delta < COUNTME_WINDOW) {
-        logger.debug(fmt::format("countme: no event for {}: window already counted", config.get_id()));
+        logger.debug(format_runtime("countme: no event for {}: window already counted", config.get_id()));
         return;
     }
 
@@ -951,12 +951,12 @@ void RepoDownloader::add_countme_flag(LrHandle * handle) {
         // Set the flag
         std::string flag = "countme=" + std::to_string(bucket);
         handle_set_opt(handle, LRO_ONETIMEFLAG, flag.c_str());
-        logger.debug(fmt::format("countme: event triggered for {}: bucket {}", config.get_id(), bucket));
+        logger.debug(format_runtime("countme: event triggered for {}: bucket {}", config.get_id(), bucket));
 
         // Request a new budget
         budget = -1;
     } else {
-        logger.debug(fmt::format("countme: no event for {}: budget to spend: {}", config.get_id(), budget));
+        logger.debug(format_runtime("countme: no event for {}: budget to spend: {}", config.get_id(), budget));
     }
 
     // Save the cookie

@@ -24,9 +24,9 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf-cli/utils/tty.hpp"
 #include "libdnf-cli/utils/units.hpp"
 
+#include <libdnf/common/format.hpp>
 #include <libdnf/rpm/nevra.hpp>
 
-#include <fmt/format.h>
 #include <libsmartcols/libsmartcols.h>
 
 #include <iostream>
@@ -176,22 +176,22 @@ public:
     void print() {
         std::cout << "\nTransaction Summary:\n";
         if (installs != 0) {
-            std::cout << fmt::format(" {:15} {:4} packages\n", "Installing:", installs);
+            std::cout << format_runtime(" {:15} {:4} packages\n", "Installing:", installs);
         }
         if (reinstalls != 0) {
-            std::cout << fmt::format(" {:15} {:4} packages\n", "Reinstalling:", reinstalls);
+            std::cout << format_runtime(" {:15} {:4} packages\n", "Reinstalling:", reinstalls);
         }
         if (upgrades != 0) {
-            std::cout << fmt::format(" {:15} {:4} packages\n", "Upgrading:", upgrades);
+            std::cout << format_runtime(" {:15} {:4} packages\n", "Upgrading:", upgrades);
         }
         if ( replaced != 0) {
-            std::cout << fmt::format(" {:15} {:4} packages\n", "Replacing:", replaced );
+            std::cout << format_runtime(" {:15} {:4} packages\n", "Replacing:", replaced );
         }
         if (removes != 0) {
-            std::cout << fmt::format(" {:15} {:4} packages\n", "Removing:", removes);
+            std::cout << format_runtime(" {:15} {:4} packages\n", "Removing:", removes);
         }
         if (downgrades != 0) {
-            std::cout << fmt::format(" {:15} {:4} packages\n", "Downgrading:", downgrades);
+            std::cout << format_runtime(" {:15} {:4} packages\n", "Downgrading:", downgrades);
         }
         std::cout << std::endl;
     }

@@ -20,9 +20,8 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/plugin/plugins.hpp"
 
 #include "libdnf/base/base.hpp"
+#include "libdnf/common/format.hpp"
 #include "libdnf/utils/bgettext/bgettext-lib.h"
-
-#include <fmt/format.h>
 
 #include <filesystem>
 
@@ -56,28 +55,28 @@ void Plugins::register_plugin(std::unique_ptr<Plugin> && plugin) {
     plugins.emplace_back(std::move(plugin));
     auto name = iplugin->get_name();
     auto version = iplugin->get_version();
-    logger.debug(fmt::format(
+    logger.debug(format_runtime(
         _("Added plugin name=\"{}\", version=\"{}.{}.{}\""), name, version.major, version.minor, version.micro));
 
-    logger.debug(fmt::format(_("Trying to load more plugins using the \"{}\" plugin."), name));
+    logger.debug(format_runtime(_("Trying to load more plugins using the \"{}\" plugin."), name));
     iplugin->load_plugins(base);
-    logger.debug(fmt::format(_("End of loading plugins using the \"{}\" plugin."), name));
+    logger.debug(format_runtime(_("End of loading plugins using the \"{}\" plugin."), name));
 }
 
 void Plugins::load_plugin(const std::string & file_path) {
     auto & logger = *base->get_logger();
-    logger.debug(fmt::format(_("Loading plugin file=\"{}\""), file_path));
+    logger.debug(format_runtime(_("Loading plugin file=\"{}\""), file_path));
     auto plugin = std::make_unique<PluginLibrary>(file_path);
     auto * iplugin = plugin->get_iplugin();
     plugins.emplace_back(std::move(plugin));
     auto name = iplugin->get_name();
     auto version = iplugin->get_version();
-    logger.debug(fmt::format(
+    logger.debug(format_runtime(
         _("Loaded plugin name=\"{}\", version=\"{}.{}.{}\""), name, version.major, version.minor, version.micro));
 
-    logger.debug(fmt::format(_("Trying to load more plugins using the \"{}\" plugin."), name));
+    logger.debug(format_runtime(_("Trying to load more plugins using the \"{}\" plugin."), name));
     iplugin->load_plugins(base);
-    logger.debug(fmt::format(_("End of loading plugins using the \"{}\" plugin."), name));
+    logger.debug(format_runtime(_("End of loading plugins using the \"{}\" plugin."), name));
 }
 
 void Plugins::load_plugins(const std::string & dir_path) {
@@ -98,7 +97,7 @@ void Plugins::load_plugins(const std::string & dir_path) {
         try {
             load_plugin(p);
         } catch (const std::exception & ex) {
-            std::string msg = fmt::format(_("Can't load plugin \"{}\": {}"), p.string(), ex.what());
+            std::string msg = format_runtime(_("Can't load plugin \"{}\": {}"), p.string(), ex.what());
             logger.error(msg);
             error_msgs += msg + '\n';
         }

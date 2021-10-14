@@ -20,7 +20,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef LIBDNF_UTILS_EXCEPTION_HPP
 #define LIBDNF_UTILS_EXCEPTION_HPP
 
-#include <fmt/format.h>
+#include "format.hpp"
 
 #include <stdexcept>
 
@@ -38,8 +38,8 @@ public:
     /// @param format The format string for the message.
     /// @param args The format arguments.
     template<typename... Ss>
-    AssertionError(const std::string & format, Ss&&... args)
-        : std::logic_error(fmt::format(format, std::forward<Ss>(args)...)) {}
+    AssertionError(std::string_view format_string, Ss&&... args)
+        : std::logic_error(format_runtime(format_string, std::forward<Ss>(args)...)) {}
 };
 
 /// An assert function that throws `libdnf::AssertionError` when `condition`
@@ -50,9 +50,9 @@ public:
 /// @param args The format arguments.
 /// @exception libdnf::AssertionError Thrown when condition is not met.
 template<typename... Ss>
-void libdnf_assert(bool condition, const std::string & format, Ss&&... args) {
+void libdnf_assert(bool condition, std::string_view format_string, Ss&&... args) {
     if (!condition) {
-        throw AssertionError(format, std::forward<Ss>(args)...);
+        throw AssertionError(format_string, std::forward<Ss>(args)...);
     }
 }
 

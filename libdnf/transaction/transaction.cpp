@@ -20,6 +20,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "libdnf/transaction/transaction.hpp"
 
+#include "libdnf/common/format.hpp"
 #include "libdnf/transaction/comps_environment.hpp"
 #include "libdnf/transaction/comps_group.hpp"
 #include "libdnf/transaction/db/comps_environment.hpp"
@@ -33,8 +34,6 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/transaction/sack.hpp"
 #include "libdnf/transaction/transaction_item.hpp"
 #include "libdnf/utils/bgettext/bgettext-lib.h"
-
-#include <fmt/format.h>
 
 
 namespace libdnf::transaction {
@@ -108,7 +107,7 @@ void Transaction::finish(TransactionState state) {
     for (auto i : getItems()) {
         if (i->get_state() == TransactionItemState::UNKNOWN) {
             throw std::runtime_error(
-                fmt::format(_("TransactionItem state is not set: {}"), i->getItem()->toStr()));
+                format_runtime(_("TransactionItem state is not set: {}"), i->getItem()->toStr()));
         }
     }
     */

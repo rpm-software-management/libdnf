@@ -22,9 +22,8 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/advisory/advisory_collection.hpp"
 #include "libdnf/advisory/advisory_reference.hpp"
 #include "libdnf/common/exception.hpp"
+#include "libdnf/common/format.hpp"
 #include "libdnf/solv/pool.hpp"
-
-#include <fmt/format.h>
 
 namespace libdnf::advisory {
 
@@ -39,7 +38,7 @@ std::string Advisory::get_name() const {
     if (strncmp(
             libdnf::solv::SOLVABLE_NAME_ADVISORY_PREFIX, name, libdnf::solv::SOLVABLE_NAME_ADVISORY_PREFIX_LENGTH) !=
         0) {
-        auto msg = fmt::format(
+        auto msg = format_runtime(
             R"**(Bad libsolv id for advisory "{}", solvable name "{}" doesn't have advisory prefix "{}")**",
             id.id,
             name,

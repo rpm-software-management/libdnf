@@ -23,6 +23,7 @@ constexpr const char * REPOID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmno
 #include "../libdnf/utils/fs.hpp"
 #include "repo_impl.hpp"
 
+#include "libdnf/common/format.hpp"
 #include "libdnf/logger/logger.hpp"
 #include "libdnf/utils/string.hpp"
 #include "libdnf/utils/temp.hpp"
@@ -32,7 +33,6 @@ extern "C" {
 }
 
 #include <fcntl.h>
-#include <fmt/format.h>
 #include <glib.h>
 #include <solv/chksum.h>
 #include <solv/repo.h>
@@ -68,13 +68,13 @@ namespace libdnf::repo {
 static void is_readable_rpm(const char * fn) {
     if (access(fn, R_OK) != 0) {
         const char * err_txt = strerror(errno);
-        throw RuntimeError(fmt::format(_("Failed to access RPM: \"{}\": {}"), fn, err_txt));
+        throw RuntimeError(format_runtime(_("Failed to access RPM: \"{}\": {}"), fn, err_txt));
     }
 
     auto len = strlen(fn);
 
     if (len <= 4 || (strcmp(fn + len - 4, ".rpm") != 0)) {
-        throw RuntimeError(fmt::format(_("Failed to read RPM: \"{}\": {}"), fn, "does't have extension \".rpm\""));
+        throw RuntimeError(format_runtime(_("Failed to read RPM: \"{}\": {}"), fn, "does't have extension \".rpm\""));
     }
 }
 
@@ -108,7 +108,7 @@ const std::string & Repo::Impl::get_metadata_path(const std::string & metadata_t
     }
     auto & ret = (it != metadata_paths.end()) ? it->second : empty;
     if (ret.empty()) {
-        logger.debug(fmt::format("not found \"{}\" for: {}", metadata_type, config.get_id()));
+        logger.debug(format_runtime("not found \"{}\" for: {}", metadata_type, config.get_id()));
     }
     return ret;
 }
@@ -134,7 +134,7 @@ Repo::Repo(const std::string & id, Base & base, Repo::Type type) {
     if (type == Type::AVAILABLE) {
         auto idx = verify_id(id);
         if (idx != std::string::npos) {
-            std::string msg = fmt::format(_("Bad id for repo: {}, byte = {} {}"), id, id[idx], idx);
+            std::string msg = format_runtime(_("Bad id for repo: {}, byte = {} {}"), id, id[idx], idx);
             throw RuntimeError(msg);
         }
     }
@@ -155,7 +155,7 @@ void Repo::verify() const {
     if (p_impl->config.baseurl().empty() &&
         (p_impl->config.metalink().empty() || p_impl->config.metalink().get_value().empty()) &&
         (p_impl->config.mirrorlist().empty() || p_impl->config.mirrorlist().get_value().empty()))
-        throw RuntimeError(fmt::format(_("Repository {} has no mirror or baseurl set."), p_impl->config.get_id()));
+        throw RuntimeError(format_runtime(_("Repository {} has no mirror or baseurl set."), p_impl->config.get_id()));
 
     const auto & type = p_impl->config.type().get_value();
     const char * supported_repo_types[]{"rpm-md", "rpm", "repomd", "rpmmd", "yum", "YUM"};
@@ -166,7 +166,7 @@ void Repo::verify() const {
             }
         }
         throw RuntimeError(
-            fmt::format(_("Repository '{}' has unsupported type: 'type={}', skipping."), p_impl->config.get_id(), type));
+            format_runtime(_("Repository '{}' has unsupported type: 'type={}', skipping."), p_impl->config.get_id(), type));
     }
 }
 
@@ -311,7 +311,7 @@ bool Repo::Impl::load() {
         if (!get_metadata_path(MD_FILENAME_PRIMARY).empty() || try_load_cache()) {
             reset_metadata_expired();
             if (!expired || sync_strategy == SyncStrategy::ONLY_CACHE || sync_strategy == SyncStrategy::LAZY) {
-                logger.debug(fmt::format(_("repo: using cache for: {}"), config.get_id()));
+                logger.debug(format_runtime(_("repo: using cache for: {}"), config.get_id()));
                 return false;
             }
 
@@ -323,16 +323,16 @@ bool Repo::Impl::load() {
             }
         }
         if (sync_strategy == SyncStrategy::ONLY_CACHE) {
-            auto msg = fmt::format(_("Cache-only enabled but no cache for '{}'"), config.get_id());
+            auto msg = format_runtime(_("Cache-only enabled but no cache for '{}'"), config.get_id());
             throw RuntimeError(msg);
         }
 
-        logger.debug(fmt::format(_("repo: downloading from remote: {}"), config.get_id()));
+        logger.debug(format_runtime(_("repo: downloading from remote: {}"), config.get_id()));
         downloader.download_metadata(config.get_cachedir());
         timestamp = -1;
         load_cache();
     } catch (const libdnf::RuntimeError & e) {
-        auto msg = fmt::format(_("Failed to download metadata for repo '{}': {}"), config.get_id(), e.what());
+        auto msg = format_runtime(_("Failed to download metadata for repo '{}': {}"), config.get_id(), e.what());
         throw RuntimeError(msg);
     }
     expired = false;
@@ -598,7 +598,7 @@ long LibrepoLog::add_handler(const std::string & file_path, bool debug) {
     // Open the file
     FILE * fd = fopen(file_path.c_str(), "ae");
     if (!fd) {
-        throw RuntimeError(fmt::format(_("Cannot open {}: {}"), file_path, g_strerror(errno)));
+        throw RuntimeError(format_runtime(_("Cannot open {}: {}"), file_path, g_strerror(errno)));
     }
 
     // Setup user data
@@ -642,7 +642,7 @@ void LibrepoLog::remove_handler(long uid) {
         ++it;
     }
     if (it == lr_log_datas.end()) {
-        throw RuntimeError(fmt::format(_("Log handler with id {} doesn't exist"), uid));
+        throw RuntimeError(format_runtime(_("Log handler with id {} doesn't exist"), uid));
     }
 
     // Remove the handler and free the data

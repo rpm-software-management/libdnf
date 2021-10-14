@@ -22,7 +22,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "libdnf-cli/utils/units.hpp"
 
-#include <fmt/format.h>
+#include "libdnf/common/format.hpp"
 
 
 namespace libdnf::cli::progressbar {
@@ -48,25 +48,25 @@ std::string format_time(int64_t num, bool negative) {
     int64_t seconds = std::abs(num) % 60;
     int64_t minutes = std::abs(num) / 60;
     if (minutes < 60) {
-        return fmt::format("{0}{1:02d}m{2:02d}s", negative_sign, minutes, seconds);
+        return format("{0}{1:02d}m{2:02d}s", negative_sign, minutes, seconds);
     }
 
     // display [ -]HHhMMm
     int64_t hours = minutes / 60;
     minutes = minutes % 60;
     if (hours < 24) {
-        return fmt::format("{0}{1:02d}h{2:02d}m", negative_sign, hours, minutes);
+        return format("{0}{1:02d}h{2:02d}m", negative_sign, hours, minutes);
     }
 
     // display [ -]DDdHHh
     int64_t days = hours / 24;
     hours = hours % 24;
     if (days < 100) {
-        return fmt::format("{0}{1:02d}d{2:02d}h", negative_sign, days, hours);
+        return format("{0}{1:02d}d{2:02d}h", negative_sign, days, hours);
     }
 
     // display [ -]?
-    return fmt::format("{0}?     ", negative_sign);
+    return format("{0}?     ", negative_sign);
 }
 
 

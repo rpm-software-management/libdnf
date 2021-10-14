@@ -20,11 +20,11 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "repo_gpgme.hpp"
 
 #include "libdnf/base/base.hpp"
+#include "libdnf/common/format.hpp"
 #include "libdnf/logger/logger.hpp"
 #include "libdnf/utils/bgettext/bgettext-lib.h"
 #include "libdnf/utils/temp.hpp"
 
-#include <fmt/format.h>
 #include <gpgme.h>
 #include <sys/stat.h>
 
@@ -92,7 +92,7 @@ static void ensure_socket_dir_exists(Logger & logger) {
     std::string dirname = "/run/user/" + std::to_string(getuid());
     int res = mkdir(dirname.c_str(), 0700);
     if (res != 0 && errno != EEXIST) {
-        logger.debug(fmt::format(_("Failed to create directory \"{}\": {} - {}"), dirname, errno, strerror(errno)));
+        logger.debug(format_runtime(_("Failed to create directory \"{}\": {} - {}"), dirname, errno, strerror(errno)));
     }
 }
 
@@ -102,7 +102,7 @@ static std::unique_ptr<std::remove_pointer<gpgme_ctx_t>::type> create_context(co
     gpgme_ctx_t ctx;
     gpg_err = gpgme_new(&ctx);
     if (gpg_err != GPG_ERR_NO_ERROR) {
-        throw GpgError(fmt::format(_("Error creating gpgme context: {}"), gpgme_strerror(gpg_err)));
+        throw GpgError(format_runtime(_("Error creating gpgme context: {}"), gpgme_strerror(gpg_err)));
     }
 
     std::unique_ptr<std::remove_pointer<gpgme_ctx_t>::type> context(ctx);
@@ -110,7 +110,7 @@ static std::unique_ptr<std::remove_pointer<gpgme_ctx_t>::type> create_context(co
     // set GPG home dir
     gpg_err = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OpenPGP, nullptr, homedir.c_str());
     if (gpg_err != GPG_ERR_NO_ERROR) {
-        throw GpgError(fmt::format(
+        throw GpgError(format_runtime(
             _("Failed to set gpgme home directory to \"{}\": {}"),
             homedir,
             gpgme_strerror(gpg_err)));
@@ -126,13 +126,13 @@ static void gpg_import_key(gpgme_ctx_t context, int key_fd) {
 
     gpg_err = gpgme_data_new_from_fd(&key_data, key_fd);
     if (gpg_err != GPG_ERR_NO_ERROR) {
-        throw GpgError(fmt::format(_("Failed to create gpgme data from file descriptor: {}"), gpgme_strerror(gpg_err)));
+        throw GpgError(format_runtime(_("Failed to create gpgme data from file descriptor: {}"), gpgme_strerror(gpg_err)));
     }
 
     gpg_err = gpgme_op_import(context, key_data);
     gpgme_data_release(key_data);
     if (gpg_err != GPG_ERR_NO_ERROR) {
-        throw GpgError(fmt::format(_("Failed to import gpgme keys: {}"), gpgme_strerror(gpg_err)));
+        throw GpgError(format_runtime(_("Failed to import gpgme keys: {}"), gpgme_strerror(gpg_err)));
     }
 }
 
@@ -143,13 +143,13 @@ static void gpg_import_key(gpgme_ctx_t context, std::vector<char> key) {
 
     gpg_err = gpgme_data_new_from_mem(&key_data, key.data(), key.size(), 0);
     if (gpg_err != GPG_ERR_NO_ERROR) {
-        throw GpgError(fmt::format(_("Failed to create gpgme data from a buffer: {}"), gpgme_strerror(gpg_err)));
+        throw GpgError(format_runtime(_("Failed to create gpgme data from a buffer: {}"), gpgme_strerror(gpg_err)));
     }
 
     gpg_err = gpgme_op_import(context, key_data);
     gpgme_data_release(key_data);
     if (gpg_err != GPG_ERR_NO_ERROR) {
-        throw GpgError(fmt::format(_("Failed to import gpgme keys: {}"), gpgme_strerror(gpg_err)));
+        throw GpgError(format_runtime(_("Failed to import gpgme keys: {}"), gpgme_strerror(gpg_err)));
     }
 }
 
@@ -182,7 +182,7 @@ static std::vector<Key> rawkey2infos(int fd) {
         gpgme_key_release(key);
     }
     if (gpg_err_code(gpg_err) != GPG_ERR_EOF) {
-        throw GpgError(fmt::format(_("Failed to list keys: {}"), gpgme_strerror(gpg_err)));
+        throw GpgError(format_runtime(_("Failed to list keys: {}"), gpgme_strerror(gpg_err)));
     }
     gpgme_set_armor(context.get(), 1);
     for (auto & key_info : key_infos) {
@@ -236,7 +236,7 @@ RepoGpgme::RepoGpgme(const BaseWeakPtr & base, const ConfigRepo & config) : base
         }
 
         if (gpg_err_code(gpg_err) != GPG_ERR_EOF) {
-            throw GpgError(fmt::format(_("Failed to list keys: {}"), gpgme_strerror(gpg_err)));
+            throw GpgError(format_runtime(_("Failed to list keys: {}"), gpgme_strerror(gpg_err)));
         }
     }
 }
@@ -249,7 +249,7 @@ void RepoGpgme::import_key(int fd, const std::string & url) {
 
     for (auto & key_info : key_infos) {
         if (std::find(known_keys.begin(), known_keys.end(), key_info.get_id()) != known_keys.end()) {
-            logger.debug(fmt::format(_("Gpg key 0x{} for repository {} already imported."), key_info.get_id(), config.get_id()));
+            logger.debug(format_runtime(_("Gpg key 0x{} for repository {} already imported."), key_info.get_id(), config.get_id()));
             continue;
         }
 
@@ -271,7 +271,7 @@ void RepoGpgme::import_key(int fd, const std::string & url) {
 
         gpg_import_key(context.get(), key_info.raw_key);
 
-        logger.debug(fmt::format(_("Imported gpg key 0x{} for repository {}."), key_info.get_id(), config.get_id()));
+        logger.debug(format_runtime(_("Imported gpg key 0x{} for repository {}."), key_info.get_id(), config.get_id()));
     }
 }
 

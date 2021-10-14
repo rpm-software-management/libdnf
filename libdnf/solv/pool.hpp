@@ -23,6 +23,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "id_queue.hpp"
 
 #include "libdnf/base/base.hpp"
+#include "libdnf/common/format.hpp"
 #include "libdnf/repo/repo.hpp"
 
 #include <climits>
@@ -181,7 +182,7 @@ public:
 
             if (converted == ULONG_MAX || *endptr != '\0') {
                 // TODO(lukash) throw proper exception class
-                throw RuntimeError(fmt::format("Failed to convert epoch \"{}\" to number", evr.e));
+                throw RuntimeError(format_runtime("Failed to convert epoch \"{}\" to number", evr.e));
             }
 
             return converted;

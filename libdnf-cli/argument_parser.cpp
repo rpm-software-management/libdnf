@@ -22,10 +22,10 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "libdnf-cli/output/argument_parser.hpp"
 
+#include "libdnf/common/format.hpp"
 #include "libdnf/utils/bgettext/bgettext-lib.h"
 #include "libdnf/utils/string.hpp"
 
-#include <fmt/format.h>
 
 #include <cstring>
 #include <iomanip>
@@ -74,11 +74,11 @@ std::string ArgumentParser::Argument::get_conflict_arg_msg(const Argument * conf
         if (named_arg->get_short_name() != '\0') {
             conflict = std::string("\"-") + named_arg->get_short_name() + "\"";
         }
-        msg = fmt::format("not allowed with argument {}", conflict);
+        msg = format_runtime("not allowed with argument {}", conflict);
     } else if (dynamic_cast<const Command *>(conflict_arg)) {
-        msg = fmt::format("not allowed with command {}", conflict_arg->id);
+        msg = format_runtime("not allowed with command {}", conflict_arg->id);
     } else {
-        msg = fmt::format("not allowed with positional argument {}", conflict_arg->id);
+        msg = format_runtime("not allowed with positional argument {}", conflict_arg->id);
     }
     return msg;
 }
@@ -116,7 +116,7 @@ void ArgumentParser::PositionalArg::set_store_value(bool enable) {
 int ArgumentParser::PositionalArg::parse(const char * option, int argc, const char * const argv[]) {
     if (const auto * arg = get_conflict_argument()) {
         auto conflict = get_conflict_arg_msg(arg);
-        auto msg = fmt::format("positional argument \"{}\": {}", option, conflict);
+        auto msg = format_runtime("positional argument \"{}\": {}", option, conflict);
         throw Conflict(msg);
     }
     if (owner.complete_arg_ptr) {
@@ -176,7 +176,7 @@ int ArgumentParser::PositionalArg::parse(const char * option, int argc, const ch
 int ArgumentParser::NamedArg::parse_long(const char * option, int argc, const char * const argv[]) {
     if (const auto * arg = get_conflict_argument()) {
         auto conflict = get_conflict_arg_msg(arg);
-        auto msg = fmt::format("argument \"--{}\": {}", option, conflict);
+        auto msg = format_runtime("argument \"--{}\": {}", option, conflict);
         throw Conflict(msg);
     }
     const char * arg_value;
@@ -214,7 +214,7 @@ int ArgumentParser::NamedArg::parse_long(const char * option, int argc, const ch
 int ArgumentParser::NamedArg::parse_short(const char * option, int argc, const char * const argv[]) {
     if (const auto * arg = get_conflict_argument()) {
         auto conflict = get_conflict_arg_msg(arg);
-        auto msg = fmt::format("argument \"-{}\": {:.1}", option, conflict);
+        auto msg = format_runtime("argument \"-{}\": {:.1}", option, conflict);
         throw Conflict(msg);
     }
     const char * arg_value;
@@ -465,7 +465,7 @@ void ArgumentParser::Command::parse(
                 if (cmd->id == argv[i]) {
                     if (const auto * arg = get_conflict_argument()) {
                         auto conflict = get_conflict_arg_msg(arg);
-                        auto msg = fmt::format("command \"{}\": {}", option, conflict);
+                        auto msg = format_runtime("command \"{}\": {}", option, conflict);
                         throw Conflict(msg);
                     }
                     // the last subcommand wins

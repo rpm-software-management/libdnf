@@ -19,6 +19,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 
 #include "libdnf/base/transaction.hpp"
+#include "libdnf/common/format.hpp"
 #include "libdnf/rpm/transaction.hpp"
 
 #include "../libdnf/utils/bgettext/bgettext-lib.h"
@@ -28,7 +29,6 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/transaction/transaction_item_action.hpp"
 
 #include <fcntl.h>
-#include <fmt/format.h>
 #include <rpm/rpmbuild.h>
 #include <rpm/rpmdb.h>
 #include <rpm/rpmlib.h>
@@ -408,7 +408,7 @@ public:
         auto rc = rpmtsAddReinstallElement(ts, header, &item);
         headerFree(header);
         if (rc != 0) {
-            throw Exception(fmt::format(_("Can't reinstall package \"{}\""), item.get_package().get_full_nevra()));
+            throw Exception(format_runtime(_("Can't reinstall package \"{}\""), item.get_package().get_full_nevra()));
         }
         libdnf_assert(
             last_item_added_ts_element,
@@ -427,7 +427,7 @@ public:
         int rc = rpmtsAddEraseElement(ts, header, unused);
         headerFree(header);
         if (rc != 0) {
-            throw Exception(fmt::format(_("Can't remove package \"{}\""), item.get_package().get_full_nevra()));
+            throw Exception(format_runtime(_("Can't remove package \"{}\""), item.get_package().get_full_nevra()));
         }
         if (!last_item_added_ts_element) {
             auto it = implicit_ts_elements.find(rpmdb_id);
@@ -601,7 +601,7 @@ private:
             // action caused by librpm itself
             auto trigger_nevra = transaction->last_added_item->get_package().get_full_nevra();
             auto te_rpmdb_record_number = rpmteDBOffset(te);
-            auto te_nevra = fmt::format(
+            auto te_nevra = format_runtime(
                 "{}-{}:{}-{}.{}", rpmteN(te), rpmteE(te) ? rpmteE(te) : "0", rpmteV(te), rpmteR(te), rpmteA(te));
             auto & log = *transaction->base->get_logger();
             const char * te_type;
@@ -625,7 +625,7 @@ private:
             switch (event) {
                 case RPMTS_EVENT_ADD: {
                     transaction->implicit_ts_elements.insert({te_rpmdb_record_number, te});
-                    log.debug(fmt::format(
+                    log.debug(format_runtime(
                         "Implicitly added element {} type {} (caused by {})", te_nevra, te_type, trigger_nevra));
                     break;
                 }
@@ -831,7 +831,7 @@ void Transaction::Impl::install_up_down(TransactionItem & item, libdnf::transact
     auto rc = rpmtsAddInstallElement(ts, header, &item, upgrade ? 1 : 0, nullptr);
     headerFree(header);
     if (rc != 0) {
-        throw Exception(fmt::format(_("Can't {} package \"{}\""), msg_action, item.get_package().get_full_nevra()));
+        throw Exception(format_runtime(_("Can't {} package \"{}\""), msg_action, item.get_package().get_full_nevra()));
     }
     libdnf_assert(
         last_item_added_ts_element,

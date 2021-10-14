@@ -19,6 +19,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 
 #include "libdnf/common/exception.hpp"
+#include "libdnf/common/format.hpp"
 #include "../libdnf/utils/bgettext/bgettext-lib.h"
 #include "package_sack_impl.hpp"
 #include "../repo/repo_impl.hpp"
@@ -40,8 +41,6 @@ extern "C" {
 #include <solv/solver.h>
 #include <solv/testcase.h>
 }
-
-#include <fmt/format.h>
 
 #include <filesystem>
 
@@ -148,10 +147,10 @@ void PackageSack::Impl::write_main(repo::LibsolvRepoExt & libsolv_repo_ext, bool
     auto tmp_fn_templ = fn + ".XXXXXX";
     int tmp_fd = mkstemp(tmp_fn_templ.data());
 
-    logger.debug(fmt::format("caching libsolv_repo: {} (0x{})", name, chksum));
+    logger.debug(format_runtime("caching libsolv_repo: {} (0x{})", name, chksum));
 
     if (tmp_fd == -1) {
-        throw SystemError(errno, fmt::format(_("cannot create temporary file: {}"), tmp_fn_templ));
+        throw SystemError(errno, format_runtime(_("cannot create temporary file: {}"), tmp_fn_templ));
         // g_set_error (error, DNF_ERROR, DNF_ERROR_FILE_INVALID, _("cannot create temporary file: %s"), tmp_fn_templ);
     }
 
@@ -215,13 +214,13 @@ void PackageSack::Impl::write_ext(
     int tmp_fd = mkstemp(tmp_fn_templ.data());
 
     if (tmp_fd == -1) {
-        throw SystemError(errno, fmt::format(_("cannot create temporary file: {}"), tmp_fn_templ));
+        throw SystemError(errno, format_runtime(_("cannot create temporary file: {}"), tmp_fn_templ));
         // g_set_error (error, DNF_ERROR, DNF_ERROR_FILE_INVALID, _("can not create temporary file %s"), tmp_fn_templ);
     }
 
     auto fp = fdopen(tmp_fd, "w+");
 
-    logger.debug(fmt::format("{}: storing {} to: {}", __func__, repo_id, tmp_fn_templ));
+    logger.debug(format_runtime("{}: storing {} to: {}", __func__, repo_id, tmp_fn_templ));
     int ret;
     if (which_repodata != RepodataType::UPDATEINFO)
         ret = repodata_write(data, fp);
@@ -307,7 +306,7 @@ void PackageSack::Impl::rewrite_repos(libdnf::solv::IdQueue & addedfileprovides,
         libsolv_repo->nrepodata = libsolv_repo_ext.main_nrepodata;
         libsolv_repo->nsolvables = libsolv_repo_ext.main_nsolvables;
         libsolv_repo->end = libsolv_repo_ext.main_end;
-        logger.debug(fmt::format("rewriting repo: {}", libsolv_repo->name));
+        logger.debug(format_runtime("rewriting repo: {}", libsolv_repo->name));
         write_main(libsolv_repo_ext, false);
         libsolv_repo->nrepodata = oldnrepodata;
         libsolv_repo->nsolvables = oldnsolvables;
@@ -357,7 +356,7 @@ PackageSack::Impl::RepodataState PackageSack::Impl::load_repo_main(repo::Repo & 
 
         if (!fp_primary) {
             // TODO(lukash) proper exception
-            throw RuntimeError(fmt::format("Failed to open repo primary \"{}\": {}", primary, errno));
+            throw RuntimeError(format_runtime("Failed to open repo primary \"{}\": {}", primary, errno));
         }
 
         logger.debug(std::string("fetching ") + id);
@@ -386,13 +385,13 @@ PackageSack::Impl::RepodataInfo PackageSack::Impl::load_repo_ext(
     auto fn = repo.get_metadata_path(which_filename);
     if (fn.empty()) {
         // g_set_error (error, DNF_ERROR, DNF_ERROR_NO_CAPABILITY, _("no %1$s string for %2$s"), which_filename, repo_id);
-        throw NoCapability(fmt::format(_("no {0} string for {1}"), which_filename, repo_id));
+        throw NoCapability(format_runtime(_("no {0} string for {1}"), which_filename, repo_id));
     }
 
     auto fn_cache = give_repo_solv_cache_fn(repo_id, suffix);
     std::unique_ptr<std::FILE, decltype(&close_file)> fp(fopen(fn_cache.c_str(), "rb"), &close_file);
     if (can_use_repomd_cache(fp.get(), repo_impl->libsolv_repo_ext.checksum)) {
-        logger.debug(fmt::format("{}: using cache file: {}", __func__, fn_cache));
+        logger.debug(format_runtime("{}: using cache file: {}", __func__, fn_cache));
         if (repo_add_solv(libsolv_repo, fp.get(), flags) != 0) {
             // g_set_error_literal (error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, _("failed to add solv"));
             throw Exception(_("repo_add_solv() has failed."));
@@ -405,9 +404,9 @@ PackageSack::Impl::RepodataInfo PackageSack::Impl::load_repo_ext(
     fp.reset(solv_xfopen(fn.c_str(), "r"));
     if (!fp) {
         // g_set_error (error, DNF_ERROR, DNF_ERROR_FILE_INVALID, _("failed to open: %s"), fn.c_str());
-        throw Exception(fmt::format(_("failed to open: {}"), fn));
+        throw Exception(format_runtime(_("failed to open: {}"), fn));
     }
-    logger.debug(fmt::format("{}: loading: {}", __func__, fn.c_str()));
+    logger.debug(format_runtime("{}: loading: {}", __func__, fn.c_str()));
 
     int previous_last = libsolv_repo->nrepodata - 1;
     auto ok = cb(libsolv_repo, fp.get());
@@ -470,7 +469,7 @@ bool PackageSack::Impl::load_system_repo() {
     int rc = repo_add_rpmdb(libsolv_repo.get(), nullptr, flagsrpm);
     if (rc != 0) {
         // g_set_error(error, DNF_ERROR, DNF_ERROR_FILE_INVALID, _("failed loading RPMDB"));
-        logger.warning(fmt::format(_("load_system_repo(): failed loading RPMDB: {}"), pool_errstr(*pool)));
+        logger.warning(format_runtime(_("load_system_repo(): failed loading RPMDB: {}"), pool_errstr(*pool)));
         return false;
     }
 
@@ -504,7 +503,7 @@ bool PackageSack::Impl::load_extra_system_repo(const std::string & rootdir) {
     //reset rootdir to main one
     pool_set_rootdir(*pool, base->get_config().installroot().get_value().c_str());
     if (rc != 0) {
-        logger.warning(fmt::format(_("load_extra_system_repo(): failed loading RPMDB: {}"), pool_errstr(*pool)));
+        logger.warning(format_runtime(_("load_extra_system_repo(): failed loading RPMDB: {}"), pool_errstr(*pool)));
         return false;
     }
 
@@ -545,7 +544,7 @@ void PackageSack::Impl::load_available_repo(repo::Repo & repo, LoadRepoFlags fla
                 write_ext(repo_impl->libsolv_repo_ext, repodata_info.id, RepodataType::FILENAMES, SOLV_EXT_FILENAMES);
             }
         } catch (const NoCapability & ex) {
-            logger.debug(fmt::format("no filelists metadata available for {}", repo.get_id()));
+            logger.debug(format_runtime("no filelists metadata available for {}", repo.get_id()));
         }
     }
     if (any(flags & LoadRepoFlags::OTHER)) {
@@ -561,7 +560,7 @@ void PackageSack::Impl::load_available_repo(repo::Repo & repo, LoadRepoFlags fla
                 write_ext(repo_impl->libsolv_repo_ext, repodata_info.id, RepodataType::OTHER, SOLV_EXT_OTHER);
             }
         } catch (const NoCapability & ex) {
-            logger.debug(fmt::format("no other metadata available for {}", repo.get_id()));
+            logger.debug(format_runtime("no other metadata available for {}", repo.get_id()));
         }
     }
     if (any(flags & LoadRepoFlags::PRESTO)) {
@@ -576,7 +575,7 @@ void PackageSack::Impl::load_available_repo(repo::Repo & repo, LoadRepoFlags fla
                 write_ext(repo_impl->libsolv_repo_ext, repodata_info.id, RepodataType::PRESTO, SOLV_EXT_PRESTO);
             }
         } catch (const NoCapability & ex) {
-            logger.debug(fmt::format("no presto metadata available for {}", repo.get_id()));
+            logger.debug(format_runtime("no presto metadata available for {}", repo.get_id()));
         }
     }
 
@@ -595,7 +594,7 @@ void PackageSack::Impl::load_available_repo(repo::Repo & repo, LoadRepoFlags fla
                 write_ext(repo_impl->libsolv_repo_ext, repodata_info.id, RepodataType::UPDATEINFO, SOLV_EXT_UPDATEINFO);
             }
         } catch (const NoCapability & ex) {
-            logger.debug(fmt::format("no updateinfo available for {}", repo.get_id()));
+            logger.debug(format_runtime("no updateinfo available for {}", repo.get_id()));
         }
     }
 
@@ -697,7 +696,7 @@ void PackageSack::dump_debugdata(const std::string & dir) {
 
         int ret = testcase_write(solver, dir.c_str(), 0, NULL, NULL);
         if (!ret) {
-            throw SystemError(errno, fmt::format("Failed to write debug data to {}", dir));
+            throw SystemError(errno, format_runtime("Failed to write debug data to {}", dir));
         }
     } catch (...) {
         solver_free(solver);

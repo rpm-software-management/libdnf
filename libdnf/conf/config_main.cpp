@@ -21,10 +21,10 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "config_utils.hpp"
 
+#include "libdnf/common/format.hpp"
 #include "libdnf/conf/config_parser.hpp"
 #include "libdnf/conf/const.hpp"
 
-#include <fmt/format.h>
 #include <glob.h>
 
 #include <algorithm>
@@ -55,12 +55,12 @@ static int str_to_bytes(const std::string & str) {
     std::size_t idx;
     auto res = std::stod(str, &idx);
     if (res < 0) {
-        throw Option::InvalidValue(fmt::format("seconds value '{}' must not be negative", str));
+        throw Option::InvalidValue(format_runtime("seconds value '{}' must not be negative", str));
     }
 
     if (idx < str.length()) {
         if (idx < str.length() - 1) {
-            throw Option::InvalidValue(fmt::format("could not convert '{}' to bytes", str));
+            throw Option::InvalidValue(format_runtime("could not convert '{}' to bytes", str));
         }
         switch (str.back()) {
             case 'k':
@@ -76,7 +76,7 @@ static int str_to_bytes(const std::string & str) {
                 res *= 1024 * 1024 * 1024;
                 break;
             default:
-                throw Option::InvalidValue(fmt::format("unknown unit '{}'", str.back()));
+                throw Option::InvalidValue(format_runtime("unknown unit '{}'", str.back()));
         }
     }
 

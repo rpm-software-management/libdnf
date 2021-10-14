@@ -32,7 +32,6 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/solv/id_queue.hpp"
 #include "libdnf/solv/pool.hpp"
 
-#include <fmt/format.h>
 #include <sys/utsname.h>
 
 #include <iostream>

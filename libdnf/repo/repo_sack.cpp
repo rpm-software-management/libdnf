@@ -23,11 +23,11 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "libdnf/base/base.hpp"
 #include "libdnf/common/exception.hpp"
+#include "libdnf/common/format.hpp"
 #include "libdnf/conf/config_parser.hpp"
 #include "libdnf/conf/option_bool.hpp"
 #include "libdnf/rpm/package_sack_impl.hpp"
 
-#include <fmt/format.h>
 
 extern "C" {
 #include <solv/repo.h>
@@ -92,7 +92,7 @@ void RepoSack::new_repos_from_file(const std::string & path) {
         }
         auto repo_id = base->get_vars()->substitute(section);
 
-        logger.debug(fmt::format(
+        logger.debug(format_runtime(
             R"**(Start of loading configuration of repository "{}" from file "{}" section "{}")**",
             repo_id,
             path,
@@ -100,7 +100,7 @@ void RepoSack::new_repos_from_file(const std::string & path) {
 
         auto bad_char_idx = Repo::verify_id(repo_id);
         if (bad_char_idx != std::string::npos) {
-            auto msg = fmt::format(
+            auto msg = format_runtime(
                 R"**(Bad id for repo "{}" section "{}", char = {} at pos {})**",
                 repo_id,
                 section,
@@ -112,10 +112,10 @@ void RepoSack::new_repos_from_file(const std::string & path) {
         auto repo = new_repo(repo_id);
         auto & repo_cfg = repo->get_config();
         repo_cfg.load_from_parser(parser, section, *base->get_vars(), *base->get_logger());
-        logger.trace(fmt::format(R"**(Loading configuration of repository "{}" from file "{}" done)**", repo_id, path));
+        logger.trace(format_runtime(R"**(Loading configuration of repository "{}" from file "{}" done)**", repo_id, path));
 
         if (repo_cfg.name().get_priority() == Option::Priority::DEFAULT) {
-            logger.warning(fmt::format(
+            logger.warning(format_runtime(
                 "Repository \"{}\" is missing name in configuration file \"{}\", using id.", repo_id, path));
             repo_cfg.name().set(Option::Priority::REPOCONFIG, repo_id);
         }

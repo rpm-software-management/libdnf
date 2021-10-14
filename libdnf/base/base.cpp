@@ -23,8 +23,6 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/conf/const.hpp"
 #include "libdnf/solv/pool.hpp"
 
-#include <fmt/format.h>
-
 #include <algorithm>
 #include <atomic>
 #include <cstdlib>

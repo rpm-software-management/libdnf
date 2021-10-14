@@ -19,9 +19,10 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "libdnf/common/proc.hpp"
 
+#include "libdnf/common/format.hpp"
+
 #include <errno.h>
 #include <fcntl.h>
-#include <fmt/format.h>
 #include <unistd.h>
 
 #include <cstdlib>
@@ -29,7 +30,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 namespace libdnf {
 
 uid_t read_login_uid_from_proc(pid_t pid) noexcept {
-    auto in = open(fmt::format("/proc/{}/loginuid", pid).c_str(), O_RDONLY | O_NOFOLLOW | O_CLOEXEC);
+    auto in = open(format("/proc/{}/loginuid", pid).c_str(), O_RDONLY | O_NOFOLLOW | O_CLOEXEC);
     if (in == -1) {
         return INVALID_UID;
     }

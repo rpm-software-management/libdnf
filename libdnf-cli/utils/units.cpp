@@ -20,8 +20,9 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "units.hpp"
 
+#include "libdnf/common/format.hpp"
+
 #include <cstring>
-#include <fmt/format.h>
 
 
 namespace libdnf::cli::utils::units {
@@ -47,7 +48,7 @@ std::string format_size(int64_t num) {
         i /= 1024;
         index++;
     }
-    return fmt::format("{0:.1f} {1:>3s}", i, SIZE_UNITS[index]);
+    return format("{0:.1f} {1:>3s}", i, SIZE_UNITS[index]);
 }
 
 

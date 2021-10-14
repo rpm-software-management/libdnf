@@ -21,13 +21,13 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "transaction_impl.hpp"
 
 #include "libdnf/base/base.hpp"
+#include "libdnf/common/format.hpp"
 #include "libdnf/rpm/package_query.hpp"
 #include "libdnf/rpm/package_set_impl.hpp"
 #include "libdnf/solv/pool.hpp"
 #include "libdnf/utils/bgettext/bgettext-lib.h"
 #include "libdnf/utils/string.hpp"
 
-#include <fmt/format.h>
 
 #include <iostream>
 
@@ -240,7 +240,7 @@ GoalProblem Transaction::Impl::report_not_found(
                 }
             }
             rpm::PackageQuery alternatives(hints);
-            std::string alternatives_provide = fmt::format("alternative-for({})", pkg_spec);
+            std::string alternatives_provide = format_runtime("alternative-for({})", pkg_spec);
             alternatives.filter_provides({alternatives_provide});
             if (!alternatives.empty()) {
                 std::set<std::string> hints;
@@ -307,7 +307,7 @@ std::string Transaction::package_solver_problem_to_string(
             if (raw.second.size() != 1) {
                 throw std::invalid_argument("Incorrect number of elements for a problem rule");
             }
-            return fmt::format(TM_(PKG_PROBLEMS_DICT.at(raw.first), 1), raw.second[0]);
+            return format_runtime(TM_(PKG_PROBLEMS_DICT.at(raw.first), 1), raw.second[0]);
         case ProblemRules::RULE_JOB:
         case ProblemRules::RULE_JOB_UNSUPPORTED:
         case ProblemRules::RULE_PKG:
@@ -323,7 +323,7 @@ std::string Transaction::package_solver_problem_to_string(
             if (raw.second.size() != 2) {
                 throw std::invalid_argument("Incorrect number of elements for a problem rule");
             }
-            return fmt::format(TM_(PKG_PROBLEMS_DICT.at(raw.first), 1), raw.second[0], raw.second[1]);
+            return format_runtime(TM_(PKG_PROBLEMS_DICT.at(raw.first), 1), raw.second[0], raw.second[1]);
         case ProblemRules::RULE_PKG_CONFLICTS:
         case ProblemRules::RULE_PKG_OBSOLETES:
         case ProblemRules::RULE_PKG_INSTALLED_OBSOLETES:
@@ -332,7 +332,7 @@ std::string Transaction::package_solver_problem_to_string(
             if (raw.second.size() != 3) {
                 throw std::invalid_argument("Incorrect number of elements for a problem rule");
             }
-            return fmt::format(TM_(PKG_PROBLEMS_DICT.at(raw.first), 1), raw.second[0], raw.second[1], raw.second[2]);
+            return format_runtime(TM_(PKG_PROBLEMS_DICT.at(raw.first), 1), raw.second[0], raw.second[1], raw.second[2]);
         case ProblemRules::RULE_UNKNOWN:
             if (raw.second.size() != 0) {
                 throw std::invalid_argument("Incorrect number of elements for a problem rule");
@@ -341,7 +341,7 @@ std::string Transaction::package_solver_problem_to_string(
         case ProblemRules::RULE_PKG_REMOVAL_OF_PROTECTED:
         case ProblemRules::RULE_PKG_REMOVAL_OF_RUNNING_KERNEL:
             auto elements = utils::string::join(raw.second, ", ");
-            return fmt::format(TM_(PKG_PROBLEMS_DICT.at(raw.first), 1), elements);
+            return format_runtime(TM_(PKG_PROBLEMS_DICT.at(raw.first), 1), elements);
     }
     return {};
 }
@@ -358,14 +358,14 @@ std::string Transaction::all_package_solver_problems_to_string() {
     }
     const char * problem_prefix = _("Problem {}: ");
 
-    output.append(fmt::format(problem_prefix, 1));
+    output.append(format_runtime(problem_prefix, 1));
     output.append(string_join(*p_impl->package_solver_problems.begin(), "\n  - "));
 
     int index = 2;
     for (auto iter = std::next(p_impl->package_solver_problems.begin()); iter != p_impl->package_solver_problems.end();
          ++iter) {
         output.append("\n ");
-        output.append(fmt::format(problem_prefix, index));
+        output.append(format_runtime(problem_prefix, index));
         output.append(string_join(*iter, "\n  - "));
         ++index;
     }
