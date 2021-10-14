@@ -25,7 +25,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "dnfdaemon-server/transaction.hpp"
 #include "dnfdaemon-server/utils.hpp"
 
-#include <fmt/format.h>
+#include <libdnf/common/format.hpp>
 #include <libdnf/rpm/transaction.hpp>
 #include <libdnf/transaction/transaction_item.hpp>
 #include <sdbus-c++/sdbus-c++.h>
@@ -175,7 +175,7 @@ sdbus::MethodReply Goal::do_transaction(sdbus::MethodCall & call) {
     rpm_transaction.register_cb(nullptr);
     if (rpm_result != 0) {
         throw sdbus::Error(
-            dnfdaemon::ERROR_TRANSACTION, fmt::format("rpm transaction failed with code {}.", rpm_result));
+            dnfdaemon::ERROR_TRANSACTION, libdnf::format("rpm transaction failed with code {}.", rpm_result));
     }
 
     time = std::chrono::system_clock::now().time_since_epoch();

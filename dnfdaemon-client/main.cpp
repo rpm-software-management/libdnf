@@ -29,7 +29,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <dnfdaemon-server/dbus.hpp>
 #include <fcntl.h>
-#include <fmt/format.h>
+#include <libdnf/common/format.hpp>
 #include <libdnf-cli/exit-codes.hpp>
 #include <libdnf-cli/session.hpp>
 #include <libdnf/base/base.hpp>
@@ -141,7 +141,7 @@ static bool parse_args(Context & ctx, int argc, char * argv[]) {
     installroot->set_parse_hook_func(
         [](libdnf::cli::ArgumentParser::NamedArg * arg, [[maybe_unused]] const char * option, const char * value) {
             if (value[0] != '/') {
-                throw std::runtime_error(fmt::format("--{}: Absolute path must be used.", arg->get_long_name()));
+                throw std::runtime_error(libdnf::format("--{}: Absolute path must be used.", arg->get_long_name()));
             }
             return true;
         });
@@ -257,7 +257,7 @@ int main(int argc, char * argv[]) {
         std::cout << ex.what() << std::endl;
         return static_cast<int>(libdnf::cli::ExitCode::ARGPARSER_ERROR);
     } catch (std::exception & ex) {
-        std::cerr << fmt::format("Command returned error: {}", ex.what()) << std::endl;
+        std::cerr << libdnf::format("Command returned error: {}", ex.what()) << std::endl;
         return static_cast<int>(libdnf::cli::ExitCode::ERROR);
     }
 

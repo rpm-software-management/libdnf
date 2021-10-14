@@ -29,6 +29,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "services/rpm/rpm.hpp"
 #include "utils.hpp"
 
+#include <libdnf/common/format.hpp>
 #include <libdnf/logger/logger.hpp>
 #include <sdbus-c++/sdbus-c++.h>
 
@@ -81,7 +82,7 @@ Session::Session(
         if (bind != opt_binds.end()) {
             bind->second.new_string(libdnf::Option::Priority::RUNTIME, value);
         } else {
-            logger.warning(fmt::format("Unknown config option: {}", key));
+            logger.warning(libdnf::format("Unknown config option: {}", key));
         }
     }
 

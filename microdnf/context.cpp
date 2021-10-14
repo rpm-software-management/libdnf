@@ -24,6 +24,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <libdnf-cli/progressbar/multi_progress_bar.hpp>
 #include <libdnf-cli/utils/tty.hpp>
 #include <libdnf/base/goal.hpp>
+#include <libdnf/common/format.hpp>
 #include <libdnf/repo/package_downloader.hpp>
 #include <libdnf/rpm/package_query.hpp>
 #include <libdnf/rpm/package_set.hpp>
@@ -33,7 +34,6 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <atomic>
 #include <condition_variable>
 #include <filesystem>
-#include <fmt/format.h>
 #include <iostream>
 #include <mutex>
 #include <string>
@@ -716,7 +716,7 @@ public:
         uint64_t return_code) override {
         active_progress_bar->add_message(
             libdnf::cli::progressbar::MessageType::ERROR,
-            fmt::format(
+            libdnf::format(
                 "Error in {} scriptlet: {} return code {}",
                 script_type_to_string(type),
                 to_full_nevra_string(nevra),
@@ -730,7 +730,8 @@ public:
         libdnf::rpm::TransactionCallbacks::ScriptType type) override {
         active_progress_bar->add_message(
             libdnf::cli::progressbar::MessageType::INFO,
-            fmt::format("Running {} scriptlet: {}", script_type_to_string(type), to_full_nevra_string(nevra)));
+            libdnf::format(
+                "Running {} scriptlet: {}", script_type_to_string(type), to_full_nevra_string(nevra)));
         multi_progress_bar.print();
     }
 
@@ -741,7 +742,7 @@ public:
         [[maybe_unused]] uint64_t return_code) override {
         active_progress_bar->add_message(
             libdnf::cli::progressbar::MessageType::INFO,
-            fmt::format("Stop {} scriptlet: {}", script_type_to_string(type), to_full_nevra_string(nevra)));
+            libdnf::format("Stop {} scriptlet: {}", script_type_to_string(type), to_full_nevra_string(nevra)));
         multi_progress_bar.print();
     }
 

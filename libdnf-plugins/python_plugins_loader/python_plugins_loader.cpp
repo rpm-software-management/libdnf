@@ -18,7 +18,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <Python.h>
-#include <fmt/format.h>
+#include <libdnf/common/format.hpp>
 #include <libdnf/base/base.hpp>
 
 #include <cstdlib>
@@ -261,7 +261,7 @@ void PythonPluginLoader::load_plugins_from_dir(const fs::path & dir_path) {
         try {
             load_plugin_file(p);
         } catch (const std::exception & ex) {
-            std::string msg = fmt::format("Can't load plugin \"{}\": {}", p.string(), ex.what());
+            std::string msg = libdnf::format("Can't load plugin \"{}\": {}", p.string(), ex.what());
             logger.error(msg);
             error_msgs += msg + '\n';
         }
@@ -330,7 +330,7 @@ Version libdnf_plugin_get_version(void) {
 
 IPlugin * libdnf_plugin_new_instance(Version api_version) {
     if (api_version.major != PLUGIN_API_VERSION.major || api_version.minor != PLUGIN_API_VERSION.minor) {
-        auto msg = fmt::format(
+        auto msg = libdnf::format(
             "Unsupported API combination. API version implemented by plugin = \"{}.{}.{}\"."
             " API version in libdnf = \"{}.{}.{}\".",
             PLUGIN_API_VERSION.major,

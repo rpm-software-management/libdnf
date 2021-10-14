@@ -46,9 +46,9 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <libdnf-cli/exit-codes.hpp>
 #include <libdnf-cli/session.hpp>
+#include <libdnf/common/format.hpp>
 
 #include <fcntl.h>
-#include <fmt/format.h>
 #include <libdnf/base/base.hpp>
 #include <libdnf/logger/memory_buffer_logger.hpp>
 #include <libdnf/logger/stream_logger.hpp>
@@ -178,7 +178,7 @@ static void set_commandline_args(Context & ctx) {
                                     const char * value) {
         auto val = strchr(value + 1, '=');
         if (!val) {
-            throw std::runtime_error(fmt::format("setopt: Badly formated argument value \"{}\"", value));
+            throw std::runtime_error(libdnf::format("setopt: Badly formated argument value \"{}\"", value));
         }
         auto key = std::string(value, val);
         auto dot_pos = key.rfind('.');
@@ -213,7 +213,7 @@ static void set_commandline_args(Context & ctx) {
             [[maybe_unused]] ArgumentParser::NamedArg * arg, [[maybe_unused]] const char * option, const char * value) {
             auto val = strchr(value + 1, '=');
             if (!val) {
-                throw std::runtime_error(fmt::format("setvar: Badly formated argument value \"{}\"", value));
+                throw std::runtime_error(libdnf::format("setvar: Badly formated argument value \"{}\"", value));
             }
             auto name = std::string(value, val);
             ctx.base.get_vars()->set(name, val + 1, libdnf::Vars::Priority::COMMANDLINE);
@@ -547,7 +547,7 @@ int main(int argc, char * argv[]) try {
         return static_cast<int>(libdnf::cli::ExitCode::ARGPARSER_ERROR);
     } catch (std::exception & ex) {
         std::cout << ex.what() << std::endl;
-        log_router.error(fmt::format("Command returned error: {}", ex.what()));
+        log_router.error(libdnf::format("Command returned error: {}", ex.what()));
         return static_cast<int>(libdnf::cli::ExitCode::ERROR);
     }
 

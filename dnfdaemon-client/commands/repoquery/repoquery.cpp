@@ -25,7 +25,6 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf-cli/output/repoquery.hpp"
 
 #include <dnfdaemon-server/dbus.hpp>
-#include <fmt/format.h>
 #include <libdnf/conf/option_string.hpp>
 #include <libdnf/rpm/package.hpp>
 #include <libdnf/rpm/package_query.hpp>

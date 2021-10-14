@@ -19,8 +19,6 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "transaction.hpp"
 
-#include <fmt/format.h>
-
 
 namespace dnfdaemon {
 

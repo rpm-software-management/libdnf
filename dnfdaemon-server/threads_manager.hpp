@@ -22,7 +22,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "dbus.hpp"
 
-#include <fmt/format.h>
+#include <libdnf/common/format.hpp>
 #include <sdbus-c++/sdbus-c++.h>
 
 #include <atomic>
@@ -66,7 +66,7 @@ public:
                     error_msg = "Unknown exception caught";
                 }
                 if (!success) {
-                    std::cerr << fmt::format(
+                    std::cerr << libdnf::format(
                                      "Error sending D-Bus reply to {}:{}() call: {}",
                                      call.getInterfaceName(),
                                      call.getMemberName(),
@@ -96,7 +96,7 @@ public:
                     error_msg = "Unknown exception caught";
                 }
                 if (!success) {
-                    std::cerr << fmt::format(
+                    std::cerr << libdnf::format(
                                      "Error handling signal {}:{}: {}",
                                      signal.getInterfaceName(),
                                      signal.getMemberName(),

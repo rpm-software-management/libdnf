@@ -21,6 +21,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "dnfdaemon-server/dbus.hpp"
 
+#include <libdnf/common/format.hpp>
 #include <libdnf/comps/group/group.hpp>
 #include <libdnf/comps/group/query.hpp>
 #include <sdbus-c++/sdbus-c++.h>
@@ -64,7 +65,7 @@ dnfdaemon::KeyValueMap group_to_map(libdnf::comps::Group & libdnf_group, const s
     for (auto & attr : attributes) {
         auto it = group_attributes.find(attr);
         if (it == group_attributes.end()) {
-            throw std::runtime_error(fmt::format("Group attribute '{}' not supported", attr));
+            throw std::runtime_error(libdnf::format("Group attribute '{}' not supported", attr));
         }
         switch (it->second) {
             case GroupAttribute::groupid:

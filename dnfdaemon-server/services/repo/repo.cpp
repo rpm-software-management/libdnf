@@ -22,7 +22,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "dnfdaemon-server/dbus.hpp"
 #include "dnfdaemon-server/utils.hpp"
 
-#include <fmt/format.h>
+#include <libdnf/common/format.hpp>
 #include <libdnf/repo/repo.hpp>
 #include <libdnf/rpm/package_query.hpp>
 #include <libdnf/rpm/package_set.hpp>
@@ -223,7 +223,7 @@ sdbus::MethodReply Repo::list(sdbus::MethodCall & call) {
     bool fill_sack_needed = false;
     for (auto & attr_str : repo_attrs) {
         if (repo_attributes.count(attr_str) == 0) {
-            throw std::runtime_error(fmt::format("Repo attribute '{}' not supported", attr_str));
+            throw std::runtime_error(libdnf::format("Repo attribute '{}' not supported", attr_str));
         }
         if (!fill_sack_needed) {
             fill_sack_needed = std::find(

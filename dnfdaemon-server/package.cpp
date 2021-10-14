@@ -19,7 +19,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "package.hpp"
 
-#include <fmt/format.h>
+#include <libdnf/common/format.hpp>
 
 #include <map>
 
@@ -53,7 +53,7 @@ dnfdaemon::KeyValueMap package_to_map(
     for (auto & attr : attributes) {
         auto it = package_attributes.find(attr);
         if (it == package_attributes.end()) {
-            throw std::runtime_error(fmt::format("Package attribute '{}' not supported", attr));
+            throw std::runtime_error(libdnf::format("Package attribute '{}' not supported", attr));
         }
         switch (it->second) {
             case PackageAttribute::name:
