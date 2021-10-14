@@ -21,10 +21,12 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "libdnf/solv/pool.hpp"
 
+#define requires require
 extern "C" {
 #include <solv/evr.h>
 #include <solv/testcase.h>
 }
+#undef requires
 
 namespace {
 
@@ -98,11 +100,11 @@ void init_solver(Pool * pool, Solver ** solver) {
 
 /// @brief return false when does not depend on anything from b
 bool can_depend_on(Pool * pool, Solvable * sa, Id b) {
-    libdnf::solv::IdQueue requires;
+    libdnf::solv::IdQueue require;
 
-    solvable_lookup_idarray(sa, SOLVABLE_REQUIRES, &requires.get_queue());
-    for (int i = 0; i < requires.size(); ++i) {
-        Id req_dep = requires[i];
+    solvable_lookup_idarray(sa, SOLVABLE_REQUIRES, &require.get_queue());
+    for (int i = 0; i < require.size(); ++i) {
+        Id req_dep = require[i];
         Id p, pp;
 
         FOR_PROVIDES(p, pp, req_dep)

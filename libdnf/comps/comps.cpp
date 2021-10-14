@@ -22,12 +22,14 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <libdnf/solv/pool.hpp>
 #include "libdnf/repo/repo_impl.hpp"
 
+#define requires require
 extern "C" {
 #include <solv/pool.h>
 #include <solv/repo.h>
 #include <solv/repo_comps.h>
 #include <solv/solv_xfopen.h>
 }
+#undef requires
 
 #include <filesystem>
 

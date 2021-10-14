@@ -29,6 +29,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <climits>
 #include <memory>
 
+#define requires require
 extern "C" {
 #include <solv/evr.h>
 #include <solv/dataiterator.h>
@@ -38,7 +39,7 @@ extern "C" {
 #include <solv/repo.h>
 #include <solv/util.h>
 }
-
+#undef requires
 
 namespace libdnf::solv {
 

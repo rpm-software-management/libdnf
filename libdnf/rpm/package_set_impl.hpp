@@ -26,10 +26,11 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/solv/pool.hpp"
 #include "libdnf/solv/solv_map.hpp"
 
+#define requires require
 extern "C" {
 #include <solv/pool.h>
 }
-
+#undef requires
 
 namespace libdnf::rpm {
 

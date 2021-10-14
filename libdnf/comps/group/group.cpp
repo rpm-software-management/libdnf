@@ -26,6 +26,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <libdnf/solv/pool.hpp>
 #include <libdnf/utils/xml.hpp>
 
+#define requires require
 extern "C" {
 #include <solv/knownid.h>
 #include <solv/pool.h>
@@ -33,6 +34,7 @@ extern "C" {
 #include <solv/solvable.h>
 #include <solv/dataiterator.h>
 }
+#undef requires
 
 #include <string>
 #include <iostream>
@@ -213,8 +215,8 @@ std::vector<Package> Group::get_packages() {
     Solvable * solvable = pool.id2solvable(group_ids[0].id);
 
     // Load MANDATORY pacakges from solvable->requires
-    if (solvable->requires) {
-        for (Id * r_id = solvable->repo->idarraydata + solvable->requires; *r_id; ++r_id) {
+    if (solvable->require) {
+        for (Id * r_id = solvable->repo->idarraydata + solvable->require; *r_id; ++r_id) {
             packages.push_back(Package(pool.id2str(*r_id), PackageType::MANDATORY, ""));
         }
     }

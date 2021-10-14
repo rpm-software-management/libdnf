@@ -26,6 +26,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/solv/id_queue.hpp"
 #include "libdnf/solv/solv_map.hpp"
 
+#define requires require
 extern "C" {
 #include <solv/chksum.h>
 #include <solv/repo.h>
@@ -41,6 +42,7 @@ extern "C" {
 #include <solv/solver.h>
 #include <solv/testcase.h>
 }
+#undef requires
 
 #include <filesystem>
 

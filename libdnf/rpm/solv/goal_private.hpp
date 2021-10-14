@@ -27,7 +27,9 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/solv/solv_map.hpp"
 #include "libdnf/transaction/transaction_item_reason.hpp"
 
+#define requires require
 #include <solv/solver.h>
+#undef requires
 
 namespace libdnf::rpm::solv {
 

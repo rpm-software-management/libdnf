@@ -22,7 +22,9 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/solv/pool.hpp"
 #include "libdnf/solv/solv_map.hpp"
 
+#define requires require
 #include <solv/dataiterator.h>
+#undef requires
 
 namespace libdnf::advisory {
 

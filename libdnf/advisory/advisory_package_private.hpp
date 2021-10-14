@@ -24,8 +24,10 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/rpm/package_sack_impl.hpp"
 #include "libdnf/solv/pool.hpp"
 
+#define requires require
 #include <solv/pooltypes.h>
 #include <solv/solvable.h>
+#undef requires
 
 namespace libdnf::advisory {
 

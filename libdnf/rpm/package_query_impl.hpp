@@ -24,9 +24,11 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "libdnf/rpm/package_query.hpp"
 
+#define requires require
 extern "C" {
 #include <solv/solvable.h>
 }
+#undef requires
 
 namespace libdnf::rpm {
 

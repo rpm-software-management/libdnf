@@ -21,9 +21,10 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef LIBDNF_SOLV_MAP_HPP
 #define LIBDNF_SOLV_MAP_HPP
 
-
+#define requires require
 #include <solv/bitmap.h>
 #include <solv/pooltypes.h>
+#undef requires
 
 #include <iterator>
 

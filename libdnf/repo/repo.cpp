@@ -28,9 +28,11 @@ constexpr const char * REPOID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmno
 #include "libdnf/utils/string.hpp"
 #include "libdnf/utils/temp.hpp"
 
+#define requires require
 extern "C" {
 #include <solv/repo_rpmdb.h>
 }
+#undef requires
 
 #include <fcntl.h>
 #include <glib.h>

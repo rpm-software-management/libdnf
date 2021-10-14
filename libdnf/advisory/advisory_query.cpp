@@ -28,7 +28,9 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/solv/solv_map.hpp"
 #include "libdnf/utils/utils_internal.hpp"
 
+#define requires require
 #include <solv/evr.h>
+#undef requires
 
 // For glob support
 #include <fnmatch.h>

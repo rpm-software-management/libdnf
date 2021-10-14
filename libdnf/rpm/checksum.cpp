@@ -19,9 +19,11 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "libdnf/rpm/checksum.hpp"
 
+#define requires require
 extern "C" {
 #include <solv/chksum.h>
 }
+#undef requires
 
 namespace libdnf::rpm {
 

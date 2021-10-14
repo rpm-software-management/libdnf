@@ -23,8 +23,10 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "libdnf/conf/const.hpp"
 
+#define requires require
 #include <solv/chksum.h>
 #include <solv/util.h>
+#undef requires
 
 #include <filesystem>
 

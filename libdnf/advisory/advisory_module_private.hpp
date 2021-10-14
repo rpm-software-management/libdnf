@@ -23,7 +23,9 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/advisory/advisory.hpp"
 #include "libdnf/advisory/advisory_module.hpp"
 
+#define requires require
 #include <solv/pooltypes.h>
+#undef requires
 
 namespace libdnf::advisory {
 

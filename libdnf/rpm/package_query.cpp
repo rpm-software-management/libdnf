@@ -26,11 +26,13 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/base/base_private.hpp"
 #include "libdnf/utils/utils_internal.hpp"
 
+#define requires require
 extern "C" {
 #include <solv/evr.h>
 #include <solv/selection.h>
 #include <solv/solver.h>
 }
+#undef requires
 
 #include <fnmatch.h>
 

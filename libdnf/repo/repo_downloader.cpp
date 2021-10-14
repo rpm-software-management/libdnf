@@ -27,8 +27,11 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/utils/temp.hpp"
 
 #include <librepo/librepo.h>
+
+#define requires require
 #include <solv/chksum.h>
 #include <solv/util.h>
+#undef requires
 
 #include <filesystem>
 #include <fstream>

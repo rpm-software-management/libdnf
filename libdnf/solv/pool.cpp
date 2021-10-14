@@ -21,13 +21,13 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "libdnf/rpm/solv/solv_private.hpp"
 
+#define requires require
 extern "C" {
 #include "solv/pool.h"
-
 #include <solv/queue.h>
 #include <solv/util.h>
 }
-
+#undef requires
 
 namespace libdnf::solv {
 

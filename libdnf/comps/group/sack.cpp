@@ -24,12 +24,14 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/comps/group/query.hpp"
 #include "libdnf/comps/comps.hpp"
 
+#define requires require
 extern "C" {
 #include <solv/knownid.h>
 #include <solv/pool.h>
 #include <solv/repo.h>
 #include <solv/solvable.h>
 }
+#undef requires
 
 #include <map>
 

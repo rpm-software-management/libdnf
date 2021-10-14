@@ -26,11 +26,12 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/rpm/reldep.hpp"
 
 // libsolv
+#define requires require
 extern "C" {
 #include <solv/dataiterator.h>
 #include <solv/queue.h>
 }
-
+#undef requires
 
 namespace libdnf::rpm {
 

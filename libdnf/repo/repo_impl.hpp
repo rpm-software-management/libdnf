@@ -25,9 +25,13 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/repo/repo.hpp"
 
 #include <gpgme.h>
+
+#define requires require
 #include <solv/chksum.h>
 #include <solv/repo.h>
 #include <solv/util.h>
+#undef requires
+
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>

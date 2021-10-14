@@ -24,9 +24,11 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <libdnf/comps/group/group.hpp>
 
+#define requires require
 extern "C" {
 #include <solv/pool.h>
 }
+#undef requires
 
 namespace libdnf::comps {
 

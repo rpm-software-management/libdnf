@@ -23,11 +23,13 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/solv/reldep_parser.hpp"
 
 // workaround, libsolv lacks 'extern "C"' in its header file
+#define requires require
 extern "C" {
 #include <solv/pool.h>
 #include <solv/pool_parserpmrichdep.h>
 #include <solv/util.h>
 }
+#undef requires
 
 #include <stdexcept>
 

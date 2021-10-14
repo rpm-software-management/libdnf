@@ -28,12 +28,13 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/conf/option_bool.hpp"
 #include "libdnf/rpm/package_sack_impl.hpp"
 
-
+#define requires require
 extern "C" {
 #include <solv/repo.h>
 #include <solv/solv_xfopen.h>
 #include <solv/testcase.h>
 }
+#undef requires
 
 #include <cerrno>
 #include <filesystem>

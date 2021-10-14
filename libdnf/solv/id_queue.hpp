@@ -24,11 +24,12 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <utility>
 
+#define requires require
 extern "C" {
 #include <solv/queue.h>
 #include <solv/util.h>
 }
-
+#undef requires
 
 namespace libdnf::solv {
 

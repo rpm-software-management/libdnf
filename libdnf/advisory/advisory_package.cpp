@@ -24,10 +24,11 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/logger/logger.hpp"
 #include "libdnf/rpm/nevra.hpp"
 
+#define requires require
 #include <solv/chksum.h>
 #include <solv/repo.h>
 #include <solv/util.h>
-
+#undef requires
 
 namespace libdnf::advisory {
 
