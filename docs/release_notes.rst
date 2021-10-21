@@ -20,6 +20,23 @@
 ######################
 
 ====================
+0.65.0 Release Notes
+====================
+
+- New features:
+  - Add support for excluding packages to be installed as weak dependencies
+  - Add support for autodetecting packages to be excluded from being installed as weak dependencies
+
+- Bug fixes:
+  - Turn off strict validation of modulemd documents (RhBug:2004853,2007166,2007167)
+
+Bugs fixed in 0.65.0:
+
+* :rhbug:`2004853`
+* :rhbug:`2007166`
+* :rhbug:`2007167`
+
+====================
 0.64.0 Release Notes
 ====================
 
