@@ -199,6 +199,26 @@ ch_test_repo_func(void)
     g_object_unref(context);
 }
 
+static void
+dnf_repo_setup_with_empty_keyfile(void)
+{
+    DnfContext *context = dnf_context_new();
+    dnf_context_set_release_ver(context, "33");
+    DnfRepo *repo = dnf_repo_new(context);
+    GKeyFile *empty_key_file = g_key_file_new();
+
+    dnf_repo_set_keyfile(repo, empty_key_file);
+
+    GError *error = NULL;
+    // Empty key file is not an errror, there is just no configuration to be loaded.
+    g_assert(dnf_repo_setup(repo, &error));
+    g_assert_no_error(error);
+
+    g_object_unref(repo);
+    g_object_unref(context);
+    g_key_file_free(empty_key_file);
+}
+
 static guint _allow_cancel_updates = 0;
 static guint _action_updates = 0;
 static guint _package_progress_updates = 0;
@@ -1217,6 +1237,7 @@ main(int argc, char **argv)
     g_test_add_func("/libdnf/lock", dnf_lock_func);
     g_test_add_func("/libdnf/lock[threads]", dnf_lock_threads_func);
     g_test_add_func("/libdnf/repo", ch_test_repo_func);
+    g_test_add_func("/libdnf/repo_empty_keyfile", dnf_repo_setup_with_empty_keyfile);
     g_test_add_func("/libdnf/state", dnf_state_func);
     g_test_add_func("/libdnf/state[child]", dnf_state_child_func);
     g_test_add_func("/libdnf/state[parent-1-step]", dnf_state_parent_one_step_proxy_func);
