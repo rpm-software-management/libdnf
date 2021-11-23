@@ -1037,6 +1037,45 @@ ModulePackageContainer::getLatestModulesPerRepo(ModuleState moduleFilter,
     return output;
 }
 
+std::vector<ModulePackage *>
+ModulePackageContainer::getLatestModules(const std::vector<ModulePackage *> modulePackages, bool activeOnly)
+{
+    std::vector<ModulePackage *> latestModules;
+    if (activeOnly) {
+        // When no active module return
+        if (!pImpl->activatedModules) {
+            return latestModules;
+        }
+    }
+    std::map<std::string, std::vector<ModulePackage *>> latest;
+
+    for (auto modulePackage : modulePackages) {
+        if (activeOnly && !isModuleActive(modulePackage)) {
+            continue;
+        }
+        auto nameStreamArch = modulePackage->getNameStream();
+        nameStreamArch.append(":");
+        nameStreamArch.append(modulePackage->getArchCStr());
+        auto & entries = latest[nameStreamArch];
+        if (entries.empty()) {
+            entries.push_back(modulePackage);
+        } else {
+            auto version = (*entries.begin())->getVersionNum();
+            if (version < modulePackage->getVersionNum()) {
+                entries.clear();
+                entries.push_back(modulePackage);
+            } else if (version == modulePackage->getVersionNum()) {
+                entries.push_back(modulePackage);
+            }
+        }
+    }
+    for (auto & entries : latest) {
+        for (auto modulePackage : entries.second) {
+            latestModules.push_back(modulePackage);
+        }
+    }
+    return latestModules;
+}
 
 std::pair<std::vector<std::vector<std::string>>, ModulePackageContainer::ModuleErrorType>
 ModulePackageContainer::resolveActiveModulePackages(bool debugSolver)
