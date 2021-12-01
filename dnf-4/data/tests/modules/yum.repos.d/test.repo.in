@@ -1,6 +1,0 @@
-[test]
-name=Test
-baseurl=file://@CMAKE_SOURCE_DIR@/data/tests/modules/modules/_all/x86_64/
-enabled=1
-gpgcheck=0
-metadata_expire=0

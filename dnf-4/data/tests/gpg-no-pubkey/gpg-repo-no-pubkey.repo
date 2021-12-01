@@ -1,5 +1,0 @@
-[gpg-repo-no-pubkey]
-name=Repo GPG checking but no GPG Key set
-baseurl=http://www.dave.org
-enabled=1
-repo_gpgcheck=1

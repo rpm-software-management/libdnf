@@ -1,1 +1,0 @@
-../base-runtime-f26-1/filesystem.spec

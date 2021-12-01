@@ -1,4 +1,0 @@
-[fedora]
-name=Fedora $releasever - $basearch
-enabled=1
-skip_if_unavailable=False
