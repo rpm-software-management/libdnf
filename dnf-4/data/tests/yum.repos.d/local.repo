@@ -1,6 +1,0 @@
-[local]
-name=Local
-baseurl=file:///tmp/repo
-enabled=1
-gpgcheck=0
-metadata_expire=1d
