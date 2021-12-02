@@ -55,7 +55,7 @@ class PackageTest(base.TestCase):
 
     def test_repr(self):
         regexp = r"<hawkey.Package object id \d+, flying-2-9\.noarch, @System>"
-        self.assertRegexpMatches(repr(self.pkg), regexp)
+        self.assertRegex(repr(self.pkg), regexp)
 
     def test_str(self):
         self.assertEqual(str(self.pkg),
@@ -76,7 +76,7 @@ class PackageTest(base.TestCase):
         # not pool Packages at this time). It however compares equal.
         pkg3 = hawkey.Query(self.sack).filter(name__eq="fool").run()[0]
         self.assertIsNot(pkg2, pkg3)
-        self.assertEquals(pkg2, pkg3)
+        self.assertEqual(pkg2, pkg3)
         d[pkg3] += 1
         self.assertEqual(d[pkg2], 2)
         self.assertEqual(len(d), 2)
