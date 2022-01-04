@@ -70,10 +70,10 @@ direction:  <xsl:value-of select="@direction" />
 <xsl:value-of select="$newline" />
 
 </xsl:for-each>
-<!--xsl:for-each select="annotation">
+<xsl:for-each select="annotation">
 <xsl:value-of select="$newline" />
 <xsl:value-of select="@value"/>
-</xsl:for-each-->
+</xsl:for-each>
 </xsl:for-each>
 </xsl:template>
 </xsl:stylesheet>

@@ -1,6 +1,4 @@
-<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
-"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
-
+<!DOCTYPE node [<!ATTLIST poem xml:space (preserve) #FIXED 'preserve'>]>
 <!--
 Copyright Contributors to the libdnf project.
 
@@ -31,40 +29,40 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
     <method name="resolve">
         <annotation name="org.gtk.GDBus.Docstring"
             value="Resolve the transaction.
-
-            Following @options are supported:
-            &lt;variablelist&gt;
-              &lt;varlistentry&gt;
-                &lt;term&gt;allow_erasing: boolean, default false&lt;/term&gt;
-                &lt;listitem&gt;&lt;para&gt;
-                Whether removal of installed package is allowed to resolve the
-                transaction.
-                &lt;/para&gt;&lt;/listitem&gt;
-              &lt;/varlistentry&gt;
-            &lt;/variablelist&gt;
-            Unknown options are ignored.
-
-            Following @resolve_results are returned:
-            &lt;variablelist&gt;
-              &lt;varlistentry&gt;
-                &lt;term&gt;transaction_problems: libdnf::GoalProblem&lt;/term&gt;
-                &lt;listitem&gt;&lt;para&gt;
-                    Overall result of the resolving.
-                &lt;/para&gt;&lt;/listitem&gt;
-              &lt;/varlistentry&gt;
-              &lt;varlistentry&gt;
-                &lt;term&gt;transaction_solver_problems: string&lt;/term&gt;
-                &lt;listitem&gt;&lt;para&gt;
-                    Problems found by the solver.
-                &lt;/para&gt;&lt;/listitem&gt;
-              &lt;/varlistentry&gt;
-              &lt;varlistentry&gt;
-                &lt;term&gt;goal_problems: string&lt;/term&gt;
-                &lt;listitem&gt;&lt;para&gt;
-                    Problems of goal resolution other then those from the solver.
-                &lt;/para&gt;&lt;/listitem&gt;
-              &lt;/varlistentry&gt;
-            &lt;/variablelist&gt;"/>
+&#10;
+Following @options are supported:&#10;
+&lt;variablelist&gt;&#10;
+  &lt;varlistentry&gt;&#10;
+    &lt;term&gt;allow_erasing: boolean, default false&lt;/term&gt;&#10;
+    &lt;listitem&gt;&lt;para&gt;&#10;
+    Whether removal of installed package is allowed to resolve the&#10;
+    transaction.&#10;
+    &lt;/para&gt;&lt;/listitem&gt;&#10;
+  &lt;/varlistentry&gt;&#10;
+&lt;/variablelist&gt;&#10;
+Unknown options are ignored.&#10;
+&#10;
+Following @resolve_results are returned:&#10;
+&lt;variablelist&gt;&#10;
+  &lt;varlistentry&gt;&#10;
+    &lt;term&gt;transaction_problems: libdnf::GoalProblem&lt;/term&gt;&#10;
+    &lt;listitem&gt;&lt;para&gt;&#10;
+        Overall result of the resolving.&#10;
+    &lt;/para&gt;&lt;/listitem&gt;&#10;
+  &lt;/varlistentry&gt;&#10;
+  &lt;varlistentry&gt;&#10;
+    &lt;term&gt;transaction_solver_problems: string&lt;/term&gt;&#10;
+    &lt;listitem&gt;&lt;para&gt;&#10;
+        Problems found by the solver.&#10;
+    &lt;/para&gt;&lt;/listitem&gt;&#10;
+  &lt;/varlistentry&gt;&#10;
+  &lt;varlistentry&gt;&#10;
+    &lt;term&gt;goal_problems: string&lt;/term&gt;&#10;
+    &lt;listitem&gt;&lt;para&gt;&#10;
+        Problems of goal resolution other then those from the solver.&#10;
+    &lt;/para&gt;&lt;/listitem&gt;&#10;
+  &lt;/varlistentry&gt;&#10;
+&lt;/variablelist&gt;"/>
         <arg name="options" type="a{sv}" direction="in">
             <annotation name="org.gtk.GDBusDocstring"
                 value="an array of key/value pairs to modify dependency resolving"/>
