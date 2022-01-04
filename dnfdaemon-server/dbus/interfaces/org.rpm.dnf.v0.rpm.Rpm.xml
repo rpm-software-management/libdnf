@@ -1,5 +1,5 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
-"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+"file:///usr/share/xml/dbus-1/introspect.dtd">
 
 <!--
 Copyright Contributors to the libdnf project.
