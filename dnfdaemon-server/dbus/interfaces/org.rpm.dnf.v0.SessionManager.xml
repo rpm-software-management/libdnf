@@ -21,63 +21,68 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
 <node>
-<!-- org.rpm.dnf.v0.SessionManager:
-   @short_description: Interface to dnfdaemon sessions management
--->
 <interface name="org.rpm.dnf.v0.SessionManager">
+    <annotation name="org.gtk.GDBus.DocString.Short"
+        value="Interface to dnfdaemon sessions management"/>
     <!--
-        open_session:
         @configuration: session configuration - an array of key/value pairs
-        @path: object path to created Session object
-
-        Opens a new session.
-
-        Following configuration options are supported:
-
-        <variablelist>
-          <varlistentry>
-            <term>load_system_repo: bool, default true</term>
-            <listitem><para>
-                If true information about currently installed packages is loaded.
-            </para></listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>load_available_repos: bool, default true</term>
-                If true information about packages available in enabled repositories is loaded.
-            <listitem><para>
-            </para></listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>config: map {string: string}</term>
-            <listitem><para>
-                Override configuration options.
-            </para></listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>releasever: string</term>
-            <listitem><para>
-                Override releasever variable used for substitutions in repository configurations.
-            </para></listitem>
-          </varlistentry>
-        </variablelist>
-
-        Unknown options are ignored.
     -->
     <method name="open_session">
-        <arg name="options" type="a{sv}" direction="in"/>
-        <arg name="path" type="o" direction="out"/>
+        <annotation name="org.gtk.GDBusDocstring"
+            value="Opens a new session.
+
+            Following configuration options are supported:
+
+            &lt;variablelist&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;load_system_repo: bool, default true&lt;/term&gt;
+                &lt;listitem&gt;&lt;para&gt;
+                    If true information about currently installed packages is loaded.
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;load_available_repos: bool, default true&lt;/term&gt;
+                    If true information about packages available in enabled repositories is loaded.
+                &lt;listitem&gt;&lt;para&gt;
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;config: map {string: string}&lt;/term&gt;
+                &lt;listitem&gt;&lt;para&gt;
+                    Override configuration options.
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;releasever: string&lt;/term&gt;
+                &lt;listitem&gt;&lt;para&gt;
+                    Override releasever variable used for substitutions in repository configurations.
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+            &lt;/variablelist&gt;
+
+            Unknown options are ignored."/>
+
+        <arg name="options" type="a{sv}" direction="in">
+            <annotation name="org.gtk.GDBusDocstring"
+                value=""/>
+        </arg>
+        <arg name="path" type="o" direction="out">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="object path to created Session object"/>
+        </arg>
     </method>
 
-    <!--
-        close_session:
-        @path: object path of session to close
-        @result: bool whether the requested session was successfully closed
-
-        Close session on given object path.
-    -->
     <method name="close_session">
-        <arg name="path" type="o" direction="in" />
-        <arg name="result" type="b" direction="out" />
+        <annotation name="org.gtk.GDBusDocstring"
+            value="Close session on given object path." />
+        <arg name="path" type="o" direction="in">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="object path of session to close"/>
+        </arg>
+        <arg name="result" type="b" direction="out">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="bool whether the requested session was successfully closed"/>
+        </arg>
     </method>
 
 </interface>

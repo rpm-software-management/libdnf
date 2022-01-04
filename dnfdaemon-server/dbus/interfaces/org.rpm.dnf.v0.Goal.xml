@@ -21,78 +21,81 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
 <node>
-<!-- org.rpm.dnf.v0.Goal:
-   @short_description: Interface to Goal
--->
 <interface name="org.rpm.dnf.v0.Goal">
+    <annotation name="org.gtk.GDBus.DocString.Short"
+        value="Interface to Goal"/>
     <!--
         resolve:
-        @options: an array of key/value pairs to modify dependency resolving
-        @transaction: array of (action, n, e, v, r, a, repoid) tuples where action is one of libdnf::transaction::TransactionItemAction enum
         @resolve_results: problems detected during transaction resolving
-
-        Resolve the transaction.
-
-        Following @options are supported:
-        <variablelist>
-          <varlistentry>
-            <term>allow_erasing: boolean, default false</term>
-            <listitem><para>
-            Whether removal of installed package is allowed to resolve the
-            transaction.
-            </para></listitem>
-          </varlistentry>
-        </variablelist>
-        Unknown options are ignored.
-
-        Following @resolve_results are returned:
-        <variablelist>
-          <varlistentry>
-            <term>transaction_problems: libdnf::GoalProblem</term>
-            <listitem><para>
-                Overall result of the resolving.
-            </para></listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>transaction_solver_problems: string</term>
-            <listitem><para>
-                Problems found by the solver.
-            </para></listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>goal_problems: string</term>
-            <listitem><para>
-                Problems of goal resolution other then those from the solver.
-            </para></listitem>
-          </varlistentry>
-        </variablelist>
-
     -->
     <method name="resolve">
-        <arg name="options" type="a{sv}" direction="in" />
-        <arg name="transaction" type="a(ussssss)" direction="out" />
-        <arg name="problems" type="a{sv}" direction="out" />
+        <annotation name="org.gtk.GDBus.Docstring"
+            value="Resolve the transaction.
+
+            Following @options are supported:
+            &lt;variablelist&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;allow_erasing: boolean, default false&lt;/term&gt;
+                &lt;listitem&gt;&lt;para&gt;
+                Whether removal of installed package is allowed to resolve the
+                transaction.
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+            &lt;/variablelist&gt;
+            Unknown options are ignored.
+
+            Following @resolve_results are returned:
+            &lt;variablelist&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;transaction_problems: libdnf::GoalProblem&lt;/term&gt;
+                &lt;listitem&gt;&lt;para&gt;
+                    Overall result of the resolving.
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;transaction_solver_problems: string&lt;/term&gt;
+                &lt;listitem&gt;&lt;para&gt;
+                    Problems found by the solver.
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;goal_problems: string&lt;/term&gt;
+                &lt;listitem&gt;&lt;para&gt;
+                    Problems of goal resolution other then those from the solver.
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+            &lt;/variablelist&gt;"/>
+        <arg name="options" type="a{sv}" direction="in">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="an array of key/value pairs to modify dependency resolving"/>
+        </arg>
+        <arg name="transaction" type="a(ussssss)" direction="out">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="array of (action, n, e, v, r, a, repoid) tuples where action is one of libdnf::transaction::TransactionItemAction enum"/>
+        </arg>
+        <arg name="problems" type="a{sv}" direction="out">
+            <annotation name="org.gtk.GDBusDocstring"
+                value=""/>
+        </arg>
     </method>
 
-    <!--
-        do_transaction:
-        @options: an array of key/value pairs to modify transaction running
-
-        Perform the resolved transaction.
-
-        Following @options are supported:
-        <variablelist>
-          <varlistentry>
-            <term>comment: string</term>
-            <listitem><para>
-            Adds a comment to a transaction.
-            </para></listitem>
-          </varlistentry>
-        </variablelist>
-        Unknown options are ignored.
-    -->
     <method name="do_transaction">
-        <arg name="options" type="a{sv}" direction="in" />
+        <annotation name="org.gtk.GDBus.Docstring"
+            value="Perform the resolved transaction.
+        Following @options are supported:
+        &lt;variablelist&gt;
+          &lt;varlistentry&gt;
+            &lt;term>comment: string&lt;/term&gt;
+            &lt;listitem&gt;&lt;para&gt;
+            Adds a comment to a transaction.
+            &lt;/para&gt;&lt;/listitem&gt;
+          &lt;/varlistentry&gt;
+        &lt;/variablelist&gt;
+        Unknown options are ignored." />
+        <arg name="options" type="a{sv}" direction="in">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="an array of key/value pairs to modify transaction running"/>
+        </arg>
     </method>
 
 </interface>

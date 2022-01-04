@@ -21,45 +21,45 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
 <node>
-<!-- org.rpm.dnf.v0.rpm.Repo:
-   @short_description: Interface to repositories
--->
 <interface name="org.rpm.dnf.v0.rpm.Repo">
-    <!--
-        list:
-        @options: an array of key/value pairs
-        @data: array of returned repositories with requested attributes
-
-        Get list of repositories that match to given filters.
-
-        Following options are supported:
-
-        <variablelist>
-          <varlistentry>
-            <term>patterns: list of strings</term>
-            <listitem><para>
-              any repository with id matching to any of patterns is returned
-            </para></listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>repo_attrs: list of strings</term>
-            <listitem><para>
-              list of repository attributes that are returned
-            </para></listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>enable_disable: string (default "enabled")</term>
-            <listitem><para>
-              When set to "enabled" or "disabled", only enabled / disabled repositories are listed. Any other value means all repositories are returned.
-            </para></listitem>
-          </varlistentry>
-        </variablelist>
-
-        Unknown options are ignored.
-    -->
+    <annotation name="org.gtk.GDBus.DocString.Short"
+        value="Interface to repositories" />
     <method name="list">
-        <arg name="options" type="a{sv}" direction="in"/>
-        <arg name="data" type="aa{sv}" direction="out"/>
+        <annotation name="org.gtk.GDBusDocstring"
+            value="Get list of repositories that match to given filters.
+
+            Following options are supported:
+
+            &lt;variablelist&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;patterns: list of strings&lt;/term&gt;
+                &lt;listitem&gt;&lt;para&gt;
+                  any repository with id matching to any of patterns is returned
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;repo_attrs: list of strings&lt;/term&gt;
+                &lt;listitem&gt;&lt;para&gt;
+                  list of repository attributes that are returned
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;enable_disable: string (default &quot;enabled&quot;)&lt;/term&gt;
+                &lt;listitem&gt;&lt;para&gt;
+                  When set to &quot;enabled&quot; or &quot;disabled&quot;, only enabled / disabled repositories are listed. Any other value means all repositories are returned.
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+            &lt;/variablelist&gt;
+
+            Unknown options are ignored."/>
+        <arg name="options" type="a{sv}" direction="in">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="an array of key/value pairs"/>
+        </arg>
+        <arg name="data" type="aa{sv}" direction="out">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="array of returned repositories with requested attributes"/>
+        </arg>
     </method>
 
 </interface>

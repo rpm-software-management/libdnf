@@ -21,289 +21,311 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
 <node>
-<!-- org.rpm.dnf.v0.rpm.Rpm:
-   @short_description: Interface to RPM packages
--->
 <interface name="org.rpm.dnf.v0.rpm.Rpm">
-    <!--
-        list:
-        @options: an array of key/value pairs
-        @data: array of returned packages with requested attributes
-
-        Get list of packages that match to given filters.
-
-        Following options are supported:
-
-        <variablelist>
-          <varlistentry>
-            <term>patterns: list of strings</term>
-            <listitem><para>
-              any package matching to any of patterns is returned
-            </para></listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>package_attrs: list of strings</term>
-            <listitem><para>
-              list of package attributes that are returned
-            </para></listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>with_nevra: bool (default true)</term>
-            <listitem><para>
-              match patterns against available packages NEVRAs
-            </para></listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>with_provides: bool (default true)</term>
-            <listitem><para>
-              match patterns against available packages provides
-            </para></listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>with_filenames: bool (default true)</term>
-            <listitem><para>
-              match patterns against names of the files in available packages
-            </para></listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>with_src: bool (default true)</term>
-            <listitem><para>
-              include source rpms into the results
-            </para></listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>icase: bool (default true)</term>
-            <listitem><para>
-              ignore case while matching patterns
-            </para></listitem>
-          </varlistentry>
-        </variablelist>
-
-        Unknown options are ignored.
-    -->
+    <annotation name="org.gtk.GDBus.DocString.Short"
+        value="Interface to RPM packages" />
     <method name="list">
-        <arg name="options" type="a{sv}" direction="in"/>
-        <arg name="data" type="aa{sv}" direction="out"/>
+        <annotation name="org.gtk.GDBusDocstring"
+            value="Get list of packages that match to given filters.
+
+            Following options are supported:
+
+            &lt;variablelist&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;patterns: list of strings&lt;/term&gt;
+                &lt;listitem&gt;&lt;para&gt;
+                  any package matching to any of patterns is returned
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;package_attrs: list of strings&lt;/term&gt;
+                &lt;listitem&gt;&lt;para&gt;
+                  list of package attributes that are returned
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;with_nevra: bool (default true)&lt;/term&gt;
+                &lt;listitem&gt;&lt;para&gt;
+                  match patterns against available packages NEVRAs
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;with_provides: bool (default true)&lt;/term&gt;
+                &lt;listitem&gt;&lt;para&gt;
+                  match patterns against available packages provides
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;with_filenames: bool (default true)&lt;/term&gt;
+                &lt;listitem&gt;&lt;para&gt;
+                  match patterns against names of the files in available packages
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;with_src: bool (default true)&lt;/term&gt;
+                &lt;listitem&gt;&lt;para&gt;
+                  include source rpms into the results
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;icase: bool (default true)&lt;/term&gt;
+                &lt;listitem&gt;&lt;para&gt;
+                  ignore case while matching patterns
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+            &lt;/variablelist&gt;
+
+            Unknown options are ignored."/>
+
+        <arg name="options" type="a{sv}" direction="in">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="an array of key/value pairs"/>
+        </arg>
+        <arg name="data" type="aa{sv}" direction="out">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="array of returned packages with requested attributes"/>
+        </arg>
     </method>
 
-    <!--
-        install:
-        @specs: an array of package specifications to be installed on the system
-        @options: an array of key/value pairs to modify install behavior
-
-        Mark packages specified by @specs for installation.
-
-        Following @options are supported:
-
-        <variablelist>
-          <varlistentry>
-            <term>repo_ids: list of strings</term>
-            <listitem><para>
-            Identifiers of the repos from which the packages could be installed.
-            </para></listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>strict: boolean, default true</term>
-            <listitem><para>
-            Indicates whether existing but non-installable packages should
-            be skipped (false) or cause transaction resolving fail (true).
-            </para></listitem>
-          </varlistentry>
-        </variablelist>
-
-        Unknown options are ignored.
-    -->
     <method name="install">
-        <arg name="specs" type="as" direction="in" />
-        <arg name="options" type="a{sv}" direction="in" />
+        <annotation name="org.gtk.GDBusDocstring"
+            value=" Mark packages specified by @specs for installation.
+
+            Following @options are supported:
+
+            &lt;variablelist&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;repo_ids: list of strings&lt;/term&gt;
+                &lt;listitem&gt;&lt;para&gt;
+                Identifiers of the repos from which the packages could be installed.
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;strict: boolean, default true&lt;/term&gt;
+                &lt;listitem&gt;&lt;para&gt;
+                Indicates whether existing but non-installable packages should
+                be skipped (false) or cause transaction resolving fail (true).
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+            &lt;/variablelist&gt;
+
+            Unknown options are ignored."/>
+
+        <arg name="specs" type="as" direction="in">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="an array of package specifications to be installed on the system"/>
+        </arg>
+        <arg name="options" type="a{sv}" direction="in">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="an array of key/value pairs to modify install behavior"/>
+        </arg>
     </method>
 
-    <!--
-        upgrade:
-        @specs: an array of package specifications to be upgraded on the system
-        @options: an array of key/value pairs to modify upgrade behavior
-
-        Mark packages specified by @specs for upgrade.
-
-        Following @options are supported:
-
-        <variablelist>
-          <varlistentry>
-            <term>repo_ids: list of strings</term>
-            <listitem><para>
-            Identifiers of the repos from which the packages could be upgraded.
-            </para></listitem>
-          </varlistentry>
-        </variablelist>
-
-        Unknown options are ignored.
-    -->
     <method name="upgrade">
-        <arg name="specs" type="as" direction="in" />
-        <arg name="options" type="a{sv}" direction="in" />
+        <annotation name="org.gtk.GDBusDocstring"
+            value="Mark packages specified by @specs for upgrade.
+
+            Following @options are supported:
+
+            &lt;variablelist&gt;
+              &lt;varlistentry&gt;
+                &lt;term&gt;repo_ids: list of strings&lt;/term&gt;
+                &lt;listitem&gt;&lt;para&gt;
+                Identifiers of the repos from which the packages could be upgraded.
+                &lt;/para&gt;&lt;/listitem&gt;
+              &lt;/varlistentry&gt;
+            &lt;/variablelist&gt;
+
+            Unknown options are ignored."/>
+
+        <arg name="specs" type="as" direction="in">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="an array of package specifications to be upgraded on the system"/>
+        </arg>
+        <arg name="options" type="a{sv}" direction="in">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="an array of key/value pairs to modify upgrade behavior"/>
+        </arg>
     </method>
 
-    <!--
-        remove:
-        @specs: an array of package specifications to be removed on the system
-        @options: an array of key/value pairs to modify remove behavior
-
-        Mark packages specified by @specs for removal.
-
-        Unknown options are ignored.
-    -->
     <method name="remove">
-        <arg name="specs" type="as" direction="in" />
-        <arg name="options" type="a{sv}" direction="in" />
+        <annotation name="org.gtk.GDBusDocstring"
+            value=" Mark packages specified by @specs for removal.
+
+            Unknown options are ignored."/>
+
+        <arg name="specs" type="as" direction="in">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="an array of package specifications to be removed on the system"/>
+        </arg>
+        <arg name="options" type="a{sv}" direction="in">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="an array of key/value pairs to modify remove behavior"/>
+        </arg>
     </method>
 
-    <!--
-        downgrade:
-        @specs: an array of package specifications to be downgraded on the system
-        @options: an array of key/value pairs to modify downgrade behavior
-
-        Mark packages specified by @specs for downgrade.
-
-        Following @options are supported:
-
-        Unknown options are ignored.
-    -->
     <method name="downgrade">
-        <arg name="specs" type="as" direction="in" />
-        <arg name="options" type="a{sv}" direction="in" />
+        <annotation name="org.gtk.GDBusDocstring"
+            value=" Mark packages specified by @specs for downgrade.
+
+            Following @options are supported:
+
+            Unknown options are ignored."/>
+        <arg name="specs" type="as" direction="in">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="an array of package specifications to be downgraded on the system"/>
+        </arg>
+        <arg name="options" type="a{sv}" direction="in">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="an array of key/value pairs to modify downgrade behavior"/>
+        </arg>
     </method>
 
-    <!--
-        reinstall:
-        @specs: an array of package specifications to be reinstalled on the system
-        @options: an array of key/value pairs to modify reinstall behavior
-
-        Mark packages specified by @specs for reinstall.
-
-        Following @options are supported:
-
-        Unknown options are ignored.
-    -->
     <method name="reinstall">
-        <arg name="specs" type="as" direction="in" />
-        <arg name="options" type="a{sv}" direction="in" />
+        <annotation name="org.gtk.GDBusDocstring"
+            value="Mark packages specified by @specs for reinstall.
+
+            Following @options are supported:
+
+            Unknown options are ignored."/>
+        <arg name="specs" type="as" direction="in">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="an array of package specifications to be reinstalled on the system"/>
+        </arg>
+        <arg name="options" type="a{sv}" direction="in">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="an array of key/value pairs to modify reinstall behavior"/>
+        </arg>
     </method>
 
-    <!--
-        transaction_action_start:
-        @nevra: full NEVRA of the package
-        @action: one of the dnfdaemon::RpmTransactionItem::Actions enum
-        @total: total to process
-
-        Processing of the item has started.
-    -->
     <signal name="transaction_action_start">
-        <arg name="nevra" type="s" />
-        <arg name="action" type="u" />
-        <arg name="total" type="t" />
+        <annotation name="org.gtk.GDBusDocstring"
+            value="Processing of the item has started."/>
+        <arg name="nevra" type="s">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="full NEVRA of the package"/>
+        </arg>
+        <arg name="action" type="u">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="one of the dnfdaemon::RpmTransactionItem::Actions enum"/>
+        </arg>
+        <arg name="total" type="t">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="total to process"/>
+        </arg>
     </signal>
 
-    <!--
-        transaction_action_progress:
-        @nevra: full NEVRA of the package
-        @amount: amount already processed
-        @total: total to process
-
-        Progress in processing of the package.
-    -->
     <signal name="transaction_action_progress">
-        <arg name="nevra" type="s" />
-        <arg name="amount" type="t" />
-        <arg name="total" type="t" />
+        <annotation name="org.gtk.GDBusDocstring"
+            value="Progress in processing of the package."/>
+        <arg name="nevra" type="s">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="full NEVRA of the package"/>
+        </arg>
+        <arg name="amount" type="t">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="amount already processed"/>
+        </arg>
+        <arg name="total" type="t">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="total to process"/>
+        </arg>
     </signal>
 
-    <!--
-        transaction_action_stop:
-        @nevra: full NEVRA of the package
-        @total: total processed
-
-        Processing of the item has finished.
-    -->
     <signal name="transaction_action_stop">
-        <arg name="nevra" type="s" />
-        <arg name="total" type="t" />
+        <annotation name="org.gtk.GDBusDocstring"
+            value="Processing of the item has finished."/>
+        <arg name="nevra" type="s">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="full NEVRA of the package"/>
+        </arg>
+        <arg name="total" type="t">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="total processed"/>
+        </arg>
     </signal>
 
-    <!--
-        transaction_script_start:
-        @nevra: full NEVRA of the package script belongs to
-
-        The scriptlet has started.
-    -->
     <signal name="transaction_script_start">
-        <arg name="nevra" type="s" />
+        <annotation name="org.gtk.GDBusDocstring"
+            value="The scriptlet has started."/>
+        <arg name="nevra" type="s">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="full NEVRA of the package script belongs to"/>
+        </arg>
     </signal>
 
-    <!--
-        transaction_script_stop:
-        @nevra: full NEVRA of the package script belongs to
-        @return_code: return value of the script
-
-        The scriptlet has successfully finished.
-    -->
     <signal name="transaction_script_stop">
-        <arg name="nevra" type="s" />
-        <arg name="return_code" type="t" />
+        <annotation name="org.gtk.GDBusDocstring"
+            value="The scriptlet has successfully finished."/>
+        <arg name="nevra" type="s">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="full NEVRA of the package script belongs to"/>
+        </arg>
+        <arg name="return_code" type="t">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="return value of the script"/>
+        </arg>
     </signal>
 
-    <!--
-        transaction_script_error:
-        @nevra: full NEVRA of the package script belongs to
-        @return_code: return value of the script
-
-        The scriptlet has finished with an error.
-    -->
     <signal name="transaction_script_error">
-        <arg name="nevra" type="s" />
-        <arg name="return_code" type="t" />
+        <annotation name="org.gtk.GDBusDocstring"
+            value="The scriptlet has finished with an error."/>
+        <arg name="nevra" type="s">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="full NEVRA of the package script belongs to"/>
+        </arg>
+        <arg name="return_code" type="t">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="return value of the script"/>
+        </arg>
     </signal>
 
-    <!--
-        transaction_verify_start:
-        @total: total to process
-
-        Package files verification has started.
-    -->
     <signal name="transaction_verify_start">
-        <arg name="total" type="t" />
+        <annotation name="org.gtk.GDBusDocstring"
+            value="Package files verification has started."/>
+        <arg name="total" type="t">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="total to process"/>
+        </arg>
     </signal>
 
     <!--
         transaction_verify_progress:
         @nevra: full NEVRA of the package
-        @amount: amount already processed
-        @total: total to process
-
-        Progress in processing of the package.
     -->
     <signal name="transaction_verify_progress">
-        <arg name="amount" type="t" />
-        <arg name="total" type="t" />
+        <annotation name="org.gtk.GDBusDocstring"
+            value="Progress in processing of the package."/>
+        <arg name="amount" type="t">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="amount already processed"/>
+        </arg>
+        <arg name="total" type="t">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="total to process"/>
+        </arg>
     </signal>
 
     <!--
         transaction_verify_stop:
         @nevra: full NEVRA of the package
-
-        Package files verification has finished.
     -->
     <signal name="transaction_verify_stop">
-        <arg name="total" type="t" />
+        <annotation name="org.gtk.GDBusDocstring"
+            value="Package files verification has finished."/>
+        <arg name="total" type="t">
+            <annotation name="org.gtk.GDBusDocstring"
+                value=""/>
+        </arg>
     </signal>
 
-    <!--
-        transaction_unpack_error:
-        @nevra: full NEVRA of the package
-
-        Error while unpacking the package.
-    -->
     <signal name="transaction_unpack_error">
-        <arg name="nevra" type="s" />
+        <annotation name="org.gtk.GDBusDocstring"
+            value="Error while unpacking the package."/>
+        <arg name="nevra" type="s">
+            <annotation name="org.gtk.GDBusDocstring"
+                value="full NEVRA of the package"/>
+        </arg>
     </signal>
 </interface>
 

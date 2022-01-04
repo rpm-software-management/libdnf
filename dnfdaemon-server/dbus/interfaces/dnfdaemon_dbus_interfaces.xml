@@ -1,0 +1,6 @@
+<interface_list>
+    <file name="org.rpm.dnf.v0.Goal.xml" />
+    <file name="org.rpm.dnf.v0.rpm.Repo.xml" />
+    <file name="org.rpm.dnf.v0.rpm.Rpm.xml" />
+    <file name="org.rpm.dnf.v0.SessionManager.xml" />
+</interface_list>
