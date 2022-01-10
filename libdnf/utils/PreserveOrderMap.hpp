@@ -68,8 +68,8 @@ public:
     };
     typedef MyBidirIterator<value_type, typename container_type::iterator> iterator;
     typedef MyBidirIterator<const value_type, typename container_type::const_iterator> const_iterator;
-    typedef std::reverse_iterator<iterator> reverse_iterator;
-    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+    typedef MyBidirIterator<value_type, typename container_type::reverse_iterator> reverse_iterator;
+    typedef MyBidirIterator<const value_type, typename container_type::const_reverse_iterator> const_reverse_iterator;
 
     bool empty() const noexcept { return items.empty(); }
     size_type size() const noexcept { return items.size(); }
