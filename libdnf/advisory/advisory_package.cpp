@@ -35,10 +35,20 @@ AdvisoryPackage::AdvisoryPackage(AdvisoryPackage::Impl * private_pkg) : p_impl(p
 
 AdvisoryPackage::AdvisoryPackage(const AdvisoryPackage & src) : p_impl(new Impl(*src.p_impl)) {}
 
+AdvisoryPackage::AdvisoryPackage(AdvisoryPackage && src) noexcept = default;
+
 AdvisoryPackage & AdvisoryPackage::operator=(const AdvisoryPackage & src) {
-    *p_impl = *src.p_impl;
+    if (p_impl != src.p_impl) {
+        if (p_impl) {
+            *p_impl = *src.p_impl;
+        } else {
+            p_impl.reset(new Impl(*src.p_impl));
+        }
+    }
     return *this;
 }
+
+AdvisoryPackage & AdvisoryPackage::operator=(AdvisoryPackage && src) noexcept = default;
 
 AdvisoryPackage::~AdvisoryPackage() = default;
 

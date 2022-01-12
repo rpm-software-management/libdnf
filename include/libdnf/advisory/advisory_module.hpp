@@ -31,8 +31,8 @@ public:
     AdvisoryModule(const AdvisoryModule & src);
     AdvisoryModule & operator=(const AdvisoryModule & src);
 
-    AdvisoryModule(AdvisoryModule && src) = default;
-    AdvisoryModule & operator=(AdvisoryModule && src) = default;
+    AdvisoryModule(AdvisoryModule && src) noexcept;
+    AdvisoryModule & operator=(AdvisoryModule && src) noexcept;
 
     ~AdvisoryModule();
 

@@ -177,12 +177,20 @@ SolverProblems::SolverProblems() : p_impl(new Impl()) {}
 
 SolverProblems::SolverProblems(const SolverProblems & src) : p_impl(new Impl(*src.p_impl)) {}
 
+SolverProblems::SolverProblems(SolverProblems && src) noexcept = default;
+
 SolverProblems & SolverProblems::operator=(const SolverProblems & src) {
-    if (this != &src) {
-        *p_impl = *src.p_impl;
+    if (p_impl != src.p_impl) {
+        if (p_impl) {
+            *p_impl = *src.p_impl;
+        } else {
+            p_impl.reset(new Impl(*src.p_impl));
+        }
     }
     return *this;
 }
+
+SolverProblems & SolverProblems::operator=(SolverProblems && src) noexcept = default;
 
 SolverProblems::~SolverProblems() = default;
 

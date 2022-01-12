@@ -33,8 +33,8 @@ public:
     SolverProblems(const SolverProblems & src);
     SolverProblems & operator=(const SolverProblems & src);
 
-    SolverProblems(SolverProblems && src) noexcept = default;
-    SolverProblems & operator=(SolverProblems && src) noexcept = default;
+    SolverProblems(SolverProblems && src) noexcept;
+    SolverProblems & operator=(SolverProblems && src) noexcept;
 
     ~SolverProblems();
 

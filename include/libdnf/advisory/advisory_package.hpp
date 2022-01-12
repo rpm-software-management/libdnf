@@ -39,8 +39,8 @@ public:
     AdvisoryPackage(const AdvisoryPackage & src);
     AdvisoryPackage & operator=(const AdvisoryPackage & src);
 
-    AdvisoryPackage(AdvisoryPackage && src) = default;
-    AdvisoryPackage & operator=(AdvisoryPackage && src) = default;
+    AdvisoryPackage(AdvisoryPackage && src) noexcept;
+    AdvisoryPackage & operator=(AdvisoryPackage && src) noexcept;
 
     ~AdvisoryPackage();
 
