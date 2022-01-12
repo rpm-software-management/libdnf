@@ -82,3 +82,37 @@ void AdvisoryAdvisoryModuleTest::test_get_advisory_collection() {
     size_t target_size = 2;
     CPPUNIT_ASSERT_EQUAL(target_size, out_mods.size());
 }
+
+void AdvisoryAdvisoryModuleTest::test_copy_move() {
+    // Tests copy constructor
+    auto advisory_module_copy(modules[0]);
+    CPPUNIT_ASSERT_EQUAL(std::string("perl-DBI"), advisory_module_copy.get_name());
+
+    // Tests copy assignment operator
+    advisory_module_copy = modules[1];
+    CPPUNIT_ASSERT_EQUAL(std::string("ethereum"), advisory_module_copy.get_name());
+
+    // Tests copy assignment operator - self-assignment
+    advisory_module_copy = advisory_module_copy;
+    CPPUNIT_ASSERT_EQUAL(std::string("ethereum"), advisory_module_copy.get_name());
+
+    // Tests move constructor
+    auto advisory_module_move(std::move(modules[1]));
+    CPPUNIT_ASSERT_EQUAL(std::string("ethereum"), advisory_module_move.get_name());
+
+    // Tests move assignment operator
+    advisory_module_move = std::move(modules[0]);
+    CPPUNIT_ASSERT_EQUAL(std::string("perl-DBI"), advisory_module_move.get_name());
+
+    // Tests move assignment operator - self-assignment
+    advisory_module_move = std::move(advisory_module_move);
+    CPPUNIT_ASSERT_EQUAL(std::string("perl-DBI"), advisory_module_move.get_name());
+
+    // Test copy assignment to moved from object
+    modules[0] = advisory_module_copy;
+    CPPUNIT_ASSERT_EQUAL(std::string("ethereum"), modules[0].get_name());
+
+    // Test move assignment to moved from object
+    modules[1] = std::move(advisory_module_move);
+    CPPUNIT_ASSERT_EQUAL(std::string("perl-DBI"), modules[1].get_name());
+}

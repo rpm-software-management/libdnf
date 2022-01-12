@@ -39,6 +39,7 @@ class AdvisoryAdvisoryPackageTest : public LibdnfTestCase {
     CPPUNIT_TEST(test_get_advisory_id);
     CPPUNIT_TEST(test_get_advisory);
     CPPUNIT_TEST(test_get_advisory_collection);
+    CPPUNIT_TEST(test_copy_move);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -52,6 +53,7 @@ public:
     void test_get_advisory_id();
     void test_get_advisory();
     void test_get_advisory_collection();
+    void test_copy_move();
 
 private:
     std::vector<libdnf::advisory::AdvisoryPackage> packages;

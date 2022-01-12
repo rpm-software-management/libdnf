@@ -77,3 +77,37 @@ void AdvisoryAdvisoryPackageTest::test_get_advisory_collection() {
     size_t target_size = 2;
     CPPUNIT_ASSERT_EQUAL(target_size, out_pkgs.size());
 }
+
+void AdvisoryAdvisoryPackageTest::test_copy_move() {
+    // Tests copy constructor
+    auto advisory_package_copy(packages[0]);
+    CPPUNIT_ASSERT_EQUAL(std::string("pkg"), advisory_package_copy.get_name());
+
+    // Tests copy assignment operator
+    advisory_package_copy = packages[1];
+    CPPUNIT_ASSERT_EQUAL(std::string("filesystem"), advisory_package_copy.get_name());
+
+    // Tests copy assignment operator - self-assignment
+    advisory_package_copy = advisory_package_copy;
+    CPPUNIT_ASSERT_EQUAL(std::string("filesystem"), advisory_package_copy.get_name());
+
+    // Tests move constructor
+    auto advisory_package_move(std::move(packages[1]));
+    CPPUNIT_ASSERT_EQUAL(std::string("filesystem"), advisory_package_move.get_name());
+
+    // Tests move assignment operator
+    advisory_package_move = std::move(packages[0]);
+    CPPUNIT_ASSERT_EQUAL(std::string("pkg"), advisory_package_move.get_name());
+
+    // Tests move assignment operator - self-assignment
+    advisory_package_move = std::move(advisory_package_move);
+    CPPUNIT_ASSERT_EQUAL(std::string("pkg"), advisory_package_move.get_name());
+
+    // Test copy assignment to moved from object
+    packages[0] = advisory_package_copy;
+    CPPUNIT_ASSERT_EQUAL(std::string("filesystem"), packages[0].get_name());
+
+    // Test move assignment to moved from object
+    packages[1] = std::move(advisory_package_move);
+    CPPUNIT_ASSERT_EQUAL(std::string("pkg"), packages[1].get_name());
+}
