@@ -20,32 +20,17 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/advisory/advisory_module.hpp"
 
 #include "advisory_module_private.hpp"
+#include "common/impl_ptr_impl.hpp"
 #include "solv/pool.hpp"
 
+namespace libdnf {
+template class ImplPtr<advisory::AdvisoryModule::Impl>;
+}
 
 namespace libdnf::advisory {
 
 // AdvisoryModule
 AdvisoryModule::AdvisoryModule(AdvisoryModule::Impl * private_module) : p_impl(private_module) {}
-
-AdvisoryModule::AdvisoryModule(const AdvisoryModule & src) : p_impl(new Impl(*src.p_impl)) {}
-
-AdvisoryModule::AdvisoryModule(AdvisoryModule && src) noexcept = default;
-
-AdvisoryModule & AdvisoryModule::operator=(const AdvisoryModule & src) {
-    if (p_impl != src.p_impl) {
-        if (p_impl) {
-            *p_impl = *src.p_impl;
-        } else {
-            p_impl.reset(new Impl(*src.p_impl));
-        }
-    }
-    return *this;
-}
-
-AdvisoryModule & AdvisoryModule::operator=(AdvisoryModule && src) noexcept = default;
-
-AdvisoryModule::~AdvisoryModule() = default;
 
 std::string AdvisoryModule::get_name() const {
     return get_pool(p_impl->base).id2str(p_impl->name);

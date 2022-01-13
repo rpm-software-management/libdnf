@@ -22,20 +22,12 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "advisory.hpp"
 
-#include <memory>
+#include "libdnf/common/impl_ptr.hpp"
 
 namespace libdnf::advisory {
 
 class AdvisoryModule {
 public:
-    AdvisoryModule(const AdvisoryModule & src);
-    AdvisoryModule & operator=(const AdvisoryModule & src);
-
-    AdvisoryModule(AdvisoryModule && src) noexcept;
-    AdvisoryModule & operator=(AdvisoryModule && src) noexcept;
-
-    ~AdvisoryModule();
-
     /// Get name of this AdvisoryModule.
     ///
     /// @return Name of this AdvisoryModule as std::string.
@@ -91,7 +83,7 @@ private:
     class Impl;
 
     AdvisoryModule(Impl * private_module);
-    std::unique_ptr<Impl> p_impl;
+    ImplPtr<Impl> p_impl;
 };
 
 }  // namespace libdnf::advisory
