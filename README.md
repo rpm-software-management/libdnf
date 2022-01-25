@@ -30,6 +30,72 @@ Libdnf interfaces with several programming languages with the following support:
 
 :warning: **The current (dnf-5-devel) branch is subject of a major rewrite. The API/ABI is currently unstable** :warning:
 
+DNF5 Description (dnf-5-devel)
+==============================
+
+DNF5 Features
+-------------
+
+ * Replace Microdnf and DNF by a new tool that will be lightweight as Microdnf and fully featured as DNF
+   * Decrease of a maintenance cost in the long term
+ * Microdnf was developed as a simple packaging tool for containers without the requirement of Python. Nowadays it is
+   also used for other use cases. We are getting requests for additional features (CLI options, commands,
+   configuration), to eliminate a gap between DNF and Microdnf
+ * Fully integrated Modularity in LIBDNF workflows
+   * Modularity is supported in DNF and LIBDNF but it is not fully integrated. Integration was not possible due to
+     limitation of compatibility with other tools (PackageKit)
+     * Fully integrated modularity requires changes in library workflow
+ * Unified user interface
+   * DNF/YUM was developed for decades with impact of multiple styles and naming conventions (options, configuration
+     options, commands)
+ * Plugins
+   * DNF plugins are not applicable for PackageKit and Microdnf (e.g. versionlock, subscription-manager), therefore
+     PackageKit behaves differently to DNF
+   * New plugins (C++, Python) will be available for all users
+     * unified behaviour
+     * Removal of functional duplicities (subscription-manager functionality)
+       * Decrease maintenance cost
+ * Shared configurations
+   * In DNF4 the configuration is only partially honored by PackageKit and Microdnf
+ * New Daemon
+   * The new daemon can provide an alternative to PackageKit for RPMs (only one backend of PackageKit) if it will be
+     integrated into Desktop
+ * Additional improvements
+   * Reports in structure (API)
+     * DNF reports a lot of important information only in logs
+ * Shared cache and improved cache handling (Optional, not for RHEL10 GA)
+   * Microdnf, DNF4, and PackageKit use cached repositories on a different location with different cache structure.
+ * Performance improvement
+   * Loading of repositories
+   * Advisory operation
+   * RPM query
+     * Name filters with a case-insensitive search
+   * Smart sharing of metadata between dnf, microdnf, daemon
+     * Reduce disk and downloads requirements
+
+Major codebase improvements
+---------------------------
+
+ * Removal of duplicated implementation
+   * LIBDNF evolved from LIBHIF (PackageKit library) and HAWKEY (DNF library). The integration was never finished.
+     LIBDNF still contains duplicated functionality.
+   * decrease of the code maintenance cost in future
+ * Unify python bindings
+   * Libdnf provides two types of Python bindings
+     * CPython (hawkey)
+     * SWIG (libdnf)
+   * Maintaining and communication between both bindings requires a lot of resources
+   * Unifying bindings is not possible without breaking compatibility
+ * SWIG bindings
+   * With SWIG we can generate additional bindings without spending huge resources
+   * Code in particular languages will be very similar to each other
+ * Separation of system state from history DB and `/etc/dnf/module.d`
+   * In dnf-4 the list of userinstalled packages and list of installed groups along with the lists of packages installed
+     from them is computed as an aggregation of transaction history. In dnf5 it will be stored separately, having
+     multiple benefits, among them that the history database will serve for informational purposes only and will not
+     define the state of the system (it gets corrupted occasionally etc.).
+   * Data stored in `/etc/dnf/module.d` were not supposed to be user modifiable and their format is not sufficient
+     (missing information about installed packages with installed profiles)
 
 Documentation
 =============
