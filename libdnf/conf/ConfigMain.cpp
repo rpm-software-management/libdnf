@@ -299,7 +299,7 @@ class ConfigMain::Impl {
     OptionStringList excludepkgs{std::vector<std::string>{}};
     OptionStringList includepkgs{std::vector<std::string>{}};
     OptionStringList exclude_from_weak{std::vector<std::string>{}};
-    OptionBool exclude_from_weak_autodetect{true};
+    OptionBool exclude_from_weak_autodetect{false};
     OptionString proxy{""};
     OptionString proxy_username{nullptr};
     OptionString proxy_password{nullptr};
