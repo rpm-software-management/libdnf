@@ -25,6 +25,11 @@
 #include "hy-types.h"
 #include "sack/packageset.hpp"
 
+// Use 5 bytes to be future proof even though the version currently is only "1.2"
+#define SOLVFILE_VERSION_BYTES 5
+int solvfile_version_write(const char *solvfile_version, FILE *fp);
+int solvfile_version_read(char *solvfile_version_out, FILE *fp);
+
 /* crypto utils */
 int checksum_cmp(const unsigned char *cs1, const unsigned char *cs2);
 int checksum_fp(unsigned char *out, FILE *fp);

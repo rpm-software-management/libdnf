@@ -230,12 +230,20 @@ can_use_repomd_cache(FILE *fp_solv, unsigned char cs_repomd[CHKSUM_BYTES])
 {
     unsigned char cs_cache[CHKSUM_BYTES];
 
-    if (fp_solv &&
-        !checksum_read(cs_cache, fp_solv) &&
-        !checksum_cmp(cs_cache, cs_repomd))
-        return 1;
+    if (!fp_solv ||
+        checksum_read(cs_cache, fp_solv) ||
+        checksum_cmp(cs_cache, cs_repomd))
+        return 0;
 
-    return 0;
+    char solvfile_version_cache[SOLVFILE_VERSION_BYTES];
+
+    if (!fp_solv ||
+        solvfile_version_read(solvfile_version_cache, fp_solv) ||
+        g_strcmp0(solvfile_version_cache, solv_toolversion)) {
+        return 0;
+    }
+
+    return 1;
 }
 
 void
@@ -516,6 +524,7 @@ write_main(DnfSack *sack, HyRepo hrepo, int switchtosolv, GError **error)
         }
         rc = repo_write(repo, fp);
         rc |= checksum_write(repoImpl->checksum, fp);
+        rc |= solvfile_version_write(solv_toolversion, fp);
         rc |= fclose(fp);
         if (rc) {
             ret = FALSE;
@@ -616,6 +625,7 @@ write_ext(DnfSack *sack, HyRepo hrepo, _hy_repo_repodata which_repodata,
         else
             ret |= write_ext_updateinfo(hrepo, data, fp);
         ret |= checksum_write(repoImpl->checksum, fp);
+        ret |= solvfile_version_write(solv_toolversion, fp);
         ret |= fclose(fp);
         if (ret) {
             success = FALSE;

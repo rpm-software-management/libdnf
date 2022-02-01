@@ -145,7 +145,7 @@ checksum_fp(unsigned char *out, FILE *fp)
 int
 checksum_read(unsigned char *csout, FILE *fp)
 {
-    if (fseek(fp, -32, SEEK_END) ||
+    if (fseek(fp, -1 * (CHKSUM_BYTES + SOLVFILE_VERSION_BYTES), SEEK_END) ||
         fread(csout, CHKSUM_BYTES, 1, fp) != 1)
         return 1;
     rewind(fp);
@@ -179,6 +179,33 @@ int checksum_write(const unsigned char *cs, FILE *fp)
     if (fseek(fp, 0, SEEK_END) ||
         fwrite(cs, CHKSUM_BYTES, 1, fp) != 1)
         return 1;
+    return 0;
+}
+
+int solvfile_version_write(const char *solvfile_version, FILE *fp)
+{
+    if (strlen(solvfile_version) > SOLVFILE_VERSION_BYTES) {
+        return 1;
+    }
+
+    // Since solvfile_version is shorter than SOLVFILE_VERSION_BYTES g_strndup padds it with 0.
+    char *padded_solvfile_ver = g_strndup(solvfile_version, SOLVFILE_VERSION_BYTES);
+    int ret = 0;
+    if (fseek(fp, 0, SEEK_END) || fwrite(padded_solvfile_ver, SOLVFILE_VERSION_BYTES, 1, fp) != 1) {
+        ret = 1;
+    }
+    g_free(padded_solvfile_ver);
+    return ret;
+}
+
+int
+solvfile_version_read(char *solvfile_version_out, FILE *fp)
+{
+    if (fseek(fp, -1 * SOLVFILE_VERSION_BYTES, SEEK_END) ||
+        fread(solvfile_version_out, SOLVFILE_VERSION_BYTES, 1, fp) != 1) {
+        return 1;
+    }
+    rewind(fp);
     return 0;
 }
 

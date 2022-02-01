@@ -99,14 +99,15 @@ START_TEST(test_checksum)
 }
 END_TEST
 
-START_TEST(test_checksum_write_read)
+START_TEST(test_checksum_solvversion_write_read)
 {
     char *new_file = solv_dupjoin(test_globals.tmpdir,
-                                  "/test_checksum_write_read", NULL);
+                                  "/test_checksum_solvversion_write_read", NULL);
     build_test_file(new_file);
 
     unsigned char cs_computed[CHKSUM_BYTES];
     unsigned char cs_read[CHKSUM_BYTES];
+    char sv_read[SOLVFILE_VERSION_BYTES];
     FILE *fp = fopen(new_file, "r");
     checksum_fp(cs_computed, fp);
     // fails, file opened read-only:
@@ -114,10 +115,13 @@ START_TEST(test_checksum_write_read)
     fclose(fp);
     fp = fopen(new_file, "r+");
     fail_if(checksum_write(cs_computed, fp));
+    fail_if(solvfile_version_write(solv_toolversion, fp));
     fclose(fp);
     fp = fopen(new_file, "r");
     fail_if(checksum_read(cs_read, fp));
+    fail_if(solvfile_version_read(sv_read, fp));
     fail_if(checksum_cmp(cs_computed, cs_read));
+    fail_if(g_strcmp0(solv_toolversion, sv_read));
     fclose(fp);
 
     g_free(new_file);
@@ -183,7 +187,7 @@ iutil_suite(void)
     TCase *tc = tcase_create("Main");
     tcase_add_test(tc, test_abspath);
     tcase_add_test(tc, test_checksum);
-    tcase_add_test(tc, test_checksum_write_read);
+    tcase_add_test(tc, test_checksum_solvversion_write_read);
     tcase_add_test(tc, test_mkcachedir);
     tcase_add_test(tc, test_version_split);
     suite_add_tcase(s, tc);
