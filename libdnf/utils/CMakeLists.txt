@@ -1,5 +1,4 @@
 add_subdirectory(bgettext)
-add_subdirectory(crypto)
 add_subdirectory(iniparser)
 add_subdirectory(regex)
 add_subdirectory(sqlite3)
