@@ -1,10 +1,10 @@
 %global libsolv_version 0.7.20
 %global libmodulemd_version 2.13.0
 %global librepo_version 1.13.1
-%global dnf_conflict 4.3.0
+%global dnf_conflict 4.11.0
 %global swig_version 3.0.12
 %global libdnf_major_version 0
-%global libdnf_minor_version 65
+%global libdnf_minor_version 66
 %global libdnf_micro_version 0
 
 %define __cmake_in_source_build 1

@@ -80,7 +80,6 @@ extern "C" {
 #include "module/ModulePackage.hpp"
 #include "repo/Repo-private.hpp"
 #include "repo/solvable/DependencyContainer.hpp"
-#include "utils/crypto/sha1.hpp"
 #include "utils/File.hpp"
 #include "utils/utils.hpp"
 #include "log.hpp"
@@ -2534,43 +2533,4 @@ std::pair<std::vector<std::vector<std::string>>, libdnf::ModulePackageContainer:
 
     setModuleExcludes(sack, hotfixRepos, *moduleContainer);
     return ret;
-}
-
-std::string dnf_sack_get_rpmdb_version(DnfSack *sack) {
-    // collect all sha1hdr checksums
-    // they are sufficiently unique IDs that represent installed RPMs
-    std::vector<std::string> checksums;
-
-    // iterate all @System repo RPMs (rpmdb records)
-    libdnf::Query query{sack, libdnf::Query::ExcludeFlags::IGNORE_EXCLUDES};
-    query.installed();
-
-    auto pset = query.getResultPset();
-    Id id = -1;
-    while(true) {
-        id = pset->next(id);
-        if (id == -1) {
-            break;
-        }
-        DnfPackage *pkg = dnf_package_new(sack, id);
-        // store pkgid (equals to sha1hdr)
-        checksums.push_back(libdnf::string::fromCstring(dnf_package_get_pkgid(pkg)));
-        g_object_unref(pkg);
-    }
-
-    // sort checksums to compute the output checksum always the same
-    std::sort(checksums.begin(), checksums.end());
-
-    SHA1Hash h;
-    for (auto & checksum : checksums) {
-        h.update(checksum.c_str());
-    }
-
-    // build <count>:<hash> output
-    std::ostringstream result;
-    result << checksums.size();
-    result << ":";
-    result << h.hexdigest();
-
-    return result.str();
 }
