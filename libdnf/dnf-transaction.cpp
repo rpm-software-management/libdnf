@@ -28,6 +28,7 @@
  * This object represents an RPM transaction.
  */
 
+#include <rpm/rpmdb.h>
 #include <rpm/rpmlib.h>
 #include <rpm/rpmlog.h>
 #include <rpm/rpmts.h>
@@ -53,6 +54,7 @@
 #include "transaction/Swdb.hpp"
 #include "transaction/Transformer.hpp"
 #include "utils/bgettext/bgettext-lib.h"
+#include "utils/utils.hpp"
 
 typedef enum {
     DNF_TRANSACTION_STEP_STARTED,
@@ -1136,9 +1138,8 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     libdnf::Swdb *swdb = priv->swdb;
     PluginHookContextTransactionData data{PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION, transaction, goal, state};
     DnfSack * sack = hy_goal_get_sack(goal);
-    DnfSack * rpmdb_version_sack = NULL;
-    std::string rpmdb_begin;
-    std::string rpmdb_end;
+    std::unique_ptr<char, decltype(free)*> rpmdb_cookie_uptr{nullptr, free};
+    std::string rpmdb_cookie;
 
     /* take lock */
     ret = dnf_state_take_lock(state, DNF_LOCK_TYPE_RPMDB, DNF_LOCK_MODE_PROCESS, error);
@@ -1431,17 +1432,24 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     if (!dnf_context_plugin_hook(priv->context, PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION, &data, nullptr))
         goto out;
 
-    // FIXME get commandline
-    if (sack) {
-        rpmdb_begin = dnf_sack_get_rpmdb_version(sack);
-    } else {
-        // if sack is not available, create a custom instance
-        rpmdb_version_sack = dnf_sack_new();
-        dnf_sack_load_system_repo(rpmdb_version_sack, nullptr, DNF_SACK_LOAD_FLAG_NONE, nullptr);
-        rpmdb_begin = dnf_sack_get_rpmdb_version(rpmdb_version_sack);
-        g_object_unref(rpmdb_version_sack);
+    // Open rpm database if it is not already open
+    if (!rpmtsGetRdb(priv->ts)) {
+        rc = rpmtsOpenDB(priv->ts, rpmtsGetDBMode(priv->ts));
+        if (rc != 0) {
+            ret = FALSE;
+            g_set_error(
+                error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR, _("Error %i opening rpm database"), rc);
+            goto out;
+        }
     }
-    swdb->beginTransaction(_get_current_time(), rpmdb_begin, "", priv->uid);
+
+    rpmdb_cookie_uptr.reset(rpmdbCookie(rpmtsGetRdb(priv->ts)));
+    rpmdb_cookie = libdnf::string::fromCstring(rpmdb_cookie_uptr.get());
+    if (rpmdb_cookie.empty()) {
+        g_critical(_("The rpmdbCookie() function did not return cookie of rpm database."));
+    }
+    // FIXME get commandline
+    swdb->beginTransaction(_get_current_time(), rpmdb_cookie, "", priv->uid);
 
     /* run the transaction */
     priv->state = dnf_state_get_child(state);
@@ -1481,14 +1489,12 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     if (!ret)
         goto out;
 
-    // finalize swdb transaction
-    // always load a new sack with rpmdb state after the transaction
-    rpmdb_version_sack = dnf_sack_new();
-    dnf_sack_load_system_repo(rpmdb_version_sack, nullptr, DNF_SACK_LOAD_FLAG_NONE, nullptr);
-    rpmdb_end = dnf_sack_get_rpmdb_version(rpmdb_version_sack);
-    g_object_unref(rpmdb_version_sack);
-
-    swdb->endTransaction(_get_current_time(), rpmdb_end.c_str(), libdnf::TransactionState::DONE);
+    rpmdb_cookie_uptr.reset(rpmdbCookie(rpmtsGetRdb(priv->ts)));
+    rpmdb_cookie = libdnf::string::fromCstring(rpmdb_cookie_uptr.get());
+    if (rpmdb_cookie.empty()) {
+        g_critical(_("The rpmdbCookie() function did not return cookie of rpm database."));
+    }
+    swdb->endTransaction(_get_current_time(), rpmdb_cookie, libdnf::TransactionState::DONE);
     swdb->closeTransaction();
 
     data.hookId = PLUGIN_HOOK_ID_CONTEXT_TRANSACTION;
