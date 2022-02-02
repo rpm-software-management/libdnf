@@ -75,7 +75,6 @@ target_link_libraries(libdnf
     ${GLIB_GIO_UNIX_LIBRARIES}
     ${LIBSOLV_LIBRARY}
     ${LIBSOLV_EXT_LIBRARY}
-    ${OPENSSL_CRYPTO_LIBRARY}
     ${RPM_LIBRARIES}
     ${SCOLS_LIBRARIES}
     ${SQLite3_LIBRARIES}

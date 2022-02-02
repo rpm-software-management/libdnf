@@ -53,7 +53,6 @@ endif()
 # build dependencies
 find_package(Gpgme REQUIRED)
 find_package(LibSolv 0.6.30 REQUIRED COMPONENTS ext)
-find_package(OpenSSL REQUIRED)
 
 
 # build dependencies via pkg-config
