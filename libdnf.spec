@@ -83,7 +83,6 @@ BuildRequires:  pkgconfig(zck) >= 0.9.11
 BuildRequires:  pkgconfig(sqlite3)
 BuildRequires:  pkgconfig(json-c)
 BuildRequires:  pkgconfig(cppunit)
-BuildRequires:  pkgconfig(libcrypto)
 BuildRequires:  pkgconfig(modulemd-2.0) >= %{libmodulemd_version}
 BuildRequires:  pkgconfig(smartcols)
 BuildRequires:  gettext
