@@ -835,8 +835,12 @@ Goal::exclude_from_weak_autodetect()
         installed_names.push_back(dnf_package_get_name(pkg));
         std::unique_ptr<libdnf::DependencyContainer> recommends(dnf_package_get_recommends(pkg));
         for (int i = 0; i < recommends->count(); ++i) {
-            Query query(base_query);
             std::unique_ptr<libdnf::Dependency> dep(recommends->getPtr(i));
+            const char * dep_string = dep->toString();
+            if (dep_string[0] == '(') {
+                continue;
+            }
+            Query query(base_query);
             const char * version = dep->getVersion();
             //  There can be installed provider in different version or upgraded packed can recommend a different version
             //  Ignore version and search only by reldep name
@@ -858,7 +862,7 @@ Goal::exclude_from_weak_autodetect()
         }
     }
 
-    // Invesigate supplements of only available packages with a different name to installed packages
+    // Investigate supplements of only available packages with a different name to installed packages
     installed_names.push_back(nullptr);
     base_query.addFilter(HY_PKG_NAME, HY_NEQ, installed_names.data());
     auto * available_pset = base_query.getResultPset();
@@ -870,8 +874,20 @@ Goal::exclude_from_weak_autodetect()
         if (supplements->count() == 0) {
             continue;
         }
+        libdnf::DependencyContainer supplements_without_rich(getSack());
+        for (int i = 0; i < supplements->count(); ++i) {
+            std::unique_ptr<libdnf::Dependency> dep(supplements->getPtr(i));
+            const char * dep_string = dep->toString();
+            if (dep_string[0] == '(') {
+                continue;
+            }
+            supplements_without_rich.add(dep.get());
+        }
+        if (supplements_without_rich.count() == 0) {
+            continue;
+        }
         Query query(installed_query);
-        query.addFilter(HY_PKG_PROVIDES, supplements.get());
+        query.addFilter(HY_PKG_PROVIDES, &supplements_without_rich);
         // When supplemented package already installed, exclude_from_weak available package
         if (!query.empty()) {
             add_exclude_from_weak(pkg);
