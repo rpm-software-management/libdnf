@@ -72,8 +72,10 @@
 %include "libdnf/rpm/package_set_iterator.hpp"
 %include "libdnf/rpm/package_set.hpp"
 
+%apply FLUENT& { libdnf::rpm::PackageQuery& };
 %ignore libdnf::rpm::PackageQuery::PackageQuery(PackageQuery && src);
 %include "libdnf/rpm/package_query.hpp"
+%clear libdnf::rpm::PackageQuery&;
 
 add_iterator(PackageSet)
 add_iterator(ReldepList)

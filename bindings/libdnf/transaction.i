@@ -48,7 +48,9 @@
 %include "libdnf/transaction/rpm_package.hpp"
 
 // sack and query
+%apply FLUENT& { libdnf::transaction::TransactionQuery& };
 %include "libdnf/transaction/query.hpp"
+%clear libdnf::transaction::TransactionQuery&;
 %include "libdnf/transaction/sack.hpp"
 %template(TransactionSackWeakPtr) libdnf::WeakPtr<libdnf::transaction::TransactionSack, false>;
 

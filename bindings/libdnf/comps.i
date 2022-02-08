@@ -30,7 +30,11 @@
 
 %include "libdnf/comps/group/package.hpp"
 %include "libdnf/comps/group/group.hpp"
+
+%apply FLUENT& { libdnf::comps::GroupQuery& };
 %include "libdnf/comps/group/query.hpp"
+%clear libdnf::comps::GroupQuery&;
+
 %include "libdnf/comps/group/sack.hpp"
 %include "libdnf/comps/comps.hpp"
 

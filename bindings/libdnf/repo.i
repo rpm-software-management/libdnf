@@ -54,8 +54,11 @@ wrap_unique_ptr(PackageDownloadCallbacksUniquePtr, libdnf::repo::PackageDownload
 %include "libdnf/repo/repo_callbacks.hpp"
 wrap_unique_ptr(RepoCallbacksUniquePtr, libdnf::repo::RepoCallbacks);
 
+%apply FLUENT& { libdnf::repo::RepoQuery& };
 %include "libdnf/repo/repo_query.hpp"
+%clear libdnf::repo::RepoQuery&;
 %template(SackRepoRepoQuery) libdnf::sack::Sack<libdnf::repo::Repo>;
+
 %include "libdnf/repo/repo_sack.hpp"
 %template(RepoSackWeakPtr) libdnf::WeakPtr<libdnf::repo::RepoSack, false>;
 

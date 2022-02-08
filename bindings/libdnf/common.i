@@ -47,6 +47,21 @@
     }
 }
 
+// Support for methods that return object to which them are attached - return reference to `*this`.
+// Allows use method chaining on an object - fluent interface.
+#if defined(SWIGPYTHON)
+%typemap(out) FLUENT& %{
+  if ($1 == arg1) {
+    // The returned pointer points to `this`. No new return object is created.
+    // Instead, the reference count for object `self` is incremented. And the `self` object is returned.
+    Py_INCREF(swig_obj[0]);
+    $result = swig_obj[0];
+  } else {
+    $result = SWIG_NewPointerObj($1, $descriptor, $owner);
+  }
+%}
+#endif
+
 %template(VectorString) std::vector<std::string>;
 #if defined(SWIGPYTHON) || defined(SWIGRUBY)
 %template(SetString) std::set<std::string>;
