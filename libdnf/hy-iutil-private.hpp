@@ -24,6 +24,30 @@
 #include "hy-iutil.h"
 #include "hy-types.h"
 #include "sack/packageset.hpp"
+#include <array>
+#include <utility>
+
+// Use 8 bytes for libsolv version (API: solv_toolversion)
+// to be future proof even though it currently is "1.2"
+static constexpr const size_t solv_userdata_solv_toolversion_size{8};
+static constexpr const std::array<char, 4> solv_userdata_magic{'\0', 'd', 'n', 'f'};
+static constexpr const std::array<char, 4> solv_userdata_dnf_version{'\0', '1', '.', '0'};
+
+static constexpr const int solv_userdata_size = solv_userdata_solv_toolversion_size + \
+                                                   solv_userdata_magic.size() + \
+                                                   solv_userdata_dnf_version.size() + \
+                                                   CHKSUM_BYTES;
+
+struct SolvUserdata {
+    char dnf_magic[solv_userdata_magic.size()];
+    char dnf_version[solv_userdata_dnf_version.size()];
+    char libsolv_version[solv_userdata_solv_toolversion_size];
+    unsigned char checksum[CHKSUM_BYTES];
+}__attribute__((packed)); ;
+
+int solv_userdata_fill(SolvUserdata *solv_userdata, const unsigned char *checksum, GError** error);
+std::unique_ptr<SolvUserdata> solv_userdata_read(FILE *fp);
+int solv_userdata_verify(const SolvUserdata *solv_userdata, const unsigned char *checksum);
 
 /* crypto utils */
 int checksum_cmp(const unsigned char *cs1, const unsigned char *cs2);
