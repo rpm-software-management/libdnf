@@ -52,9 +52,7 @@ int solv_userdata_verify(const SolvUserdata *solv_userdata, const unsigned char 
 /* crypto utils */
 int checksum_cmp(const unsigned char *cs1, const unsigned char *cs2);
 int checksum_fp(unsigned char *out, FILE *fp);
-int checksum_read(unsigned char *csout, FILE *fp);
 int checksum_stat(unsigned char *out, FILE *fp);
-int checksum_write(const unsigned char *cs, FILE *fp);
 int checksumt_l2h(int type);
 const char *pool_checksum_str(Pool *pool, const unsigned char *chksum);
 
