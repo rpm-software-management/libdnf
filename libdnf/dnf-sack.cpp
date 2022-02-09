@@ -225,17 +225,39 @@ dnf_sack_new(void)
     return DNF_SACK(g_object_new(DNF_TYPE_SACK, NULL));
 }
 
-static int
-can_use_repomd_cache(FILE *fp_solv, unsigned char cs_repomd[CHKSUM_BYTES])
-{
-    unsigned char cs_cache[CHKSUM_BYTES];
+// Try to load cached solv file into repo otherwise return FALSE
+static gboolean
+try_to_use_cached_solvfile(const char *path, Repo *repo, int flags, const unsigned char *checksum, GError **err){
+    FILE *fp_cache = fopen(path, "r");
+    if (!fp_cache) {
+        // Missing cache files (ENOENT) are not an error and can even be expected in some cases
+        // (such as when repo doesn't have updateinfo/prestodelta metadata).
+        // Use g_debug in order not to pollute the log by default with such entries.
+        if (errno == ENOENT) {
+            g_debug("Failed to open solvfile cache: %s: %s", path, strerror(errno));
+        } else {
+            g_warning("Failed to open solvfile cache: %s: %s", path, strerror(errno));
+        }
+        return FALSE;
+    }
+    std::unique_ptr<SolvUserdata> solv_userdata = solv_userdata_read(fp_cache);
+    gboolean ret = TRUE;
+    if (solv_userdata && solv_userdata_verify(solv_userdata.get(), checksum)) {
+        // after reading the header rewind to the begining
+        fseek(fp_cache, 0, SEEK_SET);
+        if (repo_add_solv(repo, fp_cache, flags)) {
+            g_set_error (err,
+                         DNF_ERROR,
+                         DNF_ERROR_INTERNAL_ERROR,
+                         _("repo_add_solv() has failed."));
+            ret = FALSE;
+        }
+    } else {
+        ret = FALSE;
+    }
 
-    if (fp_solv &&
-        !checksum_read(cs_cache, fp_solv) &&
-        !checksum_cmp(cs_cache, cs_repomd))
-        return 1;
-
-    return 0;
+    fclose(fp_cache);
+    return ret;
 }
 
 void
@@ -375,33 +397,27 @@ load_ext(DnfSack *sack, HyRepo hrepo, _hy_repo_repodata which_repodata,
     gboolean done = FALSE;
 
     char *fn_cache =  dnf_sack_give_cache_fn(sack, name, suffix);
-    fp = fopen(fn_cache, "r");
     assert(libdnf::repoGetImpl(hrepo)->checksum);
-    if (can_use_repomd_cache(fp, libdnf::repoGetImpl(hrepo)->checksum)) {
-        int flags = 0;
-        /* the updateinfo is not a real extension */
-        if (which_repodata != _HY_REPODATA_UPDATEINFO)
-            flags |= REPO_EXTEND_SOLVABLES;
-        /* do not pollute the main pool with directory component ids */
-        if (which_repodata == _HY_REPODATA_FILENAMES || which_repodata == _HY_REPODATA_OTHER)
-            flags |= REPO_LOCALPOOL;
-        done = TRUE;
+
+    int flags = 0;
+    /* the updateinfo is not a real extension */
+    if (which_repodata != _HY_REPODATA_UPDATEINFO)
+        flags |= REPO_EXTEND_SOLVABLES;
+    /* do not pollute the main pool with directory component ids */
+    if (which_repodata == _HY_REPODATA_FILENAMES || which_repodata == _HY_REPODATA_OTHER)
+        flags |= REPO_LOCALPOOL;
+    if (try_to_use_cached_solvfile(fn_cache, repo, flags, libdnf::repoGetImpl(hrepo)->checksum, error)) {
         g_debug("%s: using cache file: %s", __func__, fn_cache);
-        ret = repo_add_solv(repo, fp, flags);
-        if (ret) {
-            g_set_error_literal (error,
-                                 DNF_ERROR,
-                                 DNF_ERROR_INTERNAL_ERROR,
-                                 _("failed to add solv"));
-            return FALSE;
-        } else {
-            repo_update_state(hrepo, which_repodata, _HY_LOADED_CACHE);
-            repo_set_repodata(hrepo, which_repodata, repo->nrepodata - 1);
-        }
+        done = TRUE;
+        repo_update_state(hrepo, which_repodata, _HY_LOADED_CACHE);
+        repo_set_repodata(hrepo, which_repodata, repo->nrepodata - 1);
     }
+    if (error && *error) {
+        g_prefix_error(error, _("Loading extension cache %s (%d) failed: "), fn_cache, which_repodata);
+        return FALSE;
+    }
+
     g_free(fn_cache);
-    if (fp)
-        fclose(fp);
     if (done)
         return TRUE;
 
@@ -514,35 +530,53 @@ write_main(DnfSack *sack, HyRepo hrepo, int switchtosolv, GError **error)
                         strerror(errno));
             goto done;
         }
-        rc = repo_write(repo, fp);
-        rc |= checksum_write(repoImpl->checksum, fp);
-        rc |= fclose(fp);
+
+        SolvUserdata solv_userdata;
+        if (solv_userdata_fill(&solv_userdata, repoImpl->checksum, error)) {
+            ret = FALSE;
+            fclose(fp);
+            goto done;
+        }
+
+        Repowriter *writer = repowriter_create(repo);
+        repowriter_set_userdata(writer, &solv_userdata, solv_userdata_size);
+        rc = repowriter_write(writer, fp);
+        repowriter_free(writer);
         if (rc) {
+            ret = FALSE;
+            fclose(fp);
+            g_set_error(error,
+                       DNF_ERROR,
+                       DNF_ERROR_INTERNAL_ERROR,
+                       _("While writing primary cache %s repowriter write failed: %i, error: %s"),
+                       tmp_fn_templ, rc, pool_errstr(repo->pool));
+            goto done;
+        }
+
+        if (fclose(fp)) {
             ret = FALSE;
             g_set_error (error,
                         DNF_ERROR,
                         DNF_ERROR_FILE_INVALID,
-                        _("write_main() failed writing data: %i"), rc);
+                        _("Failed closing tmp file %s: %s"),
+                        tmp_fn_templ, strerror(errno));
             goto done;
         }
     }
     if (switchtosolv && repo_is_one_piece(repo)) {
+        repo_empty(repo, 1);
         /* switch over to written solv file activate paging */
-        FILE *fp = fopen(tmp_fn_templ, "r");
-        if (fp) {
-            repo_empty(repo, 1);
-            rc = repo_add_solv(repo, fp, 0);
-            fclose(fp);
-            if (rc) {
-                /* this is pretty fatal */
-                ret = FALSE;
-                g_set_error_literal (error,
-                                     DNF_ERROR,
-                                     DNF_ERROR_FILE_INVALID,
-                                     _("write_main() failed to re-load "
-                                       "written solv file"));
-                goto done;
-            }
+        gboolean loaded = try_to_use_cached_solvfile(tmp_fn_templ, repo, 0, repoImpl->checksum, error);
+        if (error && *error) {
+            g_prefix_error(error, _("Failed to use newly written primary cache: %s: "), tmp_fn_templ);
+            ret = FALSE;
+            goto done;
+        }
+        if (!loaded) {
+            g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
+                        _("Failed to use newly written primary cache: %s"), tmp_fn_templ);
+            ret = FALSE;
+            goto done;
         }
     }
 
@@ -567,20 +601,6 @@ write_ext_updateinfo_filter(Repo *repo, Repokey *key, void *kfdata)
     if (key->name == 1 && (int) key->size != data->repodataid)
         return -1;
     return repo_write_stdkeyfilter(repo, key, 0);
-}
-
-static int
-write_ext_updateinfo(HyRepo hrepo, Repodata *data, FILE *fp)
-{
-    auto repoImpl = libdnf::repoGetImpl(hrepo);
-    Repo *repo = repoImpl->libsolvRepo;
-    int oldstart = repo->start;
-    repo->start = repoImpl->main_end;
-    repo->nsolvables -= repoImpl->main_nsolvables;
-    int res = repo_write_filtered(repo, fp, write_ext_updateinfo_filter, data, 0);
-    repo->start = oldstart;
-    repo->nsolvables += repoImpl->main_nsolvables;
-    return res;
 }
 
 static gboolean
@@ -611,37 +631,78 @@ write_ext(DnfSack *sack, HyRepo hrepo, _hy_repo_repodata which_repodata,
         FILE *fp = fdopen(tmp_fd, "w+");
 
         g_debug("%s: storing %s to: %s", __func__, repo->name, tmp_fn_templ);
-        if (which_repodata != _HY_REPODATA_UPDATEINFO)
-            ret |= repodata_write(data, fp);
-        else
-            ret |= write_ext_updateinfo(hrepo, data, fp);
-        ret |= checksum_write(repoImpl->checksum, fp);
-        ret |= fclose(fp);
+
+        SolvUserdata solv_userdata;
+        if (solv_userdata_fill(&solv_userdata, repoImpl->checksum, error)) {
+            fclose(fp);
+            success = FALSE;
+            goto done;
+        }
+
+        Repowriter *writer = repowriter_create(repo);
+        repowriter_set_userdata(writer, &solv_userdata, solv_userdata_size);
+        if (which_repodata != _HY_REPODATA_UPDATEINFO) {
+            repowriter_set_repodatarange(writer, data->repodataid, data->repodataid + 1);
+            repowriter_set_flags(writer, REPOWRITER_NO_STORAGE_SOLVABLE);
+            ret = repowriter_write(writer, fp);
+        } else {
+            // write only updateinfo repodata
+            int oldstart = repo->start;
+            repo->start = repoImpl->main_end;
+            repo->nsolvables -= repoImpl->main_nsolvables;
+            repowriter_set_flags(writer, REPOWRITER_LEGACY);
+            repowriter_set_keyfilter(writer, write_ext_updateinfo_filter, data);
+            repowriter_set_keyqueue(writer, 0);
+            ret = repowriter_write(writer, fp);
+            repo->start = oldstart;
+            repo->nsolvables += repoImpl->main_nsolvables;
+        }
+        repowriter_free(writer);
         if (ret) {
+            success = FALSE;
+            fclose(fp);
+            g_set_error (error,
+                        DNF_ERROR,
+                        DNF_ERROR_INTERNAL_ERROR,
+                        _("While writing extension cache %s (%d): repowriter write failed: %i, error: %s"),
+                        tmp_fn_templ, which_repodata, ret, pool_errstr(repo->pool));
+            goto done;
+        }
+
+        if (fclose(fp)) {
             success = FALSE;
             g_set_error (error,
                         DNF_ERROR,
-                        DNF_ERROR_FAILED,
-                        _("write_ext(%1$d) has failed: %2$d"),
-                        which_repodata, ret);
+                        DNF_ERROR_FILE_INVALID,
+                        _("While writing extension cache (%d): cannot close temporary file: %s"),
+                        which_repodata, tmp_fn_templ);
             goto done;
         }
     }
 
     if (repo_is_one_piece(repo) && which_repodata != _HY_REPODATA_UPDATEINFO) {
         /* switch over to written solv file activate paging */
-        FILE *fp = fopen(tmp_fn_templ, "r");
-        if (fp) {
-            int flags = REPO_USE_LOADING | REPO_EXTEND_SOLVABLES;
-            /* do not pollute the main pool with directory component ids */
-            if (which_repodata == _HY_REPODATA_FILENAMES || which_repodata == _HY_REPODATA_OTHER)
-                flags |= REPO_LOCALPOOL;
-            repodata_extend_block(data, repo->start, repo->end - repo->start);
-            data->state = REPODATA_LOADING;
-            repo_add_solv(repo, fp, flags);
-            data->state = REPODATA_AVAILABLE;
-            fclose(fp);
+        int flags = REPO_USE_LOADING | REPO_EXTEND_SOLVABLES;
+        /* do not pollute the main pool with directory component ids */
+        if (which_repodata == _HY_REPODATA_FILENAMES || which_repodata == _HY_REPODATA_OTHER)
+            flags |= REPO_LOCALPOOL;
+        repodata_extend_block(data, repo->start, repo->end - repo->start);
+        data->state = REPODATA_LOADING;
+        int loaded = try_to_use_cached_solvfile(tmp_fn_templ, repo, flags, repoImpl->checksum, error);
+        if (error && *error) {
+            g_prefix_error(error, _("Failed to use newly written extension cache: %s (%d): "),
+                           tmp_fn_templ, which_repodata);
+            success = FALSE;
+            goto done;
         }
+        if (!loaded) {
+            g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
+                        _("Failed to use newly written extension cache: %s (%d)"), tmp_fn_templ, which_repodata);
+            success = FALSE;
+            goto done;
+        }
+
+        data->state = REPODATA_AVAILABLE;
     }
 
     if (!mv(tmp_fn_templ, fn, error)) {
@@ -672,7 +733,7 @@ load_yum_repo(DnfSack *sack, HyRepo hrepo, GError **error)
 
     FILE *fp_primary = NULL;
     FILE *fp_repomd = NULL;
-    FILE *fp_cache = fopen(fn_cache, "r");
+
     if (!fn_repomd) {
         g_set_error (error,
                      DNF_ERROR,
@@ -693,18 +754,17 @@ load_yum_repo(DnfSack *sack, HyRepo hrepo, GError **error)
     }
     checksum_fp(repoImpl->checksum, fp_repomd);
 
-    if (can_use_repomd_cache(fp_cache, repoImpl->checksum)) {
+    if (try_to_use_cached_solvfile(fn_cache, repo, 0, repoImpl->checksum, error)) {
         const char *chksum = pool_checksum_str(pool, repoImpl->checksum);
         g_debug("using cached %s (0x%s)", name, chksum);
-        if (repo_add_solv(repo, fp_cache, 0)) {
-            g_set_error (error,
-                         DNF_ERROR,
-                         DNF_ERROR_INTERNAL_ERROR,
-                         _("repo_add_solv() has failed."));
-            retval = FALSE;
-            goto out;
-        }
         repoImpl->state_main = _HY_LOADED_CACHE;
+        goto out;
+    }
+
+    if (error && *error) {
+        g_prefix_error(error, _("While loading repository failed to use %s: "), fn_cache);
+        retval = FALSE;
+        goto out;
     } else {
         auto primary = hrepo->getMetadataPath(MD_TYPE_PRIMARY);
         if (primary.empty()) {
@@ -733,8 +793,6 @@ load_yum_repo(DnfSack *sack, HyRepo hrepo, GError **error)
         repoImpl->state_main = _HY_LOADED_FETCH;
     }
 out:
-    if (fp_cache)
-        fclose(fp_cache);
     if (fp_repomd)
         fclose(fp_repomd);
     if (fp_primary)
