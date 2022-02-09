@@ -142,17 +142,6 @@ checksum_fp(unsigned char *out, FILE *fp)
     return 0;
 }
 
-/* calls rewind(fp) before returning */
-int
-checksum_read(unsigned char *csout, FILE *fp)
-{
-    if (fseek(fp, -32, SEEK_END) ||
-        fread(csout, CHKSUM_BYTES, 1, fp) != 1)
-        return 1;
-    rewind(fp);
-    return 0;
-}
-
 /* does not move the fp position */
 int
 checksum_stat(unsigned char *out, FILE *fp)
@@ -171,15 +160,6 @@ checksum_stat(unsigned char *out, FILE *fp)
     solv_chksum_add(h, &stat.st_size, sizeof(stat.st_size));
     solv_chksum_add(h, &stat.st_mtime, sizeof(stat.st_mtime));
     solv_chksum_free(h, out);
-    return 0;
-}
-
-/* moves fp to the end of file */
-int checksum_write(const unsigned char *cs, FILE *fp)
-{
-    if (fseek(fp, 0, SEEK_END) ||
-        fwrite(cs, CHKSUM_BYTES, 1, fp) != 1)
-        return 1;
     return 0;
 }
 
