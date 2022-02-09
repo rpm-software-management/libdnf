@@ -43,6 +43,7 @@ extern "C" {
 #include <solv/evr.h>
 #include <solv/solver.h>
 #include <solv/solverdebug.h>
+#include <solv/repo_solv.h>
 #include <solv/util.h>
 #include <solv/pool_parserpmrichdep.h>
 }
@@ -180,6 +181,107 @@ int checksum_write(const unsigned char *cs, FILE *fp)
         fwrite(cs, CHKSUM_BYTES, 1, fp) != 1)
         return 1;
     return 0;
+}
+
+static std::array<char, solv_userdata_solv_toolversion_size>
+get_padded_solv_toolversion()
+{
+    std::array<char, solv_userdata_solv_toolversion_size> padded_solv_toolversion{};
+    std::string solv_ver_str{solv_toolversion};
+    std::copy(solv_ver_str.rbegin(), solv_ver_str.rend(), padded_solv_toolversion.rbegin());
+
+    return padded_solv_toolversion;
+}
+
+int
+solv_userdata_fill(SolvUserdata *solv_userdata, const unsigned char *checksum, GError** error)
+{
+    if (strlen(solv_toolversion) > solv_userdata_solv_toolversion_size) {
+        g_set_error(error, DNF_ERROR, DNF_ERROR_INTERNAL_ERROR,
+                    _("Libsolv's solv_toolversion is: %zu long but we expect max of: %zu"),
+                    strlen(solv_toolversion), solv_userdata_solv_toolversion_size);
+        return 1;
+    }
+
+    // copy dnf solv file magic
+    memcpy(solv_userdata->dnf_magic, solv_userdata_magic.data(), solv_userdata_magic.size());
+
+    // copy dnf solv file version
+    memcpy(solv_userdata->dnf_version, solv_userdata_dnf_version.data(), solv_userdata_dnf_version.size());
+
+    // copy libsolv solv file version
+    memcpy(solv_userdata->libsolv_version, get_padded_solv_toolversion().data(), solv_userdata_solv_toolversion_size);
+
+    // copy checksum
+    memcpy(solv_userdata->checksum, checksum, CHKSUM_BYTES);
+
+    return 0;
+}
+
+
+std::unique_ptr<SolvUserdata>
+solv_userdata_read(FILE *fp)
+{
+    unsigned char *dnf_solvfile_userdata_read = NULL;
+    int dnf_solvfile_userdata_len_read;
+    if (!fp) {
+        return nullptr;
+    }
+
+    int ret_code = solv_read_userdata(fp, &dnf_solvfile_userdata_read, &dnf_solvfile_userdata_len_read);
+    // The userdata layout has to match our struct exactly so we can just cast the memory
+    // allocated by libsolv
+    std::unique_ptr<SolvUserdata> uniq_userdata(reinterpret_cast<SolvUserdata *>(dnf_solvfile_userdata_read));
+    if(ret_code) {
+        g_warning("Failed to read solv userdata: solv_read_userdata returned: %i", ret_code);
+        return nullptr;
+    }
+
+    if (dnf_solvfile_userdata_len_read != solv_userdata_size) {
+        g_warning("Solv userdata length mismatch, read: %i vs expected: %i",
+                  dnf_solvfile_userdata_len_read, solv_userdata_size);
+        return nullptr;
+    }
+
+    return uniq_userdata;
+}
+
+gboolean
+solv_userdata_verify(const SolvUserdata *solv_userdata, const unsigned char *checksum)
+{
+    // check dnf solvfile magic bytes
+    if (memcmp(solv_userdata->dnf_magic, solv_userdata_magic.data(), solv_userdata_magic.size()) != 0) {
+        // This is not dnf header do not read after it
+        g_warning("magic bytes don't match, read: %s vs. dnf solvfile magic: %s",
+                  solv_userdata->dnf_magic, solv_userdata_magic.data());
+        return FALSE;
+    }
+
+    // check dnf solvfile version
+    if (memcmp(solv_userdata->dnf_version, solv_userdata_dnf_version.data(), solv_userdata_dnf_version.size()) != 0) {
+        // Mismatching dnf solvfile version -> we need to regenerate
+        g_warning("dnf solvfile version doesn't match, read: %s vs. dnf solvfile version: %s",
+                  solv_userdata->dnf_version, solv_userdata_dnf_version.data());
+        return FALSE;
+    }
+
+    // check libsolv solvfile version
+    if (memcmp(solv_userdata->libsolv_version, get_padded_solv_toolversion().data(), solv_userdata_solv_toolversion_size) != 0) {
+        // Mismatching libsolv solvfile version -> we need to regenerate
+        g_warning("libsolv solvfile version doesn't match, read: %s vs. libsolv version: %s",
+                  solv_userdata->libsolv_version, solv_toolversion);
+        return FALSE;
+    }
+
+    // check solvfile checksum
+    if (checksum_cmp(solv_userdata->checksum, checksum)) {
+        // Mismatching solvfile checksum -> we need to regenerate
+        g_debug("solvfile checksum doesn't match, read: %s vs. repomd checksum: %s",
+                solv_userdata->checksum, checksum);
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 int
