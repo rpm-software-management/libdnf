@@ -24,6 +24,8 @@
 
 
 #include <solv/pool.h>
+#include <solv/repo.h>
+#include <solv/repo_write.h>
 
 
 #include "libdnf/hy-util.h"
@@ -97,28 +99,36 @@ START_TEST(test_checksum)
 }
 END_TEST
 
-START_TEST(test_checksum_write_read)
+START_TEST(test_dnf_solvfile_userdata)
 {
     char *new_file = solv_dupjoin(test_globals.tmpdir,
-                                  "/test_checksum_write_read", NULL);
+                                  "/test_dnf_solvfile_userdata", NULL);
     build_test_file(new_file);
 
     unsigned char cs_computed[CHKSUM_BYTES];
-    unsigned char cs_read[CHKSUM_BYTES];
-    FILE *fp = fopen(new_file, "r");
+    FILE *fp = fopen(new_file, "r+");
     checksum_fp(cs_computed, fp);
-    // fails, file opened read-only:
-    fail_unless(checksum_write(cs_computed, fp) == 1);
+
+    SolvUserdata solv_userdata;
+    fail_if(solv_userdata_fill(&solv_userdata, cs_computed, NULL));
+
+    Pool *pool = pool_create();
+    Repo *repo = repo_create(pool, "test_repo");
+    Repowriter *writer = repowriter_create(repo);
+    repowriter_set_userdata(writer, &solv_userdata, solv_userdata_size);
+    fail_if(repowriter_write(writer, fp));
+    repowriter_free(writer);
     fclose(fp);
-    fp = fopen(new_file, "r+");
-    fail_if(checksum_write(cs_computed, fp));
-    fclose(fp);
+
     fp = fopen(new_file, "r");
-    fail_if(checksum_read(cs_read, fp));
-    fail_if(checksum_cmp(cs_computed, cs_read));
+    std::unique_ptr<SolvUserdata> dnf_solvfile = solv_userdata_read(fp);
+    fail_unless(dnf_solvfile);
+    fail_unless(solv_userdata_verify(dnf_solvfile.get(), cs_computed));
     fclose(fp);
 
     g_free(new_file);
+    repo_free(repo, 0);
+    pool_free(pool);
 }
 END_TEST
 
@@ -181,7 +191,7 @@ iutil_suite(void)
     TCase *tc = tcase_create("Main");
     tcase_add_test(tc, test_abspath);
     tcase_add_test(tc, test_checksum);
-    tcase_add_test(tc, test_checksum_write_read);
+    tcase_add_test(tc, test_dnf_solvfile_userdata);
     tcase_add_test(tc, test_mkcachedir);
     tcase_add_test(tc, test_version_split);
     suite_add_tcase(s, tc);
