@@ -51,8 +51,7 @@ static const std::map< TransactionItemAction, std::string > transactionItemActio
     {TransactionItemAction::REMOVE, "E"},
     {TransactionItemAction::REINSTALL, "R"},
     {TransactionItemAction::REINSTALLED, "R"},
-    // TODO: replace "?" with something better
-    {TransactionItemAction::REASON_CHANGE, "?"},
+    {TransactionItemAction::REASON_CHANGE, "C"},
 };
 
 /*
