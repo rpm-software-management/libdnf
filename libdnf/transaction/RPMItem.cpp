@@ -255,7 +255,11 @@ RPMItem::resolveTransactionItemReason(SQLite3Ptr conn,
                                       const std::string &arch,
                                       int64_t maxTransactionId)
 {
-    const char *sql = R"**(
+    // NOTE: All negative maxTransactionId values are treated the same. The
+    // method is called with maxTransactionId = -2 in a couple of places, the
+    // semantics here have been the same as with -1 for a long time. If it
+    // ain't broke...
+    std::string sql = R"**(
         SELECT
             ti.action as action,
             ti.reason as reason
@@ -271,14 +275,25 @@ RPMItem::resolveTransactionItemReason(SQLite3Ptr conn,
             AND ti.action not in (3, 5, 7, 10)
             AND i.name = ?
             AND i.arch = ?
+    )**";
+
+    if (maxTransactionId >= 0) {
+        sql.append(" AND ti.trans_id <= ?");
+    }
+
+    sql.append(R"**(
         ORDER BY
             ti.trans_id DESC
         LIMIT 1
-    )**";
+    )**");
 
     if (arch != "") {
         SQLite3::Query query(*conn, sql);
-        query.bindv(name, arch);
+        if (maxTransactionId >= 0) {
+            query.bindv(name, arch, maxTransactionId);
+        } else {
+            query.bindv(name, arch);
+        }
 
         if (query.step() == SQLite3::Statement::StepResult::ROW) {
             auto action = static_cast< TransactionItemAction >(query.get< int64_t >("action"));
