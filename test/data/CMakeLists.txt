@@ -5,4 +5,11 @@ foreach(in_file ${in_files})
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${in_file}" "${CMAKE_CURRENT_BINARY_DIR}/${out_file}" @ONLY)
 endforeach()
 
+
+find_program(CREATEREPO_C createrepo_c)
+if(NOT CREATEREPO_C)
+    message(FATAL_ERROR "Program not found: createrepo_c")
+endif()
+
+
 add_custom_target(build_rpm_and_repos ALL COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build-rpms-and-repos.sh "${CMAKE_CURRENT_BINARY_DIR}")
