@@ -44,6 +44,10 @@ pkg_check_modules(LIBFMT REQUIRED fmt)
 list(APPEND LIBDNF_PC_REQUIRES "${LIBFMT_MODULE_NAME}")
 target_link_libraries(libdnf ${LIBFMT_LIBRARIES})
 
+pkg_check_modules(LIBGPGME REQUIRED gpgme)
+list(APPEND LIBDNF_PC_REQUIRES "${LIBGPGME_MODULE_NAME}")
+target_link_libraries(libdnf ${LIBGPGME_LIBRARIES})
+
 pkg_check_modules(JSONC REQUIRED json-c)
 include_directories(${JSONC_INCLUDE_DIRS})
 target_link_libraries(libdnf ${JSONC_LIBRARIES})
