@@ -40,6 +40,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "commands/swap/swap.hpp"
 #include "commands/upgrade/upgrade.hpp"
 #include "microdnf/context.hpp"
+#include "plugins.hpp"
 #include "utils.hpp"
 
 #include <fcntl.h>
@@ -118,6 +119,18 @@ inline RootCommand::RootCommand(libdnf::cli::session::Session & session) : Comma
     register_subcommand(std::make_unique<RepoinfoAlias>(*this), aliases_group);
     register_subcommand(std::make_unique<RepolistAlias>(*this), aliases_group);
     register_subcommand(std::make_unique<UpgradeMinimalAlias>(*this), aliases_group);
+
+    auto & context = static_cast<Context&>(session);
+    auto & microdnf_plugins = context.get_plugins();
+    auto & plugins = microdnf_plugins.get_plugins();
+    for (auto & plugin : plugins) {
+        if (plugin->get_enabled()) {
+            auto commands = plugin->get_iplugin()->create_commands(*this);
+            for (auto & command : commands) {
+                register_subcommand(std::move(command));
+            }
+        }
+    }
 }
 
 inline void RootCommand::run() {
@@ -579,6 +592,10 @@ int main(int argc, char * argv[]) try {
     context.base.load_plugins();
     auto & plugins = context.base.get_plugins();
     plugins.init();
+
+    // Load microdnf plugins
+    auto & microdnf_plugins = context.get_plugins();
+    microdnf_plugins.load_plugins(".");
 
     // Set commandline arguments
     microdnf::set_commandline_args(context);
