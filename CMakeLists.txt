@@ -51,7 +51,7 @@ endif()
 
 # build dependencies
 find_package(Gpgme REQUIRED)
-find_package(LibSolv 0.6.30 REQUIRED COMPONENTS ext)
+find_package(LibSolv 0.7.20 REQUIRED COMPONENTS ext)
 find_package(OpenSSL REQUIRED)
 
 
