@@ -20,6 +20,24 @@
 ######################
 
 ====================
+0.66.0 Release Notes
+====================
+
+- Bug fixes:
+  - Use `rpmdbCookie` from librpm, remove `hawkey.Sack._rpmdb_version`
+  - Fix handling transaction id in resolveTransactionItemReason (RhBug:2010259,2053014)
+  - Remove deprecated assertions (RhBug:2027383)
+  - Skip rich deps for autodetection of unmet dependencies (RhBug:2033130, 2048394)
+  - Increase required rpm version since we use `rpmdbCookie()`
+
+Bugs fixed in 0.66.0:
+
+* :rhbug:`2033130`
+* :rhbug:`2027383`
+* :rhbug:`2010259`
+* :rhbug:`2053014`
+
+====================
 0.65.0 Release Notes
 ====================
 
