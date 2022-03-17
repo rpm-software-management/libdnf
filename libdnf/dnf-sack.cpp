@@ -780,13 +780,24 @@ load_yum_repo(DnfSack *sack, HyRepo hrepo, GError **error)
         fp_primary = solv_xfopen(primary.c_str(), "r");
         assert(fp_primary);
 
-        g_debug("fetching %s", name);
-        if (repo_add_repomdxml(repo, fp_repomd, 0) || \
-            repo_add_rpmmd(repo, fp_primary, 0, 0)) {
+        g_debug("Loading repomd: %s", fn_repomd);
+        if (repo_add_repomdxml(repo, fp_repomd, 0)) {
             g_set_error (error,
                          DNF_ERROR,
                          DNF_ERROR_INTERNAL_ERROR,
-                         _("repo_add_repomdxml/rpmmd() has failed."));
+                         _("Loading repomd has failed: %s"),
+                         pool_errstr(repo->pool));
+            retval = FALSE;
+            goto out;
+        }
+
+        g_debug("Loading primary: %s", primary.c_str());
+        if (repo_add_rpmmd(repo, fp_primary, 0, 0)) {
+            g_set_error (error,
+                         DNF_ERROR,
+                         DNF_ERROR_INTERNAL_ERROR,
+                         _("Loading primary has failed: %s"),
+                         pool_errstr(repo->pool));
             retval = FALSE;
             goto out;
         }
