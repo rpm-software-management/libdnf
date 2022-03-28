@@ -2379,7 +2379,7 @@ dnf_context_run(DnfContext *context, GCancellable *cancellable, GError **error) 
 /**
  * dnf_context_install:
  * @context: a #DnfContext instance.
- * @name: A package or group name, e.g. "firefox" or "@gnome-desktop"
+ * @name: A package specification (NEVRA forms, provide, file provide, globs supported) e.g. "firefox"
  * @error: A #GError or %NULL
  *
  * Finds a remote package and marks it to be installed.
@@ -2422,12 +2422,12 @@ dnf_context_install(DnfContext *context, const gchar *name, GError **error) try
 /**
  * dnf_context_remove:
  * @context: a #DnfContext instance.
- * @name: A package or group name, e.g. "firefox" or "@gnome-desktop"
+ * @name: A package specification (NEVRA forms, provide, file provide, globs supported) e.g. "firefox"
  * @error: A #GError or %NULL
  *
  * Finds an installed package and marks it to be removed.
  *
- * If multiple packages are available then only the oldest package is removed.
+ * If multiple packages are available, all of them will be removed.
  *
  * Returns: %TRUE for success, %FALSE otherwise
  *
@@ -2470,7 +2470,7 @@ dnf_context_remove(DnfContext *context, const gchar *name, GError **error) try
 /**
  * dnf_context_update:
  * @context: a #DnfContext instance.
- * @name: A package or group name, e.g. "firefox" or "@gnome-desktop"
+ * @name: A package specification (NEVRA forms, provide, file provide, globs supported) e.g. "firefox"
  * @error: A #GError or %NULL
  *
  * Finds an installed and remote package and marks it to be updated.
@@ -2548,7 +2548,7 @@ dnf_context_update_all (DnfContext  *context,
 /**
  * dnf_context_distrosync:
  * @context: a #DnfContext instance.
- * @name: A package or group name, e.g. "firefox" or "@gnome-desktop"
+ * @name: A package specification (NEVRA forms, provide, file provide, globs supported) e.g. "firefox"
  * @error: A #GError or %NULL
  *
  * Finds an installed and remote package and marks it to be synchronized with remote version.
