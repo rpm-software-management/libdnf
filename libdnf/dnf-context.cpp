@@ -2391,10 +2391,9 @@ dnf_context_run(DnfContext *context, GCancellable *cancellable, GError **error) 
  * Since: 0.1.0
  **/
 gboolean
-dnf_context_install (DnfContext *context, const gchar *name, GError **error) try
+dnf_context_install(DnfContext *context, const gchar *name, GError **error) try
 {
     DnfContextPrivate *priv = GET_PRIVATE (context);
-    g_autoptr(GPtrArray) selector_matches = NULL;
 
     /* create sack and add sources */
     if (priv->sack == NULL) {
@@ -2405,7 +2404,7 @@ dnf_context_install (DnfContext *context, const gchar *name, GError **error) try
 
     g_auto(HySubject) subject = hy_subject_create(name);
     g_auto(HySelector) selector = hy_subject_get_best_selector(subject, priv->sack, NULL, FALSE, NULL);
-    selector_matches = hy_selector_matches(selector);
+    g_autoptr(GPtrArray) selector_matches = hy_selector_matches(selector);
     if (selector_matches->len == 0) {
         g_set_error(error,
                     DNF_ERROR,
@@ -2438,31 +2437,33 @@ gboolean
 dnf_context_remove(DnfContext *context, const gchar *name, GError **error) try
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
-    GPtrArray *pkglist;
-    hy_autoquery HyQuery query = NULL;
-    gboolean ret = TRUE;
-    guint i;
 
     /* create sack and add repos */
     if (priv->sack == NULL) {
         dnf_state_reset(priv->state);
-        ret = dnf_context_setup_sack(context, priv->state, error);
-        if (!ret)
+        if (!dnf_context_setup_sack(context, priv->state, error))
             return FALSE;
     }
 
-    /* find installed packages to remove */
-    query = hy_query_create(priv->sack);
-    query->installed();
-    hy_query_filter(query, HY_PKG_NAME, HY_EQ, name);
-    pkglist = hy_query_run(query);
+    libdnf::Query query(priv->sack, libdnf::Query::ExcludeFlags::APPLY_EXCLUDES);
+    query.installed();
+    auto ret = query.filterSubject(name, nullptr, false, true, true, true);
+    if (!ret.first) {
+        g_set_error(error,
+                    DNF_ERROR,
+                    DNF_ERROR_PACKAGE_NOT_FOUND,
+                    "No installed package matches '%s'", name);
+        return FALSE;
+    }
+
+    g_autoptr(GPtrArray) packages = query.run();
 
     /* add each package */
-    for (i = 0; i < pkglist->len; i++) {
-        auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(pkglist, i));
+    for (guint i = 0; i < packages->len; i++) {
+        auto pkg = static_cast<DnfPackage *>(g_ptr_array_index(packages, i));
         hy_goal_erase(priv->goal, pkg);
     }
-    g_ptr_array_unref(pkglist);
+
     return TRUE;
 } CATCH_TO_GERROR(FALSE)
 
@@ -2493,8 +2494,7 @@ dnf_context_update(DnfContext *context, const gchar *name, GError **error) try
     }
 
     g_auto(HySubject) subject = hy_subject_create(name);
-    g_auto(HySelector) selector = hy_subject_get_best_selector(subject, priv->sack, NULL, FALSE,
-                                                               NULL);
+    g_auto(HySelector) selector = hy_subject_get_best_selector(subject, priv->sack, NULL, FALSE, NULL);
     g_autoptr(GPtrArray) selector_matches = hy_selector_matches(selector);
     if (selector_matches->len == 0) {
         g_set_error(error,
@@ -2504,8 +2504,14 @@ dnf_context_update(DnfContext *context, const gchar *name, GError **error) try
         return FALSE;
     }
 
-    if (hy_goal_upgrade_selector(priv->goal, selector))
+    int ret = hy_goal_upgrade_selector(priv->goal, selector);
+    if (ret != 0) {
+        g_set_error(error,
+                    DNF_ERROR,
+                    ret,
+                    "Ill-formed Selector '%s'", name);
         return FALSE;
+    }
 
     return TRUE;
 } CATCH_TO_GERROR(FALSE)
