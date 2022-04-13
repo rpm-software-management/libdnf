@@ -83,6 +83,7 @@ typedef struct
     LrHandle        *repo_handle;
     LrResult        *repo_result;
     LrUrlVars       *urlvars;
+    bool            unit_test_mode;  /* ugly hack for unit tests */
 } DnfRepoPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfRepo, dnf_repo, G_TYPE_OBJECT)
@@ -847,8 +848,11 @@ dnf_repo_conf_reset(libdnf::ConfigRepo &config)
 
 /* Loads repository configuration from GKeyFile */
 static void
-dnf_repo_conf_from_gkeyfile(libdnf::ConfigRepo &config, const char *repoId, GKeyFile *gkeyFile)
+dnf_repo_conf_from_gkeyfile(DnfRepo *repo, const char *repoId, GKeyFile *gkeyFile)
 {
+    DnfRepoPrivate *priv = GET_PRIVATE(repo);
+    auto & config = *priv->repo->getConfig();
+
     // Reset to the initial state before reloading the configuration.
     dnf_repo_conf_reset(config);
 
@@ -883,20 +887,31 @@ dnf_repo_conf_from_gkeyfile(libdnf::ConfigRepo &config, const char *repoId, GKey
                         // list can be ['value1', 'value2, value3'] therefore we first join
                         // to have 'value1, value2, value3'
                         g_autofree gchar * tmp_strval = g_strjoinv(",", list);
+
+                        // Substitute vars.
+                        g_autofree gchar *subst_value = dnf_repo_substitute(repo, tmp_strval);
+
+                        if (strcmp(key, "baseurl") == 0 && strstr(tmp_strval, "file://$testdatadir") != NULL) {
+                            priv->unit_test_mode = true;
+                        }
+
                         try {
-                            optionItem.newString(libdnf::Option::Priority::REPOCONFIG, tmp_strval);
+                            optionItem.newString(libdnf::Option::Priority::REPOCONFIG, subst_value);
                         } catch (const std::exception & ex) {
-                            g_debug("Invalid configuration value: %s = %s in %s; %s", key, value.c_str(), repoId, ex.what());
+                            g_debug("Invalid configuration value: %s = %s in %s; %s", key, subst_value, repoId, ex.what());
                         }
                     }
 
                 } else {
-
                     // process other (non list) options
+
+                    // Substitute vars.
+                    g_autofree gchar *subst_value = dnf_repo_substitute(repo, value.c_str());
+
                     try {
-                        optionItem.newString(libdnf::Option::Priority::REPOCONFIG, value);
+                        optionItem.newString(libdnf::Option::Priority::REPOCONFIG, subst_value);
                     } catch (const std::exception & ex) {
-                        g_debug("Invalid configuration value: %s = %s in %s; %s", key, value.c_str(), repoId, ex.what());
+                        g_debug("Invalid configuration value: %s = %s in %s; %s", key, subst_value, repoId, ex.what());
                     }
 
                 }
@@ -950,7 +965,7 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, gboolean reloadFromGKeyFile, GError **e
 
     // Reload repository configuration from keyfile.
     if (reloadFromGKeyFile) {
-        dnf_repo_conf_from_gkeyfile(*conf, repoId, priv->keyfile);
+        dnf_repo_conf_from_gkeyfile(repo, repoId, priv->keyfile);
         dnf_repo_apply_setopts(*conf, repoId);
     }
 
@@ -996,8 +1011,9 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, gboolean reloadFromGKeyFile, GError **e
         g_autofree gchar *url = NULL;
         url = lr_prepend_url_protocol(baseurls[0]);
         if (url != NULL && strncasecmp(url, "file://", 7) == 0) {
-            if (g_strstr_len(url, -1, "$testdatadir") == NULL)
+            if (!priv->unit_test_mode) {
                 priv->kind = DNF_REPO_KIND_LOCAL;
+            }
             g_free(priv->location);
             g_free(priv->keyring);
             priv->location = dnf_repo_substitute(repo, url + 7);
@@ -1224,7 +1240,7 @@ dnf_repo_setup(DnfRepo *repo, GError **error) try
     auto repoId = priv->repo->getId().c_str();
 
     auto conf = priv->repo->getConfig();
-    dnf_repo_conf_from_gkeyfile(*conf, repoId, priv->keyfile);
+    dnf_repo_conf_from_gkeyfile(repo, repoId, priv->keyfile);
     dnf_repo_apply_setopts(*conf, repoId);
 
     auto sslverify = conf->sslverify().getValue();
