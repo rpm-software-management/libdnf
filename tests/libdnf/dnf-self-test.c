@@ -1225,6 +1225,9 @@ main(int argc, char **argv)
     g_log_set_fatal_mask(NULL, G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL);
     g_log_set_always_fatal (G_LOG_FATAL_MASK);
 
+    /* Sets a variable to replace in repository configurations. */
+    g_setenv("DNF_VAR_testdatadir", TESTDATADIR, TRUE);
+
     /* tests go here */
     g_test_add_func("/libdnf/repo_loader{gpg-asc}", dnf_repo_loader_gpg_asc_func);
     g_test_add_func("/libdnf/repo_loader{gpg-wrong-asc}", dnf_repo_loader_gpg_wrong_asc_func);
