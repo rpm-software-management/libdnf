@@ -1191,7 +1191,6 @@ dnf_repo_setup(DnfRepo *repo, GError **error) try
     DnfRepoEnabled enabled = DNF_REPO_ENABLED_NONE;
     g_autofree gchar *basearch = NULL;
     g_autofree gchar *release = NULL;
-    g_autofree gchar *testdatadir = NULL;
 
     basearch = g_key_file_get_string(priv->keyfile, "general", "arch", NULL);
     if (basearch == NULL)
@@ -1230,8 +1229,6 @@ dnf_repo_setup(DnfRepo *repo, GError **error) try
     for (const auto & item : libdnf::dnf_context_get_vars(priv->context))
         priv->urlvars = lr_urlvars_set(priv->urlvars, item.first.c_str(), item.second.c_str());
 
-    testdatadir = dnf_realpath(TESTDATADIR);
-    priv->urlvars = lr_urlvars_set(priv->urlvars, "testdatadir", testdatadir);
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_VARSUB, priv->urlvars))
         return FALSE;
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_GNUPGHOMEDIR, priv->keyring))
