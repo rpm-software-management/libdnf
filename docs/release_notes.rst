@@ -20,6 +20,22 @@
 ######################
 
 ====================
+0.67.0 Release Notes
+====================
+
+- New features:
+  - Add 'loongarch' support
+
+- Bug fixes:
+  - Use dnf solv userdata to check versions and checksum (RhBug:2027445)
+  - context: Substitute all repository config options (RhBug:2076853)
+
+Bugs fixed in 0.67.0:
+
+* :rhbug:`2027445`
+* :rhbug:`2076853`
+
+====================
 0.66.0 Release Notes
 ====================
 
