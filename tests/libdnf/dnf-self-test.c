@@ -1212,12 +1212,12 @@ dnf_context_cache_clean_check_func(void)
 int
 main(int argc, char **argv)
 {
-    g_setenv("G_MESSAGES_DEBUG", "all", FALSE);
+    g_assert(g_setenv("G_MESSAGES_DEBUG", "all", FALSE));
     /* avoid gvfs (http://bugzilla.gnome.org/show_bug.cgi?id=526454) */
     /* Also because we do valgrind testing and there are vast array of
      * "leaks" when we load gio vfs modules.
      */
-    g_setenv ("GIO_USE_VFS", "local", TRUE);
+    g_assert(g_setenv ("GIO_USE_VFS", "local", TRUE));
 
     g_test_init(&argc, &argv, NULL);
 
@@ -1226,7 +1226,7 @@ main(int argc, char **argv)
     g_log_set_always_fatal (G_LOG_FATAL_MASK);
 
     /* Sets a variable to replace in repository configurations. */
-    g_setenv("DNF_VAR_testdatadir", TESTDATADIR, TRUE);
+    g_assert(g_setenv("DNF_VAR_testdatadir", TESTDATADIR, TRUE));
 
     /* tests go here */
     g_test_add_func("/libdnf/repo_loader{gpg-asc}", dnf_repo_loader_gpg_asc_func);
