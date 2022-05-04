@@ -413,6 +413,8 @@ Requires:       libdnf-cli%{?_isa} = %{version}-%{release}
 Requires:       dnf-data
 Recommends:     bash-completion
 BuildRequires:  bash-completion
+Obsoletes:      microdnf < 4.0.0
+Provides:       microdnf = %{version}-%{release}
 
 %description -n dnf5
 DNF5 is a command-line package manager that automates the process of installing,
@@ -430,6 +432,7 @@ It supports RPM packages, modulemd modules, and comps groups & environments.
 %license COPYING.md
 %license gpl-2.0.txt
 %{_mandir}/man8/dnf5.8.gz
+%{_bindir}/microdnf
 %endif
 
 
@@ -500,6 +503,8 @@ DNF5 plugins
 # HACK: temporarily rename libdnf to ensure parallel installability with old libdnf
 mv $RPM_BUILD_ROOT/%{python3_sitearch}/libdnf $RPM_BUILD_ROOT/%{python3_sitearch}/libdnf5
 
+# Compatibility with replaced packages
+ln -sr  %{buildroot}%{_bindir}/dnf5 %{buildroot}%{_bindir}/microdnf
 
 #find_lang {name}
 
