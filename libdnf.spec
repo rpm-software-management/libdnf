@@ -432,6 +432,56 @@ It supports RPM packages, modulemd modules, and comps groups & environments.
 %{_mandir}/man8/dnf5.8.gz
 %endif
 
+# ========== dnf5-microdnf ==========
+
+%if %{with dnf5}
+%package -n dnf5-microdnf
+Summary:        Compatibility package for microdnf
+License:        GPLv2+
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+Obsoletes:      microdnf < 4.0.0
+Provides:       microdnf = %{version}-%{release}
+
+%description -n dnf5-microdnf
+Provides compatibility symlink
+
+%files -n dnf5-microdnf
+%{_bindir}/microdnf
+%endif
+
+# ========== dnf5-yum ==========
+
+%if %{with dnf5}
+%package -n dnf5-yum
+Summary:        Compatibility package for yum
+License:        GPLv2+
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+Obsoletes:      yum < 5.0.0
+Provides:       yum = %{version}-%{release}
+
+%description -n dnf5-yum
+Provides compatibility symlink
+
+%files -n dnf5-yum
+%{_bindir}/yum
+%endif
+
+# ========== dnf5-dnf ==========
+
+%if %{with dnf5}
+%package -n dnf5-dnf
+Summary:        Compatibility package for dnf
+License:        GPLv2+
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+Conflicts:      dnf < 5.0.0
+Provides:       dnf = %{version}-%{release}
+
+%description -n dnf5-dnf
+Provides compatibility symlink
+
+%files -n dnf5-dnf
+%{_bindir}/dnf
+%endif
 
 # ========== dnf5-plugins ==========
 
@@ -500,6 +550,10 @@ DNF5 plugins
 # HACK: temporarily rename libdnf to ensure parallel installability with old libdnf
 mv $RPM_BUILD_ROOT/%{python3_sitearch}/libdnf $RPM_BUILD_ROOT/%{python3_sitearch}/libdnf5
 
+# Compatibility with replaced packages
+ln -sr  %{buildroot}%{_bindir}/dnf5 %{buildroot}%{_bindir}/microdnf
+ln -sr  %{buildroot}%{_bindir}/dnf5 %{buildroot}%{_bindir}/yum
+ln -sr  %{buildroot}%{_bindir}/dnf5 %{buildroot}%{_bindir}/dnf
 
 #find_lang {name}
 
