@@ -416,6 +416,10 @@ BuildRequires:  bash-completion
 Obsoletes:      microdnf < 4.0.0
 Provides:       microdnf = %{version}-%{release}
 
+# To provide alternative symlink to microdnf
+Requires(post): /usr/sbin/alternatives
+Requires(preun): /usr/sbin/alternatives
+
 %description -n dnf5
 DNF5 is a command-line package manager that automates the process of installing,
 upgrading, configuring, and removing computer programs in a consistent manner.
@@ -432,7 +436,6 @@ It supports RPM packages, modulemd modules, and comps groups & environments.
 %license COPYING.md
 %license gpl-2.0.txt
 %{_mandir}/man8/dnf5.8.gz
-%{_bindir}/microdnf
 %endif
 
 
@@ -504,7 +507,13 @@ DNF5 plugins
 mv $RPM_BUILD_ROOT/%{python3_sitearch}/libdnf $RPM_BUILD_ROOT/%{python3_sitearch}/libdnf5
 
 # Compatibility with replaced packages
-ln -sr  %{buildroot}%{_bindir}/dnf5 %{buildroot}%{_bindir}/microdnf
+%post
+/usr/sbin/alternatives --install "%{_bindir}/microdnf" microdnf "%{_bindir}/dnf5" 100
+
+%preun
+if [ $1 = 0 ]; then
+/usr/sbin/alternatives --remove microdnf "%{_bindir}/dnf5"
+fi
 
 #find_lang {name}
 
