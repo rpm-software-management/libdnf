@@ -209,6 +209,18 @@ G_DEFINE_TYPE_WITH_PRIVATE(DnfContext, dnf_context, G_TYPE_OBJECT)
 #define GET_PRIVATE(o) (static_cast<DnfContextPrivate *>(dnf_context_get_instance_private (o)))
 
 /**
+ * dnf_context_rpmdb_changed_cb:
+ **/
+static void
+dnf_context_rpmdb_changed_cb(GFileMonitor *monitor_,
+                             GFile *file, GFile *other_file,
+                             GFileMonitorEvent event_type,
+                             DnfContext *context)
+{
+    dnf_context_invalidate(context, "rpmdb changed");
+}
+
+/**
  * dnf_context_finalize:
  **/
 static void
@@ -255,8 +267,12 @@ dnf_context_finalize(GObject *object)
         hy_goal_free(priv->goal);
     if (priv->sack != NULL)
         g_object_unref(priv->sack);
-    if (priv->monitor_rpmdb != NULL)
+    if (priv->monitor_rpmdb != NULL) {
+        g_signal_handlers_disconnect_by_func (priv->monitor_rpmdb,
+                                              (gpointer) dnf_context_rpmdb_changed_cb,
+                                              context);
         g_object_unref(priv->monitor_rpmdb);
+    }
 
     G_OBJECT_CLASS(dnf_context_parent_class)->finalize(object);
 }
@@ -1720,18 +1736,6 @@ dnf_context_set_user_agent (DnfContext  *context,
     DnfContextPrivate *priv = GET_PRIVATE(context);
     g_free (priv->user_agent);
     priv->user_agent = g_strdup (user_agent);
-}
-
-/**
- * dnf_context_rpmdb_changed_cb:
- **/
-static void
-dnf_context_rpmdb_changed_cb(GFileMonitor *monitor_,
-                             GFile *file, GFile *other_file,
-                             GFileMonitorEvent event_type,
-                             DnfContext *context)
-{
-    dnf_context_invalidate(context, "rpmdb changed");
 }
 
 /* A heuristic; check whether /usr exists in the install root */
