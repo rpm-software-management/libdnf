@@ -25,6 +25,7 @@
 
 #include "Option.hpp"
 
+#include <cstdint>
 #include <functional>
 
 namespace libdnf {
