@@ -27,6 +27,7 @@
 
 #include <sqlite3.h>
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <stdexcept>
