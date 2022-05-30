@@ -1877,12 +1877,6 @@ Query::Impl::filterAdvisory(const Filter & f, Map *m, int keyname)
         std::vector<Solvable *> candidates;
         std::vector<Solvable *> installed_solvables;
 
-        Id id = -1;
-        while ((id = resultPset->next(id)) != -1) {
-            candidates.push_back(pool_id2solvable(pool, id));
-        }
-        NameArchEVRComparator cmp_key(pool);
-
         if (cmp_type & HY_UPGRADE) {
             Query installed(sack, ExcludeFlags::IGNORE_EXCLUDES);
             installed.installed();
@@ -1893,6 +1887,18 @@ Query::Impl::filterAdvisory(const Filter & f, Map *m, int keyname)
                 installed_solvables.push_back(pool_id2solvable(pool, installed_id));
             }
             std::sort(installed_solvables.begin(), installed_solvables.end(), NameArchSolvableComparator);
+            Id id = -1;
+            while ((id = resultPset->next(id)) != -1) {
+                Solvable * s = pool_id2solvable(pool, id);
+                // When doing HY_UPGRADE consider only candidate pkgs that have matching Name and Arch
+                // with some already installed pkg (in other words: some other version of the pkg is already installed).
+                // Otherwise a pkg with different Arch than installed can end up in upgrade set which is wrong.
+                // It can result in dependency issues, reported as: RhBug:2088149.
+                auto low = std::lower_bound(installed_solvables.begin(), installed_solvables.end(), s, NameArchSolvableComparator);
+                if (low != installed_solvables.end() && s->name == (*low)->name && s->arch == (*low)->arch) {
+                    candidates.push_back(s);
+                }
+            }
 
             // Apply security filters only to packages with lower priority - to unify behaviour upgrade
             // and upgrade-minimal
@@ -1915,7 +1921,14 @@ Query::Impl::filterAdvisory(const Filter & f, Map *m, int keyname)
                 }
             }
             std::swap(candidates, priority_candidates);
+        } else {
+            Id id = -1;
+            while ((id = resultPset->next(id)) != -1) {
+                candidates.push_back(pool_id2solvable(pool, id));
+            }
         }
+
+        NameArchEVRComparator cmp_key(pool);
         std::sort(candidates.begin(), candidates.end(), cmp_key);
         for (auto & advisoryPkg : pkgs) {
             if (cmp_type & HY_UPGRADE) {
