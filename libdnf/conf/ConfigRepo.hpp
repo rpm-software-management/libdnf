@@ -75,6 +75,7 @@ public:
     OptionChild<OptionNumber<float> > & throttle();
     OptionChild<OptionSeconds> & timeout();
     OptionChild<OptionNumber<std::uint32_t> > & max_parallel_downloads();
+    OptionChild<OptionNumber<std::uint32_t> > & max_downloads_per_mirror();
     OptionChild<OptionSeconds> & metadata_expire();
     OptionNumber<std::int32_t> & cost();
     OptionNumber<std::int32_t> & priority();

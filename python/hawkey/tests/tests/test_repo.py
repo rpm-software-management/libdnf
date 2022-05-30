@@ -40,6 +40,16 @@ class Package(unittest.TestCase):
         with self.assertRaises(TypeError):
             r2.cost = '4'
 
+    def test_max_parallel_downloads(self):
+        r = hawkey.Repo("fog")
+        r.max_parallel_downloads = 10
+        self.assertEqual(10, r.max_parallel_downloads)
+
+    def test_max_downloads_per_mirror(self):
+        r = hawkey.Repo("fog")
+        r.max_downloads_per_mirror = 10
+        self.assertEqual(10, r.max_downloads_per_mirror)
+
     def test_str_assignment(self):
         r = hawkey.Repo('fog')
         with self.assertRaises(TypeError):

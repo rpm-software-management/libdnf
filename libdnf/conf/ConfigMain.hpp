@@ -156,6 +156,7 @@ public:
     OptionNumber<float> & throttle();
     OptionSeconds & timeout();
     OptionNumber<std::uint32_t> & max_parallel_downloads();
+    OptionNumber<std::uint32_t> & max_downloads_per_mirror();
     OptionSeconds & metadata_expire();
     OptionString & sslcacert();
     OptionBool & sslverify();
