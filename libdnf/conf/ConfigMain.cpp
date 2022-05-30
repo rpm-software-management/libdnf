@@ -349,6 +349,7 @@ class ConfigMain::Impl {
 
     OptionSeconds timeout{30};
     OptionNumber<std::uint32_t> max_parallel_downloads{3, 1};
+    OptionNumber<std::uint32_t> max_downloads_per_mirror{3, 1};
     OptionSeconds metadata_expire{60 * 60 * 48};
     OptionString sslcacert{""};
     OptionBool sslverify{true};
@@ -507,6 +508,7 @@ ConfigMain::Impl::Impl(Config & owner)
     owner.optBinds().add("throttle", throttle);
     owner.optBinds().add("timeout", timeout);
     owner.optBinds().add("max_parallel_downloads", max_parallel_downloads);
+    owner.optBinds().add("max_downloads_per_mirror", max_downloads_per_mirror);
     owner.optBinds().add("metadata_expire", metadata_expire);
     owner.optBinds().add("sslcacert", sslcacert);
     owner.optBinds().add("sslverify", sslverify);
@@ -628,6 +630,7 @@ OptionEnum<std::string> & ConfigMain::ip_resolve() { return pImpl->ip_resolve; }
 OptionNumber<float> & ConfigMain::throttle() { return pImpl->throttle; }
 OptionSeconds & ConfigMain::timeout() { return pImpl->timeout; }
 OptionNumber<std::uint32_t> & ConfigMain::max_parallel_downloads() { return pImpl->max_parallel_downloads; }
+OptionNumber<std::uint32_t> & ConfigMain::max_downloads_per_mirror() { return pImpl->max_downloads_per_mirror; }
 OptionSeconds & ConfigMain::metadata_expire() { return pImpl->metadata_expire; }
 OptionString & ConfigMain::sslcacert() { return pImpl->sslcacert; }
 OptionBool & ConfigMain::sslverify() { return pImpl->sslverify; }

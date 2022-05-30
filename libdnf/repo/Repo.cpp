@@ -461,6 +461,8 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
     handleSetOpt(h.get(), LRO_MAXMIRRORTRIES, static_cast<long>(maxMirrorTries));
     handleSetOpt(h.get(), LRO_MAXPARALLELDOWNLOADS,
                      conf->max_parallel_downloads().getValue());
+    handleSetOpt(h.get(), LRO_MAXDOWNLOADSPERMIRROR,
+                     conf->max_downloads_per_mirror().getValue());
 
     LrUrlVars * vars = NULL;
     vars = lr_urlvars_set(vars, MD_TYPE_GROUP_GZ, MD_TYPE_GROUP);
