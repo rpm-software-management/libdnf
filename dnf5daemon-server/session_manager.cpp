@@ -31,7 +31,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <thread>
 
 SessionManager::SessionManager() {
-    connection = sdbus::createSystemBusConnection(dnfdaemon::DBUS_NAME);
+    connection = sdbus::createSystemBusConnection(dnf5daemon::DBUS_NAME);
     dbus_register();
 }
 
@@ -41,13 +41,13 @@ SessionManager::~SessionManager() {
 }
 
 void SessionManager::dbus_register() {
-    dbus_object = sdbus::createObject(*connection, dnfdaemon::DBUS_OBJECT_PATH);
+    dbus_object = sdbus::createObject(*connection, dnf5daemon::DBUS_OBJECT_PATH);
     dbus_object->registerMethod(
-        dnfdaemon::INTERFACE_SESSION_MANAGER, "open_session", "a{sv}", "o", [this](sdbus::MethodCall call) -> void {
+        dnf5daemon::INTERFACE_SESSION_MANAGER, "open_session", "a{sv}", "o", [this](sdbus::MethodCall call) -> void {
             threads_manager.handle_method(*this, &SessionManager::open_session, call);
         });
     dbus_object->registerMethod(
-        dnfdaemon::INTERFACE_SESSION_MANAGER, "close_session", "o", "b", [this](sdbus::MethodCall call) -> void {
+        dnf5daemon::INTERFACE_SESSION_MANAGER, "close_session", "o", "b", [this](sdbus::MethodCall call) -> void {
             threads_manager.handle_method(*this, &SessionManager::close_session, call);
         });
     dbus_object->finishRegistration();
@@ -95,15 +95,15 @@ void SessionManager::on_name_owner_changed(sdbus::Signal & signal) {
 sdbus::MethodReply SessionManager::open_session(sdbus::MethodCall & call) {
     std::lock_guard<std::mutex> lock(active_mutex);
     if (!active) {
-        throw sdbus::Error(dnfdaemon::ERROR, "Cannot open new session.");
+        throw sdbus::Error(dnf5daemon::ERROR, "Cannot open new session.");
     }
 
     auto sender = call.getSender();
-    dnfdaemon::KeyValueMap configuration;
+    dnf5daemon::KeyValueMap configuration;
     call >> configuration;
 
     // generate UUID-like session id
-    const std::string sessionid = dnfdaemon::DBUS_OBJECT_PATH + std::string("/") + gen_session_id();
+    const std::string sessionid = dnf5daemon::DBUS_OBJECT_PATH + std::string("/") + gen_session_id();
     // store newly created session
     {
         std::lock_guard<std::mutex> lock(sessions_mutex);

@@ -44,19 +44,19 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <fstream>
 #include <iostream>
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 using namespace libdnf::cli;
 
 
-class RootCommand : public dnfdaemon::client::DaemonCommand {
+class RootCommand : public dnf5daemon::client::DaemonCommand {
 public:
     explicit RootCommand(session::Session & session);
     void run() override;
 };
 
 inline RootCommand::RootCommand(session::Session & session)
-    : dnfdaemon::client::DaemonCommand(session, "dnf5daemon-client") {
+    : dnf5daemon::client::DaemonCommand(session, "dnf5daemon-client") {
     auto & cmd = *get_argument_parser_command();
     cmd.set_short_description("Utility for packages maintaining");
     cmd.set_description("Dnf5daemon-client is a program for maintaining packages.");
@@ -197,14 +197,14 @@ static bool parse_args(Context & ctx, int argc, char * argv[]) {
     return help->get_parse_count() > 0;
 }
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client
 
 int main(int argc, char * argv[]) {
     std::unique_ptr<sdbus::IConnection> connection;
 
     setlocale(LC_ALL, "");
 
-    dnfdaemon::client::Context context;
+    dnf5daemon::client::Context context;
 
     // TODO(mblaha): logging
 
@@ -213,7 +213,7 @@ int main(int argc, char * argv[]) {
     // Parse command line arguments
     bool print_help;
     try {
-        print_help = dnfdaemon::client::parse_args(context, argc, argv);
+        print_help = dnf5daemon::client::parse_args(context, argc, argv);
     } catch (std::exception & ex) {
         // print help if fail to parse commands
         std::cout << ex.what() << std::endl;

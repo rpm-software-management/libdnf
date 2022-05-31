@@ -65,7 +65,7 @@ enum class PackageAttribute {
     full_nevra
 };
 
-dnfdaemon::KeyValueMap package_to_map(
+dnf5daemon::KeyValueMap package_to_map(
     const libdnf::rpm::Package & libdnf_package, const std::vector<std::string> & attributes);
 
 #endif

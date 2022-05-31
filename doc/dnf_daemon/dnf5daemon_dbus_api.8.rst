@@ -17,9 +17,9 @@
     along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 
-#################################
- Dbus API bindings for dnfdaemon
-#################################
+##################################
+ Dbus API bindings for dnf5daemon
+##################################
 
 
 Synopsis

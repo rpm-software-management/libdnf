@@ -159,7 +159,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
     <!--
         transaction_action_start:
         @nevra: full NEVRA of the package
-        @action: one of the dnfdaemon::RpmTransactionItem::Actions enum
+        @action: one of the dnf5daemon::RpmTransactionItem::Actions enum
         @total: total to process
 
         Processing of the item has started.

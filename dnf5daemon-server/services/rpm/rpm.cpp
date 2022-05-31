@@ -34,38 +34,38 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 void Rpm::dbus_register() {
     auto dbus_object = session.get_dbus_object();
     dbus_object->registerMethod(
-        dnfdaemon::INTERFACE_RPM, "distro_sync", "asa{sv}", "", [this](sdbus::MethodCall call) -> void {
+        dnf5daemon::INTERFACE_RPM, "distro_sync", "asa{sv}", "", [this](sdbus::MethodCall call) -> void {
             session.get_threads_manager().handle_method(*this, &Rpm::distro_sync, call, session.session_locale);
         });
     dbus_object->registerMethod(
-        dnfdaemon::INTERFACE_RPM, "downgrade", "asa{sv}", "", [this](sdbus::MethodCall call) -> void {
+        dnf5daemon::INTERFACE_RPM, "downgrade", "asa{sv}", "", [this](sdbus::MethodCall call) -> void {
             session.get_threads_manager().handle_method(*this, &Rpm::downgrade, call, session.session_locale);
         });
     dbus_object->registerMethod(
-        dnfdaemon::INTERFACE_RPM, "list", "a{sv}", "aa{sv}", [this](sdbus::MethodCall call) -> void {
+        dnf5daemon::INTERFACE_RPM, "list", "a{sv}", "aa{sv}", [this](sdbus::MethodCall call) -> void {
             session.get_threads_manager().handle_method(*this, &Rpm::list, call, session.session_locale);
         });
     dbus_object->registerMethod(
-        dnfdaemon::INTERFACE_RPM, "install", "asa{sv}", "", [this](sdbus::MethodCall call) -> void {
+        dnf5daemon::INTERFACE_RPM, "install", "asa{sv}", "", [this](sdbus::MethodCall call) -> void {
             session.get_threads_manager().handle_method(*this, &Rpm::install, call, session.session_locale);
         });
     dbus_object->registerMethod(
-        dnfdaemon::INTERFACE_RPM, "upgrade", "asa{sv}", "", [this](sdbus::MethodCall call) -> void {
+        dnf5daemon::INTERFACE_RPM, "upgrade", "asa{sv}", "", [this](sdbus::MethodCall call) -> void {
             session.get_threads_manager().handle_method(*this, &Rpm::upgrade, call, session.session_locale);
         });
     dbus_object->registerMethod(
-        dnfdaemon::INTERFACE_RPM, "reinstall", "asa{sv}", "", [this](sdbus::MethodCall call) -> void {
+        dnf5daemon::INTERFACE_RPM, "reinstall", "asa{sv}", "", [this](sdbus::MethodCall call) -> void {
             session.get_threads_manager().handle_method(*this, &Rpm::reinstall, call, session.session_locale);
         });
     dbus_object->registerMethod(
-        dnfdaemon::INTERFACE_RPM, "remove", "asa{sv}", "", [this](sdbus::MethodCall call) -> void {
+        dnf5daemon::INTERFACE_RPM, "remove", "asa{sv}", "", [this](sdbus::MethodCall call) -> void {
             session.get_threads_manager().handle_method(*this, &Rpm::remove, call, session.session_locale);
         });
 }
 
 sdbus::MethodReply Rpm::list(sdbus::MethodCall & call) {
     // read options from dbus call
-    dnfdaemon::KeyValueMap options;
+    dnf5daemon::KeyValueMap options;
     call >> options;
 
     session.fill_sack();
@@ -100,7 +100,7 @@ sdbus::MethodReply Rpm::list(sdbus::MethodCall & call) {
     }
 
     // create reply from the query
-    dnfdaemon::KeyValueMapList out_packages;
+    dnf5daemon::KeyValueMapList out_packages;
     std::vector<std::string> default_attrs{};
     std::vector<std::string> package_attrs =
         key_value_map_get<std::vector<std::string>>(options, "package_attrs", default_attrs);
@@ -118,7 +118,7 @@ sdbus::MethodReply Rpm::distro_sync(sdbus::MethodCall & call) {
     call >> specs;
 
     // read options from dbus call
-    dnfdaemon::KeyValueMap options;
+    dnf5daemon::KeyValueMap options;
     call >> options;
 
     // fill the goal
@@ -141,7 +141,7 @@ sdbus::MethodReply Rpm::downgrade(sdbus::MethodCall & call) {
     call >> specs;
 
     // read options from dbus call
-    dnfdaemon::KeyValueMap options;
+    dnf5daemon::KeyValueMap options;
     call >> options;
     std::vector<std::string> repo_ids = key_value_map_get<std::vector<std::string>>(options, "repo_ids", {});
 
@@ -162,7 +162,7 @@ sdbus::MethodReply Rpm::install(sdbus::MethodCall & call) {
     call >> specs;
 
     // read options from dbus call
-    dnfdaemon::KeyValueMap options;
+    dnf5daemon::KeyValueMap options;
     call >> options;
 
     libdnf::GoalSetting strict;
@@ -192,7 +192,7 @@ sdbus::MethodReply Rpm::upgrade(sdbus::MethodCall & call) {
     call >> specs;
 
     // read options from dbus call
-    dnfdaemon::KeyValueMap options;
+    dnf5daemon::KeyValueMap options;
     call >> options;
     std::vector<std::string> repo_ids = key_value_map_get<std::vector<std::string>>(options, "repo_ids", {});
 
@@ -217,7 +217,7 @@ sdbus::MethodReply Rpm::reinstall(sdbus::MethodCall & call) {
     call >> specs;
 
     // read options from dbus call
-    dnfdaemon::KeyValueMap options;
+    dnf5daemon::KeyValueMap options;
     call >> options;
     std::vector<std::string> repo_ids = key_value_map_get<std::vector<std::string>>(options, "repo_ids", {});
 
@@ -238,7 +238,7 @@ sdbus::MethodReply Rpm::remove(sdbus::MethodCall & call) {
     call >> specs;
 
     // read options from dbus call
-    dnfdaemon::KeyValueMap options;
+    dnf5daemon::KeyValueMap options;
     call >> options;
 
     // fill the goal

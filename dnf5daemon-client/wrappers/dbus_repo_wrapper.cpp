@@ -19,7 +19,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "dbus_repo_wrapper.hpp"
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 std::vector<std::pair<std::string, std::string>> DbusRepoWrapper::get_distro_tags() const {
     // sdbus::Variant cannot handle vector<pair<string,string>> so values are
@@ -35,4 +35,4 @@ std::vector<std::pair<std::string, std::string>> DbusRepoWrapper::get_distro_tag
     return dt;
 }
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client

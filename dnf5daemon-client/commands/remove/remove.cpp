@@ -28,7 +28,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <iostream>
 #include <memory>
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 using namespace libdnf::cli;
 
@@ -71,14 +71,14 @@ void RemoveCommand::run() {
         }
     }
 
-    dnfdaemon::KeyValueMap options = {};
+    dnf5daemon::KeyValueMap options = {};
 
     ctx.session_proxy->callMethod("remove")
-        .onInterface(dnfdaemon::INTERFACE_RPM)
+        .onInterface(dnf5daemon::INTERFACE_RPM)
         .withTimeout(static_cast<uint64_t>(-1))
         .withArguments(patterns, options);
 
     run_transaction();
 }
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client

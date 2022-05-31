@@ -29,13 +29,13 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <memory>
 #include <vector>
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 class RepoqueryCommand : public DaemonCommand {
 public:
     explicit RepoqueryCommand(Command & parent);
     void run() override;
-    dnfdaemon::KeyValueMap session_config() override;
+    dnf5daemon::KeyValueMap session_config() override;
 
 private:
     libdnf::OptionBool * available_option{nullptr};
@@ -44,6 +44,6 @@ private:
     std::vector<std::unique_ptr<libdnf::Option>> * patterns_options{nullptr};
 };
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client
 
 #endif

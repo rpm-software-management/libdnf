@@ -25,7 +25,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <map>
 #include <string>
 
-namespace dnfdaemon {
+namespace dnf5daemon {
 
 // types
 using KeyValueMap = std::map<std::string, sdbus::Variant>;
@@ -92,6 +92,6 @@ const char * const ERROR_REPOCONF = "org.rpm.dnf.v0.rpm.RepoConf.Error";
 const char * const ERROR_RESOLVE = "org.rpm.dnf.v0.rpm.Rpm.ResolveError";
 const char * const ERROR_TRANSACTION = "org.rpm.dnf.v0.rpm.Rpm.TransactionError";
 
-}  // namespace dnfdaemon
+}  // namespace dnf5daemon
 
 #endif

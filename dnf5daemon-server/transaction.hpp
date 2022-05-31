@@ -25,12 +25,12 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <string>
 
-namespace dnfdaemon {
+namespace dnf5daemon {
 
 enum class RpmTransactionItemActions { INSTALL, ERASE, UPGRADE, DOWNGRADE, REINSTALL, CLEANUP };
 
 RpmTransactionItemActions transaction_package_to_action(const libdnf::base::TransactionPackage & tspkg);
 
-}  // namespace dnfdaemon
+}  // namespace dnf5daemon
 
 #endif

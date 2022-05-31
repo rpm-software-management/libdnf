@@ -56,8 +56,8 @@ const std::map<std::string, GroupAttribute> group_attributes{
     {"repos", GroupAttribute::repos},
 };
 
-dnfdaemon::KeyValueMap group_to_map(libdnf::comps::Group & libdnf_group, const std::vector<std::string> & attributes) {
-    dnfdaemon::KeyValueMap dbus_group;
+dnf5daemon::KeyValueMap group_to_map(libdnf::comps::Group & libdnf_group, const std::vector<std::string> & attributes) {
+    dnf5daemon::KeyValueMap dbus_group;
     // add group id by default
     dbus_group.emplace(std::make_pair("groupid", libdnf_group.get_groupid()));
     // attributes required by client
@@ -98,9 +98,9 @@ dnfdaemon::KeyValueMap group_to_map(libdnf::comps::Group & libdnf_group, const s
                 break;
             }
             case GroupAttribute::packages: {
-                dnfdaemon::KeyValueMapList packages;
+                dnf5daemon::KeyValueMapList packages;
                 for (auto pkg : libdnf_group.get_packages()) {
-                    dnfdaemon::KeyValueMap package;
+                    dnf5daemon::KeyValueMap package;
                     package.emplace("name", pkg.get_name());
                     package.emplace("type", static_cast<int>(pkg.get_type()));
                     package.emplace("condition", pkg.get_condition());
@@ -118,14 +118,14 @@ dnfdaemon::KeyValueMap group_to_map(libdnf::comps::Group & libdnf_group, const s
 void Group::dbus_register() {
     auto dbus_object = session.get_dbus_object();
     dbus_object->registerMethod(
-        dnfdaemon::INTERFACE_GROUP, "list", "a{sv}", "aa{sv}", [this](sdbus::MethodCall call) -> void {
+        dnf5daemon::INTERFACE_GROUP, "list", "a{sv}", "aa{sv}", [this](sdbus::MethodCall call) -> void {
             session.get_threads_manager().handle_method(*this, &Group::list, call, session.session_locale);
         });
 }
 
 sdbus::MethodReply Group::list(sdbus::MethodCall & call) {
     // read options from dbus call
-    dnfdaemon::KeyValueMap options;
+    dnf5daemon::KeyValueMap options;
     call >> options;
 
     session.fill_sack();
@@ -144,7 +144,7 @@ sdbus::MethodReply Group::list(sdbus::MethodCall & call) {
     }
 
     // create reply from the query
-    dnfdaemon::KeyValueMapList out_groups;
+    dnf5daemon::KeyValueMapList out_groups;
     std::vector<std::string> attributes =
         key_value_map_get<std::vector<std::string>>(options, "attributes", std::vector<std::string>{});
     for (auto grp : query.list()) {

@@ -29,21 +29,21 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 
 template <typename ItemType>
-ItemType key_value_map_get(const dnfdaemon::KeyValueMap & map, const std::string & key) {
+ItemType key_value_map_get(const dnf5daemon::KeyValueMap & map, const std::string & key) {
     auto it = map.find(key);
     if (it == map.end()) {
-        throw sdbus::Error(dnfdaemon::ERROR, "Key not present in the map.");
+        throw sdbus::Error(dnf5daemon::ERROR, "Key not present in the map.");
     }
     try {
         return it->second.get<ItemType>();
     } catch (sdbus::Error & e) {
-        throw sdbus::Error(dnfdaemon::ERROR, "Incorrect map item type.");
+        throw sdbus::Error(dnf5daemon::ERROR, "Incorrect map item type.");
     }
 }
 
 template <typename ItemType>
 ItemType key_value_map_get(
-    const dnfdaemon::KeyValueMap & map, const std::string & key, const ItemType & default_value) {
+    const dnf5daemon::KeyValueMap & map, const std::string & key, const ItemType & default_value) {
     auto it = map.find(key);
     if (it == map.end()) {
         return default_value;
@@ -51,7 +51,7 @@ ItemType key_value_map_get(
     try {
         return it->second.get<ItemType>();
     } catch (sdbus::Error & e) {
-        throw sdbus::Error(dnfdaemon::ERROR, "Incorrect map item type.");
+        throw sdbus::Error(dnf5daemon::ERROR, "Incorrect map item type.");
     }
 }
 

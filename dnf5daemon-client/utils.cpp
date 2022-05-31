@@ -23,7 +23,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <iostream>
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 bool am_i_root() noexcept {
     return geteuid() == 0;
@@ -57,4 +57,4 @@ bool userconfirm(Context & ctx) {
     }
 }
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client

@@ -28,11 +28,11 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace libdnf::transaction;
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 class DbusGoalWrapper {
 public:
-    DbusGoalWrapper(std::vector<dnfdaemon::DbusTransactionItem>);
+    DbusGoalWrapper(std::vector<dnf5daemon::DbusTransactionItem>);
 
     std::vector<DbusTransactionPackageWrapper> get_transaction_packages() const { return transaction_packages; };
     std::vector<std::string> get_resolve_logs_as_strings() const { return resolve_logs; }
@@ -43,6 +43,6 @@ private:
     std::vector<std::string> resolve_logs;
 };
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client
 
 #endif  // DNF5DAEMON_CLIENT_WRAPEPRS_DBUS_GOAL_WRAPPER_HPP

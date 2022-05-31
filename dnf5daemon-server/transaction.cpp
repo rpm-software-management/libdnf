@@ -25,7 +25,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <type_traits>
 
 
-namespace dnfdaemon {
+namespace dnf5daemon {
 
 RpmTransactionItemActions transaction_package_to_action(const libdnf::base::TransactionPackage & tspkg) {
     switch (tspkg.get_action()) {
@@ -56,4 +56,4 @@ RpmTransactionItemActions transaction_package_to_action(const libdnf::base::Tran
         static_cast<std::underlying_type_t<libdnf::base::TransactionPackage::Action>>(tspkg.get_action()));
 }
 
-}  // namespace dnfdaemon
+}  // namespace dnf5daemon

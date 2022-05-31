@@ -27,7 +27,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <memory>
 #include <vector>
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 class GroupCommand : public DaemonCommand {
 public:
@@ -35,6 +35,6 @@ public:
     void run() override;
 };
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client
 
 #endif

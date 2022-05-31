@@ -26,7 +26,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <string>
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 class Context;
 
@@ -117,6 +117,6 @@ private:
     void new_progress_bar(uint64_t total, const std::string & description);
 };
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client
 
 #endif

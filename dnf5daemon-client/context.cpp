@@ -29,12 +29,12 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <iostream>
 #include <string>
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 void Context::init_session(sdbus::IConnection & connection) {
     // open dnf5daemon-server session
     auto cfg = static_cast<DaemonCommand *>(get_selected_command())->session_config();
-    auto session_manager_proxy = sdbus::createProxy(connection, dnfdaemon::DBUS_NAME, dnfdaemon::DBUS_OBJECT_PATH);
+    auto session_manager_proxy = sdbus::createProxy(connection, dnf5daemon::DBUS_NAME, dnf5daemon::DBUS_OBJECT_PATH);
     session_manager_proxy->finishRegistration();
 
     // set up the install root end setopts
@@ -54,11 +54,11 @@ void Context::init_session(sdbus::IConnection & connection) {
     cfg["locale"] = setlocale(LC_MESSAGES, nullptr);
 
     session_manager_proxy->callMethod("open_session")
-        .onInterface(dnfdaemon::INTERFACE_SESSION_MANAGER)
+        .onInterface(dnf5daemon::INTERFACE_SESSION_MANAGER)
         .withArguments(cfg)
         .storeResultsTo(session_object_path);
 
-    session_proxy = sdbus::createProxy(connection, dnfdaemon::DBUS_NAME, session_object_path);
+    session_proxy = sdbus::createProxy(connection, dnf5daemon::DBUS_NAME, session_object_path);
     // register progress bars callbacks
     repocb = std::make_unique<RepoCB>(*this);
     package_download_cb = std::make_unique<PackageDownloadCB>(*this);
@@ -69,15 +69,15 @@ void Context::init_session(sdbus::IConnection & connection) {
 
 void Context::on_repositories_ready(const bool & result) {
     if (result) {
-        repositories_status = dnfdaemon::RepoStatus::READY;
+        repositories_status = dnf5daemon::RepoStatus::READY;
     } else {
-        repositories_status = dnfdaemon::RepoStatus::ERROR;
+        repositories_status = dnf5daemon::RepoStatus::ERROR;
     }
 }
 
 
-dnfdaemon::RepoStatus Context::wait_for_repos() {
-    if (repositories_status == dnfdaemon::RepoStatus::NOT_READY) {
+dnf5daemon::RepoStatus Context::wait_for_repos() {
+    if (repositories_status == dnf5daemon::RepoStatus::NOT_READY) {
         auto callback = [this](const sdbus::Error * error, const bool & result) {
             if (error == nullptr) {
                 // No error
@@ -87,16 +87,16 @@ dnfdaemon::RepoStatus Context::wait_for_repos() {
                 this->on_repositories_ready(false);
             }
         };
-        repositories_status = dnfdaemon::RepoStatus::PENDING;
+        repositories_status = dnf5daemon::RepoStatus::PENDING;
         session_proxy->callMethodAsync("read_all_repos")
-            .onInterface(dnfdaemon::INTERFACE_BASE)
+            .onInterface(dnf5daemon::INTERFACE_BASE)
             .withTimeout(static_cast<uint64_t>(-1))
             .uponReplyInvoke(callback);
     }
-    while (repositories_status == dnfdaemon::RepoStatus::PENDING) {
+    while (repositories_status == dnf5daemon::RepoStatus::PENDING) {
         sleep(1);
     }
     return repositories_status;
 }
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client

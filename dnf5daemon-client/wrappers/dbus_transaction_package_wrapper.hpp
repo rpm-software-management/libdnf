@@ -29,11 +29,11 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <vector>
 
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 class DbusTransactionPackageWrapper {
 public:
-    explicit DbusTransactionPackageWrapper(const dnfdaemon::DbusTransactionItem & dti)
+    explicit DbusTransactionPackageWrapper(const dnf5daemon::DbusTransactionItem & dti)
         : package(std::get<1>(dti)),
           action(static_cast<libdnf::transaction::TransactionItemAction>(std::get<0>(dti))),
           // TODO(lukash) reason needs to be added to dbus
@@ -52,6 +52,6 @@ private:
     libdnf::transaction::TransactionItemReason reason;
 };
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client
 
 #endif  // DNF5DAEMON_CLIENT_WRAPPER_DBUS_PACKAGE_WRAPPER_HPP

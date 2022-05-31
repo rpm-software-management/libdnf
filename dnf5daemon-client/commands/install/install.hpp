@@ -25,7 +25,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <libdnf/conf/option.hpp>
 #include <libdnf/conf/option_bool.hpp>
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 class InstallCommand : public TransactionCommand {
 public:
@@ -37,6 +37,6 @@ private:
     std::vector<std::unique_ptr<libdnf::Option>> * patterns_options{nullptr};
 };
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client
 
 #endif

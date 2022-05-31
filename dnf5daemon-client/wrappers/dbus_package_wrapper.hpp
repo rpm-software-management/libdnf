@@ -25,11 +25,11 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <vector>
 
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 class DbusPackageWrapper {
 public:
-    explicit DbusPackageWrapper(const dnfdaemon::KeyValueMap & rawdata) : rawdata(rawdata){};
+    explicit DbusPackageWrapper(const dnf5daemon::KeyValueMap & rawdata) : rawdata(rawdata){};
 
     int get_id() { return rawdata.at("id"); }
     std::string get_name() const { return rawdata.at("name"); }
@@ -51,9 +51,9 @@ public:
     std::string get_description() const { return rawdata.at("description"); }
 
 private:
-    dnfdaemon::KeyValueMap rawdata;
+    dnf5daemon::KeyValueMap rawdata;
 };
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client
 
 #endif  // DNF5DAEMON_CLIENT_WRAPPER_DBUS_PACKAGE_WRAPPER_HPP

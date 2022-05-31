@@ -42,7 +42,7 @@ private:
     sdbus::MethodReply enable(sdbus::MethodCall & call) { return enable_disable(std::move(call), true); };
     sdbus::MethodReply disable(sdbus::MethodCall & call) { return enable_disable(std::move(call), false); };
 
-    dnfdaemon::KeyValueMapList repo_list(const std::vector<std::string> & ids);
+    dnf5daemon::KeyValueMapList repo_list(const std::vector<std::string> & ids);
     std::vector<std::string> enable_disable_repos(const std::vector<std::string> & ids, const bool enable);
 };
 

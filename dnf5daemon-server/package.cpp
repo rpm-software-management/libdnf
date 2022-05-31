@@ -63,8 +63,8 @@ std::vector<std::string> reldeplist_to_strings(const libdnf::rpm::ReldepList & r
     return lst;
 }
 
-std::vector<dnfdaemon::Changelog> changelogs_to_list(const libdnf::rpm::Package & libdnf_package) {
-    std::vector<dnfdaemon::Changelog> changelogs;
+std::vector<dnf5daemon::Changelog> changelogs_to_list(const libdnf::rpm::Package & libdnf_package) {
+    std::vector<dnf5daemon::Changelog> changelogs;
 
     for (const auto & chlog : libdnf_package.get_changelogs()) {
         changelogs.emplace_back(static_cast<int64_t>(chlog.timestamp), chlog.author, chlog.text);
@@ -73,9 +73,9 @@ std::vector<dnfdaemon::Changelog> changelogs_to_list(const libdnf::rpm::Package 
     return changelogs;
 }
 
-dnfdaemon::KeyValueMap package_to_map(
+dnf5daemon::KeyValueMap package_to_map(
     const libdnf::rpm::Package & libdnf_package, const std::vector<std::string> & attributes) {
-    dnfdaemon::KeyValueMap dbus_package;
+    dnf5daemon::KeyValueMap dbus_package;
     // add package id by default
     dbus_package.emplace(std::make_pair("id", libdnf_package.get_id().id));
     // attributes required by client

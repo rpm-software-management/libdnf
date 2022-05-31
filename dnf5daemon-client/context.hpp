@@ -37,20 +37,20 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <vector>
 
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 constexpr const char * VERSION = "0.1.0";
 
 class Context : public libdnf::cli::session::Session {
 public:
-    Context() : repositories_status(dnfdaemon::RepoStatus::NOT_READY){};
+    Context() : repositories_status(dnf5daemon::RepoStatus::NOT_READY){};
 
     /// Initialize dbus connection and server session
     void init_session(sdbus::IConnection & connection);
     sdbus::ObjectPath & get_session_object_path() { return session_object_path; };
 
     // initialize repository metadata loading on server side and wait for results
-    dnfdaemon::RepoStatus wait_for_repos();
+    dnf5daemon::RepoStatus wait_for_repos();
 
     // signal handlers
     void on_repositories_ready(const bool & result);
@@ -69,12 +69,12 @@ public:
 
 private:
     sdbus::ObjectPath session_object_path;
-    dnfdaemon::RepoStatus repositories_status;
+    dnf5daemon::RepoStatus repositories_status;
     std::unique_ptr<RepoCB> repocb;
     std::unique_ptr<PackageDownloadCB> package_download_cb;
     std::unique_ptr<TransactionCB> transaction_cb;
 };
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client
 
 #endif

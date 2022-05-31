@@ -33,7 +33,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <iostream>
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 using namespace libdnf::cli;
 
@@ -85,8 +85,8 @@ RepoqueryCommand::RepoqueryCommand(Command & parent) : DaemonCommand(parent, "re
     cmd.register_positional_arg(keys);
 }
 
-dnfdaemon::KeyValueMap RepoqueryCommand::session_config() {
-    dnfdaemon::KeyValueMap cfg = {};
+dnf5daemon::KeyValueMap RepoqueryCommand::session_config() {
+    dnf5daemon::KeyValueMap cfg = {};
     cfg["load_system_repo"] = installed_option->get_value();
     cfg["load_available_repos"] =
         (available_option->get_priority() >= libdnf::Option::Priority::COMMANDLINE || !installed_option->get_value());
@@ -97,7 +97,7 @@ void RepoqueryCommand::run() {
     auto & ctx = static_cast<Context &>(get_session());
 
     // query packages
-    dnfdaemon::KeyValueMap options = {};
+    dnf5daemon::KeyValueMap options = {};
 
     std::vector<std::string> patterns;
     if (patterns_options->size() > 0) {
@@ -129,9 +129,9 @@ void RepoqueryCommand::run() {
         options.insert(std::pair<std::string, std::vector<std::string>>("package_attrs", {"full_nevra"}));
     }
 
-    dnfdaemon::KeyValueMapList packages;
+    dnf5daemon::KeyValueMapList packages;
     ctx.session_proxy->callMethod("list")
-        .onInterface(dnfdaemon::INTERFACE_RPM)
+        .onInterface(dnf5daemon::INTERFACE_RPM)
         .withTimeout(static_cast<uint64_t>(-1))
         .withArguments(options)
         .storeResultsTo(packages);
@@ -152,4 +152,4 @@ void RepoqueryCommand::run() {
     }
 }
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client

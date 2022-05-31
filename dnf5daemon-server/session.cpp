@@ -39,7 +39,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 Session::Session(
     sdbus::IConnection & connection,
-    dnfdaemon::KeyValueMap session_configuration,
+    dnf5daemon::KeyValueMap session_configuration,
     std::string object_path,
     std::string sender)
     : connection(connection),
@@ -135,7 +135,7 @@ bool Session::wait_for_key_confirmation(const std::string & key_id, sdbus::Signa
     });
     if (!wait) {
         key_import_lock.unlock();
-        throw sdbus::Error(dnfdaemon::ERROR, "Timeout while waiting for the repository key import confirmation.");
+        throw sdbus::Error(dnf5daemon::ERROR, "Timeout while waiting for the repository key import confirmation.");
     }
     auto confirmation = key_import_status.at(key_id);
     key_import_lock.unlock();
@@ -156,15 +156,15 @@ void Session::fill_sack() {
 }
 
 bool Session::read_all_repos() {
-    while (repositories_status == dnfdaemon::RepoStatus::PENDING) {
+    while (repositories_status == dnf5daemon::RepoStatus::PENDING) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
-    if (repositories_status == dnfdaemon::RepoStatus::READY) {
+    if (repositories_status == dnf5daemon::RepoStatus::READY) {
         return true;
-    } else if (repositories_status == dnfdaemon::RepoStatus::ERROR) {
+    } else if (repositories_status == dnf5daemon::RepoStatus::ERROR) {
         return false;
     }
-    repositories_status = dnfdaemon::RepoStatus::PENDING;
+    repositories_status = dnf5daemon::RepoStatus::PENDING;
     //auto & logger = base->get_logger();
     libdnf::repo::RepoQuery enabled_repos(*base);
     enabled_repos.filter_enabled(true);
@@ -187,7 +187,7 @@ bool Session::read_all_repos() {
         retval = false;
     }
 
-    repositories_status = retval ? dnfdaemon::RepoStatus::READY : dnfdaemon::RepoStatus::ERROR;
+    repositories_status = retval ? dnf5daemon::RepoStatus::READY : dnf5daemon::RepoStatus::ERROR;
     return retval;
 }
 
@@ -201,7 +201,7 @@ bool Session::check_authorization(const std::string & actionid, const std::strin
 
     // call CheckAuthorization method
     sdbus::Struct<bool, bool, std::map<std::string, std::string>> auth_result;
-    sdbus::Struct<std::string, dnfdaemon::KeyValueMap> subject{"system-bus-name", {{"name", sender}}};
+    sdbus::Struct<std::string, dnf5daemon::KeyValueMap> subject{"system-bus-name", {{"name", sender}}};
     std::map<std::string, std::string> details{};
     uint flags = 0;
     std::string cancelation_id = "";

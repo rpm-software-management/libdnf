@@ -29,7 +29,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <iostream>
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 using namespace libdnf::cli;
 
@@ -56,7 +56,7 @@ void GroupListCommand::run() {
     auto & ctx = static_cast<Context &>(get_session());
 
     // query groups
-    dnfdaemon::KeyValueMap options = {};
+    dnf5daemon::KeyValueMap options = {};
 
     std::vector<std::string> patterns;
     if (patterns_options->size() > 0) {
@@ -77,9 +77,9 @@ void GroupListCommand::run() {
     }
     options["attributes"] = attributes;
 
-    dnfdaemon::KeyValueMapList raw_groups;
+    dnf5daemon::KeyValueMapList raw_groups;
     ctx.session_proxy->callMethod("list")
-        .onInterface(dnfdaemon::INTERFACE_GROUP)
+        .onInterface(dnf5daemon::INTERFACE_GROUP)
         .withTimeout(static_cast<uint64_t>(-1))
         .withArguments(options)
         .storeResultsTo(raw_groups);
@@ -99,4 +99,4 @@ void GroupListCommand::run() {
     }
 }
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client

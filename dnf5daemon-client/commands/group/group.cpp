@@ -22,7 +22,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "context.hpp"
 #include "group_list.hpp"
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 using namespace libdnf::cli;
 
@@ -45,4 +45,4 @@ void GroupCommand::run() {
     throw_missing_command();
 }
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client

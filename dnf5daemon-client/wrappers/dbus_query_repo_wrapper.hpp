@@ -27,11 +27,11 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <memory>
 #include <vector>
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 class DbusQueryRepoWrapper {
 public:
-    DbusQueryRepoWrapper(dnfdaemon::KeyValueMapList & repositories);
+    DbusQueryRepoWrapper(dnf5daemon::KeyValueMapList & repositories);
 
     const std::vector<std::unique_ptr<DbusRepoWrapper>> & get_data() const { return queryrepo; }
 
@@ -39,6 +39,6 @@ private:
     std::vector<std::unique_ptr<DbusRepoWrapper>> queryrepo;
 };
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client
 
 #endif  // DNF5DAEMON_CLIENT_WRAPPERS_DBUS_QUERY_REPO_WRAPPER_HPP

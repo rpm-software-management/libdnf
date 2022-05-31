@@ -28,7 +28,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <iostream>
 #include <memory>
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 using namespace libdnf::cli;
 
@@ -77,18 +77,18 @@ void InstallCommand::run() {
         }
     }
 
-    dnfdaemon::KeyValueMap options = {};
+    dnf5daemon::KeyValueMap options = {};
     // pass the `strict` value to the server only when explicitly set by command line option
     if (strict_option.get_priority() >= libdnf::Option::Priority::COMMANDLINE) {
         options["strict"] = strict_option.get_value();
     }
 
     ctx.session_proxy->callMethod("install")
-        .onInterface(dnfdaemon::INTERFACE_RPM)
+        .onInterface(dnf5daemon::INTERFACE_RPM)
         .withTimeout(static_cast<uint64_t>(-1))
         .withArguments(patterns, options);
 
     run_transaction();
 }
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client

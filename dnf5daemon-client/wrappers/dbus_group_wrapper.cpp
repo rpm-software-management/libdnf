@@ -19,12 +19,12 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "dbus_group_wrapper.hpp"
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
-DbusGroupWrapper::DbusGroupWrapper(dnfdaemon::KeyValueMap & rawdata) : rawdata(rawdata) {
+DbusGroupWrapper::DbusGroupWrapper(dnf5daemon::KeyValueMap & rawdata) : rawdata(rawdata) {
     auto packages_iter = rawdata.find("packages");
     if (packages_iter != rawdata.end()) {
-        dnfdaemon::KeyValueMapList raw_packages = packages_iter->second;
+        dnf5daemon::KeyValueMapList raw_packages = packages_iter->second;
         for (auto & raw_package : raw_packages) {
             packages.push_back(DbusGroupPackageWrapper(raw_package));
         }
@@ -37,4 +37,4 @@ std::set<std::string> DbusGroupWrapper::get_repos() const {
     return repos_set;
 };
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client

@@ -39,28 +39,28 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 void Goal::dbus_register() {
     auto dbus_object = session.get_dbus_object();
     dbus_object->registerMethod(
-        dnfdaemon::INTERFACE_GOAL, "resolve", "a{sv}", "a(ua{sv})u", [this](sdbus::MethodCall call) -> void {
+        dnf5daemon::INTERFACE_GOAL, "resolve", "a{sv}", "a(ua{sv})u", [this](sdbus::MethodCall call) -> void {
             session.get_threads_manager().handle_method(*this, &Goal::resolve, call, session.session_locale);
         });
     dbus_object->registerMethod(
-        dnfdaemon::INTERFACE_GOAL, "get_transaction_problems_string", "", "as", [this](sdbus::MethodCall call) -> void {
+        dnf5daemon::INTERFACE_GOAL, "get_transaction_problems_string", "", "as", [this](sdbus::MethodCall call) -> void {
             session.get_threads_manager().handle_method(
                 *this, &Goal::get_transaction_problems_string, call, session.session_locale);
         });
     dbus_object->registerMethod(
-        dnfdaemon::INTERFACE_GOAL, "get_transaction_problems", "", "a{sv}", [this](sdbus::MethodCall call) -> void {
+        dnf5daemon::INTERFACE_GOAL, "get_transaction_problems", "", "a{sv}", [this](sdbus::MethodCall call) -> void {
             session.get_threads_manager().handle_method(
                 *this, &Goal::get_transaction_problems, call, session.session_locale);
         });
     dbus_object->registerMethod(
-        dnfdaemon::INTERFACE_GOAL, "do_transaction", "a{sv}", "", [this](sdbus::MethodCall call) -> void {
+        dnf5daemon::INTERFACE_GOAL, "do_transaction", "a{sv}", "", [this](sdbus::MethodCall call) -> void {
             session.get_threads_manager().handle_method(*this, &Goal::do_transaction, call, session.session_locale);
         });
 }
 
 sdbus::MethodReply Goal::resolve(sdbus::MethodCall & call) {
     // read options from dbus call
-    dnfdaemon::KeyValueMap options;
+    dnf5daemon::KeyValueMap options;
     call >> options;
     bool allow_erasing = key_value_map_get<bool>(options, "allow_erasing", false);
 
@@ -70,22 +70,22 @@ sdbus::MethodReply Goal::resolve(sdbus::MethodCall & call) {
     auto transaction = goal.resolve(allow_erasing);
     session.set_transaction(transaction);
 
-    std::vector<dnfdaemon::DbusTransactionItem> dbus_transaction;
-    auto overall_result = dnfdaemon::ResolveResult::ERROR;
+    std::vector<dnf5daemon::DbusTransactionItem> dbus_transaction;
+    auto overall_result = dnf5daemon::ResolveResult::ERROR;
     if (transaction.get_problems() == libdnf::GoalProblem::NO_PROBLEM) {
         // return the transaction only if there were no problems
         std::vector<std::string> attr{
             "name", "epoch", "version", "release", "arch", "repo", "package_size", "install_size", "evr"};
         for (auto & tspkg : transaction.get_transaction_packages()) {
-            dbus_transaction.push_back(dnfdaemon::DbusTransactionItem(
+            dbus_transaction.push_back(dnf5daemon::DbusTransactionItem(
                 static_cast<uint32_t>(tspkg.get_action()), package_to_map(tspkg.get_package(), attr)));
         }
         // there are transactions resolved without problems but still resolve_logs
         // may contain some warnings / informations
         if (transaction.get_resolve_logs().size() > 0) {
-            overall_result = dnfdaemon::ResolveResult::WARNING;
+            overall_result = dnf5daemon::ResolveResult::WARNING;
         } else {
-            overall_result = dnfdaemon::ResolveResult::NO_PROBLEM;
+            overall_result = dnf5daemon::ResolveResult::NO_PROBLEM;
         }
     }
 
@@ -108,14 +108,14 @@ sdbus::MethodReply Goal::get_transaction_problems(sdbus::MethodCall & call) {
     auto * transaction = session.get_transaction();
 
     auto resolve_logs = transaction->get_resolve_logs();
-    dnfdaemon::KeyValueMapList goal_resolve_log_list;
+    dnf5daemon::KeyValueMapList goal_resolve_log_list;
     goal_resolve_log_list.reserve(resolve_logs.size());
     for (const auto & log : resolve_logs) {
-        dnfdaemon::KeyValueMap goal_resolve_log_item;
+        dnf5daemon::KeyValueMap goal_resolve_log_item;
         goal_resolve_log_item["action"] = static_cast<uint32_t>(log.get_action());
         goal_resolve_log_item["problem"] = static_cast<uint32_t>(log.get_problem());
         if (log.get_job_settings()) {
-            dnfdaemon::KeyValueMap goal_job_settings;
+            dnf5daemon::KeyValueMap goal_job_settings;
             goal_job_settings["to_repo_ids"] = log.get_job_settings()->to_repo_ids;
             goal_resolve_log_item["goal_job_settings"] = goal_job_settings;
         }
@@ -163,12 +163,12 @@ void download_packages(Session & session, libdnf::base::Transaction & transactio
 }
 
 sdbus::MethodReply Goal::do_transaction(sdbus::MethodCall & call) {
-    if (!session.check_authorization(dnfdaemon::POLKIT_EXECUTE_RPM_TRANSACTION, call.getSender())) {
+    if (!session.check_authorization(dnf5daemon::POLKIT_EXECUTE_RPM_TRANSACTION, call.getSender())) {
         throw std::runtime_error("Not authorized");
     }
 
     // read options from dbus call
-    dnfdaemon::KeyValueMap options;
+    dnf5daemon::KeyValueMap options;
     call >> options;
 
     // TODO(mblaha): ensure that system repo is not loaded twice
@@ -188,7 +188,7 @@ sdbus::MethodReply Goal::do_transaction(sdbus::MethodCall & call) {
 
     if (rpm_result != libdnf::base::Transaction::TransactionRunResult::SUCCESS) {
         throw sdbus::Error(
-            dnfdaemon::ERROR_TRANSACTION,
+            dnf5daemon::ERROR_TRANSACTION,
             fmt::format(
                 "rpm transaction failed with code {}.",
                 static_cast<std::underlying_type_t<libdnf::base::Transaction::TransactionRunResult>>(rpm_result)));

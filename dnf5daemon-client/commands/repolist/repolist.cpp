@@ -31,7 +31,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <iostream>
 #include <numeric>
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 using namespace libdnf::cli;
 
@@ -93,7 +93,7 @@ void RepolistCommand::run() {
     auto & ctx = static_cast<Context &>(get_session());
 
     // prepare options from command line arguments
-    dnfdaemon::KeyValueMap options = {};
+    dnf5daemon::KeyValueMap options = {};
     options["enable_disable"] = enable_disable_option->get_value();
     std::vector<std::string> patterns;
     if (!patterns_options->empty()) {
@@ -128,9 +128,9 @@ void RepolistCommand::run() {
     options["repo_attrs"] = attrs;
 
     // call list() method on repo interface via dbus
-    dnfdaemon::KeyValueMapList repositories;
+    dnf5daemon::KeyValueMapList repositories;
     ctx.session_proxy->callMethod("list")
-        .onInterface(dnfdaemon::INTERFACE_REPO)
+        .onInterface(dnf5daemon::INTERFACE_REPO)
         .withTimeout(static_cast<uint64_t>(-1))
         .withArguments(options)
         .storeResultsTo(repositories);
@@ -153,4 +153,4 @@ void RepolistCommand::run() {
     }
 }
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client

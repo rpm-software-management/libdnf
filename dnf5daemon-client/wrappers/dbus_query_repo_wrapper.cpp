@@ -19,12 +19,12 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "dbus_query_repo_wrapper.hpp"
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
-DbusQueryRepoWrapper::DbusQueryRepoWrapper(dnfdaemon::KeyValueMapList & repositories) {
+DbusQueryRepoWrapper::DbusQueryRepoWrapper(dnf5daemon::KeyValueMapList & repositories) {
     for (auto raw_repo : repositories) {
         queryrepo.push_back(std::make_unique<DbusRepoWrapper>(raw_repo));
     }
 }
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client

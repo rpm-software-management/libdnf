@@ -52,7 +52,7 @@ class Session {
 public:
     Session(
         sdbus::IConnection & connection,
-        dnfdaemon::KeyValueMap session_configuration,
+        dnf5daemon::KeyValueMap session_configuration,
         std::string object_path,
         std::string sender);
     ~Session();
@@ -90,11 +90,11 @@ private:
     std::unique_ptr<libdnf::Base> base;
     libdnf::Goal goal;
     std::unique_ptr<libdnf::base::Transaction> transaction{nullptr};
-    dnfdaemon::KeyValueMap session_configuration;
+    dnf5daemon::KeyValueMap session_configuration;
     std::string object_path;
     std::vector<std::unique_ptr<IDbusSessionService>> services{};
     ThreadsManager threads_manager;
-    std::atomic<dnfdaemon::RepoStatus> repositories_status{dnfdaemon::RepoStatus::NOT_READY};
+    std::atomic<dnf5daemon::RepoStatus> repositories_status{dnf5daemon::RepoStatus::NOT_READY};
     std::unique_ptr<sdbus::IObject> dbus_object;
     std::string sender;
     // repository key import confirmation

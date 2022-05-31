@@ -27,7 +27,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <memory>
 #include <vector>
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 class GroupListCommand : public DaemonCommand {
 public:
@@ -39,6 +39,6 @@ private:
     const std::string command;
 };
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client
 
 #endif

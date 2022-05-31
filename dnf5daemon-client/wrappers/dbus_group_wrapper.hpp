@@ -27,23 +27,23 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <set>
 #include <vector>
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 class DbusGroupWrapper {
 public:
     class DbusGroupPackageWrapper {
     public:
-        explicit DbusGroupPackageWrapper(dnfdaemon::KeyValueMap & rawdata) : rawdata(rawdata) {}
+        explicit DbusGroupPackageWrapper(dnf5daemon::KeyValueMap & rawdata) : rawdata(rawdata) {}
         std::string get_name() const { return rawdata.at("name"); }
         libdnf::comps::PackageType get_type() const {
             return static_cast<libdnf::comps::PackageType>(key_value_map_get<int>(rawdata, "type"));
         }
 
     private:
-        dnfdaemon::KeyValueMap rawdata;
+        dnf5daemon::KeyValueMap rawdata;
     };
 
-    explicit DbusGroupWrapper(dnfdaemon::KeyValueMap & rawdata);
+    explicit DbusGroupWrapper(dnf5daemon::KeyValueMap & rawdata);
 
     std::string get_groupid() const { return rawdata.at("groupid"); }
     std::string get_name() const { return rawdata.at("name"); }
@@ -57,10 +57,10 @@ public:
     std::vector<DbusGroupPackageWrapper> get_packages() const { return packages; }
 
 private:
-    dnfdaemon::KeyValueMap rawdata{};
+    dnf5daemon::KeyValueMap rawdata{};
     std::vector<DbusGroupPackageWrapper> packages{};
 };
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client
 
 #endif  // DNF5DAEMON_CLIENT_WRAPPERS_DBUS_GROUP_WRAPPER_HPP

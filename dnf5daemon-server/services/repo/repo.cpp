@@ -98,11 +98,11 @@ const static std::map<std::string, RepoAttribute> repo_attributes{
 };
 
 // converts Repo object to dbus map
-dnfdaemon::KeyValueMap repo_to_map(
+dnf5daemon::KeyValueMap repo_to_map(
     libdnf::Base & base,
     const libdnf::WeakPtr<libdnf::repo::Repo, false> libdnf_repo,
     std::vector<std::string> & attributes) {
-    dnfdaemon::KeyValueMap dbus_repo;
+    dnf5daemon::KeyValueMap dbus_repo;
     // attributes required by client
     for (auto & attr : attributes) {
         switch (repo_attributes.at(attr)) {
@@ -195,7 +195,7 @@ dnfdaemon::KeyValueMap repo_to_map(
     return dbus_repo;
 }
 
-bool keyval_repo_compare(const dnfdaemon::KeyValueMap & first, const dnfdaemon::KeyValueMap & second) {
+bool keyval_repo_compare(const dnf5daemon::KeyValueMap & first, const dnf5daemon::KeyValueMap & second) {
     return key_value_map_get<std::string>(first, "id") < key_value_map_get<std::string>(second, "id");
 }
 
@@ -204,24 +204,24 @@ bool keyval_repo_compare(const dnfdaemon::KeyValueMap & first, const dnfdaemon::
 void Repo::dbus_register() {
     auto dbus_object = session.get_dbus_object();
     dbus_object->registerMethod(
-        dnfdaemon::INTERFACE_REPO, "list", "a{sv}", "aa{sv}", [this](sdbus::MethodCall call) -> void {
+        dnf5daemon::INTERFACE_REPO, "list", "a{sv}", "aa{sv}", [this](sdbus::MethodCall call) -> void {
             session.get_threads_manager().handle_method(*this, &Repo::list, call, session.session_locale);
         });
     dbus_object->registerMethod(
-        dnfdaemon::INTERFACE_REPO, "confirm_key", "sb", "", [this](sdbus::MethodCall call) -> void {
+        dnf5daemon::INTERFACE_REPO, "confirm_key", "sb", "", [this](sdbus::MethodCall call) -> void {
             session.get_threads_manager().handle_method(*this, &Repo::confirm_key, call);
         });
-    dbus_object->registerSignal(dnfdaemon::INTERFACE_REPO, dnfdaemon::SIGNAL_REPO_KEY_IMPORT_REQUEST, "ossssx");
-    dbus_object->registerSignal(dnfdaemon::INTERFACE_REPO, dnfdaemon::SIGNAL_REPO_LOAD_START, "os");
-    dbus_object->registerSignal(dnfdaemon::INTERFACE_REPO, dnfdaemon::SIGNAL_REPO_LOAD_PROGRESS, "ott");
-    dbus_object->registerSignal(dnfdaemon::INTERFACE_REPO, dnfdaemon::SIGNAL_REPO_LOAD_END, "o");
+    dbus_object->registerSignal(dnf5daemon::INTERFACE_REPO, dnf5daemon::SIGNAL_REPO_KEY_IMPORT_REQUEST, "ossssx");
+    dbus_object->registerSignal(dnf5daemon::INTERFACE_REPO, dnf5daemon::SIGNAL_REPO_LOAD_START, "os");
+    dbus_object->registerSignal(dnf5daemon::INTERFACE_REPO, dnf5daemon::SIGNAL_REPO_LOAD_PROGRESS, "ott");
+    dbus_object->registerSignal(dnf5daemon::INTERFACE_REPO, dnf5daemon::SIGNAL_REPO_LOAD_END, "o");
 }
 
 sdbus::MethodReply Repo::confirm_key(sdbus::MethodCall & call) {
     std::string key_id;
     bool confirmed;
     call >> key_id >> confirmed;
-    if (!session.check_authorization(dnfdaemon::POLKIT_CONFIRM_KEY_IMPORT, call.getSender())) {
+    if (!session.check_authorization(dnf5daemon::POLKIT_CONFIRM_KEY_IMPORT, call.getSender())) {
         session.confirm_key(key_id, false);
         throw std::runtime_error("Not authorized");
     }
@@ -230,7 +230,7 @@ sdbus::MethodReply Repo::confirm_key(sdbus::MethodCall & call) {
 }
 
 sdbus::MethodReply Repo::list(sdbus::MethodCall & call) {
-    dnfdaemon::KeyValueMap options;
+    dnf5daemon::KeyValueMap options;
     call >> options;
     const std::vector<std::string> empty_list{};
 
@@ -278,7 +278,7 @@ sdbus::MethodReply Repo::list(sdbus::MethodCall & call) {
     }
 
     // create reply from the query
-    dnfdaemon::KeyValueMapList out_repositories;
+    dnf5daemon::KeyValueMapList out_repositories;
 
     for (auto & repo : repos_query) {
         out_repositories.push_back(repo_to_map(*base, repo, repo_attrs));

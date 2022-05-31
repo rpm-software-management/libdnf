@@ -24,7 +24,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <libdnf/conf/option.hpp>
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 class DistroSyncCommand : public TransactionCommand {
 public:
@@ -35,6 +35,6 @@ private:
     std::vector<std::unique_ptr<libdnf::Option>> * patterns_options{nullptr};
 };
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client
 
 #endif  // DNF5DAEMON_CLIENT_COMMANDS_DISTRO_SYNC_DISTRO_SYNC_HPP

@@ -35,32 +35,32 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <iostream>
 #include <vector>
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 void TransactionCommand::run_transaction() {
     auto & ctx = static_cast<Context &>(get_session());
-    dnfdaemon::KeyValueMap options = {};
+    dnf5daemon::KeyValueMap options = {};
 
     // resolve the transaction
     options["allow_erasing"] = ctx.allow_erasing.get_value();
-    std::vector<dnfdaemon::DbusTransactionItem> transaction;
+    std::vector<dnf5daemon::DbusTransactionItem> transaction;
     unsigned int result_int;
     ctx.session_proxy->callMethod("resolve")
-        .onInterface(dnfdaemon::INTERFACE_GOAL)
+        .onInterface(dnf5daemon::INTERFACE_GOAL)
         .withTimeout(static_cast<uint64_t>(-1))
         .withArguments(options)
         .storeResultsTo(transaction, result_int);
-    dnfdaemon::ResolveResult result = static_cast<dnfdaemon::ResolveResult>(result_int);
+    dnf5daemon::ResolveResult result = static_cast<dnf5daemon::ResolveResult>(result_int);
     DbusGoalWrapper dbus_goal_wrapper(transaction);
 
-    if (result != dnfdaemon::ResolveResult::NO_PROBLEM) {
+    if (result != dnf5daemon::ResolveResult::NO_PROBLEM) {
         // retrieve and print resolving error messages
         std::vector<std::string> problems;
         ctx.session_proxy->callMethod("get_transaction_problems_string")
-            .onInterface(dnfdaemon::INTERFACE_GOAL)
+            .onInterface(dnf5daemon::INTERFACE_GOAL)
             .withTimeout(static_cast<uint64_t>(-1))
             .storeResultsTo(problems);
-        if (result == dnfdaemon::ResolveResult::ERROR) {
+        if (result == dnf5daemon::ResolveResult::ERROR) {
             throw libdnf::cli::GoalResolveError(problems);
         }
         dbus_goal_wrapper.set_resolve_logs(std::move(problems));
@@ -78,9 +78,9 @@ void TransactionCommand::run_transaction() {
     // do the transaction
     options.clear();
     ctx.session_proxy->callMethod("do_transaction")
-        .onInterface(dnfdaemon::INTERFACE_GOAL)
+        .onInterface(dnf5daemon::INTERFACE_GOAL)
         .withTimeout(static_cast<uint64_t>(-1))
         .withArguments(options);
 }
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client

@@ -24,15 +24,15 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include <libdnf-cli/session.hpp>
 
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
 class DaemonCommand : public libdnf::cli::session::Command {
 public:
     explicit DaemonCommand(Command & parent, const std::string & name) : Command(parent, name){};
     explicit DaemonCommand(libdnf::cli::session::Session & session, const std::string & name)
         : Command(session, name){};
-    virtual dnfdaemon::KeyValueMap session_config() {
-        dnfdaemon::KeyValueMap cfg = {};
+    virtual dnf5daemon::KeyValueMap session_config() {
+        dnf5daemon::KeyValueMap cfg = {};
         return cfg;
     }
 };
@@ -44,6 +44,6 @@ public:
 };
 
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client
 
 #endif

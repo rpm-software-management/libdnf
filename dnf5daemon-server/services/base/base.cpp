@@ -34,7 +34,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 void Base::dbus_register() {
     auto dbus_object = session.get_dbus_object();
     dbus_object->registerMethod(
-        dnfdaemon::INTERFACE_BASE, "read_all_repos", "", "b", [this](sdbus::MethodCall call) -> void {
+        dnf5daemon::INTERFACE_BASE, "read_all_repos", "", "b", [this](sdbus::MethodCall call) -> void {
             session.get_threads_manager().handle_method(*this, &Base::read_all_repos, call, session.session_locale);
         });
 }

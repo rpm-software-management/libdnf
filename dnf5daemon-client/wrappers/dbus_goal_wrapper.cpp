@@ -19,12 +19,12 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "dbus_goal_wrapper.hpp"
 
-namespace dnfdaemon::client {
+namespace dnf5daemon::client {
 
-DbusGoalWrapper::DbusGoalWrapper(std::vector<dnfdaemon::DbusTransactionItem> transaction) {
+DbusGoalWrapper::DbusGoalWrapper(std::vector<dnf5daemon::DbusTransactionItem> transaction) {
     for (auto & ti : transaction) {
         transaction_packages.push_back(DbusTransactionPackageWrapper(ti));
     }
 }
 
-}  // namespace dnfdaemon::client
+}  // namespace dnf5daemon::client
