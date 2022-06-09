@@ -40,6 +40,7 @@ enum class ModuleState { AVAILABLE, DEFAULT, ENABLED, DISABLED };
 
 
 class ModuleItemContainer;
+class ModulePersistor;
 
 
 using ModuleItemContainerWeakPtr = libdnf::WeakPtr<ModuleItemContainer, false>;
@@ -49,6 +50,7 @@ class ModuleItemContainer {
 public:
     ModuleItemContainer(const BaseWeakPtr & base);
     ModuleItemContainer(Base & base);
+    ~ModuleItemContainer();
 
     ModuleItemContainerWeakPtr get_weak_ptr();
 
@@ -79,6 +81,8 @@ private:
     WeakPtrGuard<ModuleItemContainer, false> data_guard;
 
     BaseWeakPtr get_base() const;
+
+    std::unique_ptr<ModulePersistor> persistor;
 };
 
 

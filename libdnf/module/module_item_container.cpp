@@ -20,6 +20,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "libdnf/module/module_item_container.hpp"
 
 #include "module/module_metadata.hpp"
+#include "module/module_persistor.hpp"
 
 #include "libdnf/base/base.hpp"
 #include "libdnf/base/base_weak.hpp"
@@ -38,8 +39,13 @@ extern "C" {
 namespace libdnf::module {
 
 
-ModuleItemContainer::ModuleItemContainer(const BaseWeakPtr & base) : base(base){};
-ModuleItemContainer::ModuleItemContainer(libdnf::Base & base) : base(base.get_weak_ptr()) {}
+ModuleItemContainer::ModuleItemContainer(const BaseWeakPtr & base)
+    : base(base),
+      persistor(new ModulePersistor(base->get_system_state())){};
+ModuleItemContainer::ModuleItemContainer(libdnf::Base & base)
+    : base(base.get_weak_ptr()),
+      persistor(new ModulePersistor(base.get_system_state())) {}
+ModuleItemContainer::~ModuleItemContainer() = default;
 
 
 void ModuleItemContainer::add(const std::string & file_content) {
