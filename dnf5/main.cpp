@@ -33,6 +33,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "commands/group/group.hpp"
 #include "commands/history/history.hpp"
 #include "commands/install/install.hpp"
+#include "commands/leaves/leaves.hpp"
 #include "commands/makecache/makecache.hpp"
 #include "commands/module/module.hpp"
 #include "commands/reinstall/reinstall.hpp"
@@ -576,6 +577,7 @@ void RootCommand::register_subcommands() {
     auto * query_commands_group = context.get_argument_parser().add_new_group("query_commands");
     query_commands_group->set_header("Query Commands:");
     cmd.register_group(query_commands_group);
+    register_subcommand(std::make_unique<LeavesCommand>(*this), query_commands_group);
     register_subcommand(std::make_unique<RepoqueryCommand>(*this), query_commands_group);
     register_subcommand(std::make_unique<SearchCommand>(*this), query_commands_group);
 
