@@ -22,6 +22,8 @@
 #include "Const.hpp"
 #include "Config-private.hpp"
 
+#include "bgettext/bgettext-lib.h"
+
 namespace libdnf {
 
 class ConfigRepo::Impl {
@@ -174,6 +176,14 @@ ConfigRepo::Impl::Impl(Config & owner, ConfigMain & mainConfig)
     owner.optBinds().add("enabled_metadata", enabled_metadata);
     owner.optBinds().add("user_agent", user_agent);
     owner.optBinds().add("countme", countme);
+    owner.optBinds().add("failovermethod", failovermethod,
+        [&](Option::Priority priority, const std::string & value){
+            if (value != "priority") {
+                throw Option::InvalidValue(_("only the value 'priority' is supported."));
+            }
+            failovermethod.set(priority, value);
+        }, nullptr, false
+    );
     owner.optBinds().add("sslverifystatus", sslverifystatus);
 }
 
