@@ -26,6 +26,7 @@
 #include "../hy-types.h"
 #include "../hy-query.h"
 #include "../hy-subject.h"
+#include "../nevra.hpp"
 #include "../repo/solvable/Dependency.hpp"
 #include "../repo/solvable/DependencyContainer.hpp"
 #include "../transaction/Swdb.hpp"
