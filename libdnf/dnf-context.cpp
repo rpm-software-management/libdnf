@@ -2182,8 +2182,6 @@ dnf_context_setup(DnfContext *context,
     GHashTableIter hashiter;
     gpointer hashkey, hashval;
     g_autoptr(GString) buf = NULL;
-    g_autofree char *rpmdb_path = NULL;
-    g_autoptr(GFile) file_rpmdb = NULL;
 
     if (libdnf::getGlobalMainConfig().plugins().getValue() && !pluginsDir.empty()) {
         priv->plugins->loadPlugins(pluginsDir);
@@ -2271,16 +2269,44 @@ dnf_context_setup(DnfContext *context,
 
     /* setup a file monitor on the rpmdb, if we're operating on the native / */
     if (g_strcmp0(priv->install_root, "/") == 0) {
-        rpmdb_path = g_build_filename(priv->install_root, "var/lib/rpm/Packages", NULL);
-        file_rpmdb = g_file_new_for_path(rpmdb_path);
-        priv->monitor_rpmdb = g_file_monitor_file(file_rpmdb,
-                               G_FILE_MONITOR_NONE,
-                               NULL,
-                               error);
-        if (priv->monitor_rpmdb == NULL)
-            return FALSE;
-        g_signal_connect(priv->monitor_rpmdb, "changed",
-                         G_CALLBACK(dnf_context_rpmdb_changed_cb), context);
+        g_autofree char *rpmdb_path = rpmGetPath("%{_dbpath}", NULL);
+        g_autofree char *rpmdb_backend = rpmExpand("%{?_db_backend}", NULL);
+
+        if (rpmdb_path && rpmdb_backend) {
+            /* List of known RPM backends with their db files names; keep in sync
+               with RPM project's lib/backend/dbi.c:backends[] and its members.
+               or add public API to get to the actual DB file name into RPM */
+            struct _rpm_backends {
+                const char *name;
+                const char *filename;
+            } rpm_backends[] = {
+                { "sqlite", "rpmdb.sqlite" },
+                { "ndb", "Packages.db" },
+                { "bdb_ro", "Packages" },
+                { "bdb", "Packages" }
+	    };
+	    guint ii;
+
+            for (ii = 0; ii < G_N_ELEMENTS (rpm_backends); ii++) {
+                if (g_str_equal(rpm_backends[ii].name, rpmdb_backend)) {
+                    g_autofree char *filename = g_build_filename(rpmdb_path, rpm_backends[ii].filename, NULL);
+                    if (g_file_test(filename, G_FILE_TEST_EXISTS)) {
+                        g_autoptr(GFile) file_rpmdb = NULL;
+
+                        file_rpmdb = g_file_new_for_path(filename);
+                        priv->monitor_rpmdb = g_file_monitor_file(file_rpmdb,
+                                                                  G_FILE_MONITOR_NONE,
+                                                                  NULL,
+                                                                  error);
+                        if (priv->monitor_rpmdb == NULL)
+                            return FALSE;
+                        g_signal_connect(priv->monitor_rpmdb, "changed",
+                                         G_CALLBACK(dnf_context_rpmdb_changed_cb), context);
+                    }
+                    break;
+                }
+            }
+	}
     }
 
     /* copy any vendor distributed cached metadata */
