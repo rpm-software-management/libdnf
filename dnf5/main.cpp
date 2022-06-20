@@ -18,6 +18,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "commands/advisory/advisory.hpp"
+#ifdef WITH_DNF5_DNF4_COMPAT_ALIASES
 #include "commands/aliases/autoremove.hpp"
 #include "commands/aliases/groupinfo.hpp"
 #include "commands/aliases/grouplist.hpp"
@@ -25,6 +26,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "commands/aliases/repolist.hpp"
 #include "commands/aliases/updateinfo.hpp"
 #include "commands/aliases/upgrade_minimal.hpp"
+#endif  // WITH_DNF5_DNF4_COMPAT_ALIASES
 #include "commands/clean/clean.hpp"
 #include "commands/distro-sync/distro-sync.hpp"
 #include "commands/downgrade/downgrade.hpp"
@@ -106,8 +108,10 @@ void RootCommand::set_argument_parser() {
     auto * global_options_group = parser.add_new_group("global_options");
     global_options_group->set_header("Global options:");
 
+#ifdef WITH_DNF5_DNF4_COMPAT_ALIASES
     auto * options_aliases_group = parser.add_new_group("global_options_aliases");
     options_aliases_group->set_header("Options Compatibility Aliases:");
+#endif  // WITH_DNF5_DNF4_COMPAT_ALIASES
 
     auto help = parser.add_new_named_arg("help");
     help->set_long_name("help");
@@ -235,7 +239,9 @@ void RootCommand::set_argument_parser() {
     best->set_conflict_arguments(best_conflict_args);
     no_best->set_conflict_arguments(no_best_conflict_args);
 
+#ifdef WITH_DNF5_DNF4_COMPAT_ALIASES
     no_best->add_alias("nobest", "nobest", '\0', options_aliases_group);
+#endif  // WITH_DNF5_DNF4_COMPAT_ALIASES
 
     {
         auto no_docs = parser.add_new_named_arg("no-docs");
@@ -252,7 +258,9 @@ void RootCommand::set_argument_parser() {
         });
         global_options_group->register_argument(no_docs);
 
+#ifdef WITH_DNF5_DNF4_COMPAT_ALIASES
         no_docs->add_alias("nodocs", "nodocs", '\0', options_aliases_group);
+#endif  // WITH_DNF5_DNF4_COMPAT_ALIASES
     }
 
     {
@@ -348,9 +356,11 @@ void RootCommand::set_argument_parser() {
         new std::vector<ArgumentParser::Argument *>{enable_repo_ids, disable_repo_ids}));
     repo_ids->set_conflict_arguments(repo_conflict_args);
 
+#ifdef WITH_DNF5_DNF4_COMPAT_ALIASES
     enable_repo_ids->add_alias("enablerepo", "enablerepo", '\0', options_aliases_group);
     disable_repo_ids->add_alias("disablerepo", "disablerepo", '\0', options_aliases_group);
     repo_ids->add_alias("repoid", "repoid", '\0', options_aliases_group);
+#endif  // WITH_DNF5_DNF4_COMPAT_ALIASES
 
     auto no_gpgchecks = parser.add_new_named_arg("no-gpgchecks");
     no_gpgchecks->set_long_name("no-gpgchecks");
@@ -367,7 +377,9 @@ void RootCommand::set_argument_parser() {
         return true;
     });
     global_options_group->register_argument(no_gpgchecks);
+#ifdef WITH_DNF5_DNF4_COMPAT_ALIASES
     no_gpgchecks->add_alias("nogpgchecks", "nogpgchecks", '\0', options_aliases_group);
+#endif  // WITH_DNF5_DNF4_COMPAT_ALIASES
 
     auto no_plugins = parser.add_new_named_arg("no-plugins");
     no_plugins->set_long_name("no-plugins");
@@ -421,9 +433,11 @@ void RootCommand::set_argument_parser() {
             new std::vector<ArgumentParser::Argument *>{enable_plugins_names, disable_plugins_names}));
     no_plugins->set_conflict_arguments(no_plugins_conflict_args);
 
+#ifdef WITH_DNF5_DNF4_COMPAT_ALIASES
     no_plugins->add_alias("noplugins", "noplugins", '\0', options_aliases_group);
     enable_plugins_names->add_alias("enableplugin", "enableplugin", '\0', options_aliases_group);
     disable_plugins_names->add_alias("disableplugin", "disableplugin", '\0', options_aliases_group);
+#endif  // WITH_DNF5_DNF4_COMPAT_ALIASES
 
     auto comment = parser.add_new_named_arg("comment");
     comment->set_long_name("comment");
@@ -471,7 +485,9 @@ void RootCommand::set_argument_parser() {
     }
 
     register_group_with_args(cmd, *global_options_group);
+#ifdef WITH_DNF5_DNF4_COMPAT_ALIASES
     register_group_with_args(cmd, *options_aliases_group);
+#endif  // WITH_DNF5_DNF4_COMPAT_ALIASES
 
     parser.set_inherit_named_args(true);
 }
@@ -514,6 +530,7 @@ void RootCommand::register_subcommands() {
     register_subcommand(std::make_unique<DownloadCommand>(*this));
     register_subcommand(std::make_unique<MakeCacheCommand>(*this));
 
+#ifdef WITH_DNF5_DNF4_COMPAT_ALIASES
     // aliases
     auto * aliases_group = context.get_argument_parser().add_new_group("aliases");
     aliases_group->set_header("Compatibility Aliases:");
@@ -525,6 +542,7 @@ void RootCommand::register_subcommands() {
     register_subcommand(std::make_unique<RepolistAlias>(*this), aliases_group);
     register_subcommand(std::make_unique<UpdateinfoAlias>(*this), aliases_group);
     register_subcommand(std::make_unique<UpgradeMinimalAlias>(*this), aliases_group);
+#endif  // WITH_DNF5_DNF4_COMPAT_ALIASES
 
     auto & dnf5_plugins = context.get_plugins();
     auto & plugins = dnf5_plugins.get_plugins();
