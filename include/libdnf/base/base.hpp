@@ -84,9 +84,11 @@ public:
 
     transaction::TransactionHistoryWeakPtr get_transaction_history() { return transaction_history.get_weak_ptr(); }
     libdnf::comps::CompsWeakPtr get_comps() { return comps.get_weak_ptr(); }
+#ifdef WITH_MODULEMD
     libdnf::module::ModuleItemContainerWeakPtr get_module_item_container() {
         return module_item_container.get_weak_ptr();
     }
+#endif
     libdnf::advisory::AdvisorySackWeakPtr get_rpm_advisory_sack() { return rpm_advisory_sack.get_weak_ptr(); }
 
     /// Gets base variables. They can be used in configuration files. Syntax in the config - ${var_name} or $var_name.
@@ -128,7 +130,9 @@ private:
     repo::RepoSack repo_sack;
     rpm::PackageSack rpm_package_sack;
     comps::Comps comps{*this};
+#ifdef WITH_MODULEMD
     module::ModuleItemContainer module_item_container{*this};
+#endif
     plugin::Plugins plugins{*this};
     libdnf::advisory::AdvisorySack rpm_advisory_sack;
     std::map<std::string, std::string> variables;

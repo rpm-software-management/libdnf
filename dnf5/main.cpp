@@ -34,7 +34,9 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #include "commands/history/history.hpp"
 #include "commands/install/install.hpp"
 #include "commands/makecache/makecache.hpp"
+#ifdef WITH_MODULEMD
 #include "commands/module/module.hpp"
+#endif
 #include "commands/reinstall/reinstall.hpp"
 #include "commands/remove/remove.hpp"
 #include "commands/repo/repo.hpp"
@@ -505,7 +507,9 @@ void RootCommand::register_subcommands() {
     cmd.register_group(subcommands_group);
     register_subcommand(std::make_unique<GroupCommand>(*this), subcommands_group);
     register_subcommand(std::make_unique<EnvironmentCommand>(*this), subcommands_group);
+#ifdef WITH_MODULEMD
     register_subcommand(std::make_unique<ModuleCommand>(*this), subcommands_group);
+#endif
     register_subcommand(std::make_unique<HistoryCommand>(*this), subcommands_group);
     register_subcommand(std::make_unique<RepoCommand>(*this), subcommands_group);
     register_subcommand(std::make_unique<AdvisoryCommand>(*this), subcommands_group);

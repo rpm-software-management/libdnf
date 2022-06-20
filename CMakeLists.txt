@@ -26,8 +26,14 @@ option(WITH_DNF5_PLUGINS "Build plugins for dnf5 command-line package manager" O
 option(WITH_PYTHON_PLUGINS_LOADER "Build a special libdnf plugin that loads Python plugins. Requires WITH_PYTHON3=ON." ON)
 
 # build options - features
+
 option(WITH_COMPS "Build with comps groups and environments support" ON)
+
 option(WITH_MODULEMD "Build with modulemd modules support" ON)
+if(WITH_MODULEMD)
+    add_compile_definitions(WITH_MODULEMD)
+endif()
+
 option(WITH_ZCHUNK "Build with zchunk delta compression support" ON)
 
 # build options - documentation

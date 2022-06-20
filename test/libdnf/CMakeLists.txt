@@ -4,6 +4,12 @@ pkg_check_modules(CPPUNIT REQUIRED cppunit)
 # use any sources found under the current directory
 file(GLOB_RECURSE TEST_LIBDNF_SOURCES *.cpp)
 
+
+if(NOT WITH_MODULEMD)
+    list(FILTER TEST_LIBDNF_SOURCES EXCLUDE REGEX "module/.*")
+endif()
+
+
 include_directories(.)
 include_directories(${PROJECT_SOURCE_DIR}/libdnf)
 

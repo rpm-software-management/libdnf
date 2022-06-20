@@ -2,6 +2,11 @@
 file(GLOB_RECURSE LIBDNF_SOURCES *.cpp)
 
 
+if(NOT WITH_MODULEMD)
+    list(FILTER LIBDNF_SOURCES EXCLUDE REGEX "module/.*")
+endif()
+
+
 # gather all pkg-config requires and write them to a .pc file later
 list(APPEND LIBDNF_PC_REQUIRES)
 list(APPEND LIBDNF_PC_REQUIRES_PRIVATE)
@@ -48,9 +53,11 @@ pkg_check_modules(JSONC REQUIRED json-c)
 include_directories(${JSONC_INCLUDE_DIRS})
 target_link_libraries(libdnf ${JSONC_LIBRARIES})
 
-pkg_check_modules(LIBMODULEMD REQUIRED modulemd-2.0>=2.11.2)
-list(APPEND LIBDNF_PC_REQUIRES "${LIBMODULEMD_MODULE_NAME}")
-target_link_libraries(libdnf ${LIBMODULEMD_LIBRARIES})
+if(WITH_MODULEMD)
+    pkg_check_modules(LIBMODULEMD REQUIRED modulemd-2.0>=2.11.2)
+    list(APPEND LIBDNF_PC_REQUIRES "${LIBMODULEMD_MODULE_NAME}")
+    target_link_libraries(libdnf ${LIBMODULEMD_LIBRARIES})
+endif()
 
 pkg_check_modules(LIBSOLV REQUIRED libsolv>=0.7.21)
 list(APPEND LIBDNF_PC_REQUIRES "${LIBSOLV_MODULE_NAME}")

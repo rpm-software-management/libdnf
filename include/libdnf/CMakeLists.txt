@@ -1,5 +1,11 @@
 file(GLOB_RECURSE LIBDNF_HEADERS *.hpp)
 
+
+if(NOT WITH_MODULEMD)
+    list(FILTER LIBDNF_HEADERS EXCLUDE REGEX "module/.*")
+endif()
+
+
 # preserve relative paths of the header files
 foreach(abspath ${LIBDNF_HEADERS})
     # relative path to the header file
