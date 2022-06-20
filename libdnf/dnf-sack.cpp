@@ -777,7 +777,15 @@ load_yum_repo(DnfSack *sack, HyRepo hrepo, GError **error)
             goto out;
         }
         fp_primary = solv_xfopen(primary.c_str(), "r");
-        assert(fp_primary);
+        if (fp_primary == 0) {
+            g_set_error(error,
+                        DNF_ERROR,
+                        DNF_ERROR_INTERNAL_ERROR,
+                        _("Opening repository primary data has failed: %s"),
+                        strerror(errno));
+            retval = FALSE;
+            goto out;
+        }
 
         g_debug("Loading repomd: %s", fn_repomd);
         if (repo_add_repomdxml(repo, fp_repomd, 0)) {
