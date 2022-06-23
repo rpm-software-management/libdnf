@@ -2354,6 +2354,7 @@ dnf_sack_add_repos(DnfSack *sack,
             return FALSE;
 
         g_ptr_array_add(enabled_repos, repo);
+        g_prt_array_free(enabled_repos);
 
         /* done */
         if (!dnf_state_done(state, error))
@@ -2361,6 +2362,7 @@ dnf_sack_add_repos(DnfSack *sack,
     }
 
     process_excludes(sack, enabled_repos);
+    g_prt_array_free(enabled_repos);
 
     /* success */
     return TRUE;
