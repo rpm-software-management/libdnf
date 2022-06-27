@@ -251,11 +251,24 @@ int ArgumentParser::NamedArg::parse_short(const char * option, int argc, const c
     return consumed_args;
 }
 
+
+std::unordered_set<std::string> ArgumentParser::Command::get_command_ids() const {
+    std::unordered_set<std::string> result(aliases.begin(), aliases.end());
+    result.insert(id);
+    return result;
+}
+
+
 void ArgumentParser::Command::register_command(Command * cmd) {
+    auto cmd_ids = cmd->get_command_ids();
     for (auto * item : cmds) {
-        if (item->id == cmd->id) {
+        auto item_ids = item->get_command_ids();
+        std::vector<std::string> common_ids;
+        std::set_intersection(cmd_ids.begin(), cmd_ids.end(), item_ids.begin(), item_ids.end(), std::back_inserter(common_ids));
+
+        if (!common_ids.empty()) {
             throw ArgumentParserIdAlreadyRegisteredError(
-                M_("Command id \"{}\" already registered for command \"{}\""), cmd->id, id);
+                M_("Command id \"{}\" already registered for command \"{}\""), libdnf::utils::string::join(common_ids, ", "), id);
         }
     }
     cmd->parent = this;
@@ -474,7 +487,9 @@ void ArgumentParser::Command::parse(
         }
         if (!used) {
             for (auto & cmd : cmds) {
-                if (cmd->id == argv[i]) {
+                auto & aliases = cmd->get_aliases();
+                // match command name and all its aliases
+                if (cmd->id == argv[i] || std::find(aliases.begin(), aliases.end(), argv[i]) != aliases.end()) {
                     if (const auto * arg = get_conflict_argument()) {
                         auto [fmt_message, conflict_option] = get_conflict_arg_msg(arg);
                         throw ArgumentParserConflictingArgumentsError(

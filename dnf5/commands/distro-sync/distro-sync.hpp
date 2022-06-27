@@ -33,7 +33,7 @@ namespace dnf5 {
 
 class DistroSyncCommand : public Command {
 public:
-    explicit DistroSyncCommand(Command & parent) : DistroSyncCommand(parent, "distro-sync", {"dist-upgrade", "dup"}) {}
+    explicit DistroSyncCommand(Command & parent) : DistroSyncCommand(parent, "distro-sync", {"dist-upgrade", "dup", "foo"}) {}
     void set_argument_parser() override;
     void configure() override;
     void run() override;

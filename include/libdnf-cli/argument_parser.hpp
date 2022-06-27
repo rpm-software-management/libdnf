@@ -447,6 +447,9 @@ public:
         /// Get list of aliases for the command.
         const std::vector<std::string> & get_aliases() const { return aliases; }
 
+        /// Get list of all IDs for the command (id + aliases)
+        std::unordered_set<std::string> get_command_ids() const;
+
     private:
         /// Parses input. The input may contain named arguments, (sub)commands and positional arguments.
         void parse(
