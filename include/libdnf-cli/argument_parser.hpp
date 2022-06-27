@@ -441,6 +441,12 @@ public:
         /// Gets the header of the positional arguments table. Used to generate help.
         const std::string & get_positional_args_help_header() const noexcept { return positional_args_help_header; }
 
+        /// Create alias for the command. The alias is not shown in completion.
+        void add_alias(const std::string & name) { aliases.push_back(name); }
+
+        /// Get list of aliases for the command.
+        const std::vector<std::string> & get_aliases() const { return aliases; }
+
     private:
         /// Parses input. The input may contain named arguments, (sub)commands and positional arguments.
         void parse(
@@ -457,6 +463,7 @@ public:
             const char * arg, std::vector<ArgumentParser::NamedArg *> named_args, size_t used_positional_arguments);
 
         Command * parent{nullptr};
+        std::vector<std::string> aliases;
         std::vector<Command *> cmds;
         std::vector<NamedArg *> named_args;
         std::vector<PositionalArg *> pos_args;

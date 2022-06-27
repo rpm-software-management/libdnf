@@ -30,7 +30,7 @@ namespace dnf5 {
 
 class RemoveCommand : public Command {
 public:
-    explicit RemoveCommand(Command & parent) : RemoveCommand(parent, "remove") {}
+    explicit RemoveCommand(Command & parent) : RemoveCommand(parent, "remove", {"rm"}) {}
     void set_argument_parser() override;
     void configure() override;
     void run() override;
@@ -40,7 +40,7 @@ public:
 
 protected:
     // to be used by an alias command only
-    explicit RemoveCommand(Command & parent, const std::string & name) : Command(parent, name) {}
+    explicit RemoveCommand(Command & parent, const std::string & name, const std::vector<std::string> & aliases) : Command(parent, name, aliases) {}
 };
 
 }  // namespace dnf5

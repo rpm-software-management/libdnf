@@ -76,6 +76,7 @@ private:
 class Command {
 public:
     explicit Command(Command & parent, const std::string & name);
+    explicit Command(Command & parent, const std::string & name, const std::vector<std::string> & aliases);
     explicit Command(Session & session, const std::string & program_name);
     virtual ~Command() = default;
 
@@ -112,6 +113,9 @@ public:
     /// Throw a ArgumentParserMissingCommandError exception with the command name in it
     void throw_missing_command() const;
 
+    /// Return aliases to the command.
+    const std::vector<std::string> & get_aliases() const { return aliases; }
+
     /// @return Pointer to the Session.
     ///         The returned pointer must **not** be freed manually.
     /// @since 5.0
@@ -144,6 +148,7 @@ private:
     Command * parent_command = nullptr;
     libdnf::cli::ArgumentParser::Command * argument_parser_command;
     std::vector<std::unique_ptr<Command>> subcommands;
+    std::vector<std::string> aliases;
 };
 
 

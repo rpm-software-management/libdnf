@@ -538,6 +538,16 @@ static std::string get_named_arg_names(const ArgumentParser::NamedArg * arg) {
     return arg_names;
 }
 
+
+/// Return a string that consists of the command name and aliases delimited with ", "
+static std::string get_cmdname_and_aliases(const ArgumentParser::Command * cmd) {
+    std::vector<std::string> list;
+    list.push_back(cmd->get_id());
+    list.insert(list.end(), cmd->get_aliases().begin(), cmd->get_aliases().end());
+    return libdnf::utils::string::join(list, ", ");
+}
+
+
 void ArgumentParser::Command::help() const noexcept {
     libdnf::cli::output::Usage usage_output;
 
@@ -577,6 +587,12 @@ void ArgumentParser::Command::help() const noexcept {
 
     libdnf::cli::output::Help help;
 
+    if (not aliases.empty()) {
+        help.add_newline();
+        auto aliases_header = help.add_header("Aliases:");
+        usage_output.add_line(libdnf::utils::string::join(aliases, ", "), aliases_header);
+    }
+
     // Arguments used in groups are not printed as ungrouped.
     std::set<Argument *> args_used_in_groups;
 
@@ -588,12 +604,14 @@ void ArgumentParser::Command::help() const noexcept {
             // we'll initialize the header line later when the first line with an argument is added
             struct libscols_line * header{nullptr};
             for (auto * arg : grp->get_arguments()) {
-                if (dynamic_cast<Command *>(arg) && cmds_set.count(arg) > 0) {
+                auto arg_cmd = dynamic_cast<Command *>(arg);
+                if (arg_cmd && cmds_set.count(arg) > 0) {
                     if (!header) {
                         help.add_newline();
                         header = help.add_header(grp->get_header());
                     }
-                    help.add_line(arg->get_id(), arg->get_short_description(), header);
+
+                    help.add_line(get_cmdname_and_aliases(arg_cmd), arg->get_short_description(), header);
                     args_used_in_groups.insert(arg);
                 }
             }
@@ -613,7 +631,7 @@ void ArgumentParser::Command::help() const noexcept {
             help.add_newline();
             struct libscols_line * header = help.add_header(commands_help_header);
             for (auto * arg : ungrouped_commands) {
-                help.add_line(arg->get_id(), arg->get_short_description(), header);
+                help.add_line(get_cmdname_and_aliases(arg), arg->get_short_description(), header);
             }
         }
     }

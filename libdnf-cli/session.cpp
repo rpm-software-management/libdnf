@@ -56,9 +56,16 @@ Command::Command(Session & session, const std::string & program_name) : session{
 }
 
 
-Command::Command(Command & parent, const std::string & name) : session{parent.session}, parent_command{&parent} {
+Command::Command(Command & parent, const std::string & name) : Command(parent, name, {}) {}
+
+
+Command::Command(Command & parent, const std::string & name, const std::vector<std::string> & aliases) : session{parent.session}, parent_command{&parent}, aliases{aliases} {
     // create a new command owned by the arg_parser
     argument_parser_command = session.get_argument_parser().add_new_command(name);
+
+    for (auto & alias : aliases) {
+        argument_parser_command->add_alias(alias);
+    }
 
     // set the command as selected when parsed
     argument_parser_command->set_parse_hook_func([this](

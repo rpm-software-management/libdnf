@@ -30,7 +30,7 @@ namespace dnf5 {
 
 class InstallCommand : public Command {
 public:
-    explicit InstallCommand(Command & parent) : Command(parent, "install") {}
+    explicit InstallCommand(Command & parent) : Command(parent, "install", {"in"}) {}
     void set_argument_parser() override;
     void configure() override;
     void load_additional_packages() override;
