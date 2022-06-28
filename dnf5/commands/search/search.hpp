@@ -35,6 +35,7 @@ class SearchCommand : public Command {
 public:
     explicit SearchCommand(Command & parent) : Command(parent, "search") {}
     void set_argument_parser() override;
+    void configure() override;
     void run() override;
 
 private:
