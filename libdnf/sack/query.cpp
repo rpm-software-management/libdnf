@@ -1878,6 +1878,13 @@ Query::Impl::filterAdvisory(const Filter & f, Map *m, int keyname)
         std::vector<Solvable *> installed_solvables;
 
         if (cmp_type & HY_UPGRADE) {
+            // When doing HY_UPGRADE consider only candidate pkgs that have matching Name and Arch with:
+            // * some already installed pkg (in other words: some other version of the pkg is already installed)
+            // or
+            // * with pkg that obsoletes some already installed (or to be installed in this transaction) pkg
+            // Otherwise a pkg with different Arch than installed can end up in upgrade set which is wrong.
+            // It can result in dependency issues, reported as: RhBug:2088149.
+
             Query installed(sack, ExcludeFlags::IGNORE_EXCLUDES);
             installed.installed();
             installed.addFilter(HY_PKG_LATEST_PER_ARCH, HY_EQ, 1);
@@ -1887,13 +1894,30 @@ Query::Impl::filterAdvisory(const Filter & f, Map *m, int keyname)
                 installed_solvables.push_back(pool_id2solvable(pool, installed_id));
             }
             std::sort(installed_solvables.begin(), installed_solvables.end(), NameArchSolvableComparator);
+
+            Query obsoletes(sack, ExcludeFlags::IGNORE_EXCLUDES);
+            obsoletes.addFilter(HY_PKG, HY_EQ, resultPset);
+            obsoletes.available();
+
+            Query possibly_obsoleted(sack, ExcludeFlags::IGNORE_EXCLUDES);
+            possibly_obsoleted.addFilter(HY_PKG, HY_EQ, resultPset);
+            possibly_obsoleted.addFilter(HY_PKG_UPGRADES, HY_EQ, 1);
+            possibly_obsoleted.queryUnion(installed);
+            possibly_obsoleted.apply();
+
+            obsoletes.addFilter(HY_PKG_OBSOLETES, HY_EQ, possibly_obsoleted.runSet());
+            obsoletes.apply();
+            Id obsoleted_id = -1;
+            // Add to candidates resultPset pkgs that obsolete some installed (or to be installed in this transaction) pkg
+            while ((obsoleted_id = obsoletes.pImpl->result->next(obsoleted_id)) != -1) {
+                Solvable * s = pool_id2solvable(pool, obsoleted_id);
+                candidates.push_back(s);
+            }
+
             Id id = -1;
+            // Add to candidates resultPset pkgs that match name and arch with some already installed pkg
             while ((id = resultPset->next(id)) != -1) {
                 Solvable * s = pool_id2solvable(pool, id);
-                // When doing HY_UPGRADE consider only candidate pkgs that have matching Name and Arch
-                // with some already installed pkg (in other words: some other version of the pkg is already installed).
-                // Otherwise a pkg with different Arch than installed can end up in upgrade set which is wrong.
-                // It can result in dependency issues, reported as: RhBug:2088149.
                 auto low = std::lower_bound(installed_solvables.begin(), installed_solvables.end(), s, NameArchSolvableComparator);
                 if (low != installed_solvables.end() && s->name == (*low)->name && s->arch == (*low)->arch) {
                     candidates.push_back(s);
