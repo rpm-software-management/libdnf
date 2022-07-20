@@ -23,6 +23,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "libdnf/conf/config_main.hpp"
 #include "libdnf/rpm/nevra.hpp"
+#include "libdnf/transaction/transaction_item_reason.hpp"
 
 #include <cstdint>
 
@@ -94,6 +95,21 @@ enum class GoalAction {
 
 enum class GoalSetting { AUTO, SET_TRUE, SET_FALSE };
 enum class GoalUsedSetting { UNUSED, USED_TRUE, USED_FALSE };
+
+struct GroupJobSettings {
+    bool ignore_case{false};
+    bool with_group_id{false};
+    bool with_group_name{false};
+
+    bool with_optional{false};
+    GoalSetting strict{GoalSetting::AUTO};
+
+private:
+    friend class Goal;
+
+    bool resolve_strict(const libdnf::ConfigMain & cfg_main);
+    GoalUsedSetting used_strict{GoalUsedSetting::UNUSED};
+};
 
 struct ResolveSpecSettings {
 public:

@@ -25,6 +25,29 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 namespace libdnf {
 
 
+bool GroupJobSettings::resolve_strict(const libdnf::ConfigMain & cfg_main) {
+    auto resolved = GoalUsedSetting::UNUSED;
+    switch (strict) {
+        case GoalSetting::AUTO: {
+            bool strict = cfg_main.strict().get_value();
+            resolved = strict ? GoalUsedSetting::USED_TRUE : GoalUsedSetting::USED_FALSE;
+        } break;
+        case GoalSetting::SET_TRUE:
+            resolved = GoalUsedSetting::USED_TRUE;
+            break;
+        case GoalSetting::SET_FALSE:
+            resolved = GoalUsedSetting::USED_FALSE;
+            break;
+    }
+
+    libdnf_assert(
+        used_strict == GoalUsedSetting::UNUSED || resolved == used_strict,
+        "\"strict\" is already set to a different value");
+
+    used_strict = resolved;
+    return resolved == GoalUsedSetting::USED_TRUE;
+}
+
 bool GoalJobSettings::resolve_strict(const libdnf::ConfigMain & cfg_main) {
     auto resolved = GoalUsedSetting::UNUSED;
     switch (strict) {

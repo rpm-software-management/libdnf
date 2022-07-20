@@ -38,6 +38,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <filesystem>
 #include <iostream>
+#include <ranges>
 
 
 namespace libdnf::base {
@@ -95,6 +96,10 @@ GoalProblem Transaction::get_problems() {
 
 std::vector<TransactionPackage> Transaction::get_transaction_packages() const {
     return p_impl->packages;
+}
+
+std::vector<TransactionGroup> & Transaction::get_transaction_groups() const {
+    return p_impl->groups;
 }
 
 GoalProblem Transaction::Impl::report_not_found(
@@ -316,6 +321,11 @@ void Transaction::Impl::set_transaction(rpm::solv::GoalPrivate & solved_goal, Go
         }
         packages.emplace_back(std::move(tspkg));
     }
+
+    // Add groups to the transaction
+    for (auto & [group, action, reason] : solved_goal.list_groups()) {
+        groups.emplace_back(group, action, reason);
+    }
 }
 
 
@@ -453,6 +463,21 @@ Transaction::TransactionRunResult Transaction::Impl::run(
 
     db_transaction.set_rpmdb_version_begin(rpm_transaction.get_db_cookie());
     db_transaction.fill_transaction_packages(packages);
+
+    if (!groups.empty()) {
+        // consider currently installed packages + inbound packages as installed for group members
+        rpm::PackageQuery installed_query(base);
+        installed_query.filter_installed();
+        std::set<std::string> installed_names{};
+        for (const auto & pkg : installed_query) {
+            installed_names.emplace(pkg.get_name());
+        }
+        for (const auto & pkg : packages) {
+            installed_names.emplace(pkg.get_package().get_name());
+        }
+        db_transaction.fill_transaction_groups(groups, installed_names);
+    }
+
     auto time = std::chrono::system_clock::now().time_since_epoch();
     db_transaction.set_dt_start(std::chrono::duration_cast<std::chrono::seconds>(time).count());
     db_transaction.start();

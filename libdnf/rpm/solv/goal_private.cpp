@@ -632,8 +632,22 @@ transaction::TransactionItemReason GoalPrivate::get_reason(Id id) {
 
     if ((reason == SOLVER_REASON_UNIT_RULE || reason == SOLVER_REASON_RESOLVE_JOB) &&
         (solver_ruleclass(libsolv_solver, info) == SOLVER_RULE_JOB ||
-         solver_ruleclass(libsolv_solver, info) == SOLVER_RULE_BEST))
+         solver_ruleclass(libsolv_solver, info) == SOLVER_RULE_BEST)) {
+        // explicitely user-installed
+        for (const auto & ui_id : user_installed) {
+            if (ui_id == id) {
+                return transaction::TransactionItemReason::USER;
+            }
+        }
+        // explicitely group-installed
+        for (const auto & ui_id : group_installed) {
+            if (ui_id == id) {
+                return transaction::TransactionItemReason::GROUP;
+            }
+        }
+        // for some packages (e.g. installed by provide) we cannot decide the reason, resort to USER
         return transaction::TransactionItemReason::USER;
+    }
     if (reason == SOLVER_REASON_CLEANDEPS_ERASE)
         return transaction::TransactionItemReason::CLEAN;
     if (reason == SOLVER_REASON_WEAKDEP)
