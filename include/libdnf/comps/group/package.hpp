@@ -46,6 +46,16 @@ inline PackageType operator|=(PackageType & a, PackageType b) {
     return a;
 }
 
+inline constexpr PackageType operator&(PackageType a, PackageType b) {
+    return static_cast<PackageType>(
+        static_cast<std::underlying_type<PackageType>::type>(a) &
+        static_cast<std::underlying_type<PackageType>::type>(b));
+}
+
+inline constexpr bool any(PackageType flags) {
+    return static_cast<std::underlying_type<PackageType>::type>(flags) != 0;
+}
+
 
 // TODO(dmach): isn't it more a package dependency rather than a package?
 

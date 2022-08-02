@@ -48,7 +48,9 @@ void GroupInstallCommand::run() {
     auto goal = get_context().get_goal();
 
     libdnf::GroupJobSettings settings;
-    settings.with_optional = with_optional->get_value();
+    if (with_optional->get_value()) {
+        settings.package_types |= libdnf::comps::PackageType::OPTIONAL;
+    }
     //settings.strict = libdnf::GoalSetting::SET_FALSE;
     for (const auto & spec : group_specs->get_value()) {
         goal->add_group_install(spec, settings);

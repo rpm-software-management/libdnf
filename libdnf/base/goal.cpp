@@ -958,9 +958,11 @@ GoalProblem Goal::Impl::add_group_install_to_goal(
     }
     GoalProblem packages_res = GoalProblem::NO_PROBLEM;
     for (auto group : group_query) {
-        auto packages = group.get_packages();
-        if (!settings.with_optional) {
-            std::erase_if(packages, [](comps::Package p) { return p.get_type() == comps::PackageType::OPTIONAL; });
+        std::vector<libdnf::comps::Package> packages;
+        for (auto p : group.get_packages()) {
+            if (any(settings.package_types & p.get_type())) {
+                packages.emplace_back(std::move(p));
+            }
         }
         auto pkg_settings = GoalJobSettings();
         pkg_settings.with_provides = false;

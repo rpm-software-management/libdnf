@@ -21,6 +21,7 @@ along with libdnf.  If not, see <https://www.gnu.org/licenses/>.
 #define LIBDNF_BASE_GOAL_ELEMENTS_HPP
 
 
+#include "libdnf/comps/group/package.hpp"
 #include "libdnf/conf/config_main.hpp"
 #include "libdnf/rpm/nevra.hpp"
 #include "libdnf/transaction/transaction_item_reason.hpp"
@@ -101,7 +102,9 @@ struct GroupJobSettings {
     bool with_group_id{false};
     bool with_group_name{false};
 
-    bool with_optional{false};
+    libdnf::comps::PackageType package_types{
+        libdnf::comps::PackageType::MANDATORY | libdnf::comps::PackageType::DEFAULT |
+        libdnf::comps::PackageType::CONDITIONAL};
     GoalSetting strict{GoalSetting::AUTO};
 
 private:
