@@ -98,9 +98,9 @@ enum class GoalSetting { AUTO, SET_TRUE, SET_FALSE };
 enum class GoalUsedSetting { UNUSED, USED_TRUE, USED_FALSE };
 
 struct GroupJobSettings {
-    bool ignore_case{false};
-    bool with_group_id{false};
-    bool with_group_name{false};
+    bool ignore_case{true};
+    bool with_group_id{true};
+    bool with_group_name{true};
 
     libdnf::comps::PackageType package_types{
         libdnf::comps::PackageType::MANDATORY | libdnf::comps::PackageType::DEFAULT |

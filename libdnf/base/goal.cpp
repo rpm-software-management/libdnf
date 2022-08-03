@@ -943,11 +943,18 @@ GoalProblem Goal::Impl::add_group_install_to_goal(
     GroupJobSettings & settings) {
     auto & cfg_main = base->get_config();
     bool strict = settings.resolve_strict(cfg_main);
-    comps::GroupQuery group_query(base);
-    comps::GroupQuery group_query_names(group_query);
-    group_query_names.filter_name(spec, sack::QueryCmp::IGLOB);
-    group_query.filter_groupid(spec, sack::QueryCmp::IGLOB);
-    group_query |= group_query_names;
+    sack::QueryCmp cmp = settings.ignore_case ? sack::QueryCmp::IGLOB : sack::QueryCmp::GLOB;
+    comps::GroupQuery group_query(base, true);
+    if (settings.with_group_id) {
+        comps::GroupQuery group_query_id(base);
+        group_query_id.filter_groupid(spec, cmp);
+        group_query |= group_query_id;
+    }
+    if (settings.with_group_name) {
+        comps::GroupQuery group_query_name(base);
+        group_query_name.filter_name(spec, cmp);
+        group_query |= group_query_name;
+    }
     if (group_query.empty()) {
         auto problem = transaction.p_impl->report_not_found(GoalAction::INSTALL, spec, GoalJobSettings(), strict);
         if (strict) {
