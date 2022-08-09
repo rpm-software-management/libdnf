@@ -1,6 +1,9 @@
 libdnf
 ======
 
+:warning: *This branch is not used anymore for dnf5 development* :warning:
+:warning: *The codebase has been moved to (rpm-software-management/dnf5)[https://github.com/rpm-software-management/dnf5]* :warning:
+
 Libdnf is a package management library.
 It was originally written to support the [DNF](https://github.com/rpm-software-management/dnf/)
 package manager and grew up into a versatile library.
