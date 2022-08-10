@@ -1031,8 +1031,13 @@ bool Repo::Impl::loadCache(bool throwExcept, bool ignoreMissing)
     for (auto elem = yum_repomd->distro_tags; elem; elem = g_slist_next(elem)) {
         if (elem->data) {
             auto distroTag = static_cast<LrYumDistroTag *>(elem->data);
-            if (distroTag->tag)
-                distro_tags.emplace_back(distroTag->cpeid, distroTag->tag);
+            if (distroTag->tag) {
+                std::string cpeid_str;
+                if (distroTag->cpeid) {
+                    cpeid_str = distroTag->cpeid;
+                }
+                distro_tags.emplace_back(std::move(cpeid_str), distroTag->tag);
+            }
         }
     }
 
