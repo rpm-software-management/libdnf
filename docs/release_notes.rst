@@ -20,6 +20,25 @@
 ######################
 
 ====================
+0.68.0 Release Notes
+====================
+
+- New features:
+  - context: Support <package-spec> (NEVRA forms, provides, file provides) including globs in the dnf_context_remove func (RhBug:2084602)
+
+- Bug fixes:
+  - dnf-context: Disconnect signal handler before dropping file monitor ref
+  - Filter out advisory pkgs with different arch during advisory upgrade, fixes possible problems in dependency resulution (RhBug:2088149)
+  - Gracefully handle failure to open repo primary file
+  - Fix listing a repository without cpeid (RhBug:2066334)
+
+Bugs fixed in 0.68.0:
+
+* :rhbug:`2084602`
+* :rhbug:`2088149`
+* :rhbug:`2066334`
+
+====================
 0.67.0 Release Notes
 ====================
 
