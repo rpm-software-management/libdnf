@@ -158,6 +158,7 @@ typedef struct
     gchar            *user_agent;
     gchar            *arch;
     guint            cache_age;     /*seconds*/
+    guint            network_wait_timeout_secs; 
     gboolean         cacheOnly{false};
     gboolean         check_disk_space;
     gboolean         check_transaction;
@@ -1107,6 +1108,22 @@ dnf_context_get_cache_age(DnfContext *context)
 }
 
 /**
+ * dnf_context_get_network_timeout_seconds:
+ * @context: a #DnfContext instance.
+ *
+ * Gets the number seconds to wait for the network timeout.
+ *
+ * Returns: network timout in seconds
+ *
+ **/
+guint
+dnf_context_get_network_timeout_seconds(DnfContext *context)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    return priv->network_wait_timeout_secs;
+}
+
+/**
  * dnf_context_get_installonly_pkgs:
  * @context: a #DnfContext instance.
  *
@@ -1632,6 +1649,20 @@ dnf_context_set_cache_age(DnfContext *context, guint cache_age)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
     priv->cache_age = cache_age;
+}
+
+/**
+ * dnf_context_set_network_timeout_seconds:
+ * @context: a #DnfContext instance.
+ * @seconds: Number of seconds
+ *
+ * Sets the number of seconds to wait till network timeout.
+ **/
+void 
+dnf_context_set_network_timeout_seconds(DnfContext *context, guint seconds)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    priv->network_wait_timeout_secs = seconds;
 }
 
 /**

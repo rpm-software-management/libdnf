@@ -142,6 +142,7 @@ gboolean         dnf_context_get_zchunk                 (DnfContext     *context
 gboolean         dnf_context_get_write_history          (DnfContext     *context);
 guint            dnf_context_get_cache_age              (DnfContext     *context);
 guint            dnf_context_get_installonly_limit      (DnfContext     *context);
+guint            dnf_context_get_network_timeout_seconds(DnfContext     *context);
 const gchar     *dnf_context_get_http_proxy             (DnfContext     *context);
 gboolean         dnf_context_get_enable_filelists       (DnfContext     *context);
 GPtrArray       *dnf_context_get_repos                  (DnfContext     *context);
@@ -205,6 +206,8 @@ void             dnf_context_set_write_history          (DnfContext     *context
                                                          gboolean        value);
 void             dnf_context_set_cache_age              (DnfContext     *context,
                                                          guint           cache_age);
+void             dnf_context_set_network_timeout_seconds(DnfContext     *context,
+                                                         guint           seconds);
 
 void             dnf_context_set_rpm_macro              (DnfContext     *context,
                                                          const gchar    *key,
