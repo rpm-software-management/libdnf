@@ -190,6 +190,13 @@ NameArchSolvableComparator(const Solvable * first, const Solvable * second)
 }
 
 static bool
+NameSolvableComparator(const Solvable * first, const Solvable * second)
+{
+    return first->name < second->name;
+}
+
+
+static bool
 NamePrioritySolvableKey(const Solvable * first, const Solvable * second)
 {
     if (first->name != second->name)
@@ -1878,11 +1885,14 @@ Query::Impl::filterAdvisory(const Filter & f, Map *m, int keyname)
         std::vector<Solvable *> installed_solvables;
 
         if (cmp_type & HY_UPGRADE) {
-            // When doing HY_UPGRADE consider only candidate pkgs that have matching Name and Arch with:
-            // * some already installed pkg (in other words: some other version of the pkg is already installed)
-            // or
-            // * with pkg that obsoletes some already installed (or to be installed in this transaction) pkg
-            // Otherwise a pkg with different Arch than installed can end up in upgrade set which is wrong.
+            // When doing HY_UPGRADE consider only candidate pkgs that:
+            // * have matching Name and Arch with some already installed pkg
+            //   (in other words: some other version of the pkg is already installed)
+            // * have matching Name with some already installed pkg and either the candidate or the installed pkg is noarch.
+            //   This matches upgrade behavior where we allow architecture change only when noarch is involved.
+            //   Details: RhBug:2124483, RhBug:2101398 and RhBug:1171543
+            // * obsoletes some already installed (or to be installed in this transaction) pkg
+            // Otherwise a pkg with different Arch than installed (and than noarch) can end up in upgrade set which is wrong.
             // It can result in dependency issues, reported as: RhBug:2088149.
 
             Query installed(sack, ExcludeFlags::IGNORE_EXCLUDES);
@@ -1893,7 +1903,7 @@ Query::Impl::filterAdvisory(const Filter & f, Map *m, int keyname)
             while ((installed_id = installed.pImpl->result->next(installed_id)) != -1) {
                 installed_solvables.push_back(pool_id2solvable(pool, installed_id));
             }
-            std::sort(installed_solvables.begin(), installed_solvables.end(), NameArchSolvableComparator);
+            std::sort(installed_solvables.begin(), installed_solvables.end(), NameSolvableComparator);
 
             Query obsoletes(sack, ExcludeFlags::IGNORE_EXCLUDES);
             obsoletes.addFilter(HY_PKG, HY_EQ, resultPset);
@@ -1915,12 +1925,16 @@ Query::Impl::filterAdvisory(const Filter & f, Map *m, int keyname)
             }
 
             Id id = -1;
-            // Add to candidates resultPset pkgs that match name and arch with some already installed pkg
+            // Add to candidates resultPset pkgs that match name and arch with some already installed pkg or match name and either the installed or candidate are NOARCH
             while ((id = resultPset->next(id)) != -1) {
                 Solvable * s = pool_id2solvable(pool, id);
-                auto low = std::lower_bound(installed_solvables.begin(), installed_solvables.end(), s, NameArchSolvableComparator);
-                if (low != installed_solvables.end() && s->name == (*low)->name && s->arch == (*low)->arch) {
-                    candidates.push_back(s);
+                auto low = std::lower_bound(installed_solvables.begin(), installed_solvables.end(), s, NameSolvableComparator);
+                while (low != installed_solvables.end() && (*low)->name == s->name) {
+                    if (s->arch == (*low)->arch || s->arch == ARCH_NOARCH || (*low)->arch == ARCH_NOARCH) {
+                        candidates.push_back(s);
+                        break;
+                    }
+                    ++low;
                 }
             }
 
