@@ -20,6 +20,13 @@
 ######################
 
 ====================
+0.69.0 Release Notes
+====================
+
+- New features:
+  - Expose librepo max_downloads_per_mirror configuration
+
+====================
 0.68.0 Release Notes
 ====================
 
