@@ -3196,7 +3196,7 @@ static std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, s
                 messages.emplace_back(std::make_tuple(
                     libdnf::ModulePackageContainer::ModuleErrorType::CANNOT_ENABLE_MULTIPLE_STREAMS,
                     tfm::format(_("Cannot enable more streams from module '%s' at the same time"), name), name));
-                return messages;;
+                return messages;
             }
             if (enable) {
                 try {
