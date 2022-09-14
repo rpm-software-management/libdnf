@@ -181,7 +181,7 @@ nevra_init(_NevraObject *self, PyObject *args, PyObject *kwds) try
 static PyObject *
 evr(_NevraObject *self, PyObject *unused) try
 {
-    return PyString_FromString(self->nevra->getEvr().c_str());;
+    return PyString_FromString(self->nevra->getEvr().c_str());
 } CATCH_TO_PYTHON
 
 int
