@@ -3,20 +3,23 @@
 # This file is distributed under the same license as the PACKAGE package.
 # Ludek Janda <ljanda@redhat.com>, 2018. #zanata
 # simmon <simmon@nplob.com>, 2021.
+# Kim InSoo <simmon@nplob.com>, 2022.
+# 김인수 <simmon@nplob.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-05 01:53+0000\n"
-"PO-Revision-Date: 2021-11-04 08:05+0000\n"
-"Last-Translator: simmon <simmon@nplob.com>\n"
-"Language-Team: Korean <https://translate.fedoraproject.org/projects/dnf/libdnf-dnf-4-master/ko/>\n"
+"POT-Creation-Date: 2022-08-30 14:53+0200\n"
+"PO-Revision-Date: 2022-09-02 02:19+0000\n"
+"Last-Translator: 김인수 <simmon@nplob.com>\n"
+"Language-Team: Korean <https://translate.fedoraproject.org/projects/dnf/"
+"libdnf-rhel-9/ko/>\n"
 "Language: ko\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.8\n"
+"X-Generator: Weblate 4.14\n"
 
 #: libdnf/conf/ConfigMain.cpp:62 libdnf/conf/OptionSeconds.cpp:40
 msgid "no value specified"
@@ -105,129 +108,136 @@ msgstr "변환 할 수 없습니다 '%s'초까지"
 msgid "GetValue(): Value not set"
 msgstr "GetValue () : 값이 설정되지 않았습니다"
 
-#: libdnf/dnf-context.cpp:3178 libdnf/dnf-context.cpp:3187
+#: libdnf/dnf-context.cpp:3179 libdnf/dnf-context.cpp:3188
 #, c-format
 msgid "Cannot enable more streams from module '%s' at the same time"
 msgstr "동시에 모듈 '%s’에서 다른 스트림을 활성화 할 수 없습니다"
 
-#: libdnf/dnf-context.cpp:3196 libdnf/dnf-context.cpp:3214
+#: libdnf/dnf-context.cpp:3197 libdnf/dnf-context.cpp:3215
 #, c-format
 msgid ""
 "Cannot enable module '%1$s' stream '%2$s': State of module already modified"
-msgstr "모듈 '%1$s' 스트림 '%2$s 을 활성화 할 수 없습니다: 모듈 상태가 이미 변경되었습니다"
+msgstr ""
+"모듈 '%1$s' 스트림 '%2$s 을 활성화 할 수 없습니다: 모듈 상태가 이미 변경되었"
+"습니다"
 
-#: libdnf/dnf-context.cpp:3263
+#: libdnf/dnf-context.cpp:3264
 #, c-format
 msgid "Modular dependency problem with Defaults: %s"
 msgstr "기본설정에 모듈 의존성 문제: %s"
 
-#: libdnf/dnf-context.cpp:3266
+#: libdnf/dnf-context.cpp:3267
 #, c-format
 msgid "Modular dependency problem with the latest modules: %s"
 msgstr "최신 모듈에 모듈 의존성 문제: %s"
 
-#: libdnf/dnf-context.cpp:3270
+#: libdnf/dnf-context.cpp:3271
 #, c-format
 msgid "Modular dependency problem: %s"
 msgstr "모듈러 의존성 문제: %s"
 
-#: libdnf/dnf-context.cpp:3293 libdnf/dnf-context.cpp:3317
-#: libdnf/dnf-context.cpp:3328 libdnf/dnf-context.cpp:3367
-#: libdnf/dnf-context.cpp:3383 libdnf/dnf-context.cpp:3415
-#: libdnf/dnf-context.cpp:3464 libdnf/dnf-context.cpp:3474
+#: libdnf/dnf-context.cpp:3294 libdnf/dnf-context.cpp:3318
+#: libdnf/dnf-context.cpp:3329 libdnf/dnf-context.cpp:3368
+#: libdnf/dnf-context.cpp:3384 libdnf/dnf-context.cpp:3416
+#: libdnf/dnf-context.cpp:3465 libdnf/dnf-context.cpp:3475
 #, c-format
 msgid "Unable to resolve argument '%s'"
 msgstr "인수 %s를 해결 할 수 없습니다"
 
-#: libdnf/dnf-context.cpp:3300
+#: libdnf/dnf-context.cpp:3301
 #, c-format
 msgid ""
-"Only module name is required. Ignoring unneeded information in argument: "
-"'%s'"
+"Only module name is required. Ignoring unneeded information in argument: '%s'"
 msgstr "모듈 이름만 필요합니다. 인수에서 불필요한 정보를 무시합니다: '%s'"
 
-#: libdnf/dnf-context.cpp:3314
+#: libdnf/dnf-context.cpp:3315
 #, c-format
 msgid "Cannot reset module '%s': State of module already modified"
 msgstr "모듈 '%s 를 재설정 할 수 없습니다: 모듈 상태가 이미 변경되었습니다"
 
-#: libdnf/dnf-context.cpp:3325
+#: libdnf/dnf-context.cpp:3326
 #, c-format
 msgid "Cannot disable module '%s': State of module already modified"
 msgstr "모듈 '%s'사용 할 수 없습니다: 모듈 상태는 이미 적재되었습니다"
 
-#: libdnf/dnf-context.cpp:3356 libdnf/dnf-context.cpp:3452
-#: libdnf/dnf-context.cpp:3633
+#: libdnf/dnf-context.cpp:3357 libdnf/dnf-context.cpp:3453
+#: libdnf/dnf-context.cpp:3634
 msgid "No modular data available"
 msgstr "모듈러 자료를 이용 할 수 없습니다"
 
-#: libdnf/dnf-context.cpp:3373
+#: libdnf/dnf-context.cpp:3374
 #, c-format
 msgid "Ignoring unneeded information in argument: '%s'"
 msgstr "인수: '%s'에 불필요한 정보를 무시하기"
 
-#: libdnf/dnf-context.cpp:3411
+#: libdnf/dnf-context.cpp:3412
 #, c-format
 msgid ""
 "Problem during enablement of dependency tree for module '%1$s' stream "
 "'%2$s': %3$s"
-msgstr "모듈 '%1$s' 스트림 '%2$s': %3$s 위해 의존성 트리의 활성화하는 중에 발생하는 문제"
+msgstr ""
+"모듈 '%1$s' 스트림 '%2$s': %3$s 위해 의존성 트리의 활성화하는 중에 발생하는 "
+"문제"
 
-#: libdnf/dnf-context.cpp:3423
+#: libdnf/dnf-context.cpp:3424
 msgid "Problems appeared for module enable request:"
 msgstr "모듈 활성화 요청에 나타난 문제:"
 
-#: libdnf/dnf-context.cpp:3518
+#: libdnf/dnf-context.cpp:3519
 #, c-format
 msgid "No active module packages found for module spec '%s'"
-msgstr "모듈 상세 '%s'에 동적 모듈 꾸러미를 찾을 수 없습니다"
+msgstr "모듈 상세 '%s'를 위한 활성 모듈 꾸러미가 없습니다"
 
-#: libdnf/dnf-context.cpp:3523
+#: libdnf/dnf-context.cpp:3524
 #, c-format
 msgid "Cannot install module '%s' from fail-safe repository"
-msgstr "실패-방지 저장소에서 모듈 '%s'을 설치 할 수 없습니다"
+msgstr "실패-방지 저장소에서 모듈 '%s'를 설치 할 수 없습니다"
 
-#: libdnf/dnf-context.cpp:3530
+#: libdnf/dnf-context.cpp:3531
 #, c-format
 msgid "No profile found matching '%s'"
 msgstr "'%s'와 일치하는 프로파일을 찾을 수 없습니다"
 
-#: libdnf/dnf-context.cpp:3584
+#: libdnf/dnf-context.cpp:3585
 #, c-format
 msgid "No match for package '%s' for module spec %s"
-msgstr "모듈 상세 %s와 꾸러미 '%s'가 일치하지 않습니다"
+msgstr "꾸러미 '%s'가(모듈 상세 %s에 대한) 일치하지 않습니다"
 
-#: libdnf/dnf-context.cpp:3595
+#: libdnf/dnf-context.cpp:3596
 #, c-format
 msgid "Problem during install for module '%1$s' stream '%2$s': %3$s"
-msgstr "모듈 '%1$s' 스트림 '%2$s': %3$s 위해 설치하는 동안에 발생하는 문제"
+msgstr "모듈 '%1$s' 스트림 '%2$s': %3$s 위해 설치 중에 발생하는 문제"
 
-#: libdnf/dnf-context.cpp:3604
+#: libdnf/dnf-context.cpp:3605
 msgid "Problems appeared for module install request:"
 msgstr "모듈 설치 요청을 위해 나타난 문제:"
 
-#: libdnf/dnf-context.cpp:3663
+#: libdnf/dnf-context.cpp:3664
 msgid "Problems appeared for module reset request:"
-msgstr "모듈 재설정 요청을 위해 나타난 문제:"
+msgstr "모듈 초기화 요청을 위해 나타난 문제:"
 
-#: libdnf/dnf-context.cpp:3664 libdnf/dnf-context.cpp:3723
+#: libdnf/dnf-context.cpp:3665 libdnf/dnf-context.cpp:3724
 msgid "Problems appeared for module disable request:"
 msgstr "모듈 비활성화 요청을 위해 나타난 문제:"
 
-#: libdnf/dnf-context.cpp:3755
+#: libdnf/dnf-context.cpp:3756
 #, c-format
 msgid ""
-"The operation would result in switching of module '%s' stream '%s' to stream"
-" '%s'"
+"The operation would result in switching of module '%s' stream '%s' to stream "
+"'%s'"
 msgstr "이 동작은 모듈 '%s'' 스트림 ‘%s'에서 스트림 '%s'로의 전환 결과입니다"
 
-#: libdnf/dnf-context.cpp:3759
+#: libdnf/dnf-context.cpp:3760
 msgid ""
 "It is not possible to switch enabled streams of a module.\n"
-"It is recommended to remove all installed content from the module, and reset the module using 'microdnf module reset <module_name>' command. After you reset the module, you can install the other stream."
+"It is recommended to remove all installed content from the module, and reset "
+"the module using 'microdnf module reset <module_name>' command. After you "
+"reset the module, you can install the other stream."
 msgstr ""
 "활성화된 모듈 스트림을 전환 할 수 없습니다.\n"
-"설치된 모든 내용을 모듈에서 제거하고 ‘<module_name>' 명령을 사용하여 모듈을 재설정하는 것이 좋습니다. 모듈을 재설정한 후, 다른 스트림을 설치 할 수 있습니다."
+"설치된 모든 내용을 모듈에서 제거하고 ‘<module_name>' 명령을 사용하여 모듈을 "
+"재설정하는 것이 좋습니다. 모듈을 재설정한 후, 다른 스트림을 설치 할 수 있습니"
+"다."
 
 #: libdnf/dnf-goal.cpp:107
 msgid "Could not depsolve transaction; "
@@ -254,7 +264,9 @@ msgstr " 문제: %s\n"
 msgid ""
 "No available modular metadata for modular package '%s'; cannot be installed "
 "on the system"
-msgstr "모듈러 꾸러미 '%s'에 사용 가능한 모듈러 메타데이터가 없으며; 시스템에 설치 할 수 없습니다"
+msgstr ""
+"모듈러 꾸러미 '%s'에 사용 가능한 모듈러 메타데이터가 없으며; 시스템에 설치 "
+"할 수 없습니다"
 
 #: libdnf/dnf-rpmts.cpp:121 libdnf/dnf-rpmts.cpp:166
 #, c-format
@@ -293,7 +305,8 @@ msgstr "연결 실행 오류 : %s"
 
 #: libdnf/dnf-rpmts.cpp:283
 msgid "Error running transaction and no problems were reported!"
-msgstr "연결을 실행하는 중 오류가 발생했으며 아무런 문제도 보고되지 않았습니다!"
+msgstr ""
+"연결을 실행하는 중 오류가 발생했으며 아무런 문제도 보고되지 않았습니다!"
 
 #: libdnf/dnf-rpmts.cpp:346
 msgid "Fatal error, run database recovery"
@@ -309,84 +322,123 @@ msgstr "꾸러미를 찾지 못했습니다. %s"
 msgid "could not add erase element %1$s(%2$i)"
 msgstr "요소 지우기를 추가 할 수 없습니다. %1$s(%2$i)"
 
-#: libdnf/dnf-sack.cpp:395
-msgid "failed to add solv"
-msgstr "solv를 추가하지 못했습니다"
+#: libdnf/dnf-sack.cpp:251
+msgid "repo_add_solv() has failed."
+msgstr "repo_add_solv() 실패하였습니다."
 
-#: libdnf/dnf-sack.cpp:414
+#: libdnf/dnf-sack.cpp:415
+#, c-format
+msgid "Loading extension cache %s (%d) failed: "
+msgstr "확장 캐쉬 %s (%d) 적재 중 실패함: "
+
+#: libdnf/dnf-sack.cpp:429
 #, c-format
 msgid "no %1$s string for %2$s"
 msgstr "%2$s에 %1$s 문자열이 없습니다"
 
-#: libdnf/dnf-sack.cpp:424
+#: libdnf/dnf-sack.cpp:439
 #, c-format
 msgid "failed to open: %s"
 msgstr "열지 못했습니다 : %s"
 
-#: libdnf/dnf-sack.cpp:503
+#: libdnf/dnf-sack.cpp:518
 #, c-format
 msgid "cannot create temporary file: %s"
 msgstr "임시 파일을 만들 수 없습니다. %s"
 
-#: libdnf/dnf-sack.cpp:513
+#: libdnf/dnf-sack.cpp:528
 #, c-format
 msgid "failed opening tmp file: %s"
 msgstr "여는 tmp 파일을 열지 못했습니다. %s"
 
-#: libdnf/dnf-sack.cpp:525
+#: libdnf/dnf-sack.cpp:550
 #, c-format
-msgid "write_main() failed writing data: %i"
-msgstr "write_main() 실패한 쓰기 자료: %i"
+msgid "While writing primary cache %s repowriter write failed: %i, error: %s"
+msgstr "기본 캐쉬 %s를 쓰는 동안에 repowriter 쓰기가 실패함: %i, 오류: %s"
 
-#: libdnf/dnf-sack.cpp:542
-msgid "write_main() failed to re-load written solv file"
-msgstr "write_main ()이 작성된 solv 파일을 다시 적재하지 못했습니다"
+#: libdnf/dnf-sack.cpp:560
+#, c-format
+msgid "Failed closing tmp file %s: %s"
+msgstr "tmp 파일을 닫는데 실패함 %s: %s"
 
-#: libdnf/dnf-sack.cpp:607
+#: libdnf/dnf-sack.cpp:570
+#, c-format
+msgid "Failed to use newly written primary cache: %s: "
+msgstr "새롭게 작성된 기본 캐쉬를 사용하는데 실패함: %s: "
+
+#: libdnf/dnf-sack.cpp:576
+#, c-format
+msgid "Failed to use newly written primary cache: %s"
+msgstr "새롭게 작성된 기본 캐쉬를 사용하는데 실패함: %s"
+
+#: libdnf/dnf-sack.cpp:626
 #, c-format
 msgid "can not create temporary file %s"
 msgstr "임시 파일을 만들 수 없습니다. %s"
 
-#: libdnf/dnf-sack.cpp:625
+#: libdnf/dnf-sack.cpp:666
 #, c-format
-msgid "write_ext(%1$d) has failed: %2$d"
-msgstr "write_ext(%1$d) 실패하였습니다: %2$d"
+msgid ""
+"While writing extension cache %s (%d): repowriter write failed: %i, error: %s"
+msgstr "확장 캐쉬 %s (%d)를 쓰는 동안: repowriter 쓰기가 실패함: %i, 오류: %s"
 
-#: libdnf/dnf-sack.cpp:680
+#: libdnf/dnf-sack.cpp:676
+#, c-format
+msgid "While writing extension cache (%d): cannot close temporary file: %s"
+msgstr "확장 캐쉬 (%d)를 쓰는 동안: 임시 파일을 닫을 수 없습니다: %s"
+
+#: libdnf/dnf-sack.cpp:692
+#, c-format
+msgid "Failed to use newly written extension cache: %s (%d): "
+msgstr "새롭게 작성된 확장 캐쉬를 사용하는데 실패함: %s (%d): "
+
+#: libdnf/dnf-sack.cpp:699
+#, c-format
+msgid "Failed to use newly written extension cache: %s (%d)"
+msgstr "새롭게 작성된 확장 캐쉬를 사용하는데 실패함: %s (%d)"
+
+#: libdnf/dnf-sack.cpp:740
 msgid "null repo md file"
 msgstr "null repo md 파일"
 
-#: libdnf/dnf-sack.cpp:689
+#: libdnf/dnf-sack.cpp:749
 #, c-format
 msgid "can not read file %1$s: %2$s"
 msgstr "파일을 읽을 수 없습니다. %1$s: %2$s"
 
-#: libdnf/dnf-sack.cpp:703
-msgid "repo_add_solv() has failed."
-msgstr "repo_add_solv() 실패하였습니다."
+#: libdnf/dnf-sack.cpp:764
+#, c-format
+msgid "While loading repository failed to use %s: "
+msgstr "저장소를 적재하는 동안에 %s를 사용하는데 실패함: "
 
-#: libdnf/dnf-sack.cpp:716
+#: libdnf/dnf-sack.cpp:775
 msgid "loading of MD_TYPE_PRIMARY has failed."
 msgstr "MD_TYPE_PRIMARY를 적재하지 못했습니다."
 
-#: libdnf/dnf-sack.cpp:729
-msgid "repo_add_repomdxml/rpmmd() has failed."
-msgstr "repo_add_repomdxml/rpmmd() 실패하였습니다."
+#: libdnf/dnf-sack.cpp:787
+#, c-format
+msgid "Loading repomd has failed: %s"
+msgstr "repomd 적재하는데 실패함: %s"
 
-#: libdnf/dnf-sack.cpp:796
+#: libdnf/dnf-sack.cpp:798
+#, c-format
+msgid "Loading primary has failed: %s"
+msgstr "기본 적재하는데 실패함: %s"
+
+#: libdnf/dnf-sack.cpp:864
 msgid "failed to auto-detect architecture"
 msgstr "구조 자동 검색에 실패했습니다"
 
-#: libdnf/dnf-sack.cpp:961
+#: libdnf/dnf-sack.cpp:1029
 #, c-format
 msgid "failed creating cachedir %s"
-msgstr "캐시 된 생성 실패 %s"
+msgstr "캐쉬 된 생성 실패 %s"
 
-#: libdnf/dnf-sack.cpp:1738
+#: libdnf/dnf-sack.cpp:1806
 msgid "failed loading RPMDB"
 msgstr "RPMDB로드 실패"
 
-#: libdnf/dnf-sack.cpp:2522
+#: libdnf/dnf-sack.cpp:2590
 #, c-format
 msgid "No module defaults found: %s"
 msgstr "모듈 기본 설정을 찾을 수 없습니다: %s"
@@ -415,69 +467,78 @@ msgstr "국가에서 행해진 %1$p 크기가 설정되지 않았습니다. [%2$
 msgid "already at 100%% state [%s]"
 msgstr "이미 100 %% 상태 [%s]"
 
-#: libdnf/dnf-transaction.cpp:300
+#: libdnf/dnf-transaction.cpp:302
 #, c-format
 msgid "Sources not set when trying to ensure package %s"
 msgstr "꾸러미를 만들 때 소스가 설정되지 않았습니다. %s"
 
-#: libdnf/dnf-transaction.cpp:326
+#: libdnf/dnf-transaction.cpp:328
 #, c-format
 msgid "Failed to ensure %1$s as repo %2$s not found(%3$i repos loaded)"
 msgstr "보장하지 못함 %1$s 레포로서 %2$s 찾을 수 없음 (%3$i repos loaded)"
 
-#: libdnf/dnf-transaction.cpp:367
+#: libdnf/dnf-transaction.cpp:369
 msgid "Failed to check untrusted: "
 msgstr "신뢰할 수 없는지 확인하지 못했습니다. "
 
-#: libdnf/dnf-transaction.cpp:377
+#: libdnf/dnf-transaction.cpp:379
 #, c-format
 msgid "Downloaded file for %s not found"
 msgstr "에 대한 내려받기 파일 %s 찾을 수 없음"
 
-#: libdnf/dnf-transaction.cpp:397
+#: libdnf/dnf-transaction.cpp:399
 #, c-format
 msgid "package %1$s cannot be verified and repo %2$s is GPG enabled: %3$s"
 msgstr "꾸러미 %1$s 확인 및 복구 할 수 없습니다. %2$s GPG 사용 설정 됨 : %3$s"
 
-#: libdnf/dnf-transaction.cpp:831 libdnf/dnf-transaction.cpp:903
+#: libdnf/dnf-transaction.cpp:833 libdnf/dnf-transaction.cpp:905
 msgid "Failed to get value for CacheDir"
 msgstr "CacheDir에 대한 값을 가져 오는 데 실패했습니다"
 
-#: libdnf/dnf-transaction.cpp:911
+#: libdnf/dnf-transaction.cpp:913
 #, c-format
 msgid "Failed to get filesystem free size for %s: "
 msgstr "에 대한 파일 시스템 크기를 가져 오는 데 실패했습니다. %s: "
 
-#: libdnf/dnf-transaction.cpp:919
+#: libdnf/dnf-transaction.cpp:921
 #, c-format
 msgid "Failed to get filesystem free size for %s"
 msgstr "에 대한 파일 시스템 크기를 가져 오는 데 실패했습니다. %s"
 
-#: libdnf/dnf-transaction.cpp:935
+#: libdnf/dnf-transaction.cpp:937
 #, c-format
 msgid "Not enough free space in %1$s: needed %2$s, available %3$s"
 msgstr "여유 공간이 부족합니다. %1$s: 필요 %2$s, 이용 가능 %3$s"
 
-#: libdnf/dnf-transaction.cpp:1195
+#: libdnf/dnf-transaction.cpp:1196
 msgid "failed to set root"
 msgstr "루트를 설정하지 못했습니다"
 
-#: libdnf/dnf-transaction.cpp:1416
+#: libdnf/dnf-transaction.cpp:1417
 #, c-format
 msgid "Error %i running transaction test"
 msgstr "%i 연결 실행 중 오류"
 
-#: libdnf/dnf-transaction.cpp:1456
+#: libdnf/dnf-transaction.cpp:1441
+#, c-format
+msgid "Error %i opening rpm database"
+msgstr "rpm 데이타베이스를 여는 동안 오류 %i가 발생했습니다"
+
+#: libdnf/dnf-transaction.cpp:1449 libdnf/dnf-transaction.cpp:1495
+msgid "The rpmdbCookie() function did not return cookie of rpm database."
+msgstr "rpmdbCookie() 함수는 rpm 데이타베이스의 쿠키를 반환하지 않습니다."
+
+#: libdnf/dnf-transaction.cpp:1464
 #, c-format
 msgid "Error %i running transaction"
 msgstr "오류 %i 실행중인 연결"
 
-#: libdnf/dnf-transaction.cpp:1472
+#: libdnf/dnf-transaction.cpp:1480
 #, c-format
 msgid "Transaction did not go to writing phase, but returned no error(%i)"
 msgstr "연결이 쓰기 단계로 이동하지 않았지만 오류를 반환하지 않았습니다 (%i)"
 
-#: libdnf/dnf-utils.cpp:111 libdnf/hy-iutil.cpp:403
+#: libdnf/dnf-utils.cpp:111 libdnf/hy-iutil.cpp:485
 #, c-format
 msgid "cannot open directory %1$s: %2$s"
 msgstr "디렉토리를 열 수 없습니다. %1$s: %2$s"
@@ -678,62 +739,67 @@ msgstr "모듈 %s가 자체적으로 제공된 %s와 충돌합니다"
 msgid "both module %s and %s obsolete %s"
 msgstr "모듈 %s와 %s가 %s에서 폐기되었습니다"
 
-#: libdnf/goal/Goal.cpp:1141
+#: libdnf/goal/Goal.cpp:1157
 msgid "no solver set"
 msgstr "solver 설정 없음"
 
-#: libdnf/goal/Goal.cpp:1146
+#: libdnf/goal/Goal.cpp:1162
 #, c-format
 msgid "failed to make %s absolute"
 msgstr "%s 절대값을 생성을 실패하였습니다"
 
-#: libdnf/goal/Goal.cpp:1153
+#: libdnf/goal/Goal.cpp:1169
 #, c-format
 msgid "failed writing debugdata to %1$s: %2$s"
 msgstr "%1$s: %2$s에 디버그자료 쓰기를 실패했습니다"
 
-#: libdnf/goal/Goal.cpp:1165
+#: libdnf/goal/Goal.cpp:1181
 msgid "no solv in the goal"
 msgstr "목표에 solv가 없다"
 
-#: libdnf/goal/Goal.cpp:1167
+#: libdnf/goal/Goal.cpp:1183
 msgid "no solution, cannot remove protected package"
 msgstr "해결책 없음, 보호 된 꾸러미를 제거 할 수 없음"
 
-#: libdnf/goal/Goal.cpp:1170
+#: libdnf/goal/Goal.cpp:1186
 msgid "no solution possible"
 msgstr "해결책 없음"
 
-#: libdnf/goal/Goal.cpp:1296
+#: libdnf/goal/Goal.cpp:1312
 msgid "Problem: "
 msgstr "문제: "
 
-#: libdnf/goal/Goal.cpp:1301
+#: libdnf/goal/Goal.cpp:1317
 #, c-format
 msgid "Problem %d: "
 msgstr "문제 %d: "
 
-#: libdnf/goal/Goal.cpp:1634
+#: libdnf/goal/Goal.cpp:1650
 msgid ""
 "The operation would result in removing the following protected packages: "
 msgstr "이 작업으로 인해 다음과 같은 보호 꾸러미가 제거됩니다. "
 
-#: libdnf/hy-iutil.cpp:326
+#: libdnf/hy-iutil.cpp:181
+#, c-format
+msgid "Libsolv's solv_toolversion is: %zu long but we expect max of: %zu"
+msgstr "Libsolv의 solv_toolversion은 %zu 길이지만 최대값은 %zu로 예상됩니다"
+
+#: libdnf/hy-iutil.cpp:408
 #, c-format
 msgid "Failed renaming %1$s to %2$s: %3$s"
 msgstr "%1$s 을 %2$s: %3$s에 이름 바꾸기 실패"
 
-#: libdnf/hy-iutil.cpp:334
+#: libdnf/hy-iutil.cpp:416
 #, c-format
 msgid "Failed setting perms on %1$s: %2$s"
 msgstr "%1$s: %2$s에 perms 설정 실패하였습니다"
 
-#: libdnf/hy-iutil.cpp:380
+#: libdnf/hy-iutil.cpp:462
 #, c-format
 msgid "cannot create directory %1$s: %2$s"
 msgstr "디렉토리를 생성 할 수 없습니다 %1$s: %2$s"
 
-#: libdnf/hy-iutil.cpp:415
+#: libdnf/hy-iutil.cpp:497
 #, c-format
 msgid "cannot stat path %1$s: %2$s"
 msgstr "경로 %1$s: %2$s stat 할 수 없습니다"
@@ -829,7 +895,9 @@ msgstr "'%s'에서 모듈식 Fail Safe 자료를 제거 할 수 없습니다"
 msgid ""
 "Unable to apply modular obsoletes to '%s:%s' because target module '%s' is "
 "disabled"
-msgstr "'%s:%s'에 사용되지 않는 모듈을 적용할 수 없습니다(대상 모듈 '%s'가 비활성화 되어 있기 때문에)"
+msgstr ""
+"'%s:%s'에 사용되지 않는 모듈을 적용할 수 없습니다(대상 모듈 '%s'가 비활성화 "
+"되어 있기 때문에)"
 
 #: libdnf/module/modulemd/ModuleMetadata.cpp:86
 #, c-format
@@ -902,8 +970,9 @@ msgid ""
 "deprecated and the support will be dropped in future versions. Use '=' "
 "operator instead."
 msgstr ""
-"reldeps에 '=='연산자를 사용하면 정의되지 않은 동작이 발생할 수 있습니다. 이 연산자는 더 이상 사용되지 않으며, 향후 "
-"버전에서는 지원이 중단됩니다. 대신 '=' 연산자를 사용하세요."
+"reldeps에 '=='연산자를 사용하면 정의되지 않은 동작이 발생할 수 있습니다. 이 "
+"연산자는 더 이상 사용되지 않으며, 향후 버전에서는 지원이 중단됩니다. 대신 "
+"'=' 연산자를 사용하세요."
 
 #: libdnf/repo/Repo.cpp:321
 #, c-format
@@ -923,14 +992,17 @@ msgstr "repo '%s': 'basecachedir가 구성되어 있지 않습니다"
 
 #: libdnf/repo/Repo.cpp:512
 msgid ""
-"Maximum download speed is lower than minimum. Please change configuration of"
-" minrate or throttle"
-msgstr "최대 내려받기 속도는 최저보다 낮습니다. 최저속도나 변환 환경구성을 변경해 주세요"
+"Maximum download speed is lower than minimum. Please change configuration of "
+"minrate or throttle"
+msgstr ""
+"최대 내려받기 속도는 최저보다 낮습니다. 최저속도나 변환 환경구성을 변경해 주"
+"세요"
 
 #: libdnf/repo/Repo.cpp:546
 #, c-format
 msgid "repo '%s': 'proxy_username' is set but not 'proxy_password'"
-msgstr "repo '%s': 'proxy_username' 는 구성되어 있지만 'proxy_password'가 없습니다"
+msgstr ""
+"repo '%s': 'proxy_username' 는 구성되어 있지만 'proxy_password'가 없습니다"
 
 #: libdnf/repo/Repo.cpp:548
 msgid "'proxy_username' is set but not 'proxy_password'"
@@ -951,8 +1023,8 @@ msgstr "%s: gpgme_data_new_from_fd(): %s"
 msgid "%s: gpgme_op_import(): %s"
 msgstr "%s: gpgme_op_import(): %s"
 
-#: libdnf/repo/Repo.cpp:709 libdnf/repo/Repo.cpp:1162
-#: libdnf/repo/Repo.cpp:1236 libdnf/repo/Repo.cpp:1279
+#: libdnf/repo/Repo.cpp:709 libdnf/repo/Repo.cpp:1162 libdnf/repo/Repo.cpp:1236
+#: libdnf/repo/Repo.cpp:1279
 #, c-format
 msgid "Cannot create repo temporary directory \"%s\": %s"
 msgstr "임시 저장소 디렉토리를 만들 수 없습니다 \"%s\": %s"
@@ -1030,7 +1102,7 @@ msgstr "디렉토리를 만들 수 없습니다 \"%s\": %s"
 #: libdnf/repo/Repo.cpp:1316
 #, c-format
 msgid "Cannot rename directory \"%s\" to \"%s\": %s"
-msgstr "디렉터리 이름을 바꿀 수 없습니다 \"%s\"~\"%s\": %s"
+msgstr "디렉토리 \"%s\"를 \"%s\": %s로 변경 할 수 없음"
 
 #: libdnf/repo/Repo.cpp:1339
 #, c-format
@@ -1094,17 +1166,18 @@ msgstr "진행 중이 아님"
 msgid "No transaction in progress"
 msgstr "진행 중인 연결 없음"
 
-#: libdnf/transaction/TransactionItem.cpp:147
+#: libdnf/transaction/TransactionItem.cpp:146
 msgid "Attempt to insert transaction item into completed transaction"
 msgstr "연결 항목을 완료된 연결에 삽입하려고 시도했습니다"
 
-#: libdnf/transaction/TransactionItem.cpp:218
+#: libdnf/transaction/TransactionItem.cpp:217
 msgid "Attempt to update transaction item in completed transaction"
 msgstr "완료된 연결에서 연결 항목 최신화를 시도합니다"
 
 #: libdnf/transaction/Transformer.cpp:76
 msgid "Database Corrupted: no row 'version' in table 'config'"
-msgstr "데이타베이스가 오염되었습니다: 테이블 'config'에 'version' 행이 없습니다"
+msgstr ""
+"데이타베이스가 오염되었습니다: 테이블 'config'에 'version' 행이 없습니다"
 
 #: libdnf/transaction/Transformer.cpp:681
 msgid "Transformer: can't open history persist dir"
@@ -1127,8 +1200,20 @@ msgstr "TransactionItem 상태가 설정되지 않았습니다. %s"
 msgid "Can't add console output to unsaved transaction"
 msgstr "저장되지 않은 연결에 콘솔 출력을 추가 할 수 없습니다"
 
-#~ msgid "Failed to parse module artifact NEVRA '%s'"
-#~ msgstr "모듈 artifact NERVRA '%s'를 구문 분석하는데 실패하였습니다"
+#~ msgid "failed to add solv"
+#~ msgstr "solv를 추가하지 못했습니다"
 
-#~ msgid "failed calculating RPMDB checksum"
-#~ msgstr "RPMDB 체크섬 계산 실패"
+#~ msgid "write_main() failed writing data: %i"
+#~ msgstr "write_main() 실패한 쓰기 자료: %i"
+
+#~ msgid "write_main() failed to re-load written solv file"
+#~ msgstr "write_main ()이 작성된 solv 파일을 다시 적재하지 못했습니다"
+
+#~ msgid "write_ext(%1$d) has failed: %2$d"
+#~ msgstr "write_ext(%1$d) 실패하였습니다: %2$d"
+
+#~ msgid "repo_add_repomdxml/rpmmd() has failed."
+#~ msgstr "repo_add_repomdxml/rpmmd() 실패하였습니다."
+
+#~ msgid "Failed to parse module artifact NEVRA '%s'"
+#~ msgstr "모듈 artifact NERVE '%s' 구분 분석에 실패함"
