@@ -62,25 +62,6 @@ G_DEFINE_TYPE_WITH_PRIVATE(DnfRepoLoader, dnf_repo_loader, G_TYPE_OBJECT)
 #define GET_PRIVATE(o) (static_cast<DnfRepoLoaderPrivate *>(dnf_repo_loader_get_instance_private (o)))
 
 /**
- * dnf_repo_loader_finalize:
- **/
-static void
-dnf_repo_loader_finalize(GObject *object)
-{
-    DnfRepoLoader *self = DNF_REPO_LOADER(object);
-    DnfRepoLoaderPrivate *priv = GET_PRIVATE(self);
-
-    if (priv->context != NULL)
-        g_object_remove_weak_pointer(G_OBJECT(priv->context),
-                                     (void **) &priv->context);
-    g_ptr_array_unref(priv->monitor_repos);
-    g_object_unref(priv->volume_monitor);
-    g_ptr_array_unref(priv->repos);
-
-    G_OBJECT_CLASS(dnf_repo_loader_parent_class)->finalize(object);
-}
-
-/**
  * dnf_repo_loader_invalidate:
  */
 static void
@@ -102,6 +83,46 @@ dnf_repo_loader_mount_changed_cb(GVolumeMonitor *vm, GMount *mount, DnfRepoLoade
     g_debug("emit changed(mounts changed)");
     g_signal_emit(self, signals[SIGNAL_CHANGED], 0);
     dnf_repo_loader_invalidate(self);
+}
+
+/**
+ * dnf_repo_loader_directory_changed_cb:
+ **/
+static void
+dnf_repo_loader_directory_changed_cb(GFileMonitor *monitor_,
+                                     GFile *file, GFile *other_file,
+                                     GFileMonitorEvent event_type,
+                                     DnfRepoLoader *self)
+{
+    g_debug("emit changed(ReposDir changed)");
+    g_signal_emit(self, signals[SIGNAL_CHANGED], 0);
+    dnf_repo_loader_invalidate(self);
+}
+
+/**
+ * dnf_repo_loader_finalize:
+ **/
+static void
+dnf_repo_loader_finalize(GObject *object)
+{
+    DnfRepoLoader *self = DNF_REPO_LOADER(object);
+    DnfRepoLoaderPrivate *priv = GET_PRIVATE(self);
+
+    if (priv->context != NULL)
+        g_object_remove_weak_pointer(G_OBJECT(priv->context),
+                                     (void **) &priv->context);
+    guint i;
+    for (i = 0; i < priv->monitor_repos->len; i++) {
+        auto repo_file_monitor = static_cast<GFileMonitor *>(g_ptr_array_index(priv->monitor_repos, i));
+        g_signal_handlers_disconnect_by_func(repo_file_monitor, (gpointer) dnf_repo_loader_directory_changed_cb, self);
+    }
+    g_ptr_array_unref(priv->monitor_repos);
+
+    g_signal_handlers_disconnect_by_func(priv->volume_monitor, (gpointer) dnf_repo_loader_mount_changed_cb, self);
+    g_object_unref(priv->volume_monitor);
+    g_ptr_array_unref(priv->repos);
+
+    G_OBJECT_CLASS(dnf_repo_loader_parent_class)->finalize(object);
 }
 
 /**
@@ -524,20 +545,6 @@ dnf_repo_loader_get_repo_by_id(DnfRepoLoader *self, const gchar *id, GError **er
                 "failed to find %s", id);
     return NULL;
 } CATCH_TO_GERROR(NULL)
-
-/**
- * dnf_repo_loader_directory_changed_cb:
- **/
-static void
-dnf_repo_loader_directory_changed_cb(GFileMonitor *monitor_,
-                                     GFile *file, GFile *other_file,
-                                     GFileMonitorEvent event_type,
-                                     DnfRepoLoader *self)
-{
-    g_debug("emit changed(ReposDir changed)");
-    g_signal_emit(self, signals[SIGNAL_CHANGED], 0);
-    dnf_repo_loader_invalidate(self);
-}
 
 /**
  * dnf_repo_loader_setup_monitor:
