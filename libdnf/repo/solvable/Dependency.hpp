@@ -63,6 +63,7 @@ public:
     const char *getVersion() const;
     const char *toString() const;
     Id getId() const noexcept;
+    DnfSack * getSack() const noexcept;
 
 private:
     friend DependencyContainer;
@@ -92,6 +93,7 @@ private:
 };
 
 inline Id Dependency::getId() const noexcept { return id; }
+inline DnfSack * Dependency::getSack() const noexcept { return sack; }
 
 }
 
