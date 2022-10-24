@@ -403,13 +403,21 @@ class TestAllArch(base.TestCase):
         self.sack3.load_test_repo("test_ppc", "ppc.repo")
 
     def test_provides_all_arch_query(self):
-        ppc_pkgs = hawkey.Query(self.sack1)
-        self.assertGreater(len(ppc_pkgs), 0)
-        pkg1 = ppc_pkgs[0]
+        # Reldep objects are per-sack, queries across are disallowed. So
+        # it is necessary to create 3 queries below.
+        #
+        # See "query-py: Ensure reldep is from the same sack" for details
+        ppc_pkgs_1 = hawkey.Query(self.sack1)
+        ppc_pkgs_2 = hawkey.Query(self.sack2)
+        ppc_pkgs_3 = hawkey.Query(self.sack3)
+        self.assertGreater(len(ppc_pkgs_1), 0)
+        pkg1 = ppc_pkgs_1[0]
+        pkg2 = ppc_pkgs_2[0]
+        pkg3 = ppc_pkgs_3[0]
 
         query_ppc = hawkey.Query(self.sack1).filter(provides=pkg1.provides[0])
-        query_x86 = hawkey.Query(self.sack2).filter(provides=pkg1.provides[0])
-        query_all = hawkey.Query(self.sack3).filter(provides=pkg1.provides[0])
+        query_x86 = hawkey.Query(self.sack2).filter(provides=pkg2.provides[0])
+        query_all = hawkey.Query(self.sack3).filter(provides=pkg3.provides[0])
 
         self.assertEqual(len(query_ppc), 1)
         self.assertEqual(len(query_x86), 0)
