@@ -345,6 +345,16 @@ filter_add(HyQuery query, key_t keyname, int cmp_type, PyObject *match)
     }
     if (reldepObject_Check(match)) {
         DnfReldep *reldep = reldepFromPyObject(match);
+
+	/* A reldep cannot be used across sack objects. If there is an attempt
+         * to do so, the underlying libsolv structures are incomplete and a SEGFAULT is
+         * likely to occur. */
+
+        if (query->getSack() != reldep->getSack()) {
+            PyErr_SetString(HyExc_Query, "Direct dependency lookups must originate from the same sack.");
+            return 0;
+        }
+
         if (cmp_type != HY_EQ || query->addFilter(keyname, reldep))
             return raise_bad_filter();
         return 1;
