@@ -213,6 +213,7 @@ dnf_keyring_add_public_keys(rpmKeyring keyring, GError **error) try
         if (!ret) {
             g_warning("%s", localError->message);
             g_error_free(localError);
+            localError = NULL;
         }
     } while (true);
     return TRUE;
