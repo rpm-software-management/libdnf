@@ -78,9 +78,11 @@ PluginHandle * pluginInitHandle(int version, PluginMode mode, DnfPluginInitData 
             break;
         }
         handle = malloc(sizeof(*handle));
-        handle->mode = mode;
-        handle->context = pluginGetContext(initData);
-        handle->outStream = outStream;
+	if (handle) {
+            handle->mode = mode;
+            handle->context = pluginGetContext(initData);
+            handle->outStream = outStream;
+	}
     } while (0);
 
     fprintf(outStream, "%s: %s: exit =========================\n", info.name, __func__);
