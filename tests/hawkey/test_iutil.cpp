@@ -123,7 +123,7 @@ START_TEST(test_dnf_solvfile_userdata)
     fclose(fp);
 
     fp = fopen(new_file, "r");
-    std::unique_ptr<SolvUserdata> dnf_solvfile = solv_userdata_read(fp);
+    std::unique_ptr<SolvUserdata, decltype(free)*> dnf_solvfile = solv_userdata_read(fp);
     fail_unless(dnf_solvfile);
     fail_unless(solv_userdata_verify(dnf_solvfile.get(), cs_computed));
     fclose(fp);

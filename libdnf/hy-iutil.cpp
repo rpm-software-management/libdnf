@@ -199,28 +199,30 @@ solv_userdata_fill(SolvUserdata *solv_userdata, const unsigned char *checksum, G
 }
 
 
-std::unique_ptr<SolvUserdata>
+std::unique_ptr<SolvUserdata, decltype(free)*>
 solv_userdata_read(FILE *fp)
 {
     unsigned char *dnf_solvfile_userdata_read = NULL;
     int dnf_solvfile_userdata_len_read;
     if (!fp) {
-        return nullptr;
+        return {NULL, free};
     }
 
     int ret_code = solv_read_userdata(fp, &dnf_solvfile_userdata_read, &dnf_solvfile_userdata_len_read);
     // The userdata layout has to match our struct exactly so we can just cast the memory
     // allocated by libsolv
-    std::unique_ptr<SolvUserdata> uniq_userdata(reinterpret_cast<SolvUserdata *>(dnf_solvfile_userdata_read));
+    std::unique_ptr<SolvUserdata, decltype(free)*> uniq_userdata(
+	reinterpret_cast<SolvUserdata *>(dnf_solvfile_userdata_read),
+	free);
     if(ret_code) {
         g_warning("Failed to read solv userdata: solv_read_userdata returned: %i", ret_code);
-        return nullptr;
+        return uniq_userdata;
     }
 
     if (dnf_solvfile_userdata_len_read != solv_userdata_size) {
         g_warning("Solv userdata length mismatch, read: %i vs expected: %i",
                   dnf_solvfile_userdata_len_read, solv_userdata_size);
-        return nullptr;
+        return uniq_userdata;
     }
 
     return uniq_userdata;

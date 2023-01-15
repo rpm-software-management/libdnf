@@ -46,7 +46,7 @@ struct SolvUserdata {
 }__attribute__((packed)); ;
 
 int solv_userdata_fill(SolvUserdata *solv_userdata, const unsigned char *checksum, GError** error);
-std::unique_ptr<SolvUserdata> solv_userdata_read(FILE *fp);
+std::unique_ptr<SolvUserdata, decltype(free)*> solv_userdata_read(FILE *fp);
 int solv_userdata_verify(const SolvUserdata *solv_userdata, const unsigned char *checksum);
 
 /* crypto utils */
