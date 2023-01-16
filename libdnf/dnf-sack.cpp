@@ -239,7 +239,7 @@ try_to_use_cached_solvfile(const char *path, Repo *repo, int flags, const unsign
         }
         return FALSE;
     }
-    std::unique_ptr<SolvUserdata, decltype(free)*> solv_userdata = solv_userdata_read(fp_cache);
+    std::unique_ptr<SolvUserdata, decltype(solv_free)*> solv_userdata = solv_userdata_read(fp_cache);
     gboolean ret = TRUE;
     if (solv_userdata && solv_userdata_verify(solv_userdata.get(), checksum)) {
         // after reading the header rewind to the begining
