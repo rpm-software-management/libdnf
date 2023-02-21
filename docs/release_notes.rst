@@ -20,6 +20,23 @@
 ######################
 
 ====================
+0.70.0 Release Notes
+====================
+
+- Security fixes:
+  - Allow change of architecture for packages during security updates with noarch involved (RhBug:2124483)
+
+- Bug fixes:
+  - "dnf_keyring_add_public_keys": reset localError to NULL after free (RhBug:2121222)
+  - context: Get RPM db path from RPM
+  - Fix memory leak of SolvUserdata
+
+Bugs fixed in 0.70.0:
+
+* :rhbug:`2124483`
+* :rhbug:`2121222`
+
+====================
 0.69.0 Release Notes
 ====================
 
