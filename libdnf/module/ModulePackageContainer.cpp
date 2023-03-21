@@ -392,7 +392,7 @@ ModulePackageContainer::add(const std::string &fileContent, const std::string & 
 
     // add all modules to repository and pass ownership to module container
     g_autofree gchar * path = g_build_filename(pImpl->installRoot.c_str(), "/etc/dnf/modules.d", NULL);
-    auto packages = md.getAllModulePackages(pImpl->moduleSack, r, repoID, pImpl->modulesV2);
+    auto packages = md.getAllModulePackages(pImpl->moduleSack, repo, repoID, pImpl->modulesV2);
     for(auto const& modulePackagePtr: packages) {
         std::unique_ptr<ModulePackage> modulePackage(modulePackagePtr);
         pImpl->modules.insert(std::make_pair(modulePackage->getId(), std::move(modulePackage)));

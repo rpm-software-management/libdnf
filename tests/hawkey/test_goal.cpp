@@ -593,11 +593,11 @@ START_TEST(test_goal_describe_problem_rules)
     auto problems = goal->describeProblemRules(0, true);
     const char *expected[] = {
                 "conflicting requests",
-                "nothing provides goodbye needed by hello-1-1.noarch"
+                "nothing provides goodbye needed by hello-1-1.noarch from main"
                 };
-    fail_unless(problems.size() == 2);
-    fail_unless(problems[0] == expected[0]);
-    fail_unless(problems[1] == expected[1]);
+    ck_assert_int_eq(problems.size(), 2);
+    ck_assert_str_eq(problems[0].c_str(), expected[0]);
+    ck_assert_str_eq(problems[1].c_str(), expected[1]);
 
     g_object_unref(pkg);
     hy_goal_free(goal);
@@ -860,10 +860,10 @@ START_TEST(test_goal_lock)
 
     auto problems = goal->describeProblemRules(0, true);
     const char *expected[] = {
-                "package bloop-ext-2.0-1.noarch requires bloop = 2.0-1, but none of the providers can be installed",
-                "cannot install both bloop-2.0-1.noarch and bloop-1.0-1.noarch",
+                "package bloop-ext-2.0-1.noarch from updates requires bloop = 2.0-1, but none of the providers can be installed",
+                "cannot install both bloop-2.0-1.noarch from updates and bloop-1.0-1.noarch from @System",
                 "conflicting requests",
-                "package bloop-ext-1.0-1.noarch is filtered out by exclude filtering"
+                "package bloop-ext-1.0-1.noarch from updates is filtered out by exclude filtering"
                 };
     ck_assert_int_eq(problems.size(), 4);
     ck_assert_str_eq(problems[0].c_str(), expected[0]);
