@@ -87,8 +87,8 @@ enum {RULE_DISTUPGRADE=1, RULE_INFARCH, RULE_UPDATE, RULE_JOB, RULE_JOB_UNSUPPOR
 };
 
 static const std::map<int, const char *> PKG_PROBLEMS_DICT = {
-    {RULE_DISTUPGRADE, M_(" does not belong to a distupgrade repository")},
-    {RULE_INFARCH, M_(" has inferior architecture")},
+    {RULE_DISTUPGRADE, M_("%s from %s  does not belong to a distupgrade repository")},
+    {RULE_INFARCH, M_("%s from %s  has inferior architecture")},
     {RULE_UPDATE, M_("problem with installed package ")},
     {RULE_JOB, M_("conflicting requests")},
     {RULE_JOB_UNSUPPORTED, M_("unsupported request")},
@@ -98,24 +98,24 @@ static const std::map<int, const char *> PKG_PROBLEMS_DICT = {
     {RULE_PKG, M_("some dependency problem")},
     {RULE_BEST_1, M_("cannot install the best update candidate for package ")},
     {RULE_BEST_2, M_("cannot install the best candidate for the job")},
-    {RULE_PKG_NOT_INSTALLABLE_1, M_("package %s is filtered out by modular filtering")},
-    {RULE_PKG_NOT_INSTALLABLE_2, M_("package %s does not have a compatible architecture")},
-    {RULE_PKG_NOT_INSTALLABLE_3, M_("package %s is not installable")},
-    {RULE_PKG_NOT_INSTALLABLE_4, M_("package %s is filtered out by exclude filtering")},
-    {RULE_PKG_NOTHING_PROVIDES_DEP, M_("nothing provides %s needed by %s")},
-    {RULE_PKG_SAME_NAME, M_("cannot install both %s and %s")},
-    {RULE_PKG_CONFLICTS, M_("package %s conflicts with %s provided by %s")},
-    {RULE_PKG_OBSOLETES, M_("package %s obsoletes %s provided by %s")},
-    {RULE_PKG_INSTALLED_OBSOLETES, M_("installed package %s obsoletes %s provided by %s")},
-    {RULE_PKG_IMPLICIT_OBSOLETES, M_("package %s implicitly obsoletes %s provided by %s")},
-    {RULE_PKG_REQUIRES, M_("package %s requires %s, but none of the providers can be installed")},
-    {RULE_PKG_SELF_CONFLICT, M_("package %s conflicts with %s provided by itself")},
-    {RULE_YUMOBS, M_("both package %s and %s obsolete %s")}
+    {RULE_PKG_NOT_INSTALLABLE_1, M_("package %s from %s is filtered out by modular filtering")},
+    {RULE_PKG_NOT_INSTALLABLE_2, M_("package %s from %s does not have a compatible architecture")},
+    {RULE_PKG_NOT_INSTALLABLE_3, M_("package %s from %s is not installable")},
+    {RULE_PKG_NOT_INSTALLABLE_4, M_("package %s from %s is filtered out by exclude filtering")},
+    {RULE_PKG_NOTHING_PROVIDES_DEP, M_("nothing provides %s needed by %s from %s")},
+    {RULE_PKG_SAME_NAME, M_("cannot install both %s from %s and %s from %s")},
+    {RULE_PKG_CONFLICTS, M_("package %s from %s conflicts with %s provided by %s from %s")},
+    {RULE_PKG_OBSOLETES, M_("package %s from %s obsoletes %s provided by %s from %s")},
+    {RULE_PKG_INSTALLED_OBSOLETES, M_("installed package %s obsoletes %s provided by %s from %s")},
+    {RULE_PKG_IMPLICIT_OBSOLETES, M_("package %s from %s implicitly obsoletes %s provided by %s from %s")},
+    {RULE_PKG_REQUIRES, M_("package %s from %s requires %s, but none of the providers can be installed")},
+    {RULE_PKG_SELF_CONFLICT, M_("package %s from %s conflicts with %s provided by itself")},
+    {RULE_YUMOBS, M_("both package %s from %s and %s from %s obsolete %s")}
 };
 
 static const std::map<int, const char *> MODULE_PROBLEMS_DICT = {
-    {RULE_DISTUPGRADE, M_(" does not belong to a distupgrade repository")},
-    {RULE_INFARCH, M_(" has inferior architecture")},
+    {RULE_DISTUPGRADE, M_("%s from %s does not belong to a distupgrade repository")},
+    {RULE_INFARCH, M_("%s from %s has inferior architecture")},
     {RULE_UPDATE, M_("problem with installed module ")},
     {RULE_JOB, M_("conflicting requests")},
     {RULE_JOB_UNSUPPORTED, M_("unsupported request")},
@@ -125,19 +125,19 @@ static const std::map<int, const char *> MODULE_PROBLEMS_DICT = {
     {RULE_PKG, M_("some dependency problem")},
     {RULE_BEST_1, M_("cannot install the best update candidate for module ")},
     {RULE_BEST_2, M_("cannot install the best candidate for the job")},
-    {RULE_PKG_NOT_INSTALLABLE_1, M_("module %s is disabled")},
-    {RULE_PKG_NOT_INSTALLABLE_2, M_("module %s does not have a compatible architecture")},
-    {RULE_PKG_NOT_INSTALLABLE_3, M_("module %s is not installable")},
-    {RULE_PKG_NOT_INSTALLABLE_4, M_("module %s is disabled")},
-    {RULE_PKG_NOTHING_PROVIDES_DEP, M_("nothing provides %s needed by module %s")},
-    {RULE_PKG_SAME_NAME, M_("cannot install both modules %s and %s")},
-    {RULE_PKG_CONFLICTS, M_("module %s conflicts with %s provided by %s")},
-    {RULE_PKG_OBSOLETES, M_("module %s obsoletes %s provided by %s")},
-    {RULE_PKG_INSTALLED_OBSOLETES, M_("installed module %s obsoletes %s provided by %s")},
-    {RULE_PKG_IMPLICIT_OBSOLETES, M_("module %s implicitly obsoletes %s provided by %s")},
-    {RULE_PKG_REQUIRES, M_("module %s requires %s, but none of the providers can be installed")},
-    {RULE_PKG_SELF_CONFLICT, M_("module %s conflicts with %s provided by itself")},
-    {RULE_YUMOBS, M_("both module %s and %s obsolete %s")}
+    {RULE_PKG_NOT_INSTALLABLE_1, M_("module %s from %s is disabled")},
+    {RULE_PKG_NOT_INSTALLABLE_2, M_("module %s from %s does not have a compatible architecture")},
+    {RULE_PKG_NOT_INSTALLABLE_3, M_("module %s from %s is not installable")},
+    {RULE_PKG_NOT_INSTALLABLE_4, M_("module %s from %s is disabled")},
+    {RULE_PKG_NOTHING_PROVIDES_DEP, M_("nothing provides %s needed by module %s from %s")},
+    {RULE_PKG_SAME_NAME, M_("cannot install both modules %s from %s and %s from %s")},
+    {RULE_PKG_CONFLICTS, M_("module %s from %s conflicts with %s provided by %s from %s")},
+    {RULE_PKG_OBSOLETES, M_("module %s from %s obsoletes %s provided by %s from %s")},
+    {RULE_PKG_INSTALLED_OBSOLETES, M_("installed module %s obsoletes %s provided by %s from %s")},
+    {RULE_PKG_IMPLICIT_OBSOLETES, M_("module %s from %s implicitly obsoletes %s provided by %s from %s")},
+    {RULE_PKG_REQUIRES, M_("module %s from %s requires %s, but none of the providers can be installed")},
+    {RULE_PKG_SELF_CONFLICT, M_("module %s from %s conflicts with %s provided by itself")},
+    {RULE_YUMOBS, M_("both module %s from %s and %s from %s obsolete %s")}
 };
 
 static std::string
@@ -151,9 +151,11 @@ libdnf_problemruleinfo2str(libdnf::PackageSet * modularExclude, Solver *solv, So
     Solvable *ss;
     switch (type) {
         case SOLVER_RULE_DISTUPGRADE:
-            return solvid2str(pool, source) + TM_(problemDict.at(RULE_DISTUPGRADE), 1);
+            return tfm::format(TM_(problemDict.at(RULE_DISTUPGRADE), 1), solvid2str(pool, source).c_str(),
+                               pool_id2solvable(pool, source)->repo->name);
         case SOLVER_RULE_INFARCH:
-            return solvid2str(pool, source) + TM_(problemDict.at(RULE_INFARCH), 1);
+            return tfm::format(TM_(problemDict.at(RULE_DISTUPGRADE), 1), solvid2str(pool, source).c_str(),
+                               pool_id2solvable(pool, source)->repo->name);
         case SOLVER_RULE_UPDATE:
             return std::string(TM_(problemDict.at(RULE_UPDATE), 1)) + solvid2str(pool, source);
         case SOLVER_RULE_JOB:
@@ -176,44 +178,53 @@ libdnf_problemruleinfo2str(libdnf::PackageSet * modularExclude, Solver *solv, So
             ss = pool->solvables + source;
             if (pool_disabled_solvable(pool, ss)) {
                 if (modularExclude && modularExclude->has(source)) {
-                    return tfm::format(TM_(problemDict.at(RULE_PKG_NOT_INSTALLABLE_1), 1), solvid2str(pool, source).c_str());
+                    return tfm::format(TM_(problemDict.at(RULE_PKG_NOT_INSTALLABLE_1), 1),
+                                       solvid2str(pool, source).c_str(), pool_id2solvable(pool, source)->repo->name);
                 } else {
-                    return tfm::format(TM_(problemDict.at(RULE_PKG_NOT_INSTALLABLE_4), 1), solvid2str(pool, source).c_str());
+                    return tfm::format(TM_(problemDict.at(RULE_PKG_NOT_INSTALLABLE_4), 1),
+                                       solvid2str(pool, source).c_str(), pool_id2solvable(pool, source)->repo->name);
                 }
             }
             if (ss->arch && ss->arch != ARCH_SRC && ss->arch != ARCH_NOSRC &&
                 pool->id2arch && (ss->arch > pool->lastarch || !pool->id2arch[ss->arch]))
-                return tfm::format(TM_(problemDict.at(RULE_PKG_NOT_INSTALLABLE_2), 1), solvid2str(pool, source).c_str());
-            return tfm::format(TM_(problemDict.at(RULE_PKG_NOT_INSTALLABLE_3), 1), solvid2str(pool, source).c_str());
+                return tfm::format(TM_(problemDict.at(RULE_PKG_NOT_INSTALLABLE_2), 1), solvid2str(pool, source).c_str(),
+                                   pool_id2solvable(pool, source)->repo->name);
+            return tfm::format(TM_(problemDict.at(RULE_PKG_NOT_INSTALLABLE_3), 1), solvid2str(pool, source).c_str(),
+                               pool_id2solvable(pool, source)->repo->name);
         case SOLVER_RULE_PKG_NOTHING_PROVIDES_DEP:
             return tfm::format(TM_(problemDict.at(RULE_PKG_NOTHING_PROVIDES_DEP), 1), pool_dep2str(pool, dep),
-                               solvid2str(pool, source).c_str());
+                               solvid2str(pool, source).c_str(), pool_id2solvable(pool, source)->repo->name);
         case SOLVER_RULE_PKG_SAME_NAME:
             return tfm::format(TM_(problemDict.at(RULE_PKG_SAME_NAME), 1), solvid2str(pool, source).c_str(),
-                               solvid2str(pool, target).c_str());
+                               pool_id2solvable(pool, source)->repo->name, solvid2str(pool, target).c_str(),
+                               pool_id2solvable(pool, target)->repo->name);
         case SOLVER_RULE_PKG_CONFLICTS:
             return tfm::format(TM_(problemDict.at(RULE_PKG_CONFLICTS), 1), solvid2str(pool, source).c_str(),
-                               pool_dep2str(pool, dep), solvid2str(pool, target).c_str());
+                               pool_id2solvable(pool, source)->repo->name, pool_dep2str(pool, dep),
+                               solvid2str(pool, target).c_str(), pool_id2solvable(pool, target)->repo->name);
         case SOLVER_RULE_PKG_OBSOLETES:
             return tfm::format(TM_(problemDict.at(RULE_PKG_OBSOLETES), 1), solvid2str(pool, source).c_str(),
-                               pool_dep2str(pool, dep), solvid2str(pool, target).c_str());
+                               pool_id2solvable(pool, source)->repo->name, pool_dep2str(pool, dep),
+                               solvid2str(pool, target).c_str(), pool_id2solvable(pool, target)->repo->name);
         case SOLVER_RULE_PKG_INSTALLED_OBSOLETES:
             return tfm::format(TM_(problemDict.at(RULE_PKG_INSTALLED_OBSOLETES), 1),
                                solvid2str(pool, source).c_str(), pool_dep2str(pool, dep),
-                               solvid2str(pool, target).c_str());
+                               solvid2str(pool, target).c_str(), pool_id2solvable(pool, target)->repo->name);
         case SOLVER_RULE_PKG_IMPLICIT_OBSOLETES:
             return tfm::format(TM_(problemDict.at(RULE_PKG_IMPLICIT_OBSOLETES), 1),
                                solvid2str(pool, source).c_str(), pool_dep2str(pool, dep),
-                               solvid2str(pool, target).c_str());
+                               pool_id2solvable(pool, source)->repo->name, solvid2str(pool, target).c_str(),
+                               pool_id2solvable(pool, target)->repo->name);
         case SOLVER_RULE_PKG_REQUIRES:
             return tfm::format(TM_(problemDict.at(RULE_PKG_REQUIRES), 1), solvid2str(pool, source).c_str(),
-                               pool_dep2str(pool, dep));
+                               pool_id2solvable(pool, source)->repo->name, pool_dep2str(pool, dep));
         case SOLVER_RULE_PKG_SELF_CONFLICT:
             return tfm::format(TM_(problemDict.at(RULE_PKG_SELF_CONFLICT), 1), solvid2str(pool, source).c_str(),
-                               pool_dep2str(pool, dep));
+                               pool_id2solvable(pool, source)->repo->name, pool_dep2str(pool, dep));
         case SOLVER_RULE_YUMOBS:
             return tfm::format(TM_(problemDict.at(RULE_YUMOBS), 1), solvid2str(pool, source).c_str(),
-                               solvid2str(pool, target).c_str(), pool_dep2str(pool, dep));
+                               pool_id2solvable(pool, source)->repo->name, solvid2str(pool, target).c_str(),
+                               pool_id2solvable(pool, target)->repo->name, pool_dep2str(pool, dep));
         default:
             return solver_problemruleinfo2str(solv, type, source, target, dep);
     }
