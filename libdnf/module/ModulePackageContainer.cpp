@@ -235,13 +235,6 @@ ModulePackageContainer::ModulePackageContainer(bool allArch, std::string install
         pImpl->persistDir = dir;
     }
 
-    Pool * pool = dnf_sack_get_pool(pImpl->moduleSack);
-    HyRepo hrepo = hy_repo_create("available");
-    auto repoImpl = libdnf::repoGetImpl(hrepo);
-    LibsolvRepo *repo = repo_create(pool, "available");
-    repo->appdata = hrepo;
-    repoImpl->libsolvRepo = repo;
-    repoImpl->needs_internalizing = 1;
     pImpl->installRoot = installRoot;
     g_autofree gchar * path = g_build_filename(pImpl->installRoot.c_str(),
                                               "/etc/dnf/modules.d", NULL);
@@ -324,22 +317,35 @@ ModulePackageContainer::add(const std::string &fileContent, const std::string & 
     md.addMetadataFromString(fileContent, 0);
     md.resolveAddedMetadata();
 
+    LibsolvRepo * repo = nullptr;
     LibsolvRepo * r;
     Id id;
 
+    // Search whether available repo was already created
     FOR_REPOS(id, r) {
-        if (strcmp(r->name, "available") == 0) {
-            g_autofree gchar * path = g_build_filename(pImpl->installRoot.c_str(),
-                                                      "/etc/dnf/modules.d", NULL);
-            std::vector<ModulePackage *> packages = md.getAllModulePackages(pImpl->moduleSack, r, repoID);
-            for(auto const& modulePackagePtr: packages) {
-                std::unique_ptr<ModulePackage> modulePackage(modulePackagePtr);
-                pImpl->modules.insert(std::make_pair(modulePackage->getId(), std::move(modulePackage)));
-                pImpl->persistor->insert(modulePackagePtr->getName(), path);
-            }
-
-            return;
+        if (strcmp(r->name, repoID.c_str()) == 0) {
+            repo = r;
         }
+    }
+
+    // If not created yet, create it
+    if (!repo) {
+        Pool * pool = dnf_sack_get_pool(pImpl->moduleSack);
+        HyRepo hrepo = hy_repo_create(repoID.c_str());
+        auto repoImpl = libdnf::repoGetImpl(hrepo);
+        repo = repo_create(pool, repoID.c_str());
+        repo->appdata = hrepo;
+        repoImpl->libsolvRepo = repo;
+        repoImpl->needs_internalizing = 1;
+    }
+
+    // add all modules to repository and pass ownership to module container
+    g_autofree gchar * path = g_build_filename(pImpl->installRoot.c_str(), "/etc/dnf/modules.d", NULL);
+    auto packages = md.getAllModulePackages(pImpl->moduleSack, r, repoID);
+    for(auto const& modulePackagePtr: packages) {
+        std::unique_ptr<ModulePackage> modulePackage(modulePackagePtr);
+        pImpl->modules.insert(std::make_pair(modulePackage->getId(), std::move(modulePackage)));
+        pImpl->persistor->insert(modulePackagePtr->getName(), path);
     }
 }
 
