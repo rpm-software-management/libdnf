@@ -238,9 +238,7 @@ dnf_keyring_check_untrusted_file(rpmKeyring keyring,
     FD_t fd = NULL;
     gboolean ret = FALSE;
     Header hdr = NULL;
-    pgpDig dig = NULL;
     rpmRC rc;
-    rpmtd td = NULL;
     rpmts ts = NULL;
 
     char *path = g_strdup(filename);
@@ -302,51 +300,6 @@ dnf_keyring_check_untrusted_file(rpmKeyring keyring,
         goto out;
     }
 
-    /* convert and upscale */
-    headerConvert(hdr, HEADERCONV_RETROFIT_V3);
-
-    /* get RSA key */
-    td = rpmtdNew();
-    rc = static_cast<rpmRC>(headerGet(hdr, RPMTAG_RSAHEADER, td, HEADERGET_MINMEM));
-    if (rc != RPMRC_NOTFOUND) {
-        /* try to read DSA key as a fallback */
-        rc = static_cast<rpmRC>(headerGet(hdr, RPMTAG_DSAHEADER, td, HEADERGET_MINMEM));
-    }
-
-    /* the package has no signing key */
-    if (rc != RPMRC_NOTFOUND) {
-        g_autofree char *package_filename = g_path_get_basename(filename);
-        ret = FALSE;
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_GPG_SIGNATURE_INVALID,
-                    "package not signed: %s", package_filename);
-        goto out;
-    }
-
-    /* make it into a digest */
-    dig = pgpNewDig();
-    rc = static_cast<rpmRC>(pgpPrtPkts(static_cast<const uint8_t *>(td->data), td->count, dig, 0));
-    if (rc != RPMRC_OK) {
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_FILE_INVALID,
-                    "failed to parse digest header for %s",
-                    filename);
-        goto out;
-    }
-
-    /* does the key exist in the keyring */
-    rc = rpmKeyringLookup(keyring, dig);
-    if (rc != RPMRC_OK) {
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_GPG_SIGNATURE_INVALID,
-                    "failed to lookup digest in keyring for %s",
-                    filename);
-        goto out;
-    }
-
     /* the package is signed by a key we trust */
     g_debug("%s has been verified as trusted", filename);
     ret = TRUE;
@@ -355,12 +308,6 @@ out:
 
     if (path != NULL)
         g_free(path);
-    if (dig != NULL)
-        pgpFreeDig(dig);
-    if (td != NULL) {
-        rpmtdFreeData(td);
-        rpmtdFree(td);
-    }
     if (ts != NULL)
         rpmtsFree(ts);
     if (hdr != NULL)
