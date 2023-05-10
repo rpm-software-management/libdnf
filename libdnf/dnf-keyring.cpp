@@ -63,7 +63,6 @@ dnf_keyring_add_public_key(rpmKeyring keyring,
     int rc;
     gsize len;
     pgpArmor armor;
-    pgpDig dig = NULL;
     rpmPubkey pubkey = NULL;
     rpmPubkey *subkeys = NULL;
     int nsubkeys = 0;
@@ -116,16 +115,7 @@ dnf_keyring_add_public_key(rpmKeyring keyring,
         goto out;
     }
 
-    /* does the key exist in the keyring */
-    dig = rpmPubkeyDig(pubkey);
-    rc = rpmKeyringLookup(keyring, dig);
-    if (rc == RPMRC_OK) {
-        ret = TRUE;
-        g_debug("%s is already present", filename);
-        goto out;
-    }
-
-    /* add to rpmdb automatically, without a prompt */
+    /* add to in-memory keyring */
     rc = rpmKeyringAddKey(keyring, pubkey);
     if (rc == 1) {
         ret = TRUE;
@@ -169,8 +159,6 @@ out:
         }
         free(subkeys);
     }
-    if (dig != NULL)
-        pgpFreeDig(dig);
     return ret;
 } CATCH_TO_GERROR(FALSE)
 
