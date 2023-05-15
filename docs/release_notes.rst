@@ -20,6 +20,21 @@
 ######################
 
 ====================
+0.70.1 Release Notes
+====================
+
+- New features:
+  - Add repoid to solver errors for RPMs (RhBug:2179413)
+
+- Others:
+  - Avoid using obsolete RPM API and drop redundant calls
+  - Remove DNF from list of protected packages
+
+Bugs fixed in 0.70.1:
+
+* :rhbug:`2179413`
+
+====================
 0.70.0 Release Notes
 ====================
 
