@@ -26,6 +26,7 @@
 #include "ConfigMain.hpp"
 #include "OptionChild.hpp"
 
+#include <cstdint>
 #include <memory>
 
 namespace libdnf {
