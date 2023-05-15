@@ -32,6 +32,7 @@
 #include "OptionString.hpp"
 #include "OptionStringList.hpp"
 
+#include <cstdint>
 #include <memory>
 
 namespace libdnf {
