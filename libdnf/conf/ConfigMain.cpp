@@ -476,7 +476,18 @@ ConfigMain::Impl::Impl(Config & owner)
         }, nullptr, true
     );
 
-    owner.optBinds().add("proxy", proxy);
+    owner.optBinds().add("proxy", proxy,
+        [&](Option::Priority priority, const std::string & value){
+            auto tmpValue(value);
+            for (auto & ch : tmpValue)
+                ch = std::tolower(ch);
+            if (tmpValue == "_none_")
+                proxy.set(priority, "");
+            else
+                proxy.set(priority, value);
+        }, nullptr, false
+    );
+
     owner.optBinds().add("proxy_username", proxy_username);
     owner.optBinds().add("proxy_password", proxy_password);
     owner.optBinds().add("proxy_auth_method", proxy_auth_method);
