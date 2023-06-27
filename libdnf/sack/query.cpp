@@ -1903,7 +1903,7 @@ Query::Impl::filterAdvisory(const Filter & f, Map *m, int keyname)
             while ((installed_id = installed.pImpl->result->next(installed_id)) != -1) {
                 installed_solvables.push_back(pool_id2solvable(pool, installed_id));
             }
-            std::sort(installed_solvables.begin(), installed_solvables.end(), NameSolvableComparator);
+            std::sort(installed_solvables.begin(), installed_solvables.end(), NameArchSolvableComparator);
 
             Query obsoletes(sack, ExcludeFlags::IGNORE_EXCLUDES);
             obsoletes.addFilter(HY_PKG, HY_EQ, resultPset);
