@@ -262,7 +262,7 @@ class ConfigMain::Impl {
     OptionString color_update_remote{"bold,green"};
     OptionString color_search_match{"bold,magenta"};
     OptionBool history_record{true};
-    OptionStringList history_record_packages{std::vector<std::string>{"dnf", "rpm"}};
+    OptionStringList history_record_packages{std::vector<std::string>{"dnf"}};
     OptionString rpmverbosity{"info"};
     OptionBool strict{true}; // :api
     OptionBool skip_broken{false}; // :yum-compatibility
