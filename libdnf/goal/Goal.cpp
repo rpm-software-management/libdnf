@@ -1631,12 +1631,24 @@ Goal::Impl::protectedInRemovals()
     if ((!protectedPkgs || !protectedPkgs->size()) && !protect_running_kernel)
         return false;
     auto pkgRemoveList = listResults(SOLVER_TRANSACTION_ERASE, 0);
+    Id protected_kernel = protectedRunningKernel();
     auto pkgObsoleteList = listResults(SOLVER_TRANSACTION_OBSOLETED, 0);
-    map_or(pkgRemoveList.getMap(), pkgObsoleteList.getMap());
+    // Special case: consider the obsoletion of the running kernel as a
+    // removal. Obsoletion of other protected packages should be allowed.
+    for (size_t obsolete_index = 0; obsolete_index < pkgObsoleteList.size(); obsolete_index += 1) {
+        if (protected_kernel == pkgObsoleteList[obsolete_index]) {
+            pkgRemoveList.set(protected_kernel);
+        }
+    }
 
+    // We want to allow obsoletion of protected packages, so we do not consider
+    // obsoletes here, only removes. Previously, obsoletion of protected
+    // packages was disallowed, but there needed to be some mechanism for
+    // obsoleting/swapping a protected package, such as to obsolete `dnf` in
+    // favor of `dnf5`. Obsoleting a package is much harder to do accidentally
+    // than removing it.
     removalOfProtected.reset(new PackageSet(pkgRemoveList));
     Id id = -1;
-    Id protected_kernel = protectedRunningKernel();
     while(true) {
         id = removalOfProtected->next(id);
         if (id == -1)
