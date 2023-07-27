@@ -20,6 +20,21 @@
 ######################
 
 ====================
+0.70.2 Release Notes
+====================
+
+- Fix #1558: Don't assume inclusion of cstdint
+- Disconnect monitors in `dnf_repo_loader_finalize()` (RhBug:2070153)
+
+- New features:
+  - Support "proxy=_none_" in main config (RhBug:2155713)
+
+Bugs fixed in 0.70.2:
+
+* :rhbug:`2070153`
+* :rhbug:`2155713`
+
+====================
 0.70.1 Release Notes
 ====================
 
