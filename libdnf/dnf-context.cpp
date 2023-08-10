@@ -119,6 +119,7 @@ static const struct {
     { "sparc",      { "sparc", "sparc64", "sparc64v", "sparcv8",
                       "sparcv9", "sparcv9v", NULL } },
     { "x86_64",     { "x86_64", "amd64", "ia32e", NULL } },
+    { "loongarch32",    { "loongarch32", NULL } },
     { "loongarch64",     { "loongarch64", NULL } },
     { NULL,         { NULL } }
 };
