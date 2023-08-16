@@ -35,8 +35,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <gpgme.h>
-
 #include <solv/chksum.h>
 #include <solv/repo.h>
 #include <solv/util.h>
@@ -82,18 +80,12 @@ typedef ::Repo LibsolvRepo;
 
 class Key {
 public:
-    Key(gpgme_key_t key, gpgme_subkey_t subkey)
-    {
-        id = subkey->keyid;
-        fingerprint = subkey->fpr;
-        timestamp = subkey->timestamp;
-        userid = key->uids->uid;
-    }
+    Key(const LrGpgKey * key, const LrGpgSubkey * subkey);
 
-    std::string getId() const { return id; }
-    std::string getUserId() const { return userid; }
-    std::string getFingerprint() const { return fingerprint; }
-    long int getTimestamp() const { return timestamp; }
+    const std::string & getId() const noexcept { return id; }
+    const std::string & getUserId() const noexcept { return userid; }
+    const std::string & getFingerprint() const noexcept { return fingerprint; }
+    long int getTimestamp() const noexcept { return timestamp; }
 
     std::vector<char> rawKey;
     std::string url;

@@ -1,6 +1,6 @@
 %global libsolv_version 0.7.21
 %global libmodulemd_version 2.13.0
-%global librepo_version 1.13.1
+%global librepo_version 1.15.0
 %global dnf_conflict 4.11.0
 %global swig_version 3.0.12
 %global libdnf_major_version 0
@@ -86,7 +86,6 @@ BuildRequires:  pkgconfig(cppunit)
 BuildRequires:  pkgconfig(modulemd-2.0) >= %{libmodulemd_version}
 BuildRequires:  pkgconfig(smartcols)
 BuildRequires:  gettext
-BuildRequires:  gpgme-devel
 
 %if %{with sanitizers}
 BuildRequires:  libasan
