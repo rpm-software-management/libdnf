@@ -147,6 +147,10 @@ if(ENABLE_SOLV_URPMREORDER)
     add_definitions(-DLIBSOLV_FLAG_URPMREORDER=1)
 endif()
 
+# If defined, libsolv adds the prefix "dep_" to solvable dependencies.
+# As a result, `requires` is renamed to `dep_requires`.
+# Needed for C++20. `requires` is a keyword in C++20.
+add_definitions(-DLIBSOLV_SOLVABLE_PREPEND_DEP)
 
 if(WITH_SANITIZERS)
     message(WARNING "Building with sanitizers enabled!")

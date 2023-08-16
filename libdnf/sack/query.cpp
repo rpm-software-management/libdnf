@@ -1669,7 +1669,7 @@ Query::Impl::filterObsoletes(const Filter & f, Map *m)
         Solvable *s = pool_id2solvable(pool, id);
         if (!s->repo)
             continue;
-        for (Id *r_id = s->repo->idarraydata + s->obsoletes; *r_id; ++r_id) {
+        for (Id *r_id = s->repo->idarraydata + s->dep_obsoletes; *r_id; ++r_id) {
             Id r, rr;
 
             FOR_PROVIDES(r, rr, *r_id) {
@@ -1691,7 +1691,7 @@ Query::Impl::obsoletesByPriority(Pool * pool, Solvable * candidate, Map * m, con
 {
     if (!candidate->repo)
         return;
-    for (Id *r_id = candidate->repo->idarraydata + candidate->obsoletes; *r_id; ++r_id) {
+    for (Id *r_id = candidate->repo->idarraydata + candidate->dep_obsoletes; *r_id; ++r_id) {
         Id r, rr;
         FOR_PROVIDES(r, rr, *r_id) {
             if (!MAPTST(target, r))
