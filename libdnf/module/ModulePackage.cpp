@@ -163,8 +163,8 @@ void ModulePackage::createDependencies(Solvable *solvable) const
     Pool * pool = dnf_sack_get_pool(moduleSack);
 
     for (const auto &dependency : getModuleDependencies()) {
-        for (const auto &requires : dependency.getRequires()) {
-            for (const auto &singleRequires : requires) {
+        for (const auto &dep_requires : dependency.getRequires()) {
+            for (const auto &singleRequires : dep_requires) {
                 auto moduleName = singleRequires.first;
                 std::vector<std::string> requiresStream;
                 for (const auto &moduleStream : singleRequires.second) {

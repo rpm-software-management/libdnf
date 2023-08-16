@@ -817,11 +817,11 @@ void ModulePackageContainer::enableDependencyTree(std::vector<ModulePackage *> &
         Query query(pImpl->moduleSack);
         query.addFilter(HY_PKG, HY_EQ, pImpl->activatedModules.get());
         auto pkg = dnf_package_new(pImpl->moduleSack, modulePackage->getId());
-        auto requires = dnf_package_get_requires(pkg);
-        query.addFilter(HY_PKG_PROVIDES, requires);
+        auto dep_requires = dnf_package_get_requires(pkg);
+        query.addFilter(HY_PKG_PROVIDES, dep_requires);
         auto set = query.runSet();
         toEnable += *set;
-        delete requires;
+        delete dep_requires;
         g_object_unref(pkg);
         enable(modulePackage);
         enabled.set(modulePackage->getId());
@@ -836,11 +836,11 @@ void ModulePackageContainer::enableDependencyTree(std::vector<ModulePackage *> &
             query.addFilter(HY_PKG, HY_EQ, pImpl->activatedModules.get());
             query.addFilter(HY_PKG, HY_NEQ, &enabled);
             auto pkg = dnf_package_new(pImpl->moduleSack, moduleId);
-            auto requires = dnf_package_get_requires(pkg);
-            query.addFilter(HY_PKG_PROVIDES, requires);
+            auto dep_requires = dnf_package_get_requires(pkg);
+            query.addFilter(HY_PKG_PROVIDES, dep_requires);
             auto set = query.runSet();
             toEnable += *set;
-            delete requires;
+            delete dep_requires;
             g_object_unref(pkg);
         }
         toEnable -= enabled;
@@ -1747,8 +1747,8 @@ void ModulePackageContainer::Impl::addVersion2Modules()
     std::map<std::string, std::map<std::string, std::vector<ModulePackage *>>> v3_context_map;
     for (auto const & module_pair : modules) {
         auto * module = module_pair.second.get();
-        auto requires = module->getRequires(true);
-        auto concentratedRequires = concentrateVectorString(requires);
+        auto dep_requires = module->getRequires(true);
+        auto concentratedRequires = concentrateVectorString(dep_requires);
         v3_context_map[module->getNameStream()][concentratedRequires].push_back(module);
     }
     libdnf::LibsolvRepo * repo;
@@ -1758,8 +1758,8 @@ void ModulePackageContainer::Impl::addVersion2Modules()
     for (auto & module_tuple : modulesV2) {
         std::tie(repo, mdStream, repoID) = module_tuple;
         auto nameStream = ModulePackage::getNameStream(mdStream);
-        auto requires = ModulePackage::getRequires(mdStream, true);
-        auto concentratedRequires = concentrateVectorString(requires);
+        auto dep_requires = ModulePackage::getRequires(mdStream, true);
+        auto concentratedRequires = concentrateVectorString(dep_requires);
         auto streamIterator = v3_context_map.find(nameStream);
         if (streamIterator != v3_context_map.end()) {
             auto contextIterator = streamIterator->second.find(concentratedRequires);
