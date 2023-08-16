@@ -531,11 +531,11 @@ static bool
 */
 can_depend_on(Pool *pool, Solvable *sa, Id b)
 {
-    IdQueue requires;
+    IdQueue dep_requires;
 
-    solvable_lookup_idarray(sa, SOLVABLE_REQUIRES, requires.getQueue());
-    for (int i = 0; i < requires.size(); ++i) {
-        Id req_dep = requires[i];
+    solvable_lookup_idarray(sa, SOLVABLE_REQUIRES, dep_requires.getQueue());
+    for (int i = 0; i < dep_requires.size(); ++i) {
+        Id req_dep = dep_requires[i];
         Id p, pp;
 
         FOR_PROVIDES(p, pp, req_dep)
