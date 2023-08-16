@@ -18,15 +18,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <check.h>
-#include <string.h>
-
 #include "libdnf/hy-iutil-private.hpp"
 #include "libdnf/hy-repo-private.hpp"
 #include "libdnf/repo/Repo-private.hpp"
+
 #include "fixtures.h"
 #include "testshared.h"
 #include "test_suites.h"
+
+#include <check.h>
+#include <string.h>
 
 START_TEST(test_strings)
 {

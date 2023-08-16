@@ -18,11 +18,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <check.h>
-#include <glib.h>
-#include <stdarg.h>
-#include <vector>
-
 #include "libdnf/goal/Goal.hpp"
 #include "libdnf/dnf-types.h"
 #include "libdnf/hy-goal-private.hpp"
@@ -37,9 +32,15 @@
 #include "libdnf/hy-selector.h"
 #include "libdnf/hy-util-private.hpp"
 #include "libdnf/sack/packageset.hpp"
+
 #include "fixtures.h"
 #include "testsys.h"
 #include "test_suites.h"
+
+#include <check.h>
+#include <glib.h>
+#include <stdarg.h>
+#include <vector>
 
 static DnfPackage *
 get_latest_pkg(DnfSack *sack, const char *name)

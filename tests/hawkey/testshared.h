@@ -21,11 +21,9 @@
 #ifndef TESTSHARED_H
 #define TESTSHARED_H
 
+#include "libdnf/hy-repo.h"
 
 #include <solv/pooltypes.h>
-
-
-#include "libdnf/hy-repo.h"
 
 #define UNITTEST_DIR "/tmp/hawkeyXXXXXX"
 #define YUM_DIR_SUFFIX "yum/repodata/"

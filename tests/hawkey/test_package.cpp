@@ -19,8 +19,6 @@
  */
 
 
-#include <solv/util.h>
-
 
 #include "libdnf/dnf-advisory.h"
 #include "libdnf/hy-package.h"
@@ -30,12 +28,14 @@
 #include "libdnf/dnf-reldep-list.h"
 #include "libdnf/dnf-sack-private.hpp"
 #include "libdnf/hy-util.h"
+#include "libdnf/repo/solvable/Dependency.hpp"
+#include "libdnf/repo/solvable/DependencyContainer.hpp"
+
 #include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"
 
-#include "libdnf/repo/solvable/Dependency.hpp"
-#include "libdnf/repo/solvable/DependencyContainer.hpp"
+#include <solv/util.h>
 
 START_TEST(test_package_summary)
 {

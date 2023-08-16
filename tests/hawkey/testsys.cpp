@@ -18,23 +18,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <check.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-
-
-#include <solv/repo.h>
-#include <solv/util.h>
-
-
 #include "libdnf/hy-goal.h"
 #include "libdnf/hy-package.h"
 #include "libdnf/hy-package-private.hpp"
 #include "libdnf/hy-query.h"
 #include "libdnf/dnf-sack-private.hpp"
 #include "libdnf/hy-util.h"
+
 #include "testsys.h"
+
+#include <solv/repo.h>
+#include <solv/util.h>
+
+#include <check.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 void
 assert_nevra_eq(DnfPackage *pkg, const char *nevra)

@@ -18,13 +18,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <check.h>
-#include <stdio.h>
-
-
 #include "libdnf/dnf-types.h"
 #include "libdnf/hy-util.h"
+
 #include "test_suites.h"
+
+#include <check.h>
+#include <stdio.h>
 
 START_TEST(test_detect_arch)
 {

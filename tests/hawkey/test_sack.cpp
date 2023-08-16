@@ -18,17 +18,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <check.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-
-
-#include <solv/testcase.h>
-
-#include <glib/gstdio.h>
-
 #include <libdnf/repo/Repo-private.hpp>
 #include "libdnf/dnf-types.h"
 #include "libdnf/hy-package-private.hpp"
@@ -36,9 +25,20 @@
 #include "libdnf/dnf-sack-private.hpp"
 #include "libdnf/hy-util.h"
 #include "libdnf/hy-iutil-private.hpp"
+
 #include "fixtures.h"
 #include "testsys.h"
 #include "test_suites.h"
+
+#include <solv/testcase.h>
+
+#include <glib/gstdio.h>
+
+#include <check.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 START_TEST(test_environment)
 {

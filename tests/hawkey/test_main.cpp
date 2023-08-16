@@ -18,20 +18,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "fixtures.h"
+#include "test_suites.h"
+#include "testsys.h"
+
+#include <solv/util.h>
+
 #include <assert.h>
 #include <check.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
-
-#include <solv/util.h>
-
-
-#include "fixtures.h"
-#include "test_suites.h"
-#include "testsys.h"
 
 #define TESTREPODATADIR TESTDATADIR "/hawkey"
 

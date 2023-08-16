@@ -22,9 +22,10 @@
 #include "libdnf/hy-package-private.hpp"
 #include "libdnf/hy-packageset-private.hpp"
 #include "libdnf/dnf-sack-private.hpp"
+#include "libdnf/sack/packageset.hpp"
+
 #include "fixtures.h"
 #include "test_suites.h"
-#include "libdnf/sack/packageset.hpp"
 
 static DnfPackageSet *pset;
 

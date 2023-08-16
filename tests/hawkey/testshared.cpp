@@ -18,7 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <wordexp.h>
+
+#include "libdnf/hy-repo.h"
+#include "libdnf/hy-repo-private.hpp"
+#include "libdnf/repo/Repo-private.hpp"
+
+#include "testshared.h"
 
 extern "C" {
 #include <solv/pool.h>
@@ -26,10 +31,7 @@ extern "C" {
 #include <solv/testcase.h>
 }
 
-#include "libdnf/hy-repo.h"
-#include "libdnf/hy-repo-private.hpp"
-#include "libdnf/repo/Repo-private.hpp"
-#include "testshared.h"
+#include <wordexp.h>
 
 HyRepo
 glob_for_repofiles(Pool *pool, const char *repo_name, const char *path)

@@ -18,20 +18,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <check.h>
-#include <string.h>
-
-
 #include "libdnf/nevra.hpp"
 #include "libdnf/nsvcap.hpp"
 #include "libdnf/dnf-reldep.h"
 #include "libdnf/dnf-sack.h"
 #include "libdnf/hy-subject.h"
+
 #include "fixtures.h"
 #include "testshared.h"
 #include "test_suites.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <check.h>
+#include <string.h>
 
 const char inp_fof[] = "four-of-fish-8:3.6.9-11.fc100.x86_64";
 const char inp_fof_noepoch[] = "four-of-fish-3.6.9-11.fc100.x86_64";
