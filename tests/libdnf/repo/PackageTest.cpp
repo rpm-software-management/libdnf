@@ -53,7 +53,7 @@ void PackageTest::testIsInRepo()
     CPPUNIT_ASSERT("1.0" == version);
     CPPUNIT_ASSERT("x86_64" == arch);
 
-    Id *provides = repo->idarraydata + solvable->provides;
+    Id *provides = repo->idarraydata + solvable->dep_provides;
     std::string provideName = pool_id2str(pool, *provides);
     std::string provideRelation = pool_id2rel(pool, *provides);
     std::string provideEvr = pool_id2evr(pool, *provides);
