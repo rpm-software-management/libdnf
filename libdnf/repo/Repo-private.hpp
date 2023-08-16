@@ -86,8 +86,8 @@ public:
     const std::string & getUserId() const noexcept { return userid; }
     const std::string & getFingerprint() const noexcept { return fingerprint; }
     long int getTimestamp() const noexcept { return timestamp; }
+    const std::string & getRawKey() const noexcept { return rawKey; }
 
-    std::vector<char> rawKey;
     std::string url;
 
 private:
@@ -95,6 +95,7 @@ private:
     std::string fingerprint;
     std::string userid;
     long int timestamp;
+    std::string rawKey;
 };
 
 class Repo::Impl {
