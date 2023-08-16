@@ -192,7 +192,7 @@ void ModulePackage::createDependencies(Solvable *solvable) const
                     ss << "(";
                     ss << std::accumulate(std::next(requiresStream.begin()),
                                             requiresStream.end(), requiresStream[0],
-                                            [](std::string & a, std::string & b)
+                                            [](const std::string & a, const std::string & b)
                                             { return a + " or " + b; });
                     ss << ")";
                     depId = pool_parserpmrichdep(pool, ss.str().c_str());
