@@ -18,18 +18,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
-#include <memory>
-
 #include "libdnf/hy-package.h"
 #include "libdnf/dnf-reldep.h"
 #include "libdnf/dnf-reldep-list.h"
 #include "libdnf/dnf-sack.h"
+#include "libdnf/repo/solvable/DependencyContainer.hpp"
+#include "libdnf/repo/solvable/Dependency.hpp"
+
+#include <memory>
+
 #include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"
-#include "libdnf/repo/solvable/DependencyContainer.hpp"
-#include "libdnf/repo/solvable/Dependency.hpp"
 
 START_TEST(test_reldeplist_add)
 {

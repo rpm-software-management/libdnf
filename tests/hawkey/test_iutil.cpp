@@ -18,21 +18,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <stdlib.h>
-#include <unistd.h>
-#include <glib.h>
 
+#include "libdnf/hy-util.h"
+#include "libdnf/hy-iutil.h"
+#include "libdnf/hy-iutil-private.hpp"
+
+#include "fixtures.h"
+#include "test_suites.h"
 
 #include <solv/pool.h>
 #include <solv/repo.h>
 #include <solv/repo_write.h>
 
-
-#include "libdnf/hy-util.h"
-#include "libdnf/hy-iutil.h"
-#include "libdnf/hy-iutil-private.hpp"
-#include "fixtures.h"
-#include "test_suites.h"
+#include <stdlib.h>
+#include <unistd.h>
+#include <glib.h>
 
 static void
 build_test_file(const char *filename)

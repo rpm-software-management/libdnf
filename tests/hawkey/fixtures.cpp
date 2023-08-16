@@ -18,17 +18,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <check.h>
-#include <stdarg.h>
-#include <unistd.h>
-
-
 #include "libdnf/hy-package.h"
 #include "libdnf/hy-repo.h"
 #include "libdnf/hy-iutil.h"
 #include "libdnf/dnf-sack-private.hpp"
+
 #include "fixtures.h"
 #include "testsys.h"
+
+#include <check.h>
+#include <stdarg.h>
+#include <unistd.h>
 
 /* define the global variable */
 struct TestGlobals_s test_globals;

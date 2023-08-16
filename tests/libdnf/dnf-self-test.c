@@ -20,11 +20,12 @@
  */
 
 
+#include "libdnf/libdnf.h"
+
 #include <glib-object.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <glib/gstdio.h>
-#include "libdnf/libdnf.h"
 
 /**
  * cd_test_get_filename:

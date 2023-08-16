@@ -18,12 +18,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <check.h>
-
-
-#include <solv/testcase.h>
-
-
 #include "libdnf/hy-query.h"
 #include "libdnf/hy-query-private.hpp"
 #include "libdnf/hy-package.h"
@@ -31,13 +25,18 @@
 #include "libdnf/dnf-reldep.h"
 #include "libdnf/dnf-reldep-list.h"
 #include "libdnf/dnf-sack-private.hpp"
+#include "libdnf/repo/solvable/DependencyContainer.hpp"
 #include "libdnf/sack/packageset.hpp"
 #include "libdnf/sack/query.hpp"
+
 #include "fixtures.h"
 #include "test_suites.h"
 #include "testsys.h"
 
-#include "libdnf/repo/solvable/DependencyContainer.hpp"
+#include <solv/testcase.h>
+
+#include <check.h>
+
 
 static int
 size_and_free(HyQuery query)
