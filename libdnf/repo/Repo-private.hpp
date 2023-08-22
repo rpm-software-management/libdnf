@@ -21,6 +21,7 @@
 #ifndef _LIBDNF_REPO_PRIVATE_HPP
 #define _LIBDNF_REPO_PRIVATE_HPP
 
+#include "Crypto.hpp"
 #include "Repo.hpp"
 #include "../dnf-utils.h"
 #include "../hy-iutil.h"
@@ -77,26 +78,6 @@ struct default_delete<LrHandle> {
 namespace libdnf {
 
 typedef ::Repo LibsolvRepo;
-
-class Key {
-public:
-    Key(const LrGpgKey * key, const LrGpgSubkey * subkey);
-
-    const std::string & getId() const noexcept { return id; }
-    const std::string & getUserId() const noexcept { return userid; }
-    const std::string & getFingerprint() const noexcept { return fingerprint; }
-    long int getTimestamp() const noexcept { return timestamp; }
-    const std::string & getRawKey() const noexcept { return rawKey; }
-
-    std::string url;
-
-private:
-    std::string id;
-    std::string fingerprint;
-    std::string userid;
-    long int timestamp;
-    std::string rawKey;
-};
 
 class Repo::Impl {
 public:

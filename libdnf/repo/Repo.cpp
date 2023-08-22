@@ -40,7 +40,7 @@
 
 #include "bgettext/bgettext-lib.h"
 #include "tinyformat/tinyformat.hpp"
-#include <utils.hpp>
+#include "utils.hpp"
 
 #include <librepo/librepo.h>
 #include <fcntl.h>
@@ -644,72 +644,6 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir)
     return h;
 }
 
-static std::vector<Key> rawkey2infos(int fd) {
-    std::vector<Key> keyInfos;
-
-    char tmpdir[] = "/tmp/tmpdir.XXXXXX";
-    if (!mkdtemp(tmpdir)) {
-        const char * errTxt = strerror(errno);
-        throw RepoError(tfm::format(_("Cannot create repo temporary directory \"%s\": %s"),
-                                      tmpdir, errTxt));
-    }
-    Finalizer tmpDirRemover([&tmpdir](){
-        dnf_remove_recursive(tmpdir, NULL);
-    });
-
-    GError * err = NULL;
-    if (!lr_gpg_import_key_from_fd(fd, tmpdir, &err)) {
-        throwException(std::unique_ptr<GError>(err));
-    }
-
-    std::unique_ptr<LrGpgKey, decltype(&lr_gpg_keys_free)> lr_keys{
-        lr_gpg_list_keys(TRUE, tmpdir, &err), &lr_gpg_keys_free};
-    if (err) {
-        throwException(std::unique_ptr<GError>(err));
-    }
-
-    for (const auto * lr_key = lr_keys.get(); lr_key; lr_key = lr_gpg_key_get_next(lr_key)) {
-        for (const auto * lr_subkey = lr_gpg_key_get_subkeys(lr_key); lr_subkey;
-             lr_subkey = lr_gpg_subkey_get_next(lr_subkey)) {
-            // get first signing subkey
-            if (lr_gpg_subkey_get_can_sign(lr_subkey)) {
-                keyInfos.emplace_back(lr_key, lr_subkey);
-                break;
-            }
-        }
-    }
-
-    return keyInfos;
-}
-
-static std::vector<std::string> keyidsFromPubring(const std::string & gpgDir)
-{
-    std::vector<std::string> keyids;
-
-    struct stat sb;
-    if (stat(gpgDir.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode)) {
-        GError * err = NULL;
-        std::unique_ptr<LrGpgKey, decltype(&lr_gpg_keys_free)> lr_keys{
-            lr_gpg_list_keys(FALSE, gpgDir.c_str(), &err), &lr_gpg_keys_free};
-        if (err) {
-            throwException(std::unique_ptr<GError>(err));
-        }
-
-        for (const auto * lr_key = lr_keys.get(); lr_key; lr_key = lr_gpg_key_get_next(lr_key)) {
-            for (const auto * lr_subkey = lr_gpg_key_get_subkeys(lr_key); lr_subkey;
-                 lr_subkey = lr_gpg_subkey_get_next(lr_subkey)) {
-                // get first signing subkey
-                if (lr_gpg_subkey_get_can_sign(lr_subkey)) {
-                    keyids.emplace_back(lr_gpg_subkey_get_id(lr_subkey));
-                    break;
-                }
-            }
-        }
-    }
-
-    return keyids;
-}
-
 
 // download key from URL
 std::vector<Key> Repo::Impl::retrieve(const std::string & url)
@@ -736,20 +670,12 @@ std::vector<Key> Repo::Impl::retrieve(const std::string & url)
         throw RepoError(msg);
     }
     lseek(fd, SEEK_SET, 0);
-    auto keyInfos = rawkey2infos(fd);
+    auto keyInfos = Key::keysFromFd(fd);
     for (auto & key : keyInfos)
-        key.url = url;
+        key.setUrl(url);
     return keyInfos;
 }
 
-Key::Key(const LrGpgKey * key, const LrGpgSubkey * subkey)
-    : id{lr_gpg_subkey_get_id(subkey)},
-      fingerprint{lr_gpg_subkey_get_fingerprint(subkey)},
-      timestamp{lr_gpg_subkey_get_timestamp(subkey)},
-      rawKey{lr_gpg_key_get_raw_key(key)} {
-    auto * userid_c = lr_gpg_key_get_userids(key)[0];
-    userid = userid_c ? userid_c : "";
-}
 
 void Repo::Impl::importRepoKeys()
 {
@@ -767,7 +693,7 @@ void Repo::Impl::importRepoKeys()
 
             if (callbacks) {
                 if (!callbacks->repokeyImport(keyInfo.getId(), keyInfo.getUserId(), keyInfo.getFingerprint(),
-                                              keyInfo.url, keyInfo.getTimestamp()))
+                                              keyInfo.getUrl(), keyInfo.getTimestamp()))
                     continue;
             }
 
@@ -781,11 +707,7 @@ void Repo::Impl::importRepoKeys()
                 }
             }
 
-            GError * err = NULL;
-            if (!lr_gpg_import_key_from_memory(
-                    keyInfo.getRawKey().c_str(), keyInfo.getRawKey().size(), gpgDir.c_str(), &err)) {
-                throwException(std::unique_ptr<GError>(err));
-            }
+            importKeyToPubring(keyInfo.getAsciiArmoredKey(), gpgDir);
 
             logger->debug(tfm::format(_("repo %s: imported key 0x%s."), id, keyInfo.getId()));
         }
