@@ -15,6 +15,7 @@
 
 %{
     // make SWIG wrap following headers
+    #include "libdnf/repo/Crypto.hpp"
     #include "libdnf/repo/Repo.hpp"
 %}
 
@@ -80,6 +81,11 @@
     const char * chksum, int64_t expectedSize, const char * baseUrl, bool resume,
     int64_t byteRangeStart, int64_t byteRangeEnd, PackageTargetCB * callbacks,
     const char * httpHeaders[] = nullptr);
+
+%ignore std::vector<libdnf::Key>::vector(size_type);
+%ignore std::vector<libdnf::Key>::resize;
+%template(VectorKey) std::vector<libdnf::Key>;
+%include "libdnf/repo/Crypto.hpp"
 
 %feature("director") libdnf::RepoCB;
 %ignore libdnf::PackageTarget::PackageTarget(const PackageTarget & src);
