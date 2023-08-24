@@ -28,8 +28,9 @@
 
 namespace libdnf {
 
+// Avoid using the \s and \S patterns here as they are GNU extensions and aren't portable.
 static const Regex RELDEP_REGEX = 
-    Regex("^(\\S*)\\s*(<=|>=|<|>|=|==)?\\s*(\\S*)$", REG_EXTENDED);
+    Regex("^([^[:space:]]*)[[:space:]]*(<=|>=|<|>|=|==)?[[:space:]]*([^[:space:]]*)$", REG_EXTENDED);
 
 static bool
 getCmpFlags(int *cmp_type, std::string matchCmpType)
