@@ -291,13 +291,13 @@ class Subject(_hawkey.Subject):
             # after movement of base.install() or base.distro_sync()
             return []
 
+        installed_query = q.installed()
         if not self._filename_pattern and is_glob_pattern(self.pattern) \
                 or solution['nevra'] and solution['nevra'].name is None:
             with_obsoletes = False
 
             if obsoletes and solution['nevra'] and solution['nevra'].has_just_name():
                 with_obsoletes = True
-            installed_query = q.installed()
             if reponame:
                 q = q.filter(reponame=reponame)
             available_query = q.available()
@@ -309,13 +309,24 @@ class Subject(_hawkey.Subject):
             sltrs = []
             for name, pkgs_list in q._name_dict().items():
                 if with_obsoletes:
+                    # If there is no installed package in the pkgs_list, add only
+                    # obsoleters of the latest versions. Otherwise behave consistently
+                    # with upgrade and add all obsoleters.
+                    # See https://bugzilla.redhat.com/show_bug.cgi?id=2176263
+                    # for details of the problem.
+                    obsoletes_query = base.sack.query().filterm(pkg=pkgs_list)
+                    if not obsoletes_query.installed():
+                        obsoletes_query.filterm(latest_per_arch_by_priority=True)
                     pkgs_list = pkgs_list + base.sack.query().filter(
-                        obsoletes=pkgs_list).run()
+                        obsoletes=obsoletes_query).run()
                 sltrs.append(self._list_or_query_to_selector(base.sack, pkgs_list))
             return sltrs
         else:
             if obsoletes and solution['nevra'] and solution['nevra'].has_just_name():
-                q = q.union(base.sack.query().filter(obsoletes=q))
+                if installed_query:
+                    q = q.union(base.sack.query().filter(obsoletes=q))
+                else:
+                    q = q.union(base.sack.query().filter(obsoletes=q.filter(latest_per_arch_by_priority=True)))
             installed_query = q.installed()
 
             if reports:
