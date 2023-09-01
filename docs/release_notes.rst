@@ -20,6 +20,23 @@
 ######################
 
 ====================
+0.71.0 Release Notes
+====================
+
+- New features:
+  - PGP: Use new librepo PGP API, remove gpgme dependency
+  - API: Basic support for OpenPGP public keys
+  - Make code C++20 compatible
+
+- Bug fixes:
+  - Avoid using GNU extensions in the dependency splitter regex
+  - filterAdvisory: match installed_solvables sort with lower_bound (RhBug:2212838)
+
+Bugs fixed in 0.71.0:
+
+* :rhbug:`2212838`
+
+====================
 0.70.2 Release Notes
 ====================
 
