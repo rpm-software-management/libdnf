@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-28 09:24+0100\n"
+"POT-Creation-Date: 2023-08-29 13:26+0200\n"
 "PO-Revision-Date: 2023-03-07 14:20+0000\n"
 "Last-Translator: Transtats <suanand@redhat.com>\n"
 "Language-Team: Chinese (Simplified) <https://translate.fedoraproject.org/"
@@ -226,10 +226,8 @@ msgid ""
 "It is recommended to remove all installed content from the module, and reset "
 "the module using 'microdnf module reset <module_name>' command. After you "
 "reset the module, you can install the other stream."
-msgstr ""
-"无法切换一个模块已启用的流。 \n"
-"推荐从模块中删除所有已安装的内容，使用 'microdnf module reset <module_name>' "
-"命令重置模块。在重置模块后就可以安装其他流。"
+msgstr "无法切换一个模块已启用的流。 \n"
+"推荐从模块中删除所有已安装的内容，使用 'microdnf module reset <module_name>' 命令重置模块。在重置模块后就可以安装其他流。"
 
 #: libdnf/dnf-goal.cpp:107
 msgid "Could not depsolve transaction; "
@@ -550,13 +548,15 @@ msgstr "Ill-formed Selector，在过滤器中有多个匹配的对象"
 msgid "Ill-formed Selector used for the operation, incorrect comparison type"
 msgstr "这个操作使用了 Ill-formed Selector，不正确的比较类型"
 
-#: libdnf/goal/Goal.cpp:90 libdnf/goal/Goal.cpp:117
-msgid " does not belong to a distupgrade repository"
-msgstr " 不属于 distupgrade 仓库"
+#: libdnf/goal/Goal.cpp:90
+#, c-format
+msgid "%s from %s  does not belong to a distupgrade repository"
+msgstr "来自 %s 的 %s 不属于 distupgrade 仓库"
 
-#: libdnf/goal/Goal.cpp:91 libdnf/goal/Goal.cpp:118
-msgid " has inferior architecture"
-msgstr " 有 inferior 架构"
+#: libdnf/goal/Goal.cpp:91
+#, c-format
+msgid "%s from %s  has inferior architecture"
+msgstr "来自 %s 的 %s 具有 inferior 架构"
 
 #: libdnf/goal/Goal.cpp:92
 msgid "problem with installed package "
@@ -597,68 +597,79 @@ msgstr "无法为该任务安装最佳候选"
 
 #: libdnf/goal/Goal.cpp:101
 #, c-format
-msgid "package %s is filtered out by modular filtering"
-msgstr "软件包 %s 被模块过滤过滤掉"
+msgid "package %s from %s is filtered out by modular filtering"
+msgstr "来自 %s 的 %s 被模块过滤过滤掉"
 
 #: libdnf/goal/Goal.cpp:102
 #, c-format
-msgid "package %s does not have a compatible architecture"
-msgstr "软件包 %s 没有兼容的架构"
+msgid "package %s from %s does not have a compatible architecture"
+msgstr "来自 %s 的软件包 %s 没有兼容的架构"
 
 #: libdnf/goal/Goal.cpp:103
 #, c-format
-msgid "package %s is not installable"
-msgstr "软件包 %s 不可安装"
+msgid "package %s from %s is not installable"
+msgstr "来自 %s 的软件包 %s 不可安装"
 
 #: libdnf/goal/Goal.cpp:104
 #, c-format
-msgid "package %s is filtered out by exclude filtering"
-msgstr "软件包 %s 被排除过滤过滤掉"
+msgid "package %s from %s is filtered out by exclude filtering"
+msgstr "来自 %s 的软件包 %s 被排除过滤过滤掉"
 
 #: libdnf/goal/Goal.cpp:105
 #, c-format
-msgid "nothing provides %s needed by %s"
-msgstr "没有提供 %s 所需要的 %s"
+msgid "nothing provides %s needed by %s from %s"
+msgstr "没有提供来自 %s 的 %s 所需的 %s"
 
 #: libdnf/goal/Goal.cpp:106
 #, c-format
-msgid "cannot install both %s and %s"
-msgstr "无法同时安装 %s 和 %s"
+msgid "cannot install both %s from %s and %s from %s"
+msgstr "不能同时安装来自 %s 的 %s 和来自 %s 的 %s"
 
 #: libdnf/goal/Goal.cpp:107
 #, c-format
-msgid "package %s conflicts with %s provided by %s"
-msgstr "软件包 %s 与 %s（由 %s 提供）冲突"
+msgid "package %s from %s conflicts with %s provided by %s from %s"
+msgstr "来自 %s 的软件包 %s 与来自 %s 的 %s 所提供的 %s 冲突"
 
 #: libdnf/goal/Goal.cpp:108
 #, c-format
-msgid "package %s obsoletes %s provided by %s"
-msgstr "软件包 %s 淘汰了 %s 提供的 %s"
+msgid "package %s from %s obsoletes %s provided by %s from %s"
+msgstr "来自 %s 的软件包 %s 淘汰了由来自 %s 的 %s 所提供的 %s"
 
 #: libdnf/goal/Goal.cpp:109
 #, c-format
-msgid "installed package %s obsoletes %s provided by %s"
-msgstr "已安装的软件包 %s 淘汰了 %s 提供的 %s"
+msgid "installed package %s obsoletes %s provided by %s from %s"
+msgstr "已安装的软件包 %s 淘汰了由来自 %s 的 %s 所提供的 %s"
 
 #: libdnf/goal/Goal.cpp:110
 #, c-format
-msgid "package %s implicitly obsoletes %s provided by %s"
-msgstr "软件包 %s 隐式地淘汰了 %s 提供的 %s"
+msgid "package %s from %s implicitly obsoletes %s provided by %s from %s"
+msgstr "来自 %s 的软件包 %s 隐式地淘汰了由来自 %s 的 %s 所提供的 %s"
 
 #: libdnf/goal/Goal.cpp:111
 #, c-format
-msgid "package %s requires %s, but none of the providers can be installed"
-msgstr "软件包 %s 需要 %s，但没有提供者可以被安装"
+msgid ""
+"package %s from %s requires %s, but none of the providers can be installed"
+msgstr "来自 %s 的软件包 %s 需要 %s，但没有可以被安装的提供程序"
 
 #: libdnf/goal/Goal.cpp:112
 #, c-format
-msgid "package %s conflicts with %s provided by itself"
-msgstr "软件包 %s 与自己提供的 %s 冲突"
+msgid "package %s from %s conflicts with %s provided by itself"
+msgstr "来自 %s 的软件包 %s 与来自自己提供的 %s 冲突"
 
 #: libdnf/goal/Goal.cpp:113
 #, c-format
-msgid "both package %s and %s obsolete %s"
-msgstr "软件包 %s 和 %s 同时取代了 %s"
+msgid "both package %s from %s and %s from %s obsolete %s"
+msgstr "来自 %s 的 %s 和来自 %s 的 %s 软件包都淘汰了 %s"
+
+#: libdnf/goal/Goal.cpp:117
+#, c-format
+msgid "%s from %s does not belong to a distupgrade repository"
+msgstr "来自 %s 的 %s 不属于 distupgrade 仓库"
+
+#: libdnf/goal/Goal.cpp:118
+#, c-format
+msgid "%s from %s has inferior architecture"
+msgstr "来自 %s 的 %s 具有 inferior 架构"
 
 #: libdnf/goal/Goal.cpp:119
 msgid "problem with installed module "
@@ -675,100 +686,101 @@ msgstr "无法为模块安装最佳更新候选 "
 
 #: libdnf/goal/Goal.cpp:128 libdnf/goal/Goal.cpp:131
 #, c-format
-msgid "module %s is disabled"
-msgstr "模块 %s 被禁用"
+msgid "module %s from %s is disabled"
+msgstr "来自 %s 的模块 %s 被禁用"
 
 #: libdnf/goal/Goal.cpp:129
 #, c-format
-msgid "module %s does not have a compatible architecture"
-msgstr "模块 %s 没有兼容的架构"
+msgid "module %s from %s does not have a compatible architecture"
+msgstr "来自 %s 的模块 %s 没有兼容的架构"
 
 #: libdnf/goal/Goal.cpp:130
 #, c-format
-msgid "module %s is not installable"
-msgstr "模块 %s 不可安装"
+msgid "module %s from %s is not installable"
+msgstr "来自 %s 的模块 %s 不可安装"
 
 #: libdnf/goal/Goal.cpp:132
 #, c-format
-msgid "nothing provides %s needed by module %s"
-msgstr "没有提供模块 %s 所需要的 %s"
+msgid "nothing provides %s needed by module %s from %s"
+msgstr "没有提供来自 %s 的模块 %s 所需要的 %s"
 
 #: libdnf/goal/Goal.cpp:133
 #, c-format
-msgid "cannot install both modules %s and %s"
-msgstr "不能同时安装模块 %s 和 %s"
+msgid "cannot install both modules %s from %s and %s from %s"
+msgstr "不能同时安装来自 %s 的 %s 和来自 %s 的 %s 模块"
 
 #: libdnf/goal/Goal.cpp:134
 #, c-format
-msgid "module %s conflicts with %s provided by %s"
-msgstr "模块 %s 与 %s 提供的 %s 冲突"
+msgid "module %s from %s conflicts with %s provided by %s from %s"
+msgstr "来自 %s 的模块 %s 与来自 %s 的 %s 所提供的 %s 冲突"
 
 #: libdnf/goal/Goal.cpp:135
 #, c-format
-msgid "module %s obsoletes %s provided by %s"
-msgstr "模块 %s 淘汰了 %s 提供的 %s"
+msgid "module %s from %s obsoletes %s provided by %s from %s"
+msgstr "来自 %s 的模块 %s 淘汰了由来自 %s 的 %s 所提供的 %s"
 
 #: libdnf/goal/Goal.cpp:136
 #, c-format
-msgid "installed module %s obsoletes %s provided by %s"
-msgstr "已安装的模块 %s 淘汰了 %s 提供的 %s"
+msgid "installed module %s obsoletes %s provided by %s from %s"
+msgstr "已安装的模块 %s 淘汰了由来自 %s 的 %s 所提供的 %s"
 
 #: libdnf/goal/Goal.cpp:137
 #, c-format
-msgid "module %s implicitly obsoletes %s provided by %s"
-msgstr "模块 %s 隐式地淘汰了 %s 提供的 %s"
+msgid "module %s from %s implicitly obsoletes %s provided by %s from %s"
+msgstr "来自 %s 的模块 %s 隐式地淘汰了由来自 %s 的 %s 所提供的 %s"
 
 #: libdnf/goal/Goal.cpp:138
 #, c-format
-msgid "module %s requires %s, but none of the providers can be installed"
-msgstr "模块 %s 需要 %s，但无法安装任何提供程序"
+msgid ""
+"module %s from %s requires %s, but none of the providers can be installed"
+msgstr "来自 %s 的模块 %s 需要 %s，但没有可以被安装的提供程序"
 
 #: libdnf/goal/Goal.cpp:139
 #, c-format
-msgid "module %s conflicts with %s provided by itself"
-msgstr "模块 %s 与自己提供的 %s 冲突"
+msgid "module %s from %s conflicts with %s provided by itself"
+msgstr "来自 %s 的模块 %s 与自己提供的 %s 冲突"
 
 #: libdnf/goal/Goal.cpp:140
 #, c-format
-msgid "both module %s and %s obsolete %s"
-msgstr "模块 %s 和 %s 同时取代了 %s"
+msgid "both module %s from %s and %s from %s obsolete %s"
+msgstr "来自 %s 的 %s 和来自 %s 的 %s 软件包都淘汰了 %s"
 
-#: libdnf/goal/Goal.cpp:1157
+#: libdnf/goal/Goal.cpp:1168
 msgid "no solver set"
 msgstr "无 solver 设置"
 
-#: libdnf/goal/Goal.cpp:1162
+#: libdnf/goal/Goal.cpp:1173
 #, c-format
 msgid "failed to make %s absolute"
 msgstr "无法使 %s 绝对"
 
-#: libdnf/goal/Goal.cpp:1169
+#: libdnf/goal/Goal.cpp:1180
 #, c-format
 msgid "failed writing debugdata to %1$s: %2$s"
 msgstr "把 debugdata 写入到 %1$s 失败: %2$s"
 
-#: libdnf/goal/Goal.cpp:1181
+#: libdnf/goal/Goal.cpp:1192
 msgid "no solv in the goal"
 msgstr "在目标中没有 solv"
 
-#: libdnf/goal/Goal.cpp:1183
+#: libdnf/goal/Goal.cpp:1194
 msgid "no solution, cannot remove protected package"
 msgstr "没有解决方案，不能删除保护的软件包"
 
-#: libdnf/goal/Goal.cpp:1186
+#: libdnf/goal/Goal.cpp:1197
 msgid "no solution possible"
 msgstr "没有可能的解决方案"
 
-#: libdnf/goal/Goal.cpp:1312
+#: libdnf/goal/Goal.cpp:1323
 msgid "Problem: "
 msgstr "问题： "
 
-#: libdnf/goal/Goal.cpp:1317
+#: libdnf/goal/Goal.cpp:1328
 #, c-format
 msgid "Problem %d: "
 msgstr "问题 %d： "
 
-#: libdnf/goal/Goal.cpp:1650
+#: libdnf/goal/Goal.cpp:1661
 msgid ""
 "The operation would result in removing the following protected packages: "
 msgstr "这个操作将会导致删除以下受保护的软件包: "
@@ -830,61 +842,61 @@ msgstr "没有检测到有效的 Platform ID"
 msgid "Cannot enable multiple streams for module '%s'"
 msgstr "无法为模块 '%s' 启用多个流"
 
-#: libdnf/module/ModulePackageContainer.cpp:346
+#: libdnf/module/ModulePackageContainer.cpp:339
 #, c-format
 msgid "Conflicting defaults with repo '%s': %s"
 msgstr "默认设置与存储库 '%s' 冲突 : %s"
 
-#: libdnf/module/ModulePackageContainer.cpp:917
+#: libdnf/module/ModulePackageContainer.cpp:923
 msgid "Installing module profiles:\n"
 msgstr "安装模块配置档案：\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:932
+#: libdnf/module/ModulePackageContainer.cpp:938
 msgid "Disabling module profiles:\n"
 msgstr "禁用模块配置档案：\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:947
+#: libdnf/module/ModulePackageContainer.cpp:953
 msgid "Enabling module streams:\n"
 msgstr "启用模块流：\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:961
+#: libdnf/module/ModulePackageContainer.cpp:967
 msgid "Switching module streams:\n"
 msgstr "切换模块流：\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:979
+#: libdnf/module/ModulePackageContainer.cpp:985
 msgid "Disabling modules:\n"
 msgstr "禁用模块：\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:990
+#: libdnf/module/ModulePackageContainer.cpp:996
 msgid "Resetting modules:\n"
 msgstr "重置模块：\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:1704
+#: libdnf/module/ModulePackageContainer.cpp:1710
 #, c-format
 msgid "Unable to load modular Fail-Safe data at '%s'"
 msgstr "无法加载位于 '%s' 的模块 Fail-Safe 数据"
 
-#: libdnf/module/ModulePackageContainer.cpp:1710
+#: libdnf/module/ModulePackageContainer.cpp:1716
 #, c-format
 msgid "Unable to load modular Fail-Safe data for module '%s:%s'"
 msgstr "无法为模块 '%s:%s' 加载模块 Fail-Safe 数据"
 
-#: libdnf/module/ModulePackageContainer.cpp:1791
+#: libdnf/module/ModulePackageContainer.cpp:1797
 #, c-format
 msgid "Unable to create directory \"%s\" for modular Fail Safe data: %s"
 msgstr "无法为模块 Fail Safe 数据创建目录 \"%s\" : %s"
 
-#: libdnf/module/ModulePackageContainer.cpp:1807
+#: libdnf/module/ModulePackageContainer.cpp:1813
 #, c-format
 msgid "Unable to save a modular Fail Safe data to '%s'"
 msgstr "无法把模块 Fail Safe 数据保存到 '%s'"
 
-#: libdnf/module/ModulePackageContainer.cpp:1830
+#: libdnf/module/ModulePackageContainer.cpp:1836
 #, c-format
 msgid "Unable to remove a modular Fail Safe data in '%s'"
 msgstr "无法删除 '%s' 中的模块 Fail Safe 数据"
 
-#: libdnf/module/ModulePackageContainer.cpp:1862
+#: libdnf/module/ModulePackageContainer.cpp:1868
 #, c-format
 msgid ""
 "Unable to apply modular obsoletes to '%s:%s' because target module '%s' is "
@@ -961,9 +973,7 @@ msgid ""
 "Using '==' operator in reldeps can result in an undefined behavior. It is "
 "deprecated and the support will be dropped in future versions. Use '=' "
 "operator instead."
-msgstr ""
-"在 reldeps 中使用 '==' 操作符可能导致一个未定义的行为。这个操作符已被废弃，并"
-"且在未来的版本中会取消对它的支持。请使用 '=' 操作符代替。"
+msgstr "在 reldeps 中使用 '==' 操作符可能导致一个未定义的行为。这个操作符已被废弃，并且在未来的版本中会取消对它的支持。请使用 '=' 操作符代替。"
 
 #: libdnf/repo/Repo.cpp:321
 #, c-format
@@ -1187,6 +1197,112 @@ msgstr "TransactionItem 状态没有设置：%s"
 msgid "Can't add console output to unsaved transaction"
 msgstr "无法向未保存的事务中添加控制台输出"
 
+#~ msgid " does not belong to a distupgrade repository"
+#~ msgstr " 不属于 distupgrade 仓库"
+
+#~ msgid " has inferior architecture"
+#~ msgstr " 有 inferior 架构"
+
+#, c-format
+#~ msgid "package %s is filtered out by modular filtering"
+#~ msgstr "软件包 %s 被模块过滤过滤掉"
+
+#, c-format
+#~ msgid "package %s does not have a compatible architecture"
+#~ msgstr "软件包 %s 没有兼容的架构"
+
+#, c-format
+#~ msgid "package %s is not installable"
+#~ msgstr "软件包 %s 不可安装"
+
+#, c-format
+#~ msgid "package %s is filtered out by exclude filtering"
+#~ msgstr "软件包 %s 被排除过滤过滤掉"
+
+#, c-format
+#~ msgid "nothing provides %s needed by %s"
+#~ msgstr "没有提供 %s 所需要的 %s"
+
+#, c-format
+#~ msgid "cannot install both %s and %s"
+#~ msgstr "无法同时安装 %s 和 %s"
+
+#, c-format
+#~ msgid "package %s conflicts with %s provided by %s"
+#~ msgstr "软件包 %s 与 %s（由 %s 提供）冲突"
+
+#, c-format
+#~ msgid "package %s obsoletes %s provided by %s"
+#~ msgstr "软件包 %s 淘汰了 %s 提供的 %s"
+
+#, c-format
+#~ msgid "installed package %s obsoletes %s provided by %s"
+#~ msgstr "已安装的软件包 %s 淘汰了 %s 提供的 %s"
+
+#, c-format
+#~ msgid "package %s implicitly obsoletes %s provided by %s"
+#~ msgstr "软件包 %s 隐式地淘汰了 %s 提供的 %s"
+
+#, c-format
+#~ msgid "package %s requires %s, but none of the providers can be installed"
+#~ msgstr "软件包 %s 需要 %s，但没有提供者可以被安装"
+
+#, c-format
+#~ msgid "package %s conflicts with %s provided by itself"
+#~ msgstr "软件包 %s 与自己提供的 %s 冲突"
+
+#, c-format
+#~ msgid "both package %s and %s obsolete %s"
+#~ msgstr "软件包 %s 和 %s 同时取代了 %s"
+
+#, c-format
+#~ msgid "module %s is disabled"
+#~ msgstr "模块 %s 被禁用"
+
+#, c-format
+#~ msgid "module %s does not have a compatible architecture"
+#~ msgstr "模块 %s 没有兼容的架构"
+
+#, c-format
+#~ msgid "module %s is not installable"
+#~ msgstr "模块 %s 不可安装"
+
+#, c-format
+#~ msgid "nothing provides %s needed by module %s"
+#~ msgstr "没有提供模块 %s 所需要的 %s"
+
+#, c-format
+#~ msgid "cannot install both modules %s and %s"
+#~ msgstr "不能同时安装模块 %s 和 %s"
+
+#, c-format
+#~ msgid "module %s conflicts with %s provided by %s"
+#~ msgstr "模块 %s 与 %s 提供的 %s 冲突"
+
+#, c-format
+#~ msgid "module %s obsoletes %s provided by %s"
+#~ msgstr "模块 %s 淘汰了 %s 提供的 %s"
+
+#, c-format
+#~ msgid "installed module %s obsoletes %s provided by %s"
+#~ msgstr "已安装的模块 %s 淘汰了 %s 提供的 %s"
+
+#, c-format
+#~ msgid "module %s implicitly obsoletes %s provided by %s"
+#~ msgstr "模块 %s 隐式地淘汰了 %s 提供的 %s"
+
+#, c-format
+#~ msgid "module %s requires %s, but none of the providers can be installed"
+#~ msgstr "模块 %s 需要 %s，但无法安装任何提供程序"
+
+#, c-format
+#~ msgid "module %s conflicts with %s provided by itself"
+#~ msgstr "模块 %s 与自己提供的 %s 冲突"
+
+#, c-format
+#~ msgid "both module %s and %s obsolete %s"
+#~ msgstr "模块 %s 和 %s 同时取代了 %s"
+
 #~ msgid "failed to add solv"
 #~ msgstr "添加 solv 失败"
 
@@ -1205,5 +1321,3 @@ msgstr "无法向未保存的事务中添加控制台输出"
 #~ msgid "Failed to parse module artifact NEVRA '%s'"
 #~ msgstr "无法解析模块工件 NEVRA '%s'"
 
-#~ msgid "Bad id for repo: %s, byte = %s %d"
-#~ msgstr "repo 的 id 无效: %s, byte = %s %d"
