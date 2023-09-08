@@ -8,11 +8,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-28 09:11+0100\n"
+"POT-Creation-Date: 2023-08-29 13:10+0200\n"
 "PO-Revision-Date: 2022-11-03 02:19+0000\n"
 "Last-Translator: 김인수 <simmon@nplob.com>\n"
-"Language-Team: Korean <https://translate.fedoraproject.org/projects/dnf/"
-"libdnf-rhel-8/ko/>\n"
+"Language-Team: Korean <https://translate.fedoraproject.org/projects/dnf/libdnf-rhel-8/ko/>\n"
 "Language: ko\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -95,12 +94,12 @@ msgstr "주어진 값 [%d] 허용 된 값보다 커야합니다 [%d]."
 #: libdnf/conf/OptionPath.cpp:78
 #, c-format
 msgid "given path '%s' is not absolute."
-msgstr "주어진 경로 '%s절대적이지 않다."
+msgstr "주어진 경로 '%s절대적이지 않음"
 
 #: libdnf/conf/OptionPath.cpp:82
 #, c-format
 msgid "given path '%s' does not exist."
-msgstr "주어진 경로 '%s' 존재하지 않는다."
+msgstr "주어진 경로 '%s' 존재하지 않음."
 
 #: libdnf/conf/OptionSeconds.cpp:52
 #, c-format
@@ -120,9 +119,7 @@ msgstr "동시에 모듈 '%s’에서 다른 스트림을 활성화 할 수 없�
 #, c-format
 msgid ""
 "Cannot enable module '%1$s' stream '%2$s': State of module already modified"
-msgstr ""
-"모듈 '%1$s' 스트림 '%2$s 을 활성화 할 수 없습니다: 모듈 상태가 이미 변경되었"
-"습니다"
+msgstr "모듈 '%1$s' 스트림 '%2$s 을 활성화 할 수 없습니다: 모듈 상태가 이미 변경되었습니다"
 
 #: libdnf/dnf-context.cpp:3259
 #, c-format
@@ -145,7 +142,8 @@ msgstr "인수 %s를 해결 할 수 없습니다"
 #: libdnf/dnf-context.cpp:3303
 #, c-format
 msgid ""
-"Only module name is required. Ignoring unneeded information in argument: '%s'"
+"Only module name is required. Ignoring unneeded information in argument: "
+"'%s'"
 msgstr "모듈 이름만 필요합니다. 인수에서 불필요한 정보를 무시합니다: '%s'"
 
 #: libdnf/dnf-context.cpp:3317
@@ -173,9 +171,7 @@ msgstr "인수: '%s'에 불필요한 정보를 무시하기"
 msgid ""
 "Problem during enablement of dependency tree for module '%1$s' stream "
 "'%2$s': %3$s"
-msgstr ""
-"모듈 '%1$s' 스트림 '%2$s': %3$s 위해 의존성 트리의 활성화하는 중에 발생하는 "
-"문제"
+msgstr "모듈 '%1$s' 스트림 '%2$s': %3$s 위해 의존성 트리의 활성화하는 중에 발생하는 문제"
 
 #: libdnf/dnf-context.cpp:3426
 msgid "Problems appeared for module enable request"
@@ -202,21 +198,17 @@ msgstr "모듈 비활성화 요청을 위해 나타난 문제"
 #: libdnf/dnf-context.cpp:3633
 #, c-format
 msgid ""
-"The operation would result in switching of module '%s' stream '%s' to stream "
-"'%s'"
+"The operation would result in switching of module '%s' stream '%s' to stream"
+" '%s'"
 msgstr "이 동작은 모듈 '%s'' 스트림 ‘%s'에서 스트림 '%s'로의 전환 결과입니다"
 
 #: libdnf/dnf-context.cpp:3637
 msgid ""
 "It is not possible to switch enabled streams of a module.\n"
-"It is recommended to remove all installed content from the module, and reset "
-"the module using 'microdnf module reset <module_name>' command. After you "
-"reset the module, you can install the other stream."
+"It is recommended to remove all installed content from the module, and reset the module using 'microdnf module reset <module_name>' command. After you reset the module, you can install the other stream."
 msgstr ""
 "활성화된 모듈 스트림을 전환 할 수 없습니다.\n"
-"설치된 모든 내용을 모듈에서 제거하고 ‘<module_name>' 명령을 사용하여 모듈을 "
-"재설정하는 것이 좋습니다. 모듈을 재설정한 후, 다른 스트림을 설치 할 수 있습니"
-"다."
+"설치된 모든 내용을 모듈에서 제거하고 ‘<module_name>' 명령을 사용하여 모듈을 재설정하는 것이 좋습니다. 모듈을 재설정한 후, 다른 스트림을 설치 할 수 있습니다."
 
 #: libdnf/dnf-goal.cpp:85
 msgid "Could not depsolve transaction; "
@@ -243,9 +235,7 @@ msgstr " 문제: %s\n"
 msgid ""
 "No available modular metadata for modular package '%s'; cannot be installed "
 "on the system"
-msgstr ""
-"모듈러 꾸러미 '%s'에 사용 가능한 모듈러 메타데이터가 없으며; 시스템에 설치 "
-"할 수 없습니다"
+msgstr "모듈러 패키지 '%s'에 사용 가능한 모듈러 메타데이터가 없으며; 시스템에 설치 할 수 없습니다"
 
 #: libdnf/dnf-rpmts.cpp:121 libdnf/dnf-rpmts.cpp:166
 #, c-format
@@ -284,8 +274,7 @@ msgstr "연결 실행 오류 : %s"
 
 #: libdnf/dnf-rpmts.cpp:283
 msgid "Error running transaction and no problems were reported!"
-msgstr ""
-"연결을 실행하는 중 오류가 발생했으며 아무런 문제도 보고되지 않았습니다!"
+msgstr "연결을 실행하는 중 오류가 발생했으며 아무런 문제도 보고되지 않았습니다!"
 
 #: libdnf/dnf-rpmts.cpp:346
 msgid "Fatal error, run database recovery"
@@ -294,7 +283,7 @@ msgstr "치명적인 오류, 데이터베이스 복구 실행"
 #: libdnf/dnf-rpmts.cpp:355
 #, c-format
 msgid "failed to find package %s"
-msgstr "꾸러미를 찾지 못했습니다. %s"
+msgstr "패키지를 찾지 못했습니다. %s"
 
 #: libdnf/dnf-rpmts.cpp:401
 #, c-format
@@ -358,7 +347,8 @@ msgstr "임시 파일을 만들 수 없습니다. %s"
 #: libdnf/dnf-sack.cpp:667
 #, c-format
 msgid ""
-"While writing extension cache %s (%d): repowriter write failed: %i, error: %s"
+"While writing extension cache %s (%d): repowriter write failed: %i, error: "
+"%s"
 msgstr "확장 캐쉬 %s (%d)를 쓰는 동안: repowriter 쓰기가 실패함: %i, 오류: %s"
 
 #: libdnf/dnf-sack.cpp:677
@@ -449,7 +439,7 @@ msgstr "이미 100 %% 상태 [%s]"
 #: libdnf/dnf-transaction.cpp:300
 #, c-format
 msgid "Sources not set when trying to ensure package %s"
-msgstr "꾸러미 %s를 확인 하려고 할 때 원천이 설정되지 않았습니다"
+msgstr "패키지를 만들 때 소스가 설정되지 않았습니다. %s"
 
 #: libdnf/dnf-transaction.cpp:326
 #, c-format
@@ -468,7 +458,7 @@ msgstr "에 대한 내려받기 파일 %s 찾을 수 없음"
 #: libdnf/dnf-transaction.cpp:397
 #, c-format
 msgid "package %1$s cannot be verified and repo %2$s is GPG enabled: %3$s"
-msgstr "꾸러미 %1$s 확인 및 복구 할 수 없습니다. %2$s GPG 사용 설정 됨 : %3$s"
+msgstr "패키지 %1$s 확인 및 복구 할 수 없습니다. %2$s GPG 사용 설정 됨 : %3$s"
 
 #: libdnf/dnf-transaction.cpp:831 libdnf/dnf-transaction.cpp:903
 msgid "Failed to get value for CacheDir"
@@ -526,17 +516,19 @@ msgstr "잘못된 형식의 선택기, 필터에 일치하는 개체가 여러 �
 msgid "Ill-formed Selector used for the operation, incorrect comparison type"
 msgstr "조작에 잘못 형성된 선택자, 잘못된 비교 유형"
 
-#: libdnf/goal/Goal.cpp:86 libdnf/goal/Goal.cpp:113
-msgid " does not belong to a distupgrade repository"
-msgstr " distupgrade 저장소에 속하지 않습니다"
+#: libdnf/goal/Goal.cpp:86
+#, c-format
+msgid "%s from %s  does not belong to a distupgrade repository"
+msgstr "%s /%s distupgrade 저장소에 속하지 않습니다"
 
-#: libdnf/goal/Goal.cpp:87 libdnf/goal/Goal.cpp:114
-msgid " has inferior architecture"
-msgstr " 하위 구조"
+#: libdnf/goal/Goal.cpp:87
+#, c-format
+msgid "%s from %s  has inferior architecture"
+msgstr "%s /%s 하위 아키텍처"
 
 #: libdnf/goal/Goal.cpp:88
 msgid "problem with installed package "
-msgstr "설치된 꾸러미 문제 "
+msgstr "설치된 패키지 문제 "
 
 #: libdnf/goal/Goal.cpp:89 libdnf/goal/Goal.cpp:116
 msgid "conflicting requests"
@@ -553,7 +545,7 @@ msgstr "요청이 없습니다 "
 #: libdnf/goal/Goal.cpp:92
 #, c-format
 msgid "package %s does not exist"
-msgstr "꾸러미 %s가 존재하지 않습니다"
+msgstr "패키지 %s가 존재하지 않습니다"
 
 #: libdnf/goal/Goal.cpp:93 libdnf/goal/Goal.cpp:120
 msgid " is provided by the system"
@@ -565,7 +557,7 @@ msgstr "종속성 문제"
 
 #: libdnf/goal/Goal.cpp:95
 msgid "cannot install the best update candidate for package "
-msgstr "꾸러미에 가장 적합한 최신화 선택을 설치 할 수 없습니다 "
+msgstr "패키지에 가장 적합한 최신화 선택을 설치 할 수 없습니다 "
 
 #: libdnf/goal/Goal.cpp:96 libdnf/goal/Goal.cpp:123
 msgid "cannot install the best candidate for the job"
@@ -573,68 +565,79 @@ msgstr "작업에 가장 적합한 선택을 설치 할 수 없습니다"
 
 #: libdnf/goal/Goal.cpp:97
 #, c-format
-msgid "package %s is filtered out by modular filtering"
-msgstr "꾸러미 %s가 모듈식으로 걸러 제거됩니다"
+msgid "package %s from %s is filtered out by modular filtering"
+msgstr "패키지 %s (%s에서)가 모듈식 필터링에 의해 필터링됩니다."
 
 #: libdnf/goal/Goal.cpp:98
 #, c-format
-msgid "package %s does not have a compatible architecture"
-msgstr "꾸러미 %s에 호환 구조가 없습니다"
+msgid "package %s from %s does not have a compatible architecture"
+msgstr "패키지 %s (%s에서)에 호환되는 구조가 없습니다"
 
 #: libdnf/goal/Goal.cpp:99
 #, c-format
-msgid "package %s is not installable"
-msgstr "꾸러미 %s 가 설치 할 수 없습니다"
+msgid "package %s from %s is not installable"
+msgstr "패키지 %s (%s에서)를 설치할 수 없습니다"
 
 #: libdnf/goal/Goal.cpp:100
 #, c-format
-msgid "package %s is filtered out by exclude filtering"
-msgstr "꾸러미 %s가 걸러지는 것에서 제외되었습니다"
+msgid "package %s from %s is filtered out by exclude filtering"
+msgstr "패키지 %s (%s에서)가 제외 필터링을 통해 필터링됩니다"
 
 #: libdnf/goal/Goal.cpp:101
 #, c-format
-msgid "nothing provides %s needed by %s"
-msgstr "%s에 필요한 %s가 제공되지 않았습니다"
+msgid "nothing provides %s needed by %s from %s"
+msgstr "%s (%s에서)에 필요한 %s이 제공되지 않습니다"
 
 #: libdnf/goal/Goal.cpp:102
 #, c-format
-msgid "cannot install both %s and %s"
-msgstr "%s 와 %s 모두 설치 할 수 없습니다"
+msgid "cannot install both %s from %s and %s from %s"
+msgstr "%s (%s에서) 및 %s (%s에서) 모두 설치할 수 없습니다"
 
 #: libdnf/goal/Goal.cpp:103
 #, c-format
-msgid "package %s conflicts with %s provided by %s"
-msgstr "꾸러미 %s은 %s에서 제공된 %s와 충돌합니다"
+msgid "package %s from %s conflicts with %s provided by %s from %s"
+msgstr "패키지 %s (%s에서)가 %s (%s에서)에 의해 제공된 %s와 충돌합니다"
 
 #: libdnf/goal/Goal.cpp:104
 #, c-format
-msgid "package %s obsoletes %s provided by %s"
-msgstr "꾸러미 %s가 %s에의해 제공된 %s를 폐기합니다"
+msgid "package %s from %s obsoletes %s provided by %s from %s"
+msgstr "패키지 %s (%s에서)가 %s (%s에서)에 의해 제공된 %s를 폐기합니다"
 
 #: libdnf/goal/Goal.cpp:105
 #, c-format
-msgid "installed package %s obsoletes %s provided by %s"
-msgstr "설치된 꾸러미 %s는 %s에 의해 %s 폐기되었습니다"
+msgid "installed package %s obsoletes %s provided by %s from %s"
+msgstr "설치된 패키지 %s가 %s (%s에서)에 의해 제공된 %s를 폐기합니다"
 
 #: libdnf/goal/Goal.cpp:106
 #, c-format
-msgid "package %s implicitly obsoletes %s provided by %s"
-msgstr "꾸러미 %s가 %s에 의해 %s가 암시적으로 폐기되었습니다"
+msgid "package %s from %s implicitly obsoletes %s provided by %s from %s"
+msgstr "패키지 %s (%s에서)가 %s (%s에서)에 의해 제공된 %s를 암시적으로 폐기합니다"
 
 #: libdnf/goal/Goal.cpp:107
 #, c-format
-msgid "package %s requires %s, but none of the providers can be installed"
-msgstr "꾸러미 %s는 %s가 필요하지만, 공급자가 없어 설치 할 수 없습니다"
+msgid ""
+"package %s from %s requires %s, but none of the providers can be installed"
+msgstr "패키지 %s (%s에서)는 %s이 필요하지만, 공급자가 없어 설치 할 수 없습니다"
 
 #: libdnf/goal/Goal.cpp:108
 #, c-format
-msgid "package %s conflicts with %s provided by itself"
-msgstr "꾸러미 %s가 자체적으로 제공된 %s와 충돌합니다"
+msgid "package %s from %s conflicts with %s provided by itself"
+msgstr "패키지 %s (%s에서)가 자체적으로 제공된 %s와 충돌합니다"
 
 #: libdnf/goal/Goal.cpp:109
 #, c-format
-msgid "both package %s and %s obsolete %s"
-msgstr "꾸러미 %s 와 %s 는 모두 %s에서 폐기되었습니다"
+msgid "both package %s from %s and %s from %s obsolete %s"
+msgstr "패키지 %s (%s에서) 및 %s (%s에서) 모두 %s을/를 폐기합니다"
+
+#: libdnf/goal/Goal.cpp:113
+#, c-format
+msgid "%s from %s does not belong to a distupgrade repository"
+msgstr "%s (%s에서)은/는 distupgrade 저장소에 속하지 않습니다"
+
+#: libdnf/goal/Goal.cpp:114
+#, c-format
+msgid "%s from %s has inferior architecture"
+msgstr "%s (%s에서)은/는 하위 아키텍처"
 
 #: libdnf/goal/Goal.cpp:115
 msgid "problem with installed module "
@@ -651,103 +654,104 @@ msgstr "모듈에 가장 적합한 최신화 추천을 설치 할 수 없습니�
 
 #: libdnf/goal/Goal.cpp:124 libdnf/goal/Goal.cpp:127
 #, c-format
-msgid "module %s is disabled"
-msgstr "모듈 %s를 사용할 수 없습니다"
+msgid "module %s from %s is disabled"
+msgstr "모듈 %s (%s에서)이/가 비활성화됨"
 
 #: libdnf/goal/Goal.cpp:125
 #, c-format
-msgid "module %s does not have a compatible architecture"
-msgstr "모듈 %s 에 호환되는 구조가 없습니다"
+msgid "module %s from %s does not have a compatible architecture"
+msgstr "패키지 %s (%s에서)에 호환되는 아키텍처가 없습니다"
 
 #: libdnf/goal/Goal.cpp:126
 #, c-format
-msgid "module %s is not installable"
-msgstr "모듈 %s 를 설치 할 수 없습니다"
+msgid "module %s from %s is not installable"
+msgstr "패키지 %s (%s에서)를 설치할 수 없습니다"
 
 #: libdnf/goal/Goal.cpp:128
 #, c-format
-msgid "nothing provides %s needed by module %s"
-msgstr "모듈 %s 에 필요한 %s 가 제공되지 않았습니다"
+msgid "nothing provides %s needed by module %s from %s"
+msgstr "%s (%s에서)에 필요한 %s이 제공되지 않습니다"
 
 #: libdnf/goal/Goal.cpp:129
 #, c-format
-msgid "cannot install both modules %s and %s"
-msgstr "모듈 %s 와 %s를 모두 설치 할 수 없습니다"
+msgid "cannot install both modules %s from %s and %s from %s"
+msgstr "모듈 %s (%s에서) 및 %s (%s에서) 모두 설치할 수 없습니다"
 
 #: libdnf/goal/Goal.cpp:130
 #, c-format
-msgid "module %s conflicts with %s provided by %s"
-msgstr "모듈 %s가 %s에 의해 제공된 %s와 충돌합니다"
+msgid "module %s from %s conflicts with %s provided by %s from %s"
+msgstr "모듈 %s (%s에서)이 %s (%s에서)에 의해 제공된 %s와 충돌합니다"
 
 #: libdnf/goal/Goal.cpp:131
 #, c-format
-msgid "module %s obsoletes %s provided by %s"
-msgstr "모듈 %s가 %s에 의해 제공된 %s를 폐기하였습니다"
+msgid "module %s from %s obsoletes %s provided by %s from %s"
+msgstr "모듈 %s (%s에서)이 %s (%s에서)에 의해 제공된 %s를 폐기합니다"
 
 #: libdnf/goal/Goal.cpp:132
 #, c-format
-msgid "installed module %s obsoletes %s provided by %s"
-msgstr "설치된 모듈 %s 가 %s의해 제공된 %s를 폐기합니다"
+msgid "installed module %s obsoletes %s provided by %s from %s"
+msgstr "설치된 모듈 %s 가 %s의해 제공된 %s (%s에서)를 폐기합니다"
 
 #: libdnf/goal/Goal.cpp:133
 #, c-format
-msgid "module %s implicitly obsoletes %s provided by %s"
-msgstr "모듈 %s가 %s 에 의해 %s를 암시적으로 폐기되었습니다"
+msgid "module %s from %s implicitly obsoletes %s provided by %s from %s"
+msgstr "모듈 %s (%s에서)이 %s (%s에서)에 의해 제공된 %s를 암시적으로 폐기합니다"
 
 #: libdnf/goal/Goal.cpp:134
 #, c-format
-msgid "module %s requires %s, but none of the providers can be installed"
-msgstr "모듈 %s 에 %s 가 필요하지만 공급 업체가 없어 설치 할 수 없습니다"
+msgid ""
+"module %s from %s requires %s, but none of the providers can be installed"
+msgstr "모듈 %s (%s에서)은 %s이 필요하지만, 공급자가 없어 설치 할 수 없습니다"
 
 #: libdnf/goal/Goal.cpp:135
 #, c-format
-msgid "module %s conflicts with %s provided by itself"
-msgstr "모듈 %s가 자체적으로 제공된 %s와 충돌합니다"
+msgid "module %s from %s conflicts with %s provided by itself"
+msgstr "모듈 %s (%s에서)이  (에서)에 의해 제공된 %s와 충돌합니다"
 
 #: libdnf/goal/Goal.cpp:136
 #, c-format
-msgid "both module %s and %s obsolete %s"
-msgstr "모듈 %s와 %s가 %s에서 폐기되었습니다"
+msgid "both module %s from %s and %s from %s obsolete %s"
+msgstr "모듈 %s (%s에서) 및 %s (%s에서) 모두 %s을/를 폐기합니다"
 
-#: libdnf/goal/Goal.cpp:1051
+#: libdnf/goal/Goal.cpp:1062
 msgid "no solver set"
 msgstr "solver 설정 없음"
 
-#: libdnf/goal/Goal.cpp:1056
+#: libdnf/goal/Goal.cpp:1067
 #, c-format
 msgid "failed to make %s absolute"
 msgstr "%s 절대값을 생성을 실패하였습니다"
 
-#: libdnf/goal/Goal.cpp:1063
+#: libdnf/goal/Goal.cpp:1074
 #, c-format
 msgid "failed writing debugdata to %1$s: %2$s"
 msgstr "%1$s: %2$s에 디버그자료 쓰기를 실패했습니다"
 
-#: libdnf/goal/Goal.cpp:1075
+#: libdnf/goal/Goal.cpp:1086
 msgid "no solv in the goal"
-msgstr "목표에 solv가 없다"
+msgstr "목표에 solv가 없음"
 
-#: libdnf/goal/Goal.cpp:1077
+#: libdnf/goal/Goal.cpp:1088
 msgid "no solution, cannot remove protected package"
-msgstr "해결책 없음, 보호 된 꾸러미를 제거 할 수 없음"
+msgstr "해결책 없음, 보안된 패키지를 제거 할 수 없음"
 
-#: libdnf/goal/Goal.cpp:1080
+#: libdnf/goal/Goal.cpp:1091
 msgid "no solution possible"
 msgstr "해결책 없음"
 
-#: libdnf/goal/Goal.cpp:1206
+#: libdnf/goal/Goal.cpp:1217
 msgid "Problem: "
 msgstr "문제: "
 
-#: libdnf/goal/Goal.cpp:1211
+#: libdnf/goal/Goal.cpp:1222
 #, c-format
 msgid "Problem %d: "
 msgstr "문제 %d: "
 
-#: libdnf/goal/Goal.cpp:1538
+#: libdnf/goal/Goal.cpp:1549
 msgid ""
 "The operation would result in removing the following protected packages: "
-msgstr "이 작업으로 인해 다음과 같은 보호 꾸러미가 제거됩니다. "
+msgstr "이 작업으로 인해 다음과 같은 보안 패키지가 제거됩니다. "
 
 #: libdnf/hy-iutil.cpp:181
 #, c-format
@@ -781,11 +785,11 @@ msgstr "잘못된 형식의 기반 모듈: %s"
 
 #: libdnf/module/ModulePackage.cpp:575
 msgid "Multiple module platforms provided by available packages\n"
-msgstr "사용 가능한 꾸러미로 제공되는 다중 모듈 기반\n"
+msgstr "사용 가능한 패키지로 제공되는 다중 모듈 기반\n"
 
 #: libdnf/module/ModulePackage.cpp:588
 msgid "Multiple module platforms provided by installed packages\n"
-msgstr "설치된 꾸러미로 제공되는 다중 모듈 기반\n"
+msgstr "설치된 패키지로 제공되는 다중 모듈 기반\n"
 
 #: libdnf/module/ModulePackage.cpp:615
 #, c-format
@@ -806,68 +810,66 @@ msgstr "유효한 기반(Platform) ID가 없습니다"
 msgid "Cannot enable multiple streams for module '%s'"
 msgstr "모듈 '%s’를 위해 다중 스트림을 활성화 할 수 없습니다"
 
-#: libdnf/module/ModulePackageContainer.cpp:295
+#: libdnf/module/ModulePackageContainer.cpp:288
 #, c-format
 msgid "Conflicting defaults with repo '%s': %s"
 msgstr "저장소 '%s: %s'와 기본 설정이 충돌합니다"
 
-#: libdnf/module/ModulePackageContainer.cpp:841
+#: libdnf/module/ModulePackageContainer.cpp:847
 msgid "Installing module profiles:\n"
 msgstr "모듈 프로파일 설치:\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:856
+#: libdnf/module/ModulePackageContainer.cpp:862
 msgid "Disabling module profiles:\n"
 msgstr "모듈 프로파일 비활성화:\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:871
+#: libdnf/module/ModulePackageContainer.cpp:877
 msgid "Enabling module streams:\n"
 msgstr "모듈 스트림 활성화:\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:885
+#: libdnf/module/ModulePackageContainer.cpp:891
 msgid "Switching module streams:\n"
 msgstr "모듈 스트림 전환:\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:903
+#: libdnf/module/ModulePackageContainer.cpp:909
 msgid "Disabling modules:\n"
 msgstr "모듈 비활성화:\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:914
+#: libdnf/module/ModulePackageContainer.cpp:920
 msgid "Resetting modules:\n"
 msgstr "모듈 재설정:\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:1638
+#: libdnf/module/ModulePackageContainer.cpp:1644
 #, c-format
 msgid "Unable to load modular Fail-Safe data at '%s'"
 msgstr "'%s'에서 모듈식 Fail-Safe 자료를 적재 할 수 없습니다"
 
-#: libdnf/module/ModulePackageContainer.cpp:1644
+#: libdnf/module/ModulePackageContainer.cpp:1650
 #, c-format
 msgid "Unable to load modular Fail-Safe data for module '%s:%s'"
 msgstr "모듈 '%s:%s'에 대해 모듈식 Fail-Safe 자료를 적재 할 수 없습니다"
 
-#: libdnf/module/ModulePackageContainer.cpp:1702
+#: libdnf/module/ModulePackageContainer.cpp:1708
 #, c-format
 msgid "Unable to create directory \"%s\" for modular Fail Safe data: %s"
 msgstr "모듈식 Fail-Safe 데이터에 대한 “%s\" 디렉토리를 만들 수 없습니다: %s"
 
-#: libdnf/module/ModulePackageContainer.cpp:1718
+#: libdnf/module/ModulePackageContainer.cpp:1724
 #, c-format
 msgid "Unable to save a modular Fail Safe data to '%s'"
 msgstr "모듈식 Fail Safe 자료를 '%s'에 저장 할 수 없습니다"
 
-#: libdnf/module/ModulePackageContainer.cpp:1741
+#: libdnf/module/ModulePackageContainer.cpp:1747
 #, c-format
 msgid "Unable to remove a modular Fail Safe data in '%s'"
 msgstr "'%s'에서 모듈식 Fail Safe 자료를 제거 할 수 없습니다"
 
-#: libdnf/module/ModulePackageContainer.cpp:1773
+#: libdnf/module/ModulePackageContainer.cpp:1779
 #, c-format
 msgid ""
 "Unable to apply modular obsoletes to '%s:%s' because target module '%s' is "
 "disabled"
-msgstr ""
-"'%s:%s'에 사용되지 않는 모듈을 적용할 수 없습니다(대상 모듈 '%s'가 비활성화 "
-"되어 있기 때문에)"
+msgstr "'%s:%s'에 사용되지 않는 모듈을 적용할 수 없습니다(대상 모듈 '%s'가 비활성화 되어 있기 때문에)"
 
 #: libdnf/module/modulemd/ModuleMetadata.cpp:86
 #, c-format
@@ -940,9 +942,8 @@ msgid ""
 "deprecated and the support will be dropped in future versions. Use '=' "
 "operator instead."
 msgstr ""
-"reldeps에 '=='연산자를 사용하면 정의되지 않은 동작이 발생할 수 있습니다. 이 "
-"연산자는 더 이상 사용되지 않으며, 향후 버전에서는 지원이 중단됩니다. 대신 "
-"'=' 연산자를 사용하세요."
+"reldeps에 '=='연산자를 사용하면 정의되지 않은 동작이 발생할 수 있습니다. 이 연산자는 더 이상 사용되지 않으며, 향후 "
+"버전에서는 지원이 중단됩니다. 대신 '=' 연산자를 사용하세요."
 
 #: libdnf/repo/Repo.cpp:321
 #, c-format
@@ -962,17 +963,14 @@ msgstr "repo '%s': 'basecachedir가 구성되어 있지 않습니다"
 
 #: libdnf/repo/Repo.cpp:512
 msgid ""
-"Maximum download speed is lower than minimum. Please change configuration of "
-"minrate or throttle"
-msgstr ""
-"최대 내려받기 속도는 최저보다 낮습니다. 최저속도나 변환 환경구성을 변경해 주"
-"세요"
+"Maximum download speed is lower than minimum. Please change configuration of"
+" minrate or throttle"
+msgstr "최대 내려받기 속도는 최저보다 낮습니다. 최저속도나 변환 환경구성을 변경해 주세요"
 
 #: libdnf/repo/Repo.cpp:546
 #, c-format
 msgid "repo '%s': 'proxy_username' is set but not 'proxy_password'"
-msgstr ""
-"repo '%s': 'proxy_username' 는 구성되어 있지만 'proxy_password'가 없습니다"
+msgstr "repo '%s': 'proxy_username' 는 구성되어 있지만 'proxy_password'가 없습니다"
 
 #: libdnf/repo/Repo.cpp:548
 msgid "'proxy_username' is set but not 'proxy_password'"
@@ -1140,8 +1138,7 @@ msgstr "완료된 연결에서 연결 항목 최신화를 시도합니다"
 
 #: libdnf/transaction/Transformer.cpp:76
 msgid "Database Corrupted: no row 'version' in table 'config'"
-msgstr ""
-"데이타베이스가 오염되었습니다: 테이블 'config'에 'version' 행이 없습니다"
+msgstr "데이타베이스가 오염되었습니다: 테이블 'config'에 'version' 행이 없습니다"
 
 #: libdnf/transaction/Transformer.cpp:681
 msgid "Transformer: can't open history persist dir"
@@ -1164,6 +1161,112 @@ msgstr "TransactionItem 상태가 설정되지 않았습니다. %s"
 msgid "Can't add console output to unsaved transaction"
 msgstr "저장되지 않은 연결에 콘솔 출력을 추가 할 수 없습니다"
 
+#~ msgid " does not belong to a distupgrade repository"
+#~ msgstr " distupgrade 저장소에 속하지 않습니다"
+
+#~ msgid " has inferior architecture"
+#~ msgstr " 하위 구조"
+
+#, c-format
+#~ msgid "package %s is filtered out by modular filtering"
+#~ msgstr "꾸러미 %s가 모듈식으로 걸러 제거됩니다"
+
+#, c-format
+#~ msgid "package %s does not have a compatible architecture"
+#~ msgstr "꾸러미 %s에 호환 구조가 없습니다"
+
+#, c-format
+#~ msgid "package %s is not installable"
+#~ msgstr "꾸러미 %s 가 설치 할 수 없습니다"
+
+#, c-format
+#~ msgid "package %s is filtered out by exclude filtering"
+#~ msgstr "꾸러미 %s가 걸러지는 것에서 제외되었습니다"
+
+#, c-format
+#~ msgid "nothing provides %s needed by %s"
+#~ msgstr "%s에 필요한 %s가 제공되지 않았습니다"
+
+#, c-format
+#~ msgid "cannot install both %s and %s"
+#~ msgstr "%s 와 %s 모두 설치 할 수 없습니다"
+
+#, c-format
+#~ msgid "package %s conflicts with %s provided by %s"
+#~ msgstr "꾸러미 %s은 %s에서 제공된 %s와 충돌합니다"
+
+#, c-format
+#~ msgid "package %s obsoletes %s provided by %s"
+#~ msgstr "꾸러미 %s가 %s에의해 제공된 %s를 폐기합니다"
+
+#, c-format
+#~ msgid "installed package %s obsoletes %s provided by %s"
+#~ msgstr "설치된 꾸러미 %s는 %s에 의해 %s 폐기되었습니다"
+
+#, c-format
+#~ msgid "package %s implicitly obsoletes %s provided by %s"
+#~ msgstr "꾸러미 %s가 %s에 의해 %s가 암시적으로 폐기되었습니다"
+
+#, c-format
+#~ msgid "package %s requires %s, but none of the providers can be installed"
+#~ msgstr "꾸러미 %s는 %s가 필요하지만, 공급자가 없어 설치 할 수 없습니다"
+
+#, c-format
+#~ msgid "package %s conflicts with %s provided by itself"
+#~ msgstr "꾸러미 %s가 자체적으로 제공된 %s와 충돌합니다"
+
+#, c-format
+#~ msgid "both package %s and %s obsolete %s"
+#~ msgstr "꾸러미 %s 와 %s 는 모두 %s에서 폐기되었습니다"
+
+#, c-format
+#~ msgid "module %s is disabled"
+#~ msgstr "모듈 %s를 사용할 수 없습니다"
+
+#, c-format
+#~ msgid "module %s does not have a compatible architecture"
+#~ msgstr "모듈 %s 에 호환되는 구조가 없습니다"
+
+#, c-format
+#~ msgid "module %s is not installable"
+#~ msgstr "모듈 %s 를 설치 할 수 없습니다"
+
+#, c-format
+#~ msgid "nothing provides %s needed by module %s"
+#~ msgstr "모듈 %s 에 필요한 %s 가 제공되지 않았습니다"
+
+#, c-format
+#~ msgid "cannot install both modules %s and %s"
+#~ msgstr "모듈 %s 와 %s를 모두 설치 할 수 없습니다"
+
+#, c-format
+#~ msgid "module %s conflicts with %s provided by %s"
+#~ msgstr "모듈 %s가 %s에 의해 제공된 %s와 충돌합니다"
+
+#, c-format
+#~ msgid "module %s obsoletes %s provided by %s"
+#~ msgstr "모듈 %s가 %s에 의해 제공된 %s를 폐기하였습니다"
+
+#, c-format
+#~ msgid "installed module %s obsoletes %s provided by %s"
+#~ msgstr "설치된 모듈 %s 가 %s의해 제공된 %s를 폐기합니다"
+
+#, c-format
+#~ msgid "module %s implicitly obsoletes %s provided by %s"
+#~ msgstr "모듈 %s가 %s 에 의해 %s를 암시적으로 폐기되었습니다"
+
+#, c-format
+#~ msgid "module %s requires %s, but none of the providers can be installed"
+#~ msgstr "모듈 %s 에 %s 가 필요하지만 공급 업체가 없어 설치 할 수 없습니다"
+
+#, c-format
+#~ msgid "module %s conflicts with %s provided by itself"
+#~ msgstr "모듈 %s가 자체적으로 제공된 %s와 충돌합니다"
+
+#, c-format
+#~ msgid "both module %s and %s obsolete %s"
+#~ msgstr "모듈 %s와 %s가 %s에서 폐기되었습니다"
+
 #~ msgid "failed to add solv"
 #~ msgstr "solv를 추가하지 못했습니다"
 
@@ -1175,6 +1278,3 @@ msgstr "저장되지 않은 연결에 콘솔 출력을 추가 할 수 없습니�
 
 #~ msgid "write_ext(%1$d) has failed: %2$d"
 #~ msgstr "write_ext(%1$d) 실패하였습니다: %2$d"
-
-#~ msgid "repo_add_repomdxml/rpmmd() has failed."
-#~ msgstr "repo_add_repomdxml/rpmmd() 실패하였습니다."

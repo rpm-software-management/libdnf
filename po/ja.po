@@ -7,11 +7,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-28 09:11+0100\n"
+"POT-Creation-Date: 2023-08-29 13:10+0200\n"
 "PO-Revision-Date: 2022-09-06 07:19+0000\n"
 "Last-Translator: Transtats <suanand@redhat.com>\n"
-"Language-Team: Japanese <https://translate.fedoraproject.org/projects/dnf/"
-"libdnf-rhel-8/ja/>\n"
+"Language-Team: Japanese <https://translate.fedoraproject.org/projects/dnf/libdnf-rhel-8/ja/>\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -119,9 +118,7 @@ msgstr "モジュール '%s' から、さらにストリームを同時に有効
 #, c-format
 msgid ""
 "Cannot enable module '%1$s' stream '%2$s': State of module already modified"
-msgstr ""
-"モジュール '%1$s' ストリーム '%2$s' を有効にできません。モジュールの状態はす"
-"でに変更されています"
+msgstr "モジュール '%1$s' ストリーム '%2$s' を有効にできません。モジュールの状態はすでに変更されています"
 
 #: libdnf/dnf-context.cpp:3259
 #, c-format
@@ -144,21 +141,19 @@ msgstr "引数 '%s' を解決できません"
 #: libdnf/dnf-context.cpp:3303
 #, c-format
 msgid ""
-"Only module name is required. Ignoring unneeded information in argument: '%s'"
+"Only module name is required. Ignoring unneeded information in argument: "
+"'%s'"
 msgstr "モジュール名のみが必要です。引数の不必要な情報は無視します: '%s'"
 
 #: libdnf/dnf-context.cpp:3317
 #, c-format
 msgid "Cannot reset module '%s': State of module already modified"
-msgstr ""
-"モジュール '%s' をリセットできません。モジュールの状態はすでに変更されていま"
-"す"
+msgstr "モジュール '%s' をリセットできません。モジュールの状態はすでに変更されています"
 
 #: libdnf/dnf-context.cpp:3328
 #, c-format
 msgid "Cannot disable module '%s': State of module already modified"
-msgstr ""
-"モジュール '%s' を無効にできません。モジュールの状態はすでに変更されています"
+msgstr "モジュール '%s' を無効にできません。モジュールの状態はすでに変更されています"
 
 #: libdnf/dnf-context.cpp:3359 libdnf/dnf-context.cpp:3451
 #: libdnf/dnf-context.cpp:3564
@@ -175,8 +170,7 @@ msgstr "引数の不要な情報は無視します: '%s'"
 msgid ""
 "Problem during enablement of dependency tree for module '%1$s' stream "
 "'%2$s': %3$s"
-msgstr ""
-"モジュール '%1$s' ストリーム '%2$s' の依存関係ツリーの有効化中に問題: %3$s"
+msgstr "モジュール '%1$s' ストリーム '%2$s' の依存関係ツリーの有効化中に問題: %3$s"
 
 #: libdnf/dnf-context.cpp:3426
 msgid "Problems appeared for module enable request"
@@ -203,23 +197,17 @@ msgstr "モジュール無効化リクエストに発生する問題"
 #: libdnf/dnf-context.cpp:3633
 #, c-format
 msgid ""
-"The operation would result in switching of module '%s' stream '%s' to stream "
-"'%s'"
-msgstr ""
-"オペレーションは、モジュール '%s' ストリーム '%s' を ストリーム '%s' へと切り"
-"替える結果となります"
+"The operation would result in switching of module '%s' stream '%s' to stream"
+" '%s'"
+msgstr "オペレーションは、モジュール '%s' ストリーム '%s' を ストリーム '%s' へと切り替える結果となります"
 
 #: libdnf/dnf-context.cpp:3637
 msgid ""
 "It is not possible to switch enabled streams of a module.\n"
-"It is recommended to remove all installed content from the module, and reset "
-"the module using 'microdnf module reset <module_name>' command. After you "
-"reset the module, you can install the other stream."
+"It is recommended to remove all installed content from the module, and reset the module using 'microdnf module reset <module_name>' command. After you reset the module, you can install the other stream."
 msgstr ""
 "有効化されたモジュールのストリームの切り替えはできません。\n"
-"モジュールからすべてのインストールされたコンテンツを削除し、'microdnf module "
-"reset <module_name>' コマンドを使用してモジュールをリセットすることを推奨しま"
-"す。モジュールのリセット後に、別のストリームをインストールできます。"
+"モジュールからすべてのインストールされたコンテンツを削除し、'microdnf module reset <module_name>' コマンドを使用してモジュールをリセットすることを推奨します。モジュールのリセット後に、別のストリームをインストールできます。"
 
 #: libdnf/dnf-goal.cpp:85
 msgid "Could not depsolve transaction; "
@@ -246,9 +234,7 @@ msgstr " 問題: %s\n"
 msgid ""
 "No available modular metadata for modular package '%s'; cannot be installed "
 "on the system"
-msgstr ""
-"モジュラーパッケージ '%s' のモジュラーメタデータは利用不可です; システムにイ"
-"ンストールはできません"
+msgstr "モジュラーパッケージ '%s' のモジュラーメタデータは利用不可です; システムにインストールはできません"
 
 #: libdnf/dnf-rpmts.cpp:121 libdnf/dnf-rpmts.cpp:166
 #, c-format
@@ -287,8 +273,7 @@ msgstr "トランザクションの実行中にエラーが発生しました: %
 
 #: libdnf/dnf-rpmts.cpp:283
 msgid "Error running transaction and no problems were reported!"
-msgstr ""
-"トランザクションの実行中にエラーが発生しましたが、問題は報告されませんでした!"
+msgstr "トランザクションの実行中にエラーが発生しましたが、問題は報告されませんでした!"
 
 #: libdnf/dnf-rpmts.cpp:346
 msgid "Fatal error, run database recovery"
@@ -336,9 +321,7 @@ msgstr "tmp ファイルを開くことに失敗しました: %s"
 #: libdnf/dnf-sack.cpp:551
 #, c-format
 msgid "While writing primary cache %s repowriter write failed: %i, error: %s"
-msgstr ""
-"プライマリーキャッシュの %s repowriter 書き込み中に %i エラーが発生しました。"
-"エラー: %s"
+msgstr "プライマリーキャッシュの %s repowriter 書き込み中に %i エラーが発生しました。エラー: %s"
 
 #: libdnf/dnf-sack.cpp:561
 #, c-format
@@ -363,10 +346,9 @@ msgstr "一時ファイル %s を作成できません"
 #: libdnf/dnf-sack.cpp:667
 #, c-format
 msgid ""
-"While writing extension cache %s (%d): repowriter write failed: %i, error: %s"
-msgstr ""
-"拡張キャッシュ %s (%d) の書き込み中: repowriter の書き込みに失敗: %i、エ"
-"ラー: %s"
+"While writing extension cache %s (%d): repowriter write failed: %i, error: "
+"%s"
+msgstr "拡張キャッシュ %s (%d) の書き込み中: repowriter の書き込みに失敗: %i、エラー: %s"
 
 #: libdnf/dnf-sack.cpp:677
 #, c-format
@@ -461,9 +443,7 @@ msgstr "パッケージ %s を確実にしようとする場合、ソースは�
 #: libdnf/dnf-transaction.cpp:326
 #, c-format
 msgid "Failed to ensure %1$s as repo %2$s not found(%3$i repos loaded)"
-msgstr ""
-"repo %2$s が見つからないため、%1$s を確実にすることに失敗しました (%3$i repo "
-"はロード済み)"
+msgstr "repo %2$s が見つからないため、%1$s を確実にすることに失敗しました (%3$i repo はロード済み)"
 
 #: libdnf/dnf-transaction.cpp:367
 msgid "Failed to check untrusted: "
@@ -477,8 +457,7 @@ msgstr "%s にダウンロードしたファイルが見つかりませんでし
 #: libdnf/dnf-transaction.cpp:397
 #, c-format
 msgid "package %1$s cannot be verified and repo %2$s is GPG enabled: %3$s"
-msgstr ""
-"パッケージ %1$s は確認できず、repo %2$s は GPG が有効になっています: %3$s"
+msgstr "パッケージ %1$s は確認できず、repo %2$s は GPG が有効になっています: %3$s"
 
 #: libdnf/dnf-transaction.cpp:831 libdnf/dnf-transaction.cpp:903
 msgid "Failed to get value for CacheDir"
@@ -497,8 +476,7 @@ msgstr "%s に filesystem をフリーサイズで取得することに失敗し
 #: libdnf/dnf-transaction.cpp:935
 #, c-format
 msgid "Not enough free space in %1$s: needed %2$s, available %3$s"
-msgstr ""
-"%1$s に十分なスペースがありません: %2$s 必要で、利用可能なのは %3$s です"
+msgstr "%1$s に十分なスペースがありません: %2$s 必要で、利用可能なのは %3$s です"
 
 #: libdnf/dnf-transaction.cpp:1195
 msgid "failed to set root"
@@ -517,9 +495,7 @@ msgstr "トランザクションの実行中にエラー %i"
 #: libdnf/dnf-transaction.cpp:1472
 #, c-format
 msgid "Transaction did not go to writing phase, but returned no error(%i)"
-msgstr ""
-"トランザクションは書き込みフェーズまで行きませんでしたが、エラー(%i) は返しま"
-"せんでした"
+msgstr "トランザクションは書き込みフェーズまで行きませんでしたが、エラー(%i) は返しませんでした"
 
 #: libdnf/dnf-utils.cpp:111 libdnf/hy-iutil.cpp:485
 #, c-format
@@ -539,13 +515,15 @@ msgstr "不適格な Selector、フィルター内に複数の一致するオブ
 msgid "Ill-formed Selector used for the operation, incorrect comparison type"
 msgstr "操作に使用される不適格な Selector、間違った比較タイプ"
 
-#: libdnf/goal/Goal.cpp:86 libdnf/goal/Goal.cpp:113
-msgid " does not belong to a distupgrade repository"
-msgstr " はdistupgradeレポジトリーに属していません"
+#: libdnf/goal/Goal.cpp:86
+#, c-format
+msgid "%s from %s  does not belong to a distupgrade repository"
+msgstr "%s の %s はdistupgradeレポジトリーに属していません"
 
-#: libdnf/goal/Goal.cpp:87 libdnf/goal/Goal.cpp:114
-msgid " has inferior architecture"
-msgstr " は下位アーキテクチャがあります"
+#: libdnf/goal/Goal.cpp:87
+#, c-format
+msgid "%s from %s  has inferior architecture"
+msgstr "%s の %s は下位アーキテクチャがあります"
 
 #: libdnf/goal/Goal.cpp:88
 msgid "problem with installed package "
@@ -586,72 +564,79 @@ msgstr "ジョブの最良アップデート候補をインストールできま
 
 #: libdnf/goal/Goal.cpp:97
 #, c-format
-msgid "package %s is filtered out by modular filtering"
-msgstr "パッケージ %s はモジュラーフィルタリングに一致しません"
+msgid "package %s from %s is filtered out by modular filtering"
+msgstr "%s のパッケージ %s はモジュラーフィルタリングに一致しません"
 
 #: libdnf/goal/Goal.cpp:98
 #, c-format
-msgid "package %s does not have a compatible architecture"
-msgstr "パッケージ %s は互換性のあるアーキテクチャーがありません"
+msgid "package %s from %s does not have a compatible architecture"
+msgstr "%s のパッケージ %s は互換性のあるアーキテクチャーがありません"
 
 #: libdnf/goal/Goal.cpp:99
 #, c-format
-msgid "package %s is not installable"
-msgstr "パッケージ %s はインストール不可です"
+msgid "package %s from %s is not installable"
+msgstr "%s のパッケージ %s はインストール不可です"
 
 #: libdnf/goal/Goal.cpp:100
 #, c-format
-msgid "package %s is filtered out by exclude filtering"
-msgstr "パッケージ %s は除外フィルタリングに一致しません"
+msgid "package %s from %s is filtered out by exclude filtering"
+msgstr "%s のパッケージ %s は除外フィルタリングに一致しません"
 
 #: libdnf/goal/Goal.cpp:101
 #, c-format
-msgid "nothing provides %s needed by %s"
-msgstr "%s が提供されません %s に必要です"
+msgid "nothing provides %s needed by %s from %s"
+msgstr "%s が提供されません。%s の %s に必要です"
 
 #: libdnf/goal/Goal.cpp:102
 #, c-format
-msgid "cannot install both %s and %s"
-msgstr "%s と %s どちらもインストールできません"
+msgid "cannot install both %s from %s and %s from %s"
+msgstr "%s の %s および %s の %s の両方をインストールすることはできません"
 
 #: libdnf/goal/Goal.cpp:103
 #, c-format
-msgid "package %s conflicts with %s provided by %s"
-msgstr "パッケージ %s は %s と競合しています。これは %s により提供されます"
+msgid "package %s from %s conflicts with %s provided by %s from %s"
+msgstr "%s のパッケージ %s は、%s の %s で提供される %s と競合しています"
 
 #: libdnf/goal/Goal.cpp:104
 #, c-format
-msgid "package %s obsoletes %s provided by %s"
-msgstr "パッケージ %s は %s を廃止しました。これは %s により提供されます"
+msgid "package %s from %s obsoletes %s provided by %s from %s"
+msgstr "%s のパッケージ %s により、%s の %s で提供される %s が廃止されました"
 
 #: libdnf/goal/Goal.cpp:105
 #, c-format
-msgid "installed package %s obsoletes %s provided by %s"
-msgstr ""
-"インストール済パッケージ %s は %s を廃止しました。これは %s により提供されま"
-"す"
+msgid "installed package %s obsoletes %s provided by %s from %s"
+msgstr "インストール済パッケージ %s により、%s の %s で提供される %s が廃止されました"
 
 #: libdnf/goal/Goal.cpp:106
 #, c-format
-msgid "package %s implicitly obsoletes %s provided by %s"
-msgstr "パッケージ %s は %s を暗に廃止しました。これは %s により提供されます"
+msgid "package %s from %s implicitly obsoletes %s provided by %s from %s"
+msgstr "%s のパッケージ %s により、%s の %s で提供される %s が廃止されました"
 
 #: libdnf/goal/Goal.cpp:107
 #, c-format
-msgid "package %s requires %s, but none of the providers can be installed"
-msgstr ""
-"パッケージ %s には %s が必要ですが、どのプロバイダーからもインストールできま"
-"せん"
+msgid ""
+"package %s from %s requires %s, but none of the providers can be installed"
+msgstr "%s のパッケージ %s には、%s が必要ですが、どのプロバイダーからもインストールできません"
 
 #: libdnf/goal/Goal.cpp:108
 #, c-format
-msgid "package %s conflicts with %s provided by itself"
-msgstr "パッケージ %s は自己提供される %s と競合しています"
+msgid "package %s from %s conflicts with %s provided by itself"
+msgstr "%s のパッケージ %s は、自身で提供される %s と競合しています"
 
 #: libdnf/goal/Goal.cpp:109
 #, c-format
-msgid "both package %s and %s obsolete %s"
-msgstr "パッケージ %s と %s 両方は %s を廃止しました"
+msgid "both package %s from %s and %s from %s obsolete %s"
+msgstr "%s の %s パッケージと %s の %s パッケージにより、%s が廃止されました"
+
+#: libdnf/goal/Goal.cpp:113
+#, c-format
+msgid "%s from %s does not belong to a distupgrade repository"
+msgstr "%s の %s は distupgrade レポジトリーに属していません"
+
+#: libdnf/goal/Goal.cpp:114
+#, c-format
+msgid "%s from %s has inferior architecture"
+msgstr "%s の %s には、下位アーキテクチャーがあります"
 
 #: libdnf/goal/Goal.cpp:115
 msgid "problem with installed module "
@@ -668,104 +653,101 @@ msgstr "モジュールの最良アップデート候補をインストールで
 
 #: libdnf/goal/Goal.cpp:124 libdnf/goal/Goal.cpp:127
 #, c-format
-msgid "module %s is disabled"
-msgstr "モジュール %s は無効です"
+msgid "module %s from %s is disabled"
+msgstr "%s のモジュール %s が無効になっています"
 
 #: libdnf/goal/Goal.cpp:125
 #, c-format
-msgid "module %s does not have a compatible architecture"
-msgstr "モジュール %s は互換性のあるアーキテクチャーがありません"
+msgid "module %s from %s does not have a compatible architecture"
+msgstr "%s のモジュール %s には、互換性のあるアーキテクチャーがありません"
 
 #: libdnf/goal/Goal.cpp:126
 #, c-format
-msgid "module %s is not installable"
-msgstr "モジュール %s はインストール不可です"
+msgid "module %s from %s is not installable"
+msgstr "%s のモジュール %s はインストール不可です"
 
 #: libdnf/goal/Goal.cpp:128
 #, c-format
-msgid "nothing provides %s needed by module %s"
-msgstr "%s が提供されませんモジュール %s に必要です"
+msgid "nothing provides %s needed by module %s from %s"
+msgstr "%s のモジュール %s が必要な %s は何も提供されません"
 
 #: libdnf/goal/Goal.cpp:129
 #, c-format
-msgid "cannot install both modules %s and %s"
-msgstr "モジュール %s と %s どちらもインストールできません"
+msgid "cannot install both modules %s from %s and %s from %s"
+msgstr "%s の %s および %s の %s の両方のモジュールをインストールすることはできません"
 
 #: libdnf/goal/Goal.cpp:130
 #, c-format
-msgid "module %s conflicts with %s provided by %s"
-msgstr "モジュール %s は %s と競合しています。これは %s により提供されます"
+msgid "module %s from %s conflicts with %s provided by %s from %s"
+msgstr "%s のモジュール %s は、%s の %s で提供される %s と競合しています"
 
 #: libdnf/goal/Goal.cpp:131
 #, c-format
-msgid "module %s obsoletes %s provided by %s"
-msgstr "モジュール %s は %s を廃止しました。これは %s により提供されます"
+msgid "module %s from %s obsoletes %s provided by %s from %s"
+msgstr "%s のモジュール %s により、%s の %s で提供される %s が廃止されました"
 
 #: libdnf/goal/Goal.cpp:132
 #, c-format
-msgid "installed module %s obsoletes %s provided by %s"
-msgstr ""
-"インストール済モジュール %s は %s を廃止しました。これは %s により提供されま"
-"す"
+msgid "installed module %s obsoletes %s provided by %s from %s"
+msgstr "インストール済モジュール %s により、%s の %s で提供される %s が廃止されました"
 
 #: libdnf/goal/Goal.cpp:133
 #, c-format
-msgid "module %s implicitly obsoletes %s provided by %s"
-msgstr "モジュール %s は %s を暗に廃止しました。これは %s により提供されます"
+msgid "module %s from %s implicitly obsoletes %s provided by %s from %s"
+msgstr "%s のモジュール %s により、%s の %s で提供される %s が廃止されました"
 
 #: libdnf/goal/Goal.cpp:134
 #, c-format
-msgid "module %s requires %s, but none of the providers can be installed"
-msgstr ""
-"モジュール %s には %s が必要ですが、どのプロバイダーからもインストールできま"
-"せん"
+msgid ""
+"module %s from %s requires %s, but none of the providers can be installed"
+msgstr "%s のモジュール %s には、%s が必要ですが、どのプロバイダーからもインストールできません"
 
 #: libdnf/goal/Goal.cpp:135
 #, c-format
-msgid "module %s conflicts with %s provided by itself"
-msgstr "モジュール %s は自己提供される %s と競合しています"
+msgid "module %s from %s conflicts with %s provided by itself"
+msgstr "%s のモジュール %s は、自身で提供される %s と競合しています"
 
 #: libdnf/goal/Goal.cpp:136
 #, c-format
-msgid "both module %s and %s obsolete %s"
-msgstr "モジュール %s と %s 両方は %s を廃止しました"
+msgid "both module %s from %s and %s from %s obsolete %s"
+msgstr "%s の %s モジュールと %s の %s モジュールの両方により、%s が廃止されました"
 
-#: libdnf/goal/Goal.cpp:1051
+#: libdnf/goal/Goal.cpp:1062
 msgid "no solver set"
 msgstr "設定されたソルバーはありません"
 
-#: libdnf/goal/Goal.cpp:1056
+#: libdnf/goal/Goal.cpp:1067
 #, c-format
 msgid "failed to make %s absolute"
 msgstr "%s を絶対的にすることに失敗しました"
 
-#: libdnf/goal/Goal.cpp:1063
+#: libdnf/goal/Goal.cpp:1074
 #, c-format
 msgid "failed writing debugdata to %1$s: %2$s"
 msgstr "debugdata を %1$s へ書き込むことに失敗しました: %2$s"
 
-#: libdnf/goal/Goal.cpp:1075
+#: libdnf/goal/Goal.cpp:1086
 msgid "no solv in the goal"
 msgstr "目標に solv がありません"
 
-#: libdnf/goal/Goal.cpp:1077
+#: libdnf/goal/Goal.cpp:1088
 msgid "no solution, cannot remove protected package"
 msgstr "ソリューションがなく、保護されたパッケージを削除できません"
 
-#: libdnf/goal/Goal.cpp:1080
+#: libdnf/goal/Goal.cpp:1091
 msgid "no solution possible"
 msgstr "可能なソリューションがありません"
 
-#: libdnf/goal/Goal.cpp:1206
+#: libdnf/goal/Goal.cpp:1217
 msgid "Problem: "
 msgstr "問題: "
 
-#: libdnf/goal/Goal.cpp:1211
+#: libdnf/goal/Goal.cpp:1222
 #, c-format
 msgid "Problem %d: "
 msgstr "問題 %d: "
 
-#: libdnf/goal/Goal.cpp:1538
+#: libdnf/goal/Goal.cpp:1549
 msgid ""
 "The operation would result in removing the following protected packages: "
 msgstr "操作は結果的に以下の保護されたパッケージを削除します: "
@@ -827,70 +809,66 @@ msgstr "有効な Platform ID が検出されませんでした"
 msgid "Cannot enable multiple streams for module '%s'"
 msgstr "モジュール '%s' の複数ストリームを有効化できません"
 
-#: libdnf/module/ModulePackageContainer.cpp:295
+#: libdnf/module/ModulePackageContainer.cpp:288
 #, c-format
 msgid "Conflicting defaults with repo '%s': %s"
 msgstr "repo '%s' のデフォルトが競合: %s"
 
-#: libdnf/module/ModulePackageContainer.cpp:841
+#: libdnf/module/ModulePackageContainer.cpp:847
 msgid "Installing module profiles:\n"
 msgstr "モジュールプロファイルのインストール中:\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:856
+#: libdnf/module/ModulePackageContainer.cpp:862
 msgid "Disabling module profiles:\n"
 msgstr "モジュールプロファイルの無効化中:\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:871
+#: libdnf/module/ModulePackageContainer.cpp:877
 msgid "Enabling module streams:\n"
 msgstr "モジュールストリームの有効化中:\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:885
+#: libdnf/module/ModulePackageContainer.cpp:891
 msgid "Switching module streams:\n"
 msgstr "モジュールストリームの切り替え中:\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:903
+#: libdnf/module/ModulePackageContainer.cpp:909
 msgid "Disabling modules:\n"
 msgstr "モジュールの無効化:\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:914
+#: libdnf/module/ModulePackageContainer.cpp:920
 msgid "Resetting modules:\n"
 msgstr "モジュールの再設定中:\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:1638
+#: libdnf/module/ModulePackageContainer.cpp:1644
 #, c-format
 msgid "Unable to load modular Fail-Safe data at '%s'"
 msgstr "'%s' のモジュラーフェイルセーフデータをロードできません"
 
-#: libdnf/module/ModulePackageContainer.cpp:1644
+#: libdnf/module/ModulePackageContainer.cpp:1650
 #, c-format
 msgid "Unable to load modular Fail-Safe data for module '%s:%s'"
 msgstr "モジュール '%s:%s' のモジュラーフェイルセーフデータをロードできません"
 
-#: libdnf/module/ModulePackageContainer.cpp:1702
+#: libdnf/module/ModulePackageContainer.cpp:1708
 #, c-format
 msgid "Unable to create directory \"%s\" for modular Fail Safe data: %s"
-msgstr ""
-"ディレクトリー \"%s\" を作成できません。対象モジュラーフェイルセーフデータ: "
-"%s"
+msgstr "ディレクトリー \"%s\" を作成できません。対象モジュラーフェイルセーフデータ: %s"
 
-#: libdnf/module/ModulePackageContainer.cpp:1718
+#: libdnf/module/ModulePackageContainer.cpp:1724
 #, c-format
 msgid "Unable to save a modular Fail Safe data to '%s'"
 msgstr "'%s' のモジュラーフェイルセーフデータを保存できません"
 
-#: libdnf/module/ModulePackageContainer.cpp:1741
+#: libdnf/module/ModulePackageContainer.cpp:1747
 #, c-format
 msgid "Unable to remove a modular Fail Safe data in '%s'"
 msgstr "'%s' のモジュラーフェイルセーフデータを削除できません"
 
-#: libdnf/module/ModulePackageContainer.cpp:1773
+#: libdnf/module/ModulePackageContainer.cpp:1779
 #, c-format
 msgid ""
 "Unable to apply modular obsoletes to '%s:%s' because target module '%s' is "
 "disabled"
-msgstr ""
-"ターゲットモジュール '%s' が無効であるため、モジュラーの廃止を '%s:%s' に適用"
-"できません"
+msgstr "ターゲットモジュール '%s' が無効であるため、モジュラーの廃止を '%s:%s' に適用できません"
 
 #: libdnf/module/modulemd/ModuleMetadata.cpp:86
 #, c-format
@@ -920,8 +898,7 @@ msgstr "ストリームのアップグレードに失敗しました: %s"
 #: libdnf/module/modulemd/ModuleMetadata.cpp:212
 #, c-format
 msgid "Cannot retrieve module obsoletes because no stream matching %s: %s"
-msgstr ""
-"%s に一致するストリームがないため、モジュールの廃止を取得できません: %s"
+msgstr "%s に一致するストリームがないため、モジュールの廃止を取得できません: %s"
 
 #: libdnf/plugin/plugin.cpp:46
 #, c-format
@@ -964,9 +941,9 @@ msgid ""
 "deprecated and the support will be dropped in future versions. Use '=' "
 "operator instead."
 msgstr ""
-"reldeps で '==' 演算子を使用すると、未定義の動作が発生する可能性があります。"
-"これは非推奨で、将来のバージョンではサポートされなくなります。代わりに '=' 演"
-"算子を使用してください。"
+"reldeps で '==' "
+"演算子を使用すると、未定義の動作が発生する可能性があります。これは非推奨で、将来のバージョンではサポートされなくなります。代わりに '=' "
+"演算子を使用してください。"
 
 #: libdnf/repo/Repo.cpp:321
 #, c-format
@@ -976,9 +953,7 @@ msgstr "リポジトリー %s にはミラーまたは baseurl セットがあ�
 #: libdnf/repo/Repo.cpp:330
 #, c-format
 msgid "Repository '%s' has unsupported type: 'type=%s', skipping."
-msgstr ""
-"リポジトリー '%s' にはサポートされていないタイプがあります: 'type=%s'、スキッ"
-"ピング。"
+msgstr "リポジトリー '%s' にはサポートされていないタイプがあります: 'type=%s'、スキッピング。"
 
 #: libdnf/repo/Repo.cpp:489 libdnf/repo/Repo.cpp:610 libdnf/repo/Repo.cpp:641
 #: libdnf/repo/Repo.cpp:1387
@@ -988,23 +963,18 @@ msgstr "repo '%s': 'basecachedir' が設定されていません"
 
 #: libdnf/repo/Repo.cpp:512
 msgid ""
-"Maximum download speed is lower than minimum. Please change configuration of "
-"minrate or throttle"
-msgstr ""
-"ダウンロードの最高速度は、最低速度よりも低いです。minrate またはスロットルの"
-"設定を変更してください"
+"Maximum download speed is lower than minimum. Please change configuration of"
+" minrate or throttle"
+msgstr "ダウンロードの最高速度は、最低速度よりも低いです。minrate またはスロットルの設定を変更してください"
 
 #: libdnf/repo/Repo.cpp:546
 #, c-format
 msgid "repo '%s': 'proxy_username' is set but not 'proxy_password'"
-msgstr ""
-"repo '%s': 'proxy_username' は設定済みですが、'proxy_password' は設定されてい"
-"ません"
+msgstr "repo '%s': 'proxy_username' は設定済みですが、'proxy_password' は設定されていません"
 
 #: libdnf/repo/Repo.cpp:548
 msgid "'proxy_username' is set but not 'proxy_password'"
-msgstr ""
-"'proxy_username' は設定済みですが、'proxy_password' は設定されていません"
+msgstr "'proxy_username' は設定済みですが、'proxy_password' は設定されていません"
 
 #: libdnf/repo/Repo.cpp:629
 #, c-format
@@ -1054,8 +1024,7 @@ msgstr "復元中: repo '%s' はスキップされました、metalink はあり
 #: libdnf/repo/Repo.cpp:1186
 #, c-format
 msgid "reviving: repo '%s' skipped, no usable hash."
-msgstr ""
-"復元中: repo '%s' はスキップされました、使用可能なハッシュはありません。"
+msgstr "復元中: repo '%s' はスキップされました、使用可能なハッシュはありません。"
 
 #: libdnf/repo/Repo.cpp:1209
 #, c-format
@@ -1105,8 +1074,7 @@ msgstr "repo: キャッシュを使用: %s"
 #: libdnf/repo/Repo.cpp:1338
 #, c-format
 msgid "Cache-only enabled but no cache for '%s'"
-msgstr ""
-"キャッシュオンリーが有効になっていますが、'%s' に対するキャッシュはありません"
+msgstr "キャッシュオンリーが有効になっていますが、'%s' に対するキャッシュはありません"
 
 #: libdnf/repo/Repo.cpp:1342
 #, c-format
@@ -1170,8 +1138,7 @@ msgstr "完了したトランザクションにトランザクションアイテ
 
 #: libdnf/transaction/Transformer.cpp:76
 msgid "Database Corrupted: no row 'version' in table 'config'"
-msgstr ""
-"データベースが破損しています。テーブル 'config' の行 'version' がありません"
+msgstr "データベースが破損しています。テーブル 'config' の行 'version' がありません"
 
 #: libdnf/transaction/Transformer.cpp:681
 msgid "Transformer: can't open history persist dir"
@@ -1194,6 +1161,112 @@ msgstr "TransactionItem の状態は設定されていません: %s"
 msgid "Can't add console output to unsaved transaction"
 msgstr "未保存のトランザクションにコンソールの出力を追加できません"
 
+#~ msgid " does not belong to a distupgrade repository"
+#~ msgstr " はdistupgradeレポジトリーに属していません"
+
+#~ msgid " has inferior architecture"
+#~ msgstr " は下位アーキテクチャがあります"
+
+#, c-format
+#~ msgid "package %s is filtered out by modular filtering"
+#~ msgstr "パッケージ %s はモジュラーフィルタリングに一致しません"
+
+#, c-format
+#~ msgid "package %s does not have a compatible architecture"
+#~ msgstr "パッケージ %s は互換性のあるアーキテクチャーがありません"
+
+#, c-format
+#~ msgid "package %s is not installable"
+#~ msgstr "パッケージ %s はインストール不可です"
+
+#, c-format
+#~ msgid "package %s is filtered out by exclude filtering"
+#~ msgstr "パッケージ %s は除外フィルタリングに一致しません"
+
+#, c-format
+#~ msgid "nothing provides %s needed by %s"
+#~ msgstr "%s が提供されません %s に必要です"
+
+#, c-format
+#~ msgid "cannot install both %s and %s"
+#~ msgstr "%s と %s どちらもインストールできません"
+
+#, c-format
+#~ msgid "package %s conflicts with %s provided by %s"
+#~ msgstr "パッケージ %s は %s と競合しています。これは %s により提供されます"
+
+#, c-format
+#~ msgid "package %s obsoletes %s provided by %s"
+#~ msgstr "パッケージ %s は %s を廃止しました。これは %s により提供されます"
+
+#, c-format
+#~ msgid "installed package %s obsoletes %s provided by %s"
+#~ msgstr "インストール済パッケージ %s は %s を廃止しました。これは %s により提供されます"
+
+#, c-format
+#~ msgid "package %s implicitly obsoletes %s provided by %s"
+#~ msgstr "パッケージ %s は %s を暗に廃止しました。これは %s により提供されます"
+
+#, c-format
+#~ msgid "package %s requires %s, but none of the providers can be installed"
+#~ msgstr "パッケージ %s には %s が必要ですが、どのプロバイダーからもインストールできません"
+
+#, c-format
+#~ msgid "package %s conflicts with %s provided by itself"
+#~ msgstr "パッケージ %s は自己提供される %s と競合しています"
+
+#, c-format
+#~ msgid "both package %s and %s obsolete %s"
+#~ msgstr "パッケージ %s と %s 両方は %s を廃止しました"
+
+#, c-format
+#~ msgid "module %s is disabled"
+#~ msgstr "モジュール %s は無効です"
+
+#, c-format
+#~ msgid "module %s does not have a compatible architecture"
+#~ msgstr "モジュール %s は互換性のあるアーキテクチャーがありません"
+
+#, c-format
+#~ msgid "module %s is not installable"
+#~ msgstr "モジュール %s はインストール不可です"
+
+#, c-format
+#~ msgid "nothing provides %s needed by module %s"
+#~ msgstr "%s が提供されませんモジュール %s に必要です"
+
+#, c-format
+#~ msgid "cannot install both modules %s and %s"
+#~ msgstr "モジュール %s と %s どちらもインストールできません"
+
+#, c-format
+#~ msgid "module %s conflicts with %s provided by %s"
+#~ msgstr "モジュール %s は %s と競合しています。これは %s により提供されます"
+
+#, c-format
+#~ msgid "module %s obsoletes %s provided by %s"
+#~ msgstr "モジュール %s は %s を廃止しました。これは %s により提供されます"
+
+#, c-format
+#~ msgid "installed module %s obsoletes %s provided by %s"
+#~ msgstr "インストール済モジュール %s は %s を廃止しました。これは %s により提供されます"
+
+#, c-format
+#~ msgid "module %s implicitly obsoletes %s provided by %s"
+#~ msgstr "モジュール %s は %s を暗に廃止しました。これは %s により提供されます"
+
+#, c-format
+#~ msgid "module %s requires %s, but none of the providers can be installed"
+#~ msgstr "モジュール %s には %s が必要ですが、どのプロバイダーからもインストールできません"
+
+#, c-format
+#~ msgid "module %s conflicts with %s provided by itself"
+#~ msgstr "モジュール %s は自己提供される %s と競合しています"
+
+#, c-format
+#~ msgid "both module %s and %s obsolete %s"
+#~ msgstr "モジュール %s と %s 両方は %s を廃止しました"
+
 #~ msgid "failed to add solv"
 #~ msgstr "solv の追加に失敗しました"
 
@@ -1201,14 +1274,10 @@ msgstr "未保存のトランザクションにコンソールの出力を追加
 #~ msgstr "write_main() はデータの書き込みに失敗しました: %i"
 
 #~ msgid "write_main() failed to re-load written solv file"
-#~ msgstr ""
-#~ "write_main() は、書き込みされた solv ファイルの再ロードに失敗しました"
+#~ msgstr "write_main() は、書き込みされた solv ファイルの再ロードに失敗しました"
 
 #~ msgid "write_ext(%1$d) has failed: %2$d"
 #~ msgstr "write_ext(%1$d) は失敗しました: %2$d"
 
 #~ msgid "repo_add_repomdxml/rpmmd() has failed."
 #~ msgstr "repo_add_repomdxml/rpmmd() は失敗しました。"
-
-#~ msgid "Bad id for repo: %s, byte = %s %d"
-#~ msgstr "repo に対する不正な id: %s, byte = %s %d"
