@@ -2,21 +2,23 @@
 # Ludek Janda <ljanda@redhat.com>, 2018. #zanata
 # Petr Molodyk <pamolodyk@gmail.com>, 2020.
 # Vladyslav Spirin <vladspirin@hotmail.com>, 2020.
-# Alexey Rubtsov <rushills@gmail.com>, 2021.
+# Alexey Rubtsov <rushills@gmail.com>, 2021, 2022.
+# V I <xasertop@gmail.com>, 2022.
+# Vi <xasertop@gmail.com>, 2022, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-05 01:53+0000\n"
-"PO-Revision-Date: 2021-08-03 19:04+0000\n"
-"Last-Translator: Igor Gorbounov <igor.gorbounov@gmail.com>\n"
+"POT-Creation-Date: 2023-09-01 01:41+0000\n"
+"PO-Revision-Date: 2023-01-19 14:20+0000\n"
+"Last-Translator: Vi <xasertop@gmail.com>\n"
 "Language-Team: Russian <https://translate.fedoraproject.org/projects/dnf/libdnf-dnf-4-master/ru/>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.7.2\n"
+"X-Generator: Weblate 4.15.1\n"
 
 #: libdnf/conf/ConfigMain.cpp:62 libdnf/conf/OptionSeconds.cpp:40
 msgid "no value specified"
@@ -40,7 +42,7 @@ msgstr "неизвестная единица «%s»"
 #: libdnf/conf/ConfigMain.cpp:204 libdnf/conf/OptionEnum.cpp:83
 #: libdnf/conf/OptionNumber.cpp:88
 msgid "invalid value"
-msgstr "Неверное значение"
+msgstr "неверное значение"
 
 #: libdnf/conf/ConfigMain.cpp:207
 msgid "value 1 is not allowed"
@@ -99,49 +101,49 @@ msgstr "данный путь «%s» не существует."
 #: libdnf/conf/OptionSeconds.cpp:52
 #, c-format
 msgid "could not convert '%s' to seconds"
-msgstr "не удалось преобразовать '%s'секунд"
+msgstr "не удалось преобразовать «%s» в секунды"
 
 #: libdnf/conf/OptionString.cpp:79
 msgid "GetValue(): Value not set"
 msgstr "GetValue (): значение не установлено"
 
-#: libdnf/dnf-context.cpp:3178 libdnf/dnf-context.cpp:3187
+#: libdnf/dnf-context.cpp:3215 libdnf/dnf-context.cpp:3224
 #, c-format
 msgid "Cannot enable more streams from module '%s' at the same time"
-msgstr "Не удалось одновременно активировать больше потоков из модуля «%s»"
+msgstr "Невозможно одновременно открыть дополнительные потоки из модуля «%s»"
 
-#: libdnf/dnf-context.cpp:3196 libdnf/dnf-context.cpp:3214
+#: libdnf/dnf-context.cpp:3233 libdnf/dnf-context.cpp:3251
 #, c-format
 msgid ""
 "Cannot enable module '%1$s' stream '%2$s': State of module already modified"
 msgstr ""
-"Не удалось активировать модуль «%1$s», поток «%2$s»: состояние модуля уже "
-"изменено"
+"Невозможно открыть поток «%2$s» модуля «%1$s»: модуль уже в изменённом "
+"состоянии"
 
-#: libdnf/dnf-context.cpp:3263
+#: libdnf/dnf-context.cpp:3300
 #, c-format
 msgid "Modular dependency problem with Defaults: %s"
-msgstr "Проблема с зависимостями модулей у Defaults: %s"
+msgstr "Проблема с модульными зависимостями в Defaults: %s"
 
-#: libdnf/dnf-context.cpp:3266
+#: libdnf/dnf-context.cpp:3303
 #, c-format
 msgid "Modular dependency problem with the latest modules: %s"
-msgstr "Проблема с зависимостями у последних модулей: %s"
+msgstr "Проблема с зависимостями в последних модулях: %s"
 
-#: libdnf/dnf-context.cpp:3270
+#: libdnf/dnf-context.cpp:3307
 #, c-format
 msgid "Modular dependency problem: %s"
 msgstr "Проблема с зависимостями модулей: %s"
 
-#: libdnf/dnf-context.cpp:3293 libdnf/dnf-context.cpp:3317
-#: libdnf/dnf-context.cpp:3328 libdnf/dnf-context.cpp:3367
-#: libdnf/dnf-context.cpp:3383 libdnf/dnf-context.cpp:3415
-#: libdnf/dnf-context.cpp:3464 libdnf/dnf-context.cpp:3474
+#: libdnf/dnf-context.cpp:3330 libdnf/dnf-context.cpp:3354
+#: libdnf/dnf-context.cpp:3365 libdnf/dnf-context.cpp:3404
+#: libdnf/dnf-context.cpp:3420 libdnf/dnf-context.cpp:3452
+#: libdnf/dnf-context.cpp:3501 libdnf/dnf-context.cpp:3511
 #, c-format
 msgid "Unable to resolve argument '%s'"
 msgstr "Не удалось разрешить аргумент «%s»"
 
-#: libdnf/dnf-context.cpp:3300
+#: libdnf/dnf-context.cpp:3337
 #, c-format
 msgid ""
 "Only module name is required. Ignoring unneeded information in argument: "
@@ -150,104 +152,105 @@ msgstr ""
 "Требуется только имя модуля. Игнорируется ненужная информация в аргументе: "
 "«%s»"
 
-#: libdnf/dnf-context.cpp:3314
+#: libdnf/dnf-context.cpp:3351
 #, c-format
 msgid "Cannot reset module '%s': State of module already modified"
-msgstr ""
-"Не удается переинициализировать модуль «%s»: состояние модуля уже изменено"
+msgstr "Не удалось сбросить модуль «%s»: состояние модуля уже изменено"
 
-#: libdnf/dnf-context.cpp:3325
+#: libdnf/dnf-context.cpp:3362
 #, c-format
 msgid "Cannot disable module '%s': State of module already modified"
-msgstr "Не удается деактивировать модуль «%s»: состояние модуля уже изменено"
+msgstr "Не удалось отключить модуль «%s»: состояние модуля уже изменено"
 
-#: libdnf/dnf-context.cpp:3356 libdnf/dnf-context.cpp:3452
-#: libdnf/dnf-context.cpp:3633
+#: libdnf/dnf-context.cpp:3393 libdnf/dnf-context.cpp:3489
+#: libdnf/dnf-context.cpp:3670
 msgid "No modular data available"
-msgstr "Нет данных модуля"
+msgstr "Нет модульных данных"
 
-#: libdnf/dnf-context.cpp:3373
+#: libdnf/dnf-context.cpp:3410
 #, c-format
 msgid "Ignoring unneeded information in argument: '%s'"
-msgstr "Игнорируется ненужная информация в аргументе: «%s»"
+msgstr "Игнорирую ненужную информацию в аргументе: «%s»"
 
-#: libdnf/dnf-context.cpp:3411
+#: libdnf/dnf-context.cpp:3448
 #, c-format
 msgid ""
 "Problem during enablement of dependency tree for module '%1$s' stream "
 "'%2$s': %3$s"
 msgstr ""
-"Проблема при включении дерева зависимостей для модуля «%1$s», поток «%2$s»: "
-"%3$s"
+"Проблема с разрешением дерева зависимостей для модуля «%1$s» поток "
+"«%2$s»:%3$s"
 
-#: libdnf/dnf-context.cpp:3423
+#: libdnf/dnf-context.cpp:3460
 msgid "Problems appeared for module enable request:"
-msgstr "Возникли проблемы при запросе включения модуля:"
+msgstr "При разрешении модуля возникли проблемы:"
 
-#: libdnf/dnf-context.cpp:3518
+#: libdnf/dnf-context.cpp:3555
 #, c-format
 msgid "No active module packages found for module spec '%s'"
-msgstr "Не найдены пакеты активных модулей для спецификации модуля «%s»"
+msgstr "Не найдено активных пакетов для модуля специфицированного как «%s»"
 
-#: libdnf/dnf-context.cpp:3523
+#: libdnf/dnf-context.cpp:3560
 #, c-format
 msgid "Cannot install module '%s' from fail-safe repository"
-msgstr "Невозможно установить модуль «%s» из отказоустойчивого репозитория"
+msgstr ""
+"Не удалось инсталлировать модуль «%s» из защищённого от ошибок репозитория"
 
-#: libdnf/dnf-context.cpp:3530
+#: libdnf/dnf-context.cpp:3567
 #, c-format
 msgid "No profile found matching '%s'"
-msgstr "Не найден профиль, соответствующий «%s»"
+msgstr "Не найдено подходящего профиля «%s»"
 
-#: libdnf/dnf-context.cpp:3584
+#: libdnf/dnf-context.cpp:3621
 #, c-format
 msgid "No match for package '%s' for module spec %s"
-msgstr "Пакет «%s» не соответствует спецификации модуля %s"
+msgstr ""
+"Не найдено совпадений для пакета «%s» для модуля специфицированного как %s"
 
-#: libdnf/dnf-context.cpp:3595
+#: libdnf/dnf-context.cpp:3632
 #, c-format
 msgid "Problem during install for module '%1$s' stream '%2$s': %3$s"
-msgstr "Проблема при установке для модуля «%1$s», поток «%2$s»: %3$s"
+msgstr "Проблема при установке модуля «%1$s» поток «%2$s»:%3$s"
 
-#: libdnf/dnf-context.cpp:3604
+#: libdnf/dnf-context.cpp:3641
 msgid "Problems appeared for module install request:"
-msgstr "Возникли проблемы при запросе установки модуля:"
+msgstr "Проблемы, возникшие при запросе на установку модуля:"
 
-#: libdnf/dnf-context.cpp:3663
+#: libdnf/dnf-context.cpp:3700
 msgid "Problems appeared for module reset request:"
-msgstr "Возникли проблемы при запросе переинициализации модуля:"
+msgstr "Проблемы, возникшие при запросе на сброс модуля:"
 
-#: libdnf/dnf-context.cpp:3664 libdnf/dnf-context.cpp:3723
+#: libdnf/dnf-context.cpp:3701 libdnf/dnf-context.cpp:3760
 msgid "Problems appeared for module disable request:"
 msgstr "Возникли проблемы при запросе отключения модуля:"
 
-#: libdnf/dnf-context.cpp:3755
+#: libdnf/dnf-context.cpp:3792
 #, c-format
 msgid ""
 "The operation would result in switching of module '%s' stream '%s' to stream"
 " '%s'"
 msgstr ""
-"Операция приведет к переключению модуля «%s», поток «%s» на поток «%s»"
+"Операция приведёт к переключению модуля «%s» потока «%s» на поток «%s»"
 
-#: libdnf/dnf-context.cpp:3759
+#: libdnf/dnf-context.cpp:3796
 msgid ""
 "It is not possible to switch enabled streams of a module.\n"
 "It is recommended to remove all installed content from the module, and reset the module using 'microdnf module reset <module_name>' command. After you reset the module, you can install the other stream."
 msgstr ""
-"Невозможно переключить активированные потоки модуля.\n"
-"Рекомендуется удалить из модуля всё установленное и обновить модуль с помощью команды «{microdnf module reset <имя_модуля>». После обновления модуля можно установить другой поток."
+"Невозможно переключить включённые потоки модуля.\n"
+"Рекомендуется удалить из модуля всё установленное и обновить модуль с помощью команды «microdnf module reset <имя_модуля>». После обновления модуля можно установить другой поток."
 
 #: libdnf/dnf-goal.cpp:107
 msgid "Could not depsolve transaction; "
-msgstr "Не удалось разрешить зависимости операции; "
+msgstr "Не удалось отменить транзакцию; "
 
 #: libdnf/dnf-goal.cpp:109
 #, c-format
 msgid "%i problem detected:\n"
 msgid_plural "%i problems detected:\n"
-msgstr[0] "Выявлена %i проблема:\n"
-msgstr[1] "Выявлено %i проблем:\n"
-msgstr[2] "Выявлено%i проблем:\n"
+msgstr[0] "%i проблема обнаружена:\n"
+msgstr[1] "%i проблемы обнаружено:\n"
+msgstr[2] "%i проблем обнаружено:\n"
 
 #: libdnf/dnf-goal.cpp:117
 #, c-format
@@ -265,8 +268,8 @@ msgid ""
 "No available modular metadata for modular package '%s'; cannot be installed "
 "on the system"
 msgstr ""
-"Нет доступных метаданных для модульного пакета:'%s'; установка в системе "
-"невозможна"
+"Нет доступных мета-данных для модульного пакета «%s»; невозможно установить "
+"в систему"
 
 #: libdnf/dnf-rpmts.cpp:121 libdnf/dnf-rpmts.cpp:166
 #, c-format
@@ -276,7 +279,7 @@ msgstr "не проверена подпись для %s"
 #: libdnf/dnf-rpmts.cpp:129 libdnf/dnf-rpmts.cpp:174
 #, c-format
 msgid "failed to open(generic error): %s"
-msgstr "не удалось открыть (общая ошибка): %s"
+msgstr "не удалось открыть ( общая ощибка): %s"
 
 #: libdnf/dnf-rpmts.cpp:142
 #, c-format
@@ -286,12 +289,12 @@ msgstr "не удалось проверить ключ для %s"
 #: libdnf/dnf-rpmts.cpp:150
 #, c-format
 msgid "public key unavailable for %s"
-msgstr "открытый ключ для %s недоступен"
+msgstr "публичный ключ недоступен для %s"
 
 #: libdnf/dnf-rpmts.cpp:158
 #, c-format
 msgid "signature not found for %s"
-msgstr "подпись для %s не найдена"
+msgstr "подпись не найдена для %s"
 
 #: libdnf/dnf-rpmts.cpp:193
 #, c-format
@@ -305,11 +308,12 @@ msgstr "Ошибка при выполнении транзакции: %s"
 
 #: libdnf/dnf-rpmts.cpp:283
 msgid "Error running transaction and no problems were reported!"
-msgstr "Ошибка при выполнении транзакции и никаких проблем не сообщалось!"
+msgstr ""
+"Возникла ошибка при исполнении транзакции, но не было зафиксировано проблем!"
 
 #: libdnf/dnf-rpmts.cpp:346
 msgid "Fatal error, run database recovery"
-msgstr "Неустранимая ошибка, запустить восстановление базы данных"
+msgstr "Фатальная ошибка, запустите восстановление базы данных"
 
 #: libdnf/dnf-rpmts.cpp:355
 #, c-format
@@ -321,87 +325,137 @@ msgstr "не удалось найти пакет %s"
 msgid "could not add erase element %1$s(%2$i)"
 msgstr "не удалось добавить элемент стирания %1$s(%2$i)"
 
-#: libdnf/dnf-sack.cpp:395
-msgid "failed to add solv"
-msgstr "не удалось добавить solv"
+#: libdnf/dnf-sack.cpp:251
+msgid "repo_add_solv() has failed."
+msgstr "вызов repo_add_solv() не удался."
 
-#: libdnf/dnf-sack.cpp:414
+#: libdnf/dnf-sack.cpp:415
+#, c-format
+msgid "Loading extension cache %s (%d) failed: "
+msgstr "Ошибка загрузки кеша расширений %s (%d): "
+
+#: libdnf/dnf-sack.cpp:429
 #, c-format
 msgid "no %1$s string for %2$s"
 msgstr "нет строки %1$s для %2$s"
 
-#: libdnf/dnf-sack.cpp:424
+#: libdnf/dnf-sack.cpp:439
 #, c-format
 msgid "failed to open: %s"
 msgstr "не удалось открыть: %s"
 
-#: libdnf/dnf-sack.cpp:503
+#: libdnf/dnf-sack.cpp:518
 #, c-format
 msgid "cannot create temporary file: %s"
-msgstr "не может создать временный файл: %s"
+msgstr "не удается создать временный файл: %s"
 
-#: libdnf/dnf-sack.cpp:513
+#: libdnf/dnf-sack.cpp:528
 #, c-format
 msgid "failed opening tmp file: %s"
 msgstr "не удалось открыть файл tmp: %s"
 
-#: libdnf/dnf-sack.cpp:525
+#: libdnf/dnf-sack.cpp:550
 #, c-format
-msgid "write_main() failed writing data: %i"
-msgstr "write_main () не удалось записать данные: %i"
+msgid "While writing primary cache %s repowriter write failed: %i, error: %s"
+msgstr ""
+"При записи первичного кеша %s произошла ошибка записи в программе записи "
+"отчёта: %i, ошибка: %s"
 
-#: libdnf/dnf-sack.cpp:542
-msgid "write_main() failed to re-load written solv file"
-msgstr "write_main() fне удалось перезагрузить файл solv"
+#: libdnf/dnf-sack.cpp:560
+#, c-format
+msgid "Failed closing tmp file %s: %s"
+msgstr "Не удалось закрыть временный файл %s: %s"
 
-#: libdnf/dnf-sack.cpp:607
+#: libdnf/dnf-sack.cpp:570
+#, c-format
+msgid "Failed to use newly written primary cache: %s: "
+msgstr "Не удалось использовать вновь записанный первичный кеш: %s: "
+
+#: libdnf/dnf-sack.cpp:576
+#, c-format
+msgid "Failed to use newly written primary cache: %s"
+msgstr "Не удалось использовать вновь записанный первичный кеш: %s"
+
+#: libdnf/dnf-sack.cpp:626
 #, c-format
 msgid "can not create temporary file %s"
 msgstr "не удается создать временный файл %s"
 
-#: libdnf/dnf-sack.cpp:625
+#: libdnf/dnf-sack.cpp:666
 #, c-format
-msgid "write_ext(%1$d) has failed: %2$d"
-msgstr "write_ext(%1$d) выдал ошибку: %2$d"
+msgid ""
+"While writing extension cache %s (%d): repowriter write failed: %i, error: "
+"%s"
+msgstr ""
+"При записи кеша расширений %s (%d): сбой программы записи отчётов: %i, "
+"ошибка: %s"
 
-#: libdnf/dnf-sack.cpp:680
+#: libdnf/dnf-sack.cpp:676
+#, c-format
+msgid "While writing extension cache (%d): cannot close temporary file: %s"
+msgstr ""
+"При записи кеша расширений (%d): невозможно закрыть временный файл: %s"
+
+#: libdnf/dnf-sack.cpp:692
+#, c-format
+msgid "Failed to use newly written extension cache: %s (%d): "
+msgstr "Не удалось использовать вновь записанный кеш расширений: %s (%d): "
+
+#: libdnf/dnf-sack.cpp:699
+#, c-format
+msgid "Failed to use newly written extension cache: %s (%d)"
+msgstr "Не удалось использовать вновь записанный кеш расширений: %s (%d)"
+
+#: libdnf/dnf-sack.cpp:740
 msgid "null repo md file"
-msgstr "файл md  пустого репозитория null"
+msgstr "файл md пустого репозитория null"
 
-#: libdnf/dnf-sack.cpp:689
+#: libdnf/dnf-sack.cpp:749
 #, c-format
 msgid "can not read file %1$s: %2$s"
-msgstr "невозможно прочитать файл %1$s: %2$s"
+msgstr "не удается прочитать файл %1$s: %2$s"
 
-#: libdnf/dnf-sack.cpp:703
-msgid "repo_add_solv() has failed."
-msgstr "repo_add_solv() завершился ошибкой."
+#: libdnf/dnf-sack.cpp:764
+#, c-format
+msgid "While loading repository failed to use %s: "
+msgstr "При загрузке репозитория не удалось использовать %s: "
 
-#: libdnf/dnf-sack.cpp:716
+#: libdnf/dnf-sack.cpp:775
 msgid "loading of MD_TYPE_PRIMARY has failed."
-msgstr "не удалось загрузить MD_TYPE_PRIMARY."
+msgstr "загрузка MD_TYPE_PRIMARY не удалась."
 
-#: libdnf/dnf-sack.cpp:729
-msgid "repo_add_repomdxml/rpmmd() has failed."
-msgstr "repo_add_repomdxml/rpmmd() завершился ошибкой."
+#: libdnf/dnf-sack.cpp:784
+#, c-format
+msgid "Opening repository primary data has failed: %s"
+msgstr "Не удалось открыть первичные данные репозитория: %s"
 
-#: libdnf/dnf-sack.cpp:796
+#: libdnf/dnf-sack.cpp:795
+#, c-format
+msgid "Loading repomd has failed: %s"
+msgstr "Не удалось загрузить repomd: %s"
+
+#: libdnf/dnf-sack.cpp:806
+#, c-format
+msgid "Loading primary has failed: %s"
+msgstr "Первичная загрузка не удалась: %s"
+
+#: libdnf/dnf-sack.cpp:872
 msgid "failed to auto-detect architecture"
 msgstr "не удалось автоматически определить архитектуру"
 
-#: libdnf/dnf-sack.cpp:961
+#: libdnf/dnf-sack.cpp:1037
 #, c-format
 msgid "failed creating cachedir %s"
-msgstr "не удалось создать кешир %s"
+msgstr "не удалось создать cachedir %s"
 
-#: libdnf/dnf-sack.cpp:1738
+#: libdnf/dnf-sack.cpp:1814
 msgid "failed loading RPMDB"
 msgstr "не удалось загрузить RPMDB"
 
-#: libdnf/dnf-sack.cpp:2522
+#: libdnf/dnf-sack.cpp:2598
 #, c-format
 msgid "No module defaults found: %s"
-msgstr "Не найдено стандартных настроек модуля: %s"
+msgstr "Настройки модуля по умолчанию не найдены: %s"
 
 #: libdnf/dnf-state.cpp:1184
 #, c-format
@@ -411,7 +465,7 @@ msgstr "процент не 100: %i"
 #: libdnf/dnf-state.cpp:1194
 #, c-format
 msgid "failed to set number steps: %i"
-msgstr "не удалось установить число шагов: %i"
+msgstr "не удалось установить количество шагов: %i"
 
 #: libdnf/dnf-state.cpp:1293
 msgid "cancelled by user action"
@@ -427,73 +481,80 @@ msgstr "сделано в состоянии %1$p у которого не бы�
 msgid "already at 100%% state [%s]"
 msgstr "уже в состоянии 100 %% [%s]"
 
-#: libdnf/dnf-transaction.cpp:300
+#: libdnf/dnf-transaction.cpp:302
 #, c-format
 msgid "Sources not set when trying to ensure package %s"
 msgstr "Источники не установлены при попытке обеспечить пакет %s"
 
-#: libdnf/dnf-transaction.cpp:326
+#: libdnf/dnf-transaction.cpp:328
 #, c-format
 msgid "Failed to ensure %1$s as repo %2$s not found(%3$i repos loaded)"
 msgstr ""
 "Не удалось обеспечить %1$s как репо %2$s не найдено(%3$i загружены "
 "репозитории)"
 
-#: libdnf/dnf-transaction.cpp:367
+#: libdnf/dnf-transaction.cpp:369
 msgid "Failed to check untrusted: "
 msgstr "Не удалось проверить недоверенность: "
 
-#: libdnf/dnf-transaction.cpp:377
+#: libdnf/dnf-transaction.cpp:379
 #, c-format
 msgid "Downloaded file for %s not found"
-msgstr "Загруженный файл для %s не найдено"
+msgstr "Загруженный файл для %s не найден"
 
-#: libdnf/dnf-transaction.cpp:397
+#: libdnf/dnf-transaction.cpp:399
 #, c-format
 msgid "package %1$s cannot be verified and repo %2$s is GPG enabled: %3$s"
 msgstr "пакет %1$s не могут быть проверены и репо %2$s включен GPG: %3$s"
 
-#: libdnf/dnf-transaction.cpp:831 libdnf/dnf-transaction.cpp:903
+#: libdnf/dnf-transaction.cpp:833 libdnf/dnf-transaction.cpp:905
 msgid "Failed to get value for CacheDir"
 msgstr "Не удалось получить значение для CacheDir"
 
-#: libdnf/dnf-transaction.cpp:911
+#: libdnf/dnf-transaction.cpp:913
 #, c-format
 msgid "Failed to get filesystem free size for %s: "
-msgstr "Не удалось получить размер файловой системы для %s: "
+msgstr "Не удалось получить свободный размер файловой системы для %s: "
 
-#: libdnf/dnf-transaction.cpp:919
+#: libdnf/dnf-transaction.cpp:921
 #, c-format
 msgid "Failed to get filesystem free size for %s"
 msgstr "Не удалось получить размер файловой системы для %s"
 
-#: libdnf/dnf-transaction.cpp:935
+#: libdnf/dnf-transaction.cpp:937
 #, c-format
 msgid "Not enough free space in %1$s: needed %2$s, available %3$s"
-msgstr ""
-"Недостаточно свободного места в %1$s: необходимо %2$s, имеется в наличии "
-"%3$s"
+msgstr "Недостаточно свободного места в %1$s: необходимо %2$s, доступно %3$s"
 
-#: libdnf/dnf-transaction.cpp:1195
+#: libdnf/dnf-transaction.cpp:1196
 msgid "failed to set root"
 msgstr "не удалось установить корень"
 
-#: libdnf/dnf-transaction.cpp:1416
+#: libdnf/dnf-transaction.cpp:1417
 #, c-format
 msgid "Error %i running transaction test"
 msgstr "ошибка %i проверка транзакции"
 
-#: libdnf/dnf-transaction.cpp:1456
+#: libdnf/dnf-transaction.cpp:1441
+#, c-format
+msgid "Error %i opening rpm database"
+msgstr "Ошибка %i при открытии базы данных rpm"
+
+#: libdnf/dnf-transaction.cpp:1449 libdnf/dnf-transaction.cpp:1495
+msgid "The rpmdbCookie() function did not return cookie of rpm database."
+msgstr "Функция dbCookie() не вернула куки базы данных rpm."
+
+#: libdnf/dnf-transaction.cpp:1464
 #, c-format
 msgid "Error %i running transaction"
 msgstr "ошибка %i выполняемая транзакция"
 
-#: libdnf/dnf-transaction.cpp:1472
+#: libdnf/dnf-transaction.cpp:1480
 #, c-format
 msgid "Transaction did not go to writing phase, but returned no error(%i)"
 msgstr "Транзакция не перешла на этап написания, но не вернула ошибку (%i)"
 
-#: libdnf/dnf-utils.cpp:111 libdnf/hy-iutil.cpp:403
+#: libdnf/dnf-utils.cpp:111 libdnf/hy-iutil.cpp:487
 #, c-format
 msgid "cannot open directory %1$s: %2$s"
 msgstr "не удается открыть каталог %1$s: %2$s"
@@ -515,13 +576,17 @@ msgstr ""
 "Для операции использовался неправильно сформированный Selector, неправильный"
 " тип сравнения"
 
-#: libdnf/goal/Goal.cpp:90 libdnf/goal/Goal.cpp:117
-msgid " does not belong to a distupgrade repository"
-msgstr " не относится к хранилищу обновлений дистрибутива"
+#: libdnf/goal/Goal.cpp:90
+#, fuzzy, c-format
+#| msgid " does not belong to a distupgrade repository"
+msgid "%s from %s  does not belong to a distupgrade repository"
+msgstr "не относится к хранилищу обновлений дистрибутива"
 
-#: libdnf/goal/Goal.cpp:91 libdnf/goal/Goal.cpp:118
-msgid " has inferior architecture"
-msgstr " относится к плохой архитектуре"
+#: libdnf/goal/Goal.cpp:91
+#, fuzzy, c-format
+#| msgid " has inferior architecture"
+msgid "%s from %s  has inferior architecture"
+msgstr "относится к плохой архитектуре"
 
 #: libdnf/goal/Goal.cpp:92
 msgid "problem with installed package "
@@ -550,7 +615,7 @@ msgstr " предоставляется системой"
 
 #: libdnf/goal/Goal.cpp:98 libdnf/goal/Goal.cpp:125
 msgid "some dependency problem"
-msgstr "какая-то проблема с зависимостями"
+msgstr "некоторая проблема с зависимостями"
 
 #: libdnf/goal/Goal.cpp:99
 msgid "cannot install the best update candidate for package "
@@ -561,72 +626,99 @@ msgid "cannot install the best candidate for the job"
 msgstr "не удаётся установить лучший вариант для этой задачи"
 
 #: libdnf/goal/Goal.cpp:101
-#, c-format
-msgid "package %s is filtered out by modular filtering"
+#, fuzzy, c-format
+#| msgid "package %s is filtered out by modular filtering"
+msgid "package %s from %s is filtered out by modular filtering"
 msgstr "пакет %s отфильтрован модульным фильтрованием"
 
 #: libdnf/goal/Goal.cpp:102
-#, c-format
-msgid "package %s does not have a compatible architecture"
+#, fuzzy, c-format
+#| msgid "package %s does not have a compatible architecture"
+msgid "package %s from %s does not have a compatible architecture"
 msgstr "пакет %s не имеет совместимой архитектуры"
 
 #: libdnf/goal/Goal.cpp:103
-#, c-format
-msgid "package %s is not installable"
+#, fuzzy, c-format
+#| msgid "package %s is not installable"
+msgid "package %s from %s is not installable"
 msgstr "пакет %s непригодный для установки"
 
 #: libdnf/goal/Goal.cpp:104
-#, c-format
-msgid "package %s is filtered out by exclude filtering"
+#, fuzzy, c-format
+#| msgid "package %s is filtered out by exclude filtering"
+msgid "package %s from %s is filtered out by exclude filtering"
 msgstr "пакет %s отфильтровано при помощи фильтрации исключения"
 
 #: libdnf/goal/Goal.cpp:105
-#, c-format
-msgid "nothing provides %s needed by %s"
+#, fuzzy, c-format
+#| msgid "nothing provides %s needed by %s"
+msgid "nothing provides %s needed by %s from %s"
 msgstr "не содержится ничего из %s необходимого для %s"
 
 #: libdnf/goal/Goal.cpp:106
-#, c-format
-msgid "cannot install both %s and %s"
+#, fuzzy, c-format
+#| msgid "cannot install both %s and %s"
+msgid "cannot install both %s from %s and %s from %s"
 msgstr "невозможно установить %s совместно с %s"
 
 #: libdnf/goal/Goal.cpp:107
-#, c-format
-msgid "package %s conflicts with %s provided by %s"
+#, fuzzy, c-format
+#| msgid "package %s conflicts with %s provided by %s"
+msgid "package %s from %s conflicts with %s provided by %s from %s"
 msgstr "пакет %s конфликтирует с %s предоставляемый %s"
 
 #: libdnf/goal/Goal.cpp:108
-#, c-format
-msgid "package %s obsoletes %s provided by %s"
+#, fuzzy, c-format
+#| msgid "package %s obsoletes %s provided by %s"
+msgid "package %s from %s obsoletes %s provided by %s from %s"
 msgstr "пакет %s делает устаревшим %s который предоставляется %s"
 
 #: libdnf/goal/Goal.cpp:109
-#, c-format
-msgid "installed package %s obsoletes %s provided by %s"
+#, fuzzy, c-format
+#| msgid "installed package %s obsoletes %s provided by %s"
+msgid "installed package %s obsoletes %s provided by %s from %s"
 msgstr ""
 "установленный пакет %s делает устаревшим пакет %s который предоставляется %s"
 
 #: libdnf/goal/Goal.cpp:110
-#, c-format
-msgid "package %s implicitly obsoletes %s provided by %s"
+#, fuzzy, c-format
+#| msgid "package %s implicitly obsoletes %s provided by %s"
+msgid "package %s from %s implicitly obsoletes %s provided by %s from %s"
 msgstr "пакет %s неявно заменяет пакет %s предоставляемый %s"
 
 #: libdnf/goal/Goal.cpp:111
-#, c-format
-msgid "package %s requires %s, but none of the providers can be installed"
+#, fuzzy, c-format
+#| msgid ""
+#| "package %s requires %s, but none of the providers can be installed"
+msgid ""
+"package %s from %s requires %s, but none of the providers can be installed"
 msgstr ""
 "пакету %s требуется %s, но ни один из предоставляющих пакетов не может быть "
 "установлен"
 
 #: libdnf/goal/Goal.cpp:112
-#, c-format
-msgid "package %s conflicts with %s provided by itself"
+#, fuzzy, c-format
+#| msgid "package %s conflicts with %s provided by itself"
+msgid "package %s from %s conflicts with %s provided by itself"
 msgstr "пакет %s конфликтирует с пакетом %s предоставляемый сам собой"
 
 #: libdnf/goal/Goal.cpp:113
-#, c-format
-msgid "both package %s and %s obsolete %s"
+#, fuzzy, c-format
+#| msgid "both package %s and %s obsolete %s"
+msgid "both package %s from %s and %s from %s obsolete %s"
 msgstr "оба пакета %s и %s делают устаревшим %s"
+
+#: libdnf/goal/Goal.cpp:117
+#, fuzzy, c-format
+#| msgid " does not belong to a distupgrade repository"
+msgid "%s from %s does not belong to a distupgrade repository"
+msgstr "не относится к хранилищу обновлений дистрибутива"
+
+#: libdnf/goal/Goal.cpp:118
+#, fuzzy, c-format
+#| msgid " has inferior architecture"
+msgid "%s from %s has inferior architecture"
+msgstr "относится к плохой архитектуре"
 
 #: libdnf/goal/Goal.cpp:119
 msgid "problem with installed module "
@@ -642,124 +734,143 @@ msgid "cannot install the best update candidate for module "
 msgstr "не удалось установить лучший вариант обновления для модуля "
 
 #: libdnf/goal/Goal.cpp:128 libdnf/goal/Goal.cpp:131
-#, c-format
-msgid "module %s is disabled"
+#, fuzzy, c-format
+#| msgid "module %s is disabled"
+msgid "module %s from %s is disabled"
 msgstr "модуль %s отключён"
 
 #: libdnf/goal/Goal.cpp:129
-#, c-format
-msgid "module %s does not have a compatible architecture"
+#, fuzzy, c-format
+#| msgid "module %s does not have a compatible architecture"
+msgid "module %s from %s does not have a compatible architecture"
 msgstr "для модуля %s нет совместимой архитектуры"
 
 #: libdnf/goal/Goal.cpp:130
-#, c-format
-msgid "module %s is not installable"
+#, fuzzy, c-format
+#| msgid "module %s is not installable"
+msgid "module %s from %s is not installable"
 msgstr "модуль %s непригодный для установки"
 
 #: libdnf/goal/Goal.cpp:132
-#, c-format
-msgid "nothing provides %s needed by module %s"
+#, fuzzy, c-format
+#| msgid "nothing provides %s needed by module %s"
+msgid "nothing provides %s needed by module %s from %s"
 msgstr "не предоставляется %s необходимый для модуля %s"
 
 #: libdnf/goal/Goal.cpp:133
-#, c-format
-msgid "cannot install both modules %s and %s"
+#, fuzzy, c-format
+#| msgid "cannot install both modules %s and %s"
+msgid "cannot install both modules %s from %s and %s from %s"
 msgstr "невозможна одновременная установка модулей %s и %s"
 
 #: libdnf/goal/Goal.cpp:134
-#, c-format
-msgid "module %s conflicts with %s provided by %s"
-msgstr "модуль %s конфликтирует с %s предоставляемый %s"
+#, fuzzy, c-format
+#| msgid "module %s conflicts with %s provided by %s"
+msgid "module %s from %s conflicts with %s provided by %s from %s"
+msgstr "модуль %s конфликтирует с %s, предоставленный %s"
 
 #: libdnf/goal/Goal.cpp:135
-#, c-format
-msgid "module %s obsoletes %s provided by %s"
+#, fuzzy, c-format
+#| msgid "module %s obsoletes %s provided by %s"
+msgid "module %s from %s obsoletes %s provided by %s from %s"
 msgstr "модуль %s делает устаревшим модуль %s предоставляемый %s"
 
 #: libdnf/goal/Goal.cpp:136
-#, c-format
-msgid "installed module %s obsoletes %s provided by %s"
+#, fuzzy, c-format
+#| msgid "installed module %s obsoletes %s provided by %s"
+msgid "installed module %s obsoletes %s provided by %s from %s"
 msgstr ""
 "установленный модуль %s делает устаревшим модуль %s предоставляемый %s"
 
 #: libdnf/goal/Goal.cpp:137
-#, c-format
-msgid "module %s implicitly obsoletes %s provided by %s"
+#, fuzzy, c-format
+#| msgid "module %s implicitly obsoletes %s provided by %s"
+msgid "module %s from %s implicitly obsoletes %s provided by %s from %s"
 msgstr "модуль %s неявным способом делает устаревшим %s предоставляемый %s"
 
 #: libdnf/goal/Goal.cpp:138
-#, c-format
-msgid "module %s requires %s, but none of the providers can be installed"
+#, fuzzy, c-format
+#| msgid ""
+#| "module %s requires %s, but none of the providers can be installed"
+msgid ""
+"module %s from %s requires %s, but none of the providers can be installed"
 msgstr ""
 "модулю %s требуется %s, но ни один из предоставляющих пакетов не может быть "
 "установлен"
 
 #: libdnf/goal/Goal.cpp:139
-#, c-format
-msgid "module %s conflicts with %s provided by itself"
-msgstr "модуль %s конфликтует с %s, предоставляемым самим этим пакетом"
+#, fuzzy, c-format
+#| msgid "module %s conflicts with %s provided by itself"
+msgid "module %s from %s conflicts with %s provided by itself"
+msgstr "модуль %s конфликтует с %s, предоставленным самим пакетом"
 
 #: libdnf/goal/Goal.cpp:140
-#, c-format
-msgid "both module %s and %s obsolete %s"
-msgstr "оба модуля, %s и %s, делают устаревшим %s"
+#, fuzzy, c-format
+#| msgid "both module %s and %s obsolete %s"
+msgid "both module %s from %s and %s from %s obsolete %s"
+msgstr "оба модуля %s и %s делают устаревшим %s"
 
-#: libdnf/goal/Goal.cpp:1141
+#: libdnf/goal/Goal.cpp:1168
 msgid "no solver set"
 msgstr "нет механизма решения"
 
-#: libdnf/goal/Goal.cpp:1146
+#: libdnf/goal/Goal.cpp:1173
 #, c-format
 msgid "failed to make %s absolute"
 msgstr "не удалось сделать %s абсолютным"
 
-#: libdnf/goal/Goal.cpp:1153
+#: libdnf/goal/Goal.cpp:1180
 #, c-format
 msgid "failed writing debugdata to %1$s: %2$s"
 msgstr "не удалось записать отладочные данные в %1$s: %2$s"
 
-#: libdnf/goal/Goal.cpp:1165
+#: libdnf/goal/Goal.cpp:1192
 msgid "no solv in the goal"
 msgstr "нет solv в цели"
 
-#: libdnf/goal/Goal.cpp:1167
+#: libdnf/goal/Goal.cpp:1194
 msgid "no solution, cannot remove protected package"
 msgstr "нет решения, невозможно удалить защищенный пакет"
 
-#: libdnf/goal/Goal.cpp:1170
+#: libdnf/goal/Goal.cpp:1197
 msgid "no solution possible"
 msgstr "решение невозможно"
 
-#: libdnf/goal/Goal.cpp:1296
+#: libdnf/goal/Goal.cpp:1323
 msgid "Problem: "
 msgstr "Проблема: "
 
-#: libdnf/goal/Goal.cpp:1301
+#: libdnf/goal/Goal.cpp:1328
 #, c-format
 msgid "Problem %d: "
 msgstr "Проблема %d: "
 
-#: libdnf/goal/Goal.cpp:1634
+#: libdnf/goal/Goal.cpp:1661
 msgid ""
 "The operation would result in removing the following protected packages: "
-msgstr "Операция приведет к удалению следующих защищенных пакетов: "
+msgstr "Операция приведёт к удалению следующих защищенных пакетов: "
 
-#: libdnf/hy-iutil.cpp:326
+#: libdnf/hy-iutil.cpp:181
+#, c-format
+msgid "Libsolv's solv_toolversion is: %zu long but we expect max of: %zu"
+msgstr "solv_toolversion в Libsolv: %zu длинный, но мы ожидаем максимум: %zu"
+
+#: libdnf/hy-iutil.cpp:410
 #, c-format
 msgid "Failed renaming %1$s to %2$s: %3$s"
 msgstr "Не удалось переименовать %1$s в %2$s: %3$s"
 
-#: libdnf/hy-iutil.cpp:334
+#: libdnf/hy-iutil.cpp:418
 #, c-format
 msgid "Failed setting perms on %1$s: %2$s"
 msgstr "Не удалось установить права доступа на %1$s: %2$s"
 
-#: libdnf/hy-iutil.cpp:380
+#: libdnf/hy-iutil.cpp:464
 #, c-format
 msgid "cannot create directory %1$s: %2$s"
 msgstr "на удается создать каталог %1$s: %2$s"
 
-#: libdnf/hy-iutil.cpp:415
+#: libdnf/hy-iutil.cpp:499
 #, c-format
 msgid "cannot stat path %1$s: %2$s"
 msgstr "не удется выполнить stat для пути %1$s: %2$s"
@@ -775,7 +886,7 @@ msgstr "Имеющиеся пакеты предоставляют нескол�
 
 #: libdnf/module/ModulePackage.cpp:632
 msgid "Multiple module platforms provided by installed packages\n"
-msgstr "Установленные пакеты предоставляют несколько платформ модулей\n"
+msgstr "Несколько модульных платформ, предоставляемых установленными пакетами\n"
 
 #: libdnf/module/ModulePackage.cpp:659
 #, c-format
@@ -789,68 +900,68 @@ msgstr "Отсутствует PLATFORM_ID в %s"
 
 #: libdnf/module/ModulePackage.cpp:673
 msgid "No valid Platform ID detected"
-msgstr "Не обнаружено правильного идентификатора платформы"
+msgstr "Допустимый идентификатор платформы не обнаружен"
 
 #: libdnf/module/ModulePackageContainer.cpp:107
 #, c-format
 msgid "Cannot enable multiple streams for module '%s'"
 msgstr "Не удалось активировать несколько потоков для модуля «%s»"
 
-#: libdnf/module/ModulePackageContainer.cpp:346
+#: libdnf/module/ModulePackageContainer.cpp:339
 #, c-format
 msgid "Conflicting defaults with repo '%s': %s"
 msgstr "Конфликт параметров по умолчанию для репозитория «%s»: %s"
 
-#: libdnf/module/ModulePackageContainer.cpp:917
+#: libdnf/module/ModulePackageContainer.cpp:923
 msgid "Installing module profiles:\n"
 msgstr "Установка профилей модулей:\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:932
+#: libdnf/module/ModulePackageContainer.cpp:938
 msgid "Disabling module profiles:\n"
 msgstr "Отключение профилей модулей:\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:947
+#: libdnf/module/ModulePackageContainer.cpp:953
 msgid "Enabling module streams:\n"
 msgstr "Включение потоков модулей:\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:961
+#: libdnf/module/ModulePackageContainer.cpp:967
 msgid "Switching module streams:\n"
 msgstr "Переключение потоков модулей:\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:979
+#: libdnf/module/ModulePackageContainer.cpp:985
 msgid "Disabling modules:\n"
 msgstr "Отключение модулей:\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:990
+#: libdnf/module/ModulePackageContainer.cpp:996
 msgid "Resetting modules:\n"
 msgstr "Сброс модулей:\n"
 
-#: libdnf/module/ModulePackageContainer.cpp:1704
+#: libdnf/module/ModulePackageContainer.cpp:1710
 #, c-format
 msgid "Unable to load modular Fail-Safe data at '%s'"
 msgstr "Не удалось загрузить модульные безопасные данные в «%s»"
 
-#: libdnf/module/ModulePackageContainer.cpp:1710
+#: libdnf/module/ModulePackageContainer.cpp:1716
 #, c-format
 msgid "Unable to load modular Fail-Safe data for module '%s:%s'"
 msgstr "Не удалось загрузить модульные безопасные данные для модуля «%s:%s»"
 
-#: libdnf/module/ModulePackageContainer.cpp:1791
+#: libdnf/module/ModulePackageContainer.cpp:1797
 #, c-format
 msgid "Unable to create directory \"%s\" for modular Fail Safe data: %s"
 msgstr "Не удается создать каталог «%s» для модульных безопасных данных: %s"
 
-#: libdnf/module/ModulePackageContainer.cpp:1807
+#: libdnf/module/ModulePackageContainer.cpp:1813
 #, c-format
 msgid "Unable to save a modular Fail Safe data to '%s'"
 msgstr "Не удается загрузить модульные безопасные данные в «%s»"
 
-#: libdnf/module/ModulePackageContainer.cpp:1830
+#: libdnf/module/ModulePackageContainer.cpp:1836
 #, c-format
 msgid "Unable to remove a modular Fail Safe data in '%s'"
 msgstr "Не удается удалить модульные безопасные данные в «%s»"
 
-#: libdnf/module/ModulePackageContainer.cpp:1862
+#: libdnf/module/ModulePackageContainer.cpp:1868
 #, c-format
 msgid ""
 "Unable to apply modular obsoletes to '%s:%s' because target module '%s' is "
@@ -926,7 +1037,13 @@ msgstr "Не читается каталог дополнения «%s»: %s"
 msgid "Can't load plugin \"%s\": %s"
 msgstr "Не загружается дополнение «%s»: %s"
 
-#: libdnf/repo/DependencySplitter.cpp:50
+#: libdnf/repo/Crypto.cpp:99 libdnf/repo/Repo.cpp:955
+#: libdnf/repo/Repo.cpp:1029 libdnf/repo/Repo.cpp:1072
+#, c-format
+msgid "Cannot create repo temporary directory \"%s\": %s"
+msgstr "Невозможно создать временный каталог репо \"%s«: %s"
+
+#: libdnf/repo/DependencySplitter.cpp:51
 msgid ""
 "Using '==' operator in reldeps can result in an undefined behavior. It is "
 "deprecated and the support will be dropped in future versions. Use '=' "
@@ -936,186 +1053,160 @@ msgstr ""
 "поведению. Он устарел и его поддержка будет прекращена в будущих версиях. "
 "Используйте вместо этого оператор «=»."
 
-#: libdnf/repo/Repo.cpp:321
+#: libdnf/repo/Repo.cpp:314
 #, c-format
 msgid "Repository %s has no mirror or baseurl set."
 msgstr "Для репозитория %s не заданы зеркала или baseurl."
 
-#: libdnf/repo/Repo.cpp:330
+#: libdnf/repo/Repo.cpp:323
 #, c-format
 msgid "Repository '%s' has unsupported type: 'type=%s', skipping."
-msgstr "У репозитория «%s» не поддерживается тип: «type=%s», пропускается."
+msgstr "У репозитория «%s» неподдерживаемый тип: «type=%s», пропускается."
 
-#: libdnf/repo/Repo.cpp:489 libdnf/repo/Repo.cpp:610 libdnf/repo/Repo.cpp:641
-#: libdnf/repo/Repo.cpp:1400
+#: libdnf/repo/Repo.cpp:484 libdnf/repo/Repo.cpp:605 libdnf/repo/Repo.cpp:636
+#: libdnf/repo/Repo.cpp:1193
 #, c-format
 msgid "repo '%s': 'basecachedir' is not set"
 msgstr "репозиторий «%s»: не установлен «basecachedir»"
 
-#: libdnf/repo/Repo.cpp:512
+#: libdnf/repo/Repo.cpp:507
 msgid ""
 "Maximum download speed is lower than minimum. Please change configuration of"
 " minrate or throttle"
 msgstr ""
-"Максимальная скорость загрузки ниже минимальной. Измените настройку minrate "
-"или throttle"
+"Максимальная скорость загрузки ниже минимальной. Измените конфигурацию "
+"minrate или throttle"
 
-#: libdnf/repo/Repo.cpp:546
+#: libdnf/repo/Repo.cpp:541
 #, c-format
 msgid "repo '%s': 'proxy_username' is set but not 'proxy_password'"
 msgstr "репозиторий «%s»: настроен «proxy_username», но не «proxy_password»"
 
-#: libdnf/repo/Repo.cpp:548
+#: libdnf/repo/Repo.cpp:543
 msgid "'proxy_username' is set but not 'proxy_password'"
 msgstr "настроен «proxy_username», а не «proxy_password»"
 
-#: libdnf/repo/Repo.cpp:629
+#: libdnf/repo/Repo.cpp:624
 #, c-format
 msgid "Cannot find a valid baseurl for repo: %s"
 msgstr "Не удается найти правильный baseurl для репозитория: %s"
 
-#: libdnf/repo/Repo.cpp:660 libdnf/repo/Repo.cpp:682
-#, c-format
-msgid "%s: gpgme_data_new_from_fd(): %s"
-msgstr "%s: gpgme_data_new_from_fd(): %s"
-
-#: libdnf/repo/Repo.cpp:668 libdnf/repo/Repo.cpp:690
-#, c-format
-msgid "%s: gpgme_op_import(): %s"
-msgstr "%s: gpgme_op_import(): %s"
-
-#: libdnf/repo/Repo.cpp:709 libdnf/repo/Repo.cpp:1162
-#: libdnf/repo/Repo.cpp:1236 libdnf/repo/Repo.cpp:1279
-#, c-format
-msgid "Cannot create repo temporary directory \"%s\": %s"
-msgstr "Невозможно создать временный каталог репо \"%s«: %s"
-
-#: libdnf/repo/Repo.cpp:717 libdnf/repo/Repo.cpp:783 libdnf/repo/Repo.cpp:917
-#, c-format
-msgid "%s: gpgme_ctx_set_engine_info(): %s"
-msgstr "%s: gpgme_ctx_set_engine_info(): %s"
-
-#: libdnf/repo/Repo.cpp:744 libdnf/repo/Repo.cpp:808
-#, c-format
-msgid "can not list keys: %s"
-msgstr "не может перечислить ключи: %s"
-
-#: libdnf/repo/Repo.cpp:837
+#: libdnf/repo/Repo.cpp:669
 #, c-format
 msgid "Failed to retrieve GPG key for repo '%s': %s"
 msgstr "Не удалось получить ключ GPG для репозитория «%s»: %s"
 
-#: libdnf/repo/Repo.cpp:890
+#: libdnf/repo/Repo.cpp:690
 #, c-format
 msgid "repo %s: 0x%s already imported"
 msgstr "репозиторий %s: 0x%s уже импортирован"
 
-#: libdnf/repo/Repo.cpp:904 libdnf/utils/filesystem.cpp:79
+#: libdnf/repo/Repo.cpp:704 libdnf/utils/filesystem.cpp:79
 #, c-format
 msgid "Failed to create directory \"%s\": %d - %s"
 msgstr "Не удалось создать каталог «%s»: %d - %s"
 
-#: libdnf/repo/Repo.cpp:924
+#: libdnf/repo/Repo.cpp:712
 #, c-format
 msgid "repo %s: imported key 0x%s."
 msgstr "репозиторий %s: импортирован ключ 0x%s."
 
-#: libdnf/repo/Repo.cpp:1176
+#: libdnf/repo/Repo.cpp:969
 #, c-format
 msgid "reviving: repo '%s' skipped, no metalink."
 msgstr "восстановление: репозиторий «%s» игнорируется, нет метассылок."
 
-#: libdnf/repo/Repo.cpp:1195
+#: libdnf/repo/Repo.cpp:988
 #, c-format
 msgid "reviving: repo '%s' skipped, no usable hash."
 msgstr ""
 "восстановление: репозиторий «%s» игнорируется, нет пригодного хэш-кода."
 
-#: libdnf/repo/Repo.cpp:1218
+#: libdnf/repo/Repo.cpp:1011
 #, c-format
 msgid "reviving: failed for '%s', mismatched %s sum."
 msgstr "восстановление: не удалось для «%s», сумма %s не совпадает."
 
-#: libdnf/repo/Repo.cpp:1224
+#: libdnf/repo/Repo.cpp:1017
 #, c-format
 msgid "reviving: '%s' can be revived - metalink checksums match."
 msgstr ""
 "восстановление: «%s» может быть восстановлен - контрольные суммы метассылок "
 "совпадают."
 
-#: libdnf/repo/Repo.cpp:1253
+#: libdnf/repo/Repo.cpp:1046
 #, c-format
 msgid "reviving: '%s' can be revived - repomd matches."
 msgstr ""
 "восстановление: «%s» может быть восстановлен - совпадают метаданные "
 "репозитория."
 
-#: libdnf/repo/Repo.cpp:1255
+#: libdnf/repo/Repo.cpp:1048
 #, c-format
 msgid "reviving: failed for '%s', mismatched repomd."
 msgstr ""
 "восстановление: не удалось для «%s», не совпадают метаданные репозитория."
 
-#: libdnf/repo/Repo.cpp:1273
+#: libdnf/repo/Repo.cpp:1066
 #, c-format
 msgid "Cannot create repo destination directory \"%s\": %s"
 msgstr "Не создается каталог назначения репозитория «%s»: %s"
 
-#: libdnf/repo/Repo.cpp:1293
+#: libdnf/repo/Repo.cpp:1086
 #, c-format
 msgid "Cannot create directory \"%s\": %s"
 msgstr "Невозможно создать каталог \"%s«: %s"
 
-#: libdnf/repo/Repo.cpp:1316
+#: libdnf/repo/Repo.cpp:1109
 #, c-format
 msgid "Cannot rename directory \"%s\" to \"%s\": %s"
-msgstr "Невозможно переименовать каталог \"%s\"to\"%s«: %s"
+msgstr "Невозможно переименовать каталог «%s» в «%s»: %s"
 
-#: libdnf/repo/Repo.cpp:1339
+#: libdnf/repo/Repo.cpp:1132
 #, c-format
 msgid "repo: using cache for: %s"
 msgstr "репозиторий: используется кэш для: %s"
 
-#: libdnf/repo/Repo.cpp:1351
+#: libdnf/repo/Repo.cpp:1144
 #, c-format
 msgid "Cache-only enabled but no cache for '%s'"
-msgstr "Использование режима cacheonly включено, но нет кэша для «%s»"
+msgstr "Включён режим только кэш, но нет кэша для «%s»"
 
-#: libdnf/repo/Repo.cpp:1355
+#: libdnf/repo/Repo.cpp:1148
 #, c-format
 msgid "repo: downloading from remote: %s"
 msgstr "РЕПО: загрузка с удаленного устройства: %s"
 
-#: libdnf/repo/Repo.cpp:1362
+#: libdnf/repo/Repo.cpp:1155
 #, c-format
 msgid "Failed to download metadata for repo '%s': %s"
 msgstr "Не удалось загрузить метаданные для репозитория «%s»: %s"
 
-#: libdnf/repo/Repo.cpp:1388
+#: libdnf/repo/Repo.cpp:1181
 msgid "getCachedir(): Computation of SHA256 failed"
 msgstr "getCachedir (): вычисление SHA256 не выполнено"
 
-#: libdnf/repo/Repo.cpp:1416
+#: libdnf/repo/Repo.cpp:1209
 #, c-format
 msgid "Cannot create persistdir \"%s\": %s"
 msgstr "Не создается постоянный каталог «%s»: %s"
 
-#: libdnf/repo/Repo.cpp:1793
+#: libdnf/repo/Repo.cpp:1586
 msgid "resume cannot be used simultaneously with the byterangestart param"
 msgstr ""
 "резюме не может использоваться одновременно с параметром byterangestart"
 
-#: libdnf/repo/Repo.cpp:1810
+#: libdnf/repo/Repo.cpp:1603
 #, c-format
 msgid "PackageTarget initialization failed: %s"
 msgstr "Не удалось инициализировать PackageTarget: %s"
 
-#: libdnf/repo/Repo.cpp:1916
+#: libdnf/repo/Repo.cpp:1709
 #, c-format
 msgid "Cannot open %s: %s"
-msgstr "Не могу открыть %s: %s"
+msgstr "Невозможно открыть %s: %s"
 
-#: libdnf/repo/Repo.cpp:1960
+#: libdnf/repo/Repo.cpp:1753
 #, c-format
 msgid "Log handler with id %ld doesn't exist"
 msgstr "Обработчик журнала с идентификатором %ld не существует"
@@ -1134,13 +1225,13 @@ msgstr "Не выполняется"
 msgid "No transaction in progress"
 msgstr "Никаких транзакций"
 
-#: libdnf/transaction/TransactionItem.cpp:147
+#: libdnf/transaction/TransactionItem.cpp:146
 msgid "Attempt to insert transaction item into completed transaction"
-msgstr "Попытка вставить транзакцию в завершенную транзакцию"
+msgstr "Попытка вставить элемент транзакции в завершенную транзакцию"
 
-#: libdnf/transaction/TransactionItem.cpp:218
+#: libdnf/transaction/TransactionItem.cpp:217
 msgid "Attempt to update transaction item in completed transaction"
-msgstr "Попытка обновить позицию транзакции в завершенной транзакции"
+msgstr "Попытка обновить элемент транзакции в завершенной транзакции"
 
 #: libdnf/transaction/Transformer.cpp:76
 msgid "Database Corrupted: no row 'version' in table 'config'"
@@ -1156,7 +1247,7 @@ msgstr "Не удалось найти базу данных истории"
 
 #: libdnf/transaction/private/Transaction.cpp:41
 msgid "Transaction has already began!"
-msgstr "Сделка уже началась!"
+msgstr "Транзакция уже началась!"
 
 #: libdnf/transaction/private/Transaction.cpp:58
 #, c-format
@@ -1165,7 +1256,38 @@ msgstr "Состояние TransactionItem не установлено: %s"
 
 #: libdnf/transaction/private/Transaction.cpp:243
 msgid "Can't add console output to unsaved transaction"
-msgstr "Невозможно добавить вывод консоли в несохраненную транзакцию"
+msgstr "Не удается добавить вывод консоли в несохраненную транзакцию"
+
+#, c-format
+#~ msgid "%s: gpgme_data_new_from_fd(): %s"
+#~ msgstr "%s: gpgme_data_new_from_fd(): %s"
+
+#, c-format
+#~ msgid "%s: gpgme_op_import(): %s"
+#~ msgstr "%s: gpgme_op_import(): %s"
+
+#, c-format
+#~ msgid "%s: gpgme_ctx_set_engine_info(): %s"
+#~ msgstr "%s: gpgme_ctx_set_engine_info(): %s"
+
+#, c-format
+#~ msgid "can not list keys: %s"
+#~ msgstr "не может перечислить ключи: %s"
+
+#~ msgid "failed to add solv"
+#~ msgstr "не удалось добавить solv"
+
+#~ msgid "write_main() failed writing data: %i"
+#~ msgstr "write_main () не удалось записать данные: %i"
+
+#~ msgid "write_main() failed to re-load written solv file"
+#~ msgstr "write_main() fне удалось перезагрузить файл solv"
+
+#~ msgid "write_ext(%1$d) has failed: %2$d"
+#~ msgstr "write_ext(%1$d) выдал ошибку: %2$d"
+
+#~ msgid "repo_add_repomdxml/rpmmd() has failed."
+#~ msgstr "repo_add_repomdxml/rpmmd() завершился ошибкой."
 
 #~ msgid "Failed to parse module artifact NEVRA '%s'"
 #~ msgstr "Не удалось сделать разбор артефакта модуля NEVRA: «%s»"
