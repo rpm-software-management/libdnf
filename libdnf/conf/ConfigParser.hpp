@@ -147,6 +147,18 @@ private:
     int itemNumber{0};
     std::string header;
     std::map<std::string, std::string> rawItems;
+
+    /**
+    * @brief Expand variables in a subexpression
+    *
+    * @param text String with variable expressions
+    * @param substitutions Substitution map
+    * @param depth The recursive depth
+    * @return Pair of the resulting string and the number of characters scanned in `text`
+    */
+    static std::pair<std::string, size_t> substitute_expression(const std::string & text,
+        const std::map<std::string, std::string> & substitutions,
+        unsigned int depth);
 };
 
 inline void ConfigParser::setSubstitutions(const std::map<std::string, std::string> & substitutions)
