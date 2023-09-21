@@ -20,6 +20,15 @@
 ######################
 
 ====================
+0.71.1 Release Notes
+====================
+
+- New features:
+  - Allow DNF to be removed by DNF 5
+
+Bugs fixed in 0.71.1:
+
+====================
 0.71.0 Release Notes
 ====================
 
