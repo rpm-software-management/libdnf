@@ -639,6 +639,12 @@ erase_flags2libsolv(int flags)
     return ret;
 }
 
+static bool
+NameSolvableComparator(const Solvable * first, const Solvable * second)
+{
+    return first->name < second->name;
+}
+
 Goal::Goal(const Goal & goal_src) : pImpl(new Impl(*goal_src.pImpl)) {}
 
 Goal::Impl::Impl(const Goal::Impl & goal_src)
@@ -1324,10 +1330,24 @@ Goal::Impl::limitInstallonlyPackages(Solver *solv, Queue *job)
     for (int i = 0; i < onlies->count; ++i) {
         Id p, pp;
         IdQueue q, installing;
+        std::vector<Solvable *> available_unused_providers;
 
+        // Add all providers of installonly provides that are marked for install
+        // to `q` IdQueue those that are not marked for install and are not already
+        // installed are added to available_unused_providers.
         FOR_PKG_PROVIDES(p, pp, onlies->elements[i])
-            if (solver_get_decisionlevel(solv, p) > 0)
+            // According to libsolv-bindings the decision level is positive for installs
+            // and negative for conflicts (conflicts with another package or dependency
+            // conflicts = dependencies cannot be met).
+            if (solver_get_decisionlevel(solv, p) > 0) {
                 q.pushBack(p);
+            } else {
+                Solvable *s = pool_id2solvable(pool, p);
+                if (s->repo != pool->installed) {
+                    available_unused_providers.push_back(s);
+                }
+            }
+
         if (q.size() <= (int) dnf_sack_get_installonly_limit(sack)) {
             continue;
         }
@@ -1345,6 +1365,7 @@ Goal::Impl::limitInstallonlyPackages(Solver *solv, Queue *job)
 
         struct InstallonliesSortCallback s_cb = {pool, dnf_sack_running_kernel(sack)};
         solv_sort(q.data(), q.size(), sizeof(q[0]), sort_packages, &s_cb);
+        std::sort(available_unused_providers.begin(), available_unused_providers.end(), NameSolvableComparator);
         IdQueue same_names;
         while (q.size() > 0) {
             same_name_subqueue(pool, q.getQueue(), same_names.getQueue());
@@ -1354,8 +1375,18 @@ Goal::Impl::limitInstallonlyPackages(Solver *solv, Queue *job)
             for (int j = 0; j < same_names.size(); ++j) {
                 Id id  = same_names[j];
                 Id action = SOLVER_ERASE;
-                if (j < (int) dnf_sack_get_installonly_limit(sack))
+                if (j < (int) dnf_sack_get_installonly_limit(sack)) {
                     action = SOLVER_INSTALL;
+                } else  {
+                    // We want to avoid reinstalling packages marked for ERASE, therefore
+                    // if some unused provider is also available we need to mark it ERASE as well.
+                    Solvable *s = pool_id2solvable(pool, id);
+                    auto low = std::lower_bound(available_unused_providers.begin(), available_unused_providers.end(), s, NameSolvableComparator);
+                    while (low != available_unused_providers.end() && (*low)->name == s->name) {
+                        queue_push2(job, SOLVER_ERASE | SOLVER_SOLVABLE, pool_solvable2id(pool, *low));
+                        ++low;
+                    }
+                }
                 queue_push2(job, action | SOLVER_SOLVABLE, id);
             }
         }
