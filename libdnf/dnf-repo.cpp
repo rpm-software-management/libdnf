@@ -969,6 +969,9 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, gboolean reloadFromGKeyFile, GError **e
         dnf_repo_apply_setopts(*conf, repoId);
     }
 
+    if (dnf_context_get_cache_dir(priv->context))
+        conf->basecachedir().set(libdnf::Option::Priority::REPOCONFIG, dnf_context_get_cache_dir(priv->context));
+
     /* baseurl is optional; if missing, unset it */
     g_auto(GStrv) baseurls = NULL;
     auto & repoBaseurls = conf->baseurl().getValue();
@@ -1463,6 +1466,7 @@ dnf_repo_check_internal(DnfRepo *repo,
                     error_local->message);
         return FALSE;
     }
+    repoImpl->repomdFn = yum_repo->repomd;
 
     /* get timestamp */
     ret = lr_result_getinfo(priv->repo_result, &error_local,
@@ -1765,8 +1769,10 @@ dnf_repo_update(DnfRepo *repo,
     if (!dnf_repo_set_keyfile_data(repo, TRUE, error))
         return FALSE;
 
+    auto repoImpl = libdnf::repoGetImpl(priv->repo);
+
     /* countme support */
-    libdnf::repoGetImpl(priv->repo)->addCountmeFlag(priv->repo_handle);
+    repoImpl->addCountmeFlag(priv->repo_handle);
 
     /* take lock */
     ret = dnf_state_take_lock(state,
@@ -1783,6 +1789,28 @@ dnf_repo_update(DnfRepo *repo,
                               -1);
     if (!ret)
         goto out;
+
+    state_local = dnf_state_get_child(state);
+    dnf_state_action_start(state_local,
+                           DNF_STATE_ACTION_DOWNLOAD_METADATA, NULL);
+
+    try {
+        if (repoImpl->isInSync()) {
+            /* reset timestamp */
+            ret = utimes(repoImpl->repomdFn.c_str(), NULL);
+            if (!ret)
+                g_debug("Failed to reset timestamp on repomd.xml");
+            ret = dnf_state_done(state, error);
+            if (!ret)
+                goto out;
+
+            /* skip check */
+            ret = dnf_state_finished(state, error);
+            goto out;
+        }
+    } catch (std::exception & ex) {
+        g_debug("Failed to verify if metadata is in sync: \"%s\". Proceding with download", ex.what());
+    }
 
     /* remove the temporary space if it already exists */
     if (g_file_test(priv->location_tmp, G_FILE_TEST_EXISTS)) {
@@ -1842,7 +1870,7 @@ dnf_repo_update(DnfRepo *repo,
         goto out;
 
     /* Callback to display progress of downloading */
-    state_local = updatedata.state = dnf_state_get_child(state);
+    updatedata.state = state_local;
     ret = lr_handle_setopt(priv->repo_handle, error,
                            LRO_PROGRESSDATA, &updatedata);
     if (!ret)
@@ -1867,8 +1895,6 @@ dnf_repo_update(DnfRepo *repo,
     }
 
     lr_result_clear(priv->repo_result);
-    dnf_state_action_start(state_local,
-                           DNF_STATE_ACTION_DOWNLOAD_METADATA, NULL);
     ret = lr_handle_perform(priv->repo_handle,
                             priv->repo_result,
                             &error_local);
