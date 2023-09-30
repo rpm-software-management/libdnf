@@ -868,7 +868,7 @@ _get_current_time()
  * avoid the lookup in the rpmdb.
  **/
 static void
-_history_write_item(DnfPackage *pkg, libdnf::Swdb *swdb, libdnf::TransactionItemAction action)
+_history_write_item(DnfPackage *pkg, libdnf::Swdb *swdb, libdnf::TransactionItemAction action, libdnf::TransactionItemReason reason)
 {
     auto rpm = swdb->createRPMItem();
     rpm->setName(dnf_package_get_name(pkg));
@@ -878,8 +878,9 @@ _history_write_item(DnfPackage *pkg, libdnf::Swdb *swdb, libdnf::TransactionItem
     rpm->setArch(dnf_package_get_arch(pkg));
     rpm->save();
 
-    libdnf::TransactionItemReason reason =
-        swdb->resolveRPMTransactionItemReason(rpm->getName(), rpm->getArch(), -2);
+    if (reason == libdnf::TransactionItemReason::UNKNOWN) {
+        reason = swdb->resolveRPMTransactionItemReason(rpm->getName(), rpm->getArch(), -2);
+    }
 
     auto transItem = swdb->addItem(
         std::dynamic_pointer_cast< libdnf::Item >(rpm), dnf_package_get_reponame(pkg), action, reason);
@@ -1236,8 +1237,23 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
             swdbAction = libdnf::TransactionItemAction::REINSTALL;
         }
 
+        libdnf::TransactionItemReason swdbReason;
+        if (swdbAction != libdnf::TransactionItemAction::INSTALL) {
+            /* Placeholder to be fetched later from history */
+            swdbReason = libdnf::TransactionItemReason::UNKNOWN;
+        } else switch (hy_goal_get_reason(goal, pkg)) {
+            case HY_REASON_USER:
+                swdbReason = libdnf::TransactionItemReason::USER;
+                break;
+            case HY_REASON_DEP:
+                swdbReason = libdnf::TransactionItemReason::DEPENDENCY;
+                break;
+            default:
+                swdbReason = libdnf::TransactionItemReason::UNKNOWN;
+        }
+
         // add item to swdb transaction
-        _history_write_item(pkg, swdb, swdbAction);
+        _history_write_item(pkg, swdb, swdbAction, swdbReason);
 
         /* this section done */
         ret = dnf_state_done(state_local, error);
@@ -1277,7 +1293,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
                 swdbAction = libdnf::TransactionItemAction::DOWNGRADED;
             }
         }
-        _history_write_item(pkg, swdb, swdbAction);
+        _history_write_item(pkg, swdb, swdbAction, libdnf::TransactionItemReason::UNKNOWN);
     }
 
     /* add anything that gets obsoleted to a helper array which is used to
@@ -1329,7 +1345,7 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
             }
 
             // TODO SWDB add pkg_tmp replaced_by pkg
-            _history_write_item(pkg_tmp, swdb, swdbAction);
+            _history_write_item(pkg_tmp, swdb, swdbAction, libdnf::TransactionItemReason::UNKNOWN);
         }
         g_ptr_array_unref(pkglist);
     }
