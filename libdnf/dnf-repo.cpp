@@ -1798,7 +1798,7 @@ dnf_repo_update(DnfRepo *repo,
         if (repoImpl->isInSync()) {
             /* reset timestamp */
             ret = utimes(repoImpl->repomdFn.c_str(), NULL);
-            if (!ret)
+            if (ret != 0)
                 g_debug("Failed to reset timestamp on repomd.xml");
             ret = dnf_state_done(state, error);
             if (!ret)
