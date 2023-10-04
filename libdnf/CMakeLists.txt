@@ -88,6 +88,10 @@ if(ENABLE_RHSM_SUPPORT)
     target_link_libraries(libdnf ${RHSM_LIBRARIES})
 endif()
 
+if(ENABLE_SELINUX)
+    target_link_libraries(libdnf ${SELINUX_LIBRARIES})
+endif()
+
 set(DNF_SO_VERSION 2)
 set_target_properties(libdnf PROPERTIES OUTPUT_NAME "dnf")
 set_target_properties(libdnf PROPERTIES SOVERSION ${DNF_SO_VERSION})

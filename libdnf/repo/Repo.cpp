@@ -51,6 +51,11 @@
 
 #include <gpgme.h>
 
+#if ENABLE_SELINUX
+#include <selinux/selinux.h>
+#include <selinux/label.h>
+#endif
+
 #include <solv/chksum.h>
 #include <solv/repo.h>
 #include <solv/util.h>
@@ -651,6 +656,81 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitRemote(const char *destdir)
     return h;
 }
 
+/*
+ * @brief Create a temporary directory.
+ *
+ * Creates a temporary directory with 0700 mode attempting to set a proper
+ * SELinux file context. Encountered errors are logged at debug level to
+ * a global logger.
+ *
+ * @param name_template As an input value it is a template according to
+ * mkdtemp(3). As an output value it will contain the created directory name.
+ *
+ * @return 0 if the directory was created, -1 if it wasn't. SELinux failures
+ * are not considered an error.
+ */
+static int create_temporary_directory(char *name_template) {
+    auto logger(Log::getLogger());
+    int saved_errno = errno;
+    int retval = 0;
+#if ENABLE_SELINUX
+    char *old_default_context = NULL;
+    char *new_default_context = NULL;
+    int old_default_context_was_retrieved = 0;
+    struct selabel_handle *labeling_handle = NULL;
+
+    /* A purpose of this piece of code is to deal with applications whose
+     * security policy overrides a file context for temporary files but don't
+     * know that libdnf executes GnuPG which expects a default file context. */
+    if (0 == getfscreatecon(&old_default_context)) {
+        old_default_context_was_retrieved = 1;
+    } else {
+        logger->debug(tfm::format("Failed to retrieve a default SELinux context"));
+    }
+
+    labeling_handle = selabel_open(SELABEL_CTX_FILE, NULL, 0);
+    if (NULL == labeling_handle) {
+        logger->debug(tfm::format("Failed to open a SELinux labeling handle: %s",
+                    strerror(errno)));
+    } else {
+        if (selabel_lookup(labeling_handle, &new_default_context, name_template, 0700)) {
+            /* Here we could hard-code "system_u:object_r:user_tmp_t:s0", but
+             * that value should be really defined in default file context
+             * SELinux policy. Only log that the policy is incpomplete. */
+            logger->debug(tfm::format("Failed to look up a default SELinux label for \"%s\"",
+                        name_template));
+        } else {
+            if (setfscreatecon(new_default_context)) {
+                logger->debug(tfm::format("Failed to set default SELinux context to \"%s\"",
+                            new_default_context));
+            }
+            freecon(new_default_context);
+        }
+        selabel_close(labeling_handle);
+    }
+#endif
+
+    /* mkdtemp() assures 0700 mode. */
+    if (NULL == mkdtemp(name_template)) {
+        saved_errno = errno;
+        logger->debug(tfm::format("Failed to create a directory \"%s\": %s",
+                                  name_template, strerror(errno)));
+        retval = -1;
+    }
+
+#if ENABLE_SELINUX
+    if (old_default_context_was_retrieved) {
+        if (setfscreatecon(old_default_context)) {
+            logger->debug(tfm::format("Failed to restore a default SELinux context"));
+        }
+    }
+    freecon(old_default_context);
+#endif
+
+    errno = saved_errno;
+    return retval;
+}
+
 static void gpgImportKey(gpgme_ctx_t context, int keyFd)
 {
     auto logger(Log::getLogger());
@@ -705,8 +785,8 @@ static std::vector<Key> rawkey2infos(int fd) {
     std::unique_ptr<std::remove_pointer<gpgme_ctx_t>::type> context(ctx);
 
     // set GPG home dir
-    char tmpdir[] = "/tmp/tmpdir.XXXXXX";
-    if (!mkdtemp(tmpdir)) {
+    char tmpdir[] = "/tmp/libdnf.XXXXXX";
+    if (create_temporary_directory(tmpdir)) {
         const char * errTxt = strerror(errno);
         throw RepoError(tfm::format(_("Cannot create repo temporary directory \"%s\": %s"),
                                       tmpdir, errTxt));
@@ -859,6 +939,13 @@ std::vector<Key> Repo::Impl::retrieve(const std::string & url)
  * would cause a race condition with calling gpgme_release(), see [2], [3],
  * [4].
  *
+ * Current solution precreating /run/user/$UID showed problematic when this
+ * library was used out of a systemd-logind session from a programm with an
+ * unexpected SELinux context. Then /run/user/$UID, normally maintained by
+ * systemd, was assigned a SELinux label unexpected by systemd causing errors
+ * on a user logout [5]. We remedy it by restoring the label according to
+ * a file context policy.
+ *
  * Since the agent doesn't clean up its sockets properly, by creating this
  * directory we make sure they are in a place that is not causing trouble with
  * container images.
@@ -867,14 +954,27 @@ std::vector<Key> Repo::Impl::retrieve(const std::string & url)
  * [2] https://bugzilla.redhat.com/show_bug.cgi?id=1769831
  * [3] https://github.com/rpm-software-management/microdnf/issues/50
  * [4] https://bugzilla.redhat.com/show_bug.cgi?id=1781601
+ * [5] https://issues.redhat.com/browse/RHEL-6421
  */
 static void ensure_socket_dir_exists() {
     auto logger(Log::getLogger());
+    char tmpdir[] = "/run/user/libdnf.XXXXXX";
     std::string dirname = "/run/user/" + std::to_string(getuid());
-    int res = mkdir(dirname.c_str(), 0700);
-    if (res != 0 && errno != EEXIST) {
-        logger->debug(tfm::format("Failed to create directory \"%s\": %d - %s",
-                                  dirname, errno, strerror(errno)));
+
+    /* create_temporary_directory() assures 0700 mode and tries its best to
+     * correct a SELinux label. */
+    if (create_temporary_directory(tmpdir)) {
+        return;
+    }
+
+    /* Set the desired name. */
+    if (rename(tmpdir, dirname.c_str())) {
+        if (errno != EEXIST && errno != ENOTEMPTY && errno != EBUSY) {
+            logger->debug(tfm::format("Failed to rename \"%s\" directory to \"%s\": %s",
+                                      tmpdir, dirname, strerror(errno)));
+        }
+        rmdir(tmpdir);
+        return;
     }
 }
 
@@ -1163,8 +1263,8 @@ void Repo::Impl::addCountmeFlag(LrHandle *handle) {
 bool Repo::Impl::isMetalinkInSync()
 {
     auto logger(Log::getLogger());
-    char tmpdir[] = "/tmp/tmpdir.XXXXXX";
-    if (!mkdtemp(tmpdir)) {
+    char tmpdir[] = "/tmp/libdnf.XXXXXX";
+    if (create_temporary_directory(tmpdir)) {
         const char * errTxt = strerror(errno);
         throw RepoError(tfm::format(_("Cannot create repo temporary directory \"%s\": %s"),
                                       tmpdir, errTxt));
@@ -1237,8 +1337,8 @@ bool Repo::Impl::isRepomdInSync()
 {
     auto logger(Log::getLogger());
     LrYumRepo *yum_repo;
-    char tmpdir[] = "/tmp/tmpdir.XXXXXX";
-    if (!mkdtemp(tmpdir)) {
+    char tmpdir[] = "/tmp/libdnf.XXXXXX";
+    if (create_temporary_directory(tmpdir)) {
         const char * errTxt = strerror(errno);
         throw RepoError(tfm::format(_("Cannot create repo temporary directory \"%s\": %s"),
                                       tmpdir, errTxt));
@@ -1280,8 +1380,8 @@ void Repo::Impl::fetch(const std::string & destdir, std::unique_ptr<LrHandle> &&
         throw RepoError(tfm::format(_("Cannot create repo destination directory \"%s\": %s"),
                                       destdir, errTxt));
     }
-    auto tmpdir = destdir + "/tmpdir.XXXXXX";
-    if (!mkdtemp(&tmpdir.front())) {
+    auto tmpdir = destdir + "/libdnf.XXXXXX";
+    if (create_temporary_directory(&tmpdir.front())) {
         const char * errTxt = strerror(errno);
         throw RepoError(tfm::format(_("Cannot create repo temporary directory \"%s\": %s"),
                                       tmpdir.c_str(), errTxt));
