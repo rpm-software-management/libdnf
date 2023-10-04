@@ -34,6 +34,7 @@ option(WITH_MAN "Enables hawkey man page generation" ON)
 option(WITH_ZCHUNK "Build with zchunk support" ON)
 option(ENABLE_RHSM_SUPPORT "Build with Red Hat Subscription Manager support?" OFF)
 option(ENABLE_SOLV_URPMREORDER "Build with support for URPM-like solution reordering?" OFF)
+option(ENABLE_SELINUX "Restore SELinux labels on GnuPG directories" ON)
 
 
 # build options - debugging
@@ -81,6 +82,12 @@ endif ()
 if(ENABLE_RHSM_SUPPORT)
     pkg_check_modules(RHSM REQUIRED librhsm>=0.0.3)
     include_directories(${RHSM_INCLUDE_DIRS})
+endif()
+
+if(ENABLE_SELINUX)
+    pkg_check_modules(SELINUX REQUIRED libselinux)
+    include_directories(${SELINUX_INCLUDE_DIRS})
+    add_definitions(-DENABLE_SELINUX=1)
 endif()
 
 
