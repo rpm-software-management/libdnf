@@ -42,6 +42,8 @@
 %bcond_with rhsm
 %endif
 
+%bcond_without selinux
+
 %if 0%{?rhel}
 %bcond_with zchunk
 %else
@@ -84,6 +86,9 @@ BuildRequires:  pkgconfig(sqlite3)
 BuildRequires:  pkgconfig(json-c)
 BuildRequires:  pkgconfig(cppunit)
 BuildRequires:  pkgconfig(libcrypto)
+%if %{with selinux}
+BuildRequires:  pkgconfig(libselinux)
+%endif
 BuildRequires:  pkgconfig(modulemd-2.0) >= %{libmodulemd_version}
 BuildRequires:  pkgconfig(smartcols)
 BuildRequires:  gettext
@@ -205,7 +210,8 @@ pushd build-py2
     %define __builddir build-py2
   %endif
   %cmake -DPYTHON_DESIRED:FILEPATH=%{__python2} -DWITH_MAN=OFF ../ %{!?with_zchunk:-DWITH_ZCHUNK=OFF} %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts} -DLIBDNF_MAJOR_VERSION=%{libdnf_major_version} -DLIBDNF_MINOR_VERSION=%{libdnf_minor_version} -DLIBDNF_MICRO_VERSION=%{libdnf_micro_version} \
-    -DWITH_SANITIZERS=%{?with_sanitizers:ON}%{!?with_sanitizers:OFF}
+    -DWITH_SANITIZERS=%{?with_sanitizers:ON}%{!?with_sanitizers:OFF} \
+    -DENABLE_SELINUX=%{?with_selinux:ON}%{!?with_selinux:OFF}
   %make_build
 popd
 %endif
@@ -219,7 +225,8 @@ pushd build-py3
     %define __builddir build-py3
   %endif
   %cmake -DPYTHON_DESIRED:FILEPATH=%{__python3} -DWITH_GIR=0 -DWITH_MAN=0 -Dgtkdoc=0 ../ %{!?with_zchunk:-DWITH_ZCHUNK=OFF} %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts} -DLIBDNF_MAJOR_VERSION=%{libdnf_major_version} -DLIBDNF_MINOR_VERSION=%{libdnf_minor_version} -DLIBDNF_MICRO_VERSION=%{libdnf_micro_version} \
-    -DWITH_SANITIZERS=%{?with_sanitizers:ON}%{!?with_sanitizers:OFF}
+    -DWITH_SANITIZERS=%{?with_sanitizers:ON}%{!?with_sanitizers:OFF} \
+    -DENABLE_SELINUX=%{?with_selinux:ON}%{!?with_selinux:OFF}
   %make_build
 popd
 %endif
