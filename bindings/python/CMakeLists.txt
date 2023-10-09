@@ -41,3 +41,11 @@ libdnf_swig_module(utils libdnf ${PYTHON_LIBRARY} ${SQLite3_LIBRARIES})
 
 configure_file(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py COPYONLY)
 install(FILES __init__.py DESTINATION ${PYTHON_INSTALL_DIR}/libdnf)
+
+set(DISTINFO_PATH "${CMAKE_CURRENT_BINARY_DIR}/libdnf-${LIBDNF_VERSION}.dist-info")
+set(METADATA_FILE "${DISTINFO_PATH}/METADATA")
+file(MAKE_DIRECTORY ${DISTINFO_PATH})
+file(WRITE ${METADATA_FILE} "Metadata-Version: 2.1\n")
+file(APPEND ${METADATA_FILE} "Name: libdnf\n")
+file(APPEND ${METADATA_FILE} "Version: ${LIBDNF_VERSION}\n")
+install(DIRECTORY ${DISTINFO_PATH} DESTINATION ${PYTHON_INSTALL_DIR})
