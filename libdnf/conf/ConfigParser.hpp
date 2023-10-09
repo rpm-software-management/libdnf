@@ -159,6 +159,8 @@ private:
     static std::pair<std::string, size_t> substitute_expression(const std::string & text,
         const std::map<std::string, std::string> & substitutions,
         unsigned int depth);
+
+    static std::tuple<std::string, std::string> split_releasever(const std::string & releasever);
 };
 
 inline void ConfigParser::setSubstitutions(const std::map<std::string, std::string> & substitutions)
