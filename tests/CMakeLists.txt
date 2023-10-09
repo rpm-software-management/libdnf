@@ -1,3 +1,4 @@
+add_subdirectory(libdnf/conf)
 add_subdirectory(libdnf/module/modulemd)
 add_subdirectory(libdnf/module)
 add_subdirectory(libdnf/repo)
