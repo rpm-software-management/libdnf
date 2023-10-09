@@ -289,6 +289,7 @@ popd
 
 %if %{with python3}
 %files -n python3-%{name}
+%{python3_sitearch}/%{name}-*.dist-info
 %{python3_sitearch}/%{name}/
 %endif
 
