@@ -92,7 +92,27 @@ std::pair<std::string, size_t> ConfigParser::substitute_expression(const std::st
             auto pos_after_variable = static_cast<size_t>(std::distance(res.begin(), it));
 
             // Find the substituting string and the end of the variable expression
-            auto variable_mapping = substitutions.find(res.substr(pos_variable, pos_after_variable - pos_variable));
+            const auto & variable_key = res.substr(pos_variable, pos_after_variable - pos_variable);
+            const auto variable_mapping = substitutions.find(variable_key);
+
+            const std::string * variable_value = nullptr;
+
+            if (variable_mapping == substitutions.end()) {
+                if (variable_key == "releasever_major" || variable_key == "releasever_minor") {
+                    const auto releasever_mapping = substitutions.find("releasever");
+                    if (releasever_mapping != substitutions.end()) {
+                        const auto & releasever_split = ConfigParser::split_releasever(releasever_mapping->second);
+                        if (variable_key == "releasever_major") {
+                            variable_value = &std::get<0>(releasever_split);
+                        } else {
+                            variable_value = &std::get<1>(releasever_split);
+                        }
+                    }
+                }
+            } else {
+                variable_value = &variable_mapping->second;
+            }
+
             const std::string * subst_str = nullptr;
 
             size_t pos_after_variable_expression;
@@ -133,16 +153,16 @@ std::pair<std::string, size_t> ConfigParser::substitute_expression(const std::st
                         // If variable is unset or empty, the expansion of word is
                         // substituted. Otherwise, the value of variable is
                         // substituted.
-                        if (variable_mapping == substitutions.end() || variable_mapping->second.empty()) {
+                        if (variable_value == nullptr || variable_value->empty()) {
                             subst_str = &expanded_word;
                         } else {
-                            subst_str = &variable_mapping->second;
+                            subst_str = variable_value;
                         }
                     } else if (expansion_mode == '+') {
                         // ${variable:+word} (alternate value)
                         // If variable is unset or empty nothing is substituted.
                         // Otherwise, the expansion of word is substituted.
-                        if (variable_mapping == substitutions.end() || variable_mapping->second.empty()) {
+                        if (variable_value == nullptr || variable_value->empty()) {
                             const std::string empty{};
                             subst_str = &empty;
                         } else {
@@ -156,9 +176,7 @@ std::pair<std::string, size_t> ConfigParser::substitute_expression(const std::st
                     pos_after_variable_expression = pos_after_word + 1;
                 } else if (res[pos_after_variable] == '}') {
                     // ${variable}
-                    if (variable_mapping != substitutions.end()) {
-                        subst_str = &variable_mapping->second;
-                    }
+                    subst_str = variable_value;
                     // Move past the closing '}'
                     pos_after_variable_expression = pos_after_variable + 1;
                 } else {
@@ -168,9 +186,7 @@ std::pair<std::string, size_t> ConfigParser::substitute_expression(const std::st
                 }
             } else {
                 // No braces, we have a $variable
-                if (variable_mapping != substitutions.end()) {
-                    subst_str = &variable_mapping->second;
-                }
+                subst_str = variable_value;
                 pos_after_variable_expression = pos_after_variable;
             }
 
@@ -199,6 +215,20 @@ std::pair<std::string, size_t> ConfigParser::substitute_expression(const std::st
     return std::make_pair(res, text.length());
 }
 
+std::tuple<std::string, std::string> ConfigParser::split_releasever(const std::string & releasever)
+{
+    // Uses the same logic as DNF 5 and as splitReleaseverTo in libzypp
+    std::string releasever_major;
+    std::string releasever_minor;
+    const auto pos = releasever.find('.');
+    if (pos == std::string::npos) {
+        releasever_major = releasever;
+    } else {
+        releasever_major = releasever.substr(0, pos);
+        releasever_minor = releasever.substr(pos + 1);
+    }
+    return std::make_tuple(releasever_major, releasever_minor);
+}
 
 static void read(ConfigParser & cfgParser, IniParser & parser)
 {
