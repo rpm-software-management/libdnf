@@ -432,12 +432,18 @@ std::string Repo::getMetadataContent(const std::string &metadataType)
 std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
 {
     std::unique_ptr<LrHandle> h(lr_handle_init());
-    std::vector<const char *> dlist = {MD_TYPE_PRIMARY, MD_TYPE_FILELISTS, MD_TYPE_PRESTODELTA,
-        MD_TYPE_GROUP_GZ, MD_TYPE_UPDATEINFO};
+    std::vector<const char *> dlist = {MD_TYPE_PRIMARY, MD_TYPE_PRESTODELTA, MD_TYPE_GROUP_GZ, MD_TYPE_UPDATEINFO};
+
+    auto & optionalMetadataTypes = conf->getMainConfig().optional_metadata_types().getValue();
+    auto loadFilelists = std::find(optionalMetadataTypes.begin(), optionalMetadataTypes.end(), "filelists") !=
+                         optionalMetadataTypes.end();
 
 #ifdef MODULEMD
     dlist.push_back(MD_TYPE_MODULES);
 #endif
+    if (loadFilelists) {
+        dlist.push_back(MD_TYPE_FILELISTS);
+    }
     if (loadMetadataOther) {
         dlist.push_back(MD_TYPE_OTHER);
     }
