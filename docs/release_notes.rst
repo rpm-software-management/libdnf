@@ -20,6 +20,28 @@
 ######################
 
 ====================
+0.72.0 Release Notes
+====================
+
+- New features:
+  - conf: Add limited shell-style variable expansion (RhBug:1789346)
+  - conf: Add support for $releasever_major, $releasever_minor (RhBug:1789346)
+  - repo: Don't download the repository if the local cache is up to date
+
+- Bug fixes:
+  - Avoid reinstalling installonly packages marked for ERASE (RhBug:2163474)
+  - transaction: Save the reason for installing (RhBug:1733274)
+
+- Others:
+  - Include dist-info for python3-libdnf
+
+Bugs fixed in 0.72.0:
+
+* :rhbug:`2163474`
+* :rhbug:`1733274`
+* :rhbug:`1789346`
+
+====================
 0.71.1 Release Notes
 ====================
 
