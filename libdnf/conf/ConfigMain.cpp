@@ -191,6 +191,8 @@ class ConfigMain::Impl {
     OptionBool debug_solver{false};
     OptionStringList installonlypkgs{INSTALLONLYPKGS};
     OptionStringList group_package_types{GROUP_PACKAGE_TYPES};
+    // TODO(jkolarik): Change to empty list when dropping the filelists for Fedora 40
+    OptionStringList optional_metadata_types{std::vector<std::string>{"filelists"}};
 
     OptionNumber<std::uint32_t> installonly_limit{3, 0,
         [](const std::string & value)->std::uint32_t{
@@ -399,6 +401,7 @@ ConfigMain::Impl::Impl(Config & owner)
     );
 
     owner.optBinds().add("group_package_types", group_package_types);
+    owner.optBinds().add("optional_metadata_types", optional_metadata_types);
     owner.optBinds().add("installonly_limit", installonly_limit);
 
     owner.optBinds().add("tsflags", tsflags,
@@ -564,6 +567,7 @@ OptionStringList & ConfigMain::reposdir() { return pImpl->reposdir; }
 OptionBool & ConfigMain::debug_solver() { return pImpl->debug_solver; }
 OptionStringList & ConfigMain::installonlypkgs() { return pImpl->installonlypkgs; }
 OptionStringList & ConfigMain::group_package_types() { return pImpl->group_package_types; }
+OptionStringList & ConfigMain::optional_metadata_types() { return pImpl->optional_metadata_types; }
 OptionNumber<std::uint32_t> & ConfigMain::installonly_limit() { return pImpl->installonly_limit; }
 OptionStringList & ConfigMain::tsflags() { return pImpl->tsflags; }
 OptionBool & ConfigMain::assumeyes() { return pImpl->assumeyes; }

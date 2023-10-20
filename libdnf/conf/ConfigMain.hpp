@@ -72,6 +72,7 @@ public:
     OptionBool & debug_solver();
     OptionStringList & installonlypkgs();
     OptionStringList & group_package_types();
+    OptionStringList & optional_metadata_types();
 
     /*  NOTE: If you set this to 2, then because it keeps the current
     kernel it means if you ever install an "old" kernel it'll get rid
