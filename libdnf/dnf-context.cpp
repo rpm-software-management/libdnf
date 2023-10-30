@@ -162,7 +162,7 @@ typedef struct
     gboolean         check_disk_space;
     gboolean         check_transaction;
     gboolean         only_trusted;
-    gboolean         enable_filelists;
+    gboolean         *enable_filelists;
     gboolean         enrollment_valid;
     gboolean         write_history;
     DnfLock         *lock;
@@ -252,6 +252,7 @@ dnf_context_finalize(GObject *object)
     g_free(priv->http_proxy);
     g_free(priv->user_agent);
     g_free(priv->arch);
+    g_free(priv->enable_filelists);
     g_strfreev(priv->native_arches);
     g_object_unref(priv->lock);
     g_object_unref(priv->state);
@@ -364,7 +365,6 @@ dnf_context_init(DnfContext *context)
     priv->install_root = g_strdup("/");
     priv->check_disk_space = TRUE;
     priv->check_transaction = TRUE;
-    priv->enable_filelists = TRUE;
     priv->write_history = TRUE;
     priv->state = dnf_state_new();
     priv->lock = dnf_lock_new();
@@ -1086,7 +1086,15 @@ gboolean
 dnf_context_get_enable_filelists (DnfContext     *context)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
-    return priv->enable_filelists;
+    if (priv->enable_filelists == NULL) {
+        priv->enable_filelists = g_new(gboolean, 1);
+
+        auto & optional_metadata_types = libdnf::getGlobalMainConfig(false).optional_metadata_types().getValue();
+        *priv->enable_filelists = std::find(optional_metadata_types.begin(),
+                                            optional_metadata_types.end(),
+                                            "filelists") != optional_metadata_types.end();
+    }
+    return *priv->enable_filelists;
 }
 
 /**
@@ -1567,7 +1575,10 @@ dnf_context_set_enable_filelists (DnfContext     *context,
                                   gboolean        enable_filelists)
 {
     DnfContextPrivate *priv = GET_PRIVATE(context);
-    priv->enable_filelists = enable_filelists;
+    if (priv->enable_filelists == NULL) {
+        priv->enable_filelists = g_new(gboolean, 1);
+    }
+    *priv->enable_filelists = enable_filelists;
 }
 
 /**
@@ -1824,7 +1835,7 @@ dnf_context_setup_sack_with_flags(DnfContext               *context,
     DnfSackAddFlags add_flags = DNF_SACK_ADD_FLAG_NONE;
     if ((flags & DNF_CONTEXT_SETUP_SACK_FLAG_LOAD_UPDATEINFO) > 0)
         add_flags = static_cast<DnfSackAddFlags>(add_flags | DNF_SACK_ADD_FLAG_UPDATEINFO);
-    if (priv->enable_filelists && !((flags & DNF_CONTEXT_SETUP_SACK_FLAG_SKIP_FILELISTS) > 0))
+    if (dnf_context_get_enable_filelists(context) && !((flags & DNF_CONTEXT_SETUP_SACK_FLAG_SKIP_FILELISTS) > 0))
         add_flags = static_cast<DnfSackAddFlags>(add_flags | DNF_SACK_ADD_FLAG_FILELISTS);
 
     /* add remote */
