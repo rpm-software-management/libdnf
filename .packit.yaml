@@ -1,0 +1,10 @@
+# See the documentation for more information:
+# https://packit.dev/docs/configuration/
+
+specfile_path: libdnf.spec
+
+jobs:
+  - job: copr_build
+    trigger: pull_request
+    targets:
+      - fedora-all
