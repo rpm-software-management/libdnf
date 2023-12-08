@@ -1142,6 +1142,49 @@ Goal::describeProblemRules(unsigned i, bool pkgs)
     return output;
 }
 
+bool
+Goal::isBrokenFileDependencyPresent()
+{
+    return pImpl->isBrokenFileDependencyPresent();
+}
+
+bool
+Goal::Impl::isBrokenFileDependencyPresent()
+{
+    for (int i = 0; i < countProblems(); i++) {
+        if (isBrokenFileDependencyPresent(i)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool
+Goal::Impl::isBrokenFileDependencyPresent(unsigned i)
+{
+    if (i >= solver_problem_count(solv)) {
+        return false;
+    }
+
+    SolverRuleinfo type;
+    Id source, target, dep;
+    IdQueue pq;
+    Pool * const pool = solv->pool;
+
+    // this libsolv interface indexes from 1 (we do from 0), so:
+    solver_findallproblemrules(solv, i+1, pq.getQueue());
+    for (int j = 0; j < pq.size(); j++) {
+        type = solver_ruleinfo(solv, pq[j], &source, &target, &dep);
+        if (type == SOLVER_RULE_PKG_NOTHING_PROVIDES_DEP) {
+            auto dependency = std::string(pool_dep2str(pool, dep));
+            if (dependency.at(0) == '/') {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 /**
  * Write all the solving decisions to the hawkey logfile.
  */

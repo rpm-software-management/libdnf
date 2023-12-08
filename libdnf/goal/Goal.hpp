@@ -124,6 +124,11 @@ public:
     std::vector<std::vector<std::string>> describeAllProblemRules(bool pkgs);
 
     /**
+    * @brief Check if any solver resolution problem is a file dependency issue
+    */
+    bool isBrokenFileDependencyPresent();
+
+    /**
     * @brief List describing failed rules in solving problem 'i'. Caller is responsible for freeing the
     * returned string list by g_free().
     *

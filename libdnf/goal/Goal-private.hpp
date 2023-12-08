@@ -59,6 +59,8 @@ private:
     std::string describeProtectedRemoval();
     std::unique_ptr<PackageSet> brokenDependencyAllPkgs(DnfPackageState pkg_type);
     int countProblems();
+    bool isBrokenFileDependencyPresent();
+    bool isBrokenFileDependencyPresent(unsigned i);
 };
 
 }
