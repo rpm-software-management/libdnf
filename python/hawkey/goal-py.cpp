@@ -479,6 +479,12 @@ problem_broken_dependency(_GoalObject *self, PyObject *args, PyObject *kwds) try
 } CATCH_TO_PYTHON
 
 static PyObject *
+file_dep_problem_present(_GoalObject *self, PyObject *unused) try
+{
+    return PyBool_FromLong(self->goal->isBrokenFileDependencyPresent());
+} CATCH_TO_PYTHON
+
+static PyObject *
 log_decisions(_GoalObject *self, PyObject *unused) try
 {
     if (hy_goal_log_decisions(self->goal))
@@ -652,6 +658,7 @@ static struct PyMethodDef goal_methods[] = {
     {"problem_conflicts",(PyCFunction)problem_conflicts,        METH_VARARGS | METH_KEYWORDS,                NULL},
     {"problem_broken_dependency",(PyCFunction)problem_broken_dependency,        METH_VARARGS | METH_KEYWORDS,                NULL},
     {"problem_rules", (PyCFunction)problem_rules,        METH_NOARGS,                NULL},
+    {"file_dep_problem_present", (PyCFunction)file_dep_problem_present,        METH_NOARGS,        NULL},
     {"log_decisions",   (PyCFunction)log_decisions,        METH_NOARGS,        NULL},
     {"write_debugdata", (PyCFunction)write_debugdata,        METH_O,                NULL},
     {"list_erasures",        (PyCFunction)list_erasures,        METH_NOARGS,        NULL},
