@@ -4,7 +4,7 @@
 %global dnf_conflict 4.11.0
 %global swig_version 3.0.12
 %global libdnf_major_version 0
-%global libdnf_minor_version 72
+%global libdnf_minor_version 73
 %global libdnf_micro_version 0
 
 %define __cmake_in_source_build 1
