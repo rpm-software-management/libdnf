@@ -191,8 +191,7 @@ class ConfigMain::Impl {
     OptionBool debug_solver{false};
     OptionStringList installonlypkgs{INSTALLONLYPKGS};
     OptionStringList group_package_types{GROUP_PACKAGE_TYPES};
-    // TODO(jkolarik): Change to empty list when dropping the filelists for Fedora 40
-    OptionStringList optional_metadata_types{std::vector<std::string>{"filelists"}};
+    OptionStringList optional_metadata_types{std::vector<std::string>{}};
 
     OptionNumber<std::uint32_t> installonly_limit{3, 0,
         [](const std::string & value)->std::uint32_t{
