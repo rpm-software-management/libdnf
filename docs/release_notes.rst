@@ -20,6 +20,23 @@
 ######################
 
 ====================
+0.73.0 Release Notes
+====================
+
+- Major changes:
+  - filelists metadata not loaded by default
+  - deltarpm disabled by default
+
+- New features:
+  - conf: Introduce new optional_metadata_types option to load filelists on demand
+  - goal: Method for detecting file dependency problems
+
+Bugs fixed in 0.73.0:
+
+* :rhbug:`2252128`
+* :rhbug:`2254789`
+
+====================
 0.72.0 Release Notes
 ====================
 
