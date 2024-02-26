@@ -822,12 +822,7 @@ MergedTransactionTest::test_downgrade_upgrade_remove()
     // test merging trans1, trans2
     merged.merge(trans2);
     auto items2 = merged.getItems();
-    CPPUNIT_ASSERT_EQUAL(1, (int)items2.size());
-    auto item2 = items2.at(0);
-    CPPUNIT_ASSERT_EQUAL(std::string("tour-4.8-1.noarch"), item2->getItem()->toStr());
-    CPPUNIT_ASSERT_EQUAL(std::string("repo1"), item2->getRepoid());
-    CPPUNIT_ASSERT_EQUAL(TransactionItemAction::REINSTALL, item2->getAction());
-    CPPUNIT_ASSERT_EQUAL(TransactionItemReason::USER, item2->getReason());
+    CPPUNIT_ASSERT_EQUAL(0, (int)items2.size());
 
     // test merging trans1, trans2, trans3
     merged.merge(trans3);

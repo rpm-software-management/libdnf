@@ -192,7 +192,7 @@ static bool transaction_item_sort_function(const std::shared_ptr<TransactionItem
  * Actions are merged using following rules:
  * (old action) -> (new action) = (merged action)
  *
- * Erase/Obsolete -> Install/Obsoleting = Reinstall/Downgrade/Upgrade
+ * Erase/Obsolete -> Install/Obsoleting = Downgrade/Upgrade
  *
  * Reinstall/Reason change -> (new action) = (new action)
  *
@@ -210,6 +210,9 @@ static bool transaction_item_sort_function(const std::shared_ptr<TransactionItem
  *
  *      With complete transaction pair we need to get a new Upgrade/Downgrade package and
  *      compare versions with original package from pair.
+ *
+ * Additionally, if a package is installed both before and after the list of transactions
+ * with the same version, no action will be taken.
  */
 std::vector< TransactionItemBasePtr >
 MergedTransaction::getItems()
@@ -261,13 +264,16 @@ getItemIdentifier(ItemPtr item)
 
 /**
  * Resolve the difference between RPMs in the first and second transaction item
- *  and create a ItemPair of Upgrade, Downgrade or reinstall.
+ *  and create a ItemPair of Upgrade, Downgrade or drop the item from the merged
+ *  transaction set in case of both packages are of the same version.
  * Method is called when original package is being removed and than installed again.
+ * \param itemPairMap merged transaction set
  * \param previousItemPair original item pair
  * \param mTransItem new transaction item
  */
 void
-MergedTransaction::resolveRPMDifference(ItemPair &previousItemPair,
+MergedTransaction::resolveRPMDifference(ItemPairMap &itemPairMap,
+                                        ItemPair &previousItemPair,
                                         TransactionItemBasePtr mTransItem)
 {
     auto firstItem = previousItemPair.first->getItem();
@@ -277,11 +283,10 @@ MergedTransaction::resolveRPMDifference(ItemPair &previousItemPair,
     auto secondRPM = std::dynamic_pointer_cast< RPMItem >(secondItem);
 
     if (firstRPM->getVersion() == secondRPM->getVersion() &&
-        firstRPM->getEpoch() == secondRPM->getEpoch()) {
-        // reinstall
-        mTransItem->setAction(TransactionItemAction::REINSTALL);
-        previousItemPair.first = mTransItem;
-        previousItemPair.second = nullptr;
+        firstRPM->getEpoch() == secondRPM->getEpoch() &&
+        firstRPM->getRelease() == secondRPM->getRelease()) {
+        // Drop the item from merged transaction
+        itemPairMap.erase(getItemIdentifier(firstItem));
         return;
     } else if ((*firstRPM) < (*secondRPM)) {
         // Upgrade to secondRPM
@@ -296,7 +301,9 @@ MergedTransaction::resolveRPMDifference(ItemPair &previousItemPair,
 }
 
 void
-MergedTransaction::resolveErase(ItemPair &previousItemPair, TransactionItemBasePtr mTransItem)
+MergedTransaction::resolveErase(ItemPairMap &itemPairMap,
+                                ItemPair &previousItemPair,
+                                TransactionItemBasePtr mTransItem)
 {
     /*
      * The original item has been removed - it has to be installed now unless the rpmdb
@@ -306,7 +313,7 @@ MergedTransaction::resolveErase(ItemPair &previousItemPair, TransactionItemBaseP
     if (mTransItem->getAction() == TransactionItemAction::INSTALL) {
         if (mTransItem->getItem()->getItemType() == ItemType::RPM) {
             // resolve the difference between RPM packages
-            resolveRPMDifference(previousItemPair, mTransItem);
+            resolveRPMDifference(itemPairMap, previousItemPair, mTransItem);
         } else {
             // difference between comps can't be resolved
             mTransItem->setAction(TransactionItemAction::REINSTALL);
@@ -323,11 +330,14 @@ MergedTransaction::resolveErase(ItemPair &previousItemPair, TransactionItemBaseP
  * transaction - new package is used to complete the pair. Items are stored in pairs (Upgrade,
  * Upgrade) or (Downgraded, Downgrade). With complete transaction pair we need to get the new
  * Upgrade/Downgrade item and compare its version with the original item from the pair.
+ * \param itemPairMap merged transaction set
  * \param previousItemPair original item pair
  * \param mTransItem new transaction item
  */
 void
-MergedTransaction::resolveAltered(ItemPair &previousItemPair, TransactionItemBasePtr mTransItem)
+MergedTransaction::resolveAltered(ItemPairMap &itemPairMap,
+                                  ItemPair &previousItemPair,
+                                  TransactionItemBasePtr mTransItem)
 {
     auto newState = mTransItem->getAction();
     auto firstState = previousItemPair.first->getAction();
@@ -369,7 +379,7 @@ MergedTransaction::resolveAltered(ItemPair &previousItemPair, TransactionItemBas
         } else {
             if (mTransItem->getItem()->getItemType() == ItemType::RPM) {
                 // resolve the difference between RPM packages
-                resolveRPMDifference(previousItemPair, mTransItem);
+                resolveRPMDifference(itemPairMap, previousItemPair, mTransItem);
             } else {
                 // difference between comps can't be resolved
                 previousItemPair.second->setAction(TransactionItemAction::REINSTALL);
@@ -405,7 +415,7 @@ MergedTransaction::mergeItem(ItemPairMap &itemPairMap, TransactionItemBasePtr mT
     switch (firstState) {
         case TransactionItemAction::REMOVE:
         case TransactionItemAction::OBSOLETED:
-            resolveErase(previousItemPair, mTransItem);
+            resolveErase(itemPairMap, previousItemPair, mTransItem);
             break;
         case TransactionItemAction::INSTALL:
             // the original package has been installed -> it may be either Removed, or altered
@@ -432,7 +442,7 @@ MergedTransaction::mergeItem(ItemPairMap &itemPairMap, TransactionItemBasePtr mT
         case TransactionItemAction::UPGRADE:
         case TransactionItemAction::UPGRADED:
         case TransactionItemAction::OBSOLETE:
-            resolveAltered(previousItemPair, mTransItem);
+            resolveAltered(itemPairMap, previousItemPair, mTransItem);
             break;
         case TransactionItemAction::REINSTALLED:
             break;

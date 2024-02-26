@@ -76,9 +76,9 @@ protected:
     typedef std::map< std::string, ItemPair > ItemPairMap;
 
     void mergeItem(ItemPairMap &itemPairMap, TransactionItemBasePtr transItem);
-    void resolveRPMDifference(ItemPair &previousItemPair, TransactionItemBasePtr mTransItem);
-    void resolveErase(ItemPair &previousItemPair, TransactionItemBasePtr mTransItem);
-    void resolveAltered(ItemPair &previousItemPair, TransactionItemBasePtr mTransItem);
+    void resolveRPMDifference(ItemPairMap &itemPairMap, ItemPair &previousItemPair, TransactionItemBasePtr mTransItem);
+    void resolveErase(ItemPairMap &itemPairMap, ItemPair &previousItemPair, TransactionItemBasePtr mTransItem);
+    void resolveAltered(ItemPairMap &itemPairMap, ItemPair &previousItemPair, TransactionItemBasePtr mTransItem);
 };
 
 } // namespace libdnf
