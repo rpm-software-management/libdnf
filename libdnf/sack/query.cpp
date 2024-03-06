@@ -2313,7 +2313,7 @@ Query::Impl::apply()
     if (!result)
         initResult();
     map_init(&m, pool->nsolvables);
-    assert(m.size == result->getMap()->size);
+    map_grow(result->getMap(), pool->nsolvables);
     for (auto f : filters) {
         map_empty(&m);
         switch (f.getKeyname()) {
