@@ -93,6 +93,10 @@ BuildRequires:  liblsan
 BuildRequires:  libubsan
 %endif
 
+%if 0%{?fedora} >= 40 && 0%{?fedora} < 42
+# glib2 version with g_once_init_enter_pointer symbol
+Requires:       glib2%{?_isa} >= 2.79.0-2
+%endif
 Requires:       libmodulemd%{?_isa} >= %{libmodulemd_version}
 Requires:       libsolv%{?_isa} >= %{libsolv_version}
 Requires:       librepo%{?_isa} >= %{librepo_version}
