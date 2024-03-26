@@ -43,6 +43,8 @@ namespace libdnf {
 
 class TransactionItemBase {
 public:
+    virtual ~TransactionItemBase() = default;
+
     ItemPtr getItem() const noexcept { return item; }
     void setItem(ItemPtr value) { item = value; }
 
@@ -101,6 +103,7 @@ public:
     explicit TransactionItem(Transaction *trans);
 
     TransactionItem(SQLite3Ptr conn, int64_t transID);
+    virtual ~TransactionItem() = default;
 
     int64_t getId() const noexcept { return id; }
     void setId(int64_t value) { id = value; }
