@@ -361,8 +361,10 @@ get_best_solution(_SubjectObject *self, PyObject *args, PyObject *kwds)
     HyNevra nevra{nullptr};
 
     UniquePtrPyObject q(get_solution(self, args, kwds, &nevra));
-    if (!q)
+    if (!q) {
+        delete nevra;
         return NULL;
+    }
     PyObject *ret_dict = PyDict_New();
     PyDict_SetItem(ret_dict, PyString_FromString("query"), q.get());
     if (nevra) {
