@@ -1894,6 +1894,10 @@ dnf_repo_update(DnfRepo *repo,
             goto out;
     }
 
+    ret = lr_handle_network_wait(priv->repo_handle, error, dnf_context_get_network_timeout_seconds(priv->context), NULL);
+    if(!ret)
+      goto out;
+  
     lr_result_clear(priv->repo_result);
     ret = lr_handle_perform(priv->repo_handle,
                             priv->repo_result,
@@ -2273,6 +2277,10 @@ dnf_repo_download_packages(DnfRepo *repo,
         directory_slash = g_build_filename(directory, "/", NULL);
     }
 
+    ret = lr_handle_network_wait(priv->repo_handle, error, dnf_context_get_network_timeout_seconds(priv->context), NULL);
+    if(!ret)
+      goto out;
+  
     global_data.download_size = dnf_package_array_get_download_size(packages);
     for (i = 0; i < packages->len; i++) {
         auto pkg = static_cast<DnfPackage *>(packages->pdata[i]);
