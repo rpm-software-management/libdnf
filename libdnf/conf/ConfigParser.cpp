@@ -95,7 +95,9 @@ std::pair<std::string, size_t> ConfigParser::substitute_expression(const std::st
             const auto & variable_key = res.substr(pos_variable, pos_after_variable - pos_variable);
             const auto variable_mapping = substitutions.find(variable_key);
 
-            const std::string * variable_value = nullptr;
+            // No std::optional here.
+            bool variable_value_has_value{false};
+            std::string variable_value{""};
 
             if (variable_mapping == substitutions.end()) {
                 if (variable_key == "releasever_major" || variable_key == "releasever_minor") {
@@ -103,17 +105,22 @@ std::pair<std::string, size_t> ConfigParser::substitute_expression(const std::st
                     if (releasever_mapping != substitutions.end()) {
                         const auto & releasever_split = ConfigParser::split_releasever(releasever_mapping->second);
                         if (variable_key == "releasever_major") {
-                            variable_value = &std::get<0>(releasever_split);
+                            variable_value = std::get<0>(releasever_split);
+                            variable_value_has_value = true;
                         } else {
-                            variable_value = &std::get<1>(releasever_split);
+                            variable_value = std::get<1>(releasever_split);
+                            variable_value_has_value = true;
                         }
                     }
                 }
             } else {
-                variable_value = &variable_mapping->second;
+                variable_value = variable_mapping->second;
+                variable_value_has_value = true;
             }
 
-            const std::string * subst_str = nullptr;
+            // No std::optional here
+            std::string subst_str{""};
+            bool subst_str_has_value{false};
 
             size_t pos_after_variable_expression;
 
@@ -153,20 +160,23 @@ std::pair<std::string, size_t> ConfigParser::substitute_expression(const std::st
                         // If variable is unset or empty, the expansion of word is
                         // substituted. Otherwise, the value of variable is
                         // substituted.
-                        if (variable_value == nullptr || variable_value->empty()) {
-                            subst_str = &expanded_word;
+                        if (!variable_value_has_value || variable_value.empty()) {
+                            subst_str = expanded_word;
+                            subst_str_has_value = true;
                         } else {
                             subst_str = variable_value;
+                            subst_str_has_value = true;
                         }
                     } else if (expansion_mode == '+') {
                         // ${variable:+word} (alternate value)
                         // If variable is unset or empty nothing is substituted.
                         // Otherwise, the expansion of word is substituted.
-                        if (variable_value == nullptr || variable_value->empty()) {
-                            const std::string empty{};
-                            subst_str = &empty;
+                        if (!variable_value_has_value || variable_value.empty()) {
+                            subst_str = "";
+                            subst_str_has_value = true;
                         } else {
-                            subst_str = &expanded_word;
+                            subst_str = expanded_word;
+                            subst_str_has_value = true;
                         }
                     } else {
                         // Unknown expansion mode, continue after the ':'
@@ -176,7 +186,10 @@ std::pair<std::string, size_t> ConfigParser::substitute_expression(const std::st
                     pos_after_variable_expression = pos_after_word + 1;
                 } else if (res[pos_after_variable] == '}') {
                     // ${variable}
-                    subst_str = variable_value;
+                    if (variable_value_has_value) {
+                        subst_str = variable_value;
+                        subst_str_has_value = true;
+                    }
                     // Move past the closing '}'
                     pos_after_variable_expression = pos_after_variable + 1;
                 } else {
@@ -186,20 +199,23 @@ std::pair<std::string, size_t> ConfigParser::substitute_expression(const std::st
                 }
             } else {
                 // No braces, we have a $variable
-                subst_str = variable_value;
+                if (variable_value_has_value) {
+                    subst_str = variable_value;
+                    subst_str_has_value = true;
+                }
                 pos_after_variable_expression = pos_after_variable;
             }
 
             // If there is no substitution to make, move past the variable expression and continue.
-            if (subst_str == nullptr) {
+            if (!subst_str_has_value) {
                 total_scanned += pos_after_variable_expression - pos;
                 pos = pos_after_variable_expression;
                 continue;
             }
 
-            res.replace(pos, pos_after_variable_expression - pos, *subst_str);
+            res.replace(pos, pos_after_variable_expression - pos, subst_str);
             total_scanned += pos_after_variable_expression - pos;
-            pos += subst_str->length();
+            pos += subst_str.length();
         } else {
             total_scanned += 1;
             pos += 1;
