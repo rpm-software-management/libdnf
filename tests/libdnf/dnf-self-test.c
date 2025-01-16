@@ -189,6 +189,32 @@ dnf_lock_threads_func(void)
 }
 
 static void
+dnf_split_releasever_func(void)
+{
+    gchar *major, *minor;
+    dnf_split_releasever("1.23.45", &major, &minor);
+    g_assert_cmpstr(major, ==, "1");
+    g_assert_cmpstr(minor, ==, "23.45");
+    g_free(major);
+    g_free(minor);
+    dnf_split_releasever("6.789", &major, &minor);
+    g_assert_cmpstr(major, ==, "6");
+    g_assert_cmpstr(minor, ==, "789");
+    g_free(major);
+    g_free(minor);
+    dnf_split_releasever("10", &major, &minor);
+    g_assert_cmpstr(major, ==, "10");
+    g_assert_cmpstr(minor, ==, "");
+    g_free(major);
+    g_free(minor);
+    dnf_split_releasever("", &major, &minor);
+    g_assert_cmpstr(major, ==, "");
+    g_assert_cmpstr(minor, ==, "");
+    g_free(major);
+    g_free(minor);
+}
+
+static void
 ch_test_repo_func(void)
 {
     DnfRepo *repo;
@@ -1239,6 +1265,7 @@ main(int argc, char **argv)
     g_test_add_func("/libdnf/context{cache-clean-check}", dnf_context_cache_clean_check_func);
     g_test_add_func("/libdnf/lock", dnf_lock_func);
     g_test_add_func("/libdnf/lock[threads]", dnf_lock_threads_func);
+    g_test_add_func("/libdnf/split_releasever", dnf_split_releasever_func);
     g_test_add_func("/libdnf/repo", ch_test_repo_func);
     g_test_add_func("/libdnf/repo_empty_keyfile", dnf_repo_setup_with_empty_keyfile);
     g_test_add_func("/libdnf/state", dnf_state_func);

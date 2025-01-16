@@ -53,6 +53,9 @@ extern "C" {
 #endif
 
 gchar           *dnf_realpath                       (const gchar            *path);
+void             dnf_split_releasever               (const gchar            *releasever, 
+                                                     gchar                  **releasever_major,
+                                                     gchar                  **releasever_minor);
 gboolean         dnf_remove_recursive               (const gchar            *directory,
                                                      GError                 **error);
 gboolean         dnf_ensure_file_unlinked           (const gchar            *src_path,

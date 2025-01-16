@@ -1191,6 +1191,8 @@ dnf_repo_setup(DnfRepo *repo, GError **error) try
     DnfRepoEnabled enabled = DNF_REPO_ENABLED_NONE;
     g_autofree gchar *basearch = NULL;
     g_autofree gchar *release = NULL;
+    g_autofree gchar *major = NULL;
+    g_autofree gchar *minor = NULL;
 
     basearch = g_key_file_get_string(priv->keyfile, "general", "arch", NULL);
     if (basearch == NULL)
@@ -1218,9 +1220,11 @@ dnf_repo_setup(DnfRepo *repo, GError **error) try
         return FALSE;
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_INTERRUPTIBLE, 0L))
         return FALSE;
+    dnf_split_releasever(release, &major, &minor);
     priv->urlvars = lr_urlvars_set(priv->urlvars, "releasever", release);
+    priv->urlvars = lr_urlvars_set(priv->urlvars, "releasever_major", major);
+    priv->urlvars = lr_urlvars_set(priv->urlvars, "releasever_minor", minor);
     priv->urlvars = lr_urlvars_set(priv->urlvars, "basearch", basearch);
-
     /* Call libdnf::dnf_context_load_vars(priv->context); only when values not in cache.
      * But what about if variables on disk change during long running programs (PackageKit daemon)?
      * if (!libdnf::dnf_context_get_vars_cached(priv->context))
