@@ -103,7 +103,7 @@ std::pair<std::string, size_t> ConfigParser::substitute_expression(const std::st
                 if (variable_key == "releasever_major" || variable_key == "releasever_minor") {
                     const auto releasever_mapping = substitutions.find("releasever");
                     if (releasever_mapping != substitutions.end()) {
-                        const auto & releasever_split = ConfigParser::split_releasever(releasever_mapping->second);
+                        const auto & releasever_split = ConfigParser::splitReleasever(releasever_mapping->second);
                         if (variable_key == "releasever_major") {
                             variable_value = std::get<0>(releasever_split);
                             variable_value_has_value = true;
@@ -231,7 +231,7 @@ std::pair<std::string, size_t> ConfigParser::substitute_expression(const std::st
     return std::make_pair(res, text.length());
 }
 
-std::tuple<std::string, std::string> ConfigParser::split_releasever(const std::string & releasever)
+std::pair<std::string, std::string> ConfigParser::splitReleasever(const std::string & releasever)
 {
     // Uses the same logic as DNF 5 and as splitReleaseverTo in libzypp
     std::string releasever_major;
@@ -243,7 +243,7 @@ std::tuple<std::string, std::string> ConfigParser::split_releasever(const std::s
         releasever_major = releasever.substr(0, pos);
         releasever_minor = releasever.substr(pos + 1);
     }
-    return std::make_tuple(releasever_major, releasever_minor);
+    return std::make_pair(releasever_major, releasever_minor);
 }
 
 static void read(ConfigParser & cfgParser, IniParser & parser)

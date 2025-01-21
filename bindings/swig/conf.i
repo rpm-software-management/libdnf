@@ -199,6 +199,7 @@ public:
     std::string & getHeader() noexcept;
     const Container & getData() const noexcept;
     Container & getData() noexcept;
+    static std::pair<std::string, std::string> splitReleasever(const std::string & releasever);
 };
 }
 %clear std::string & text;
