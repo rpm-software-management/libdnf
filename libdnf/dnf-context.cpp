@@ -85,6 +85,8 @@
 #define MAX_NATIVE_ARCHES    12
 
 #define RELEASEVER_PROV "system-release(releasever)"
+#define RELEASEVER_MAJOR_PROV "system-release(releasever_major)"
+#define RELEASEVER_MINOR_PROV "system-release(releasever_minor)"
 
 /* data taken from https://github.com/rpm-software-management/dnf/blob/master/dnf/arch.py */
 static const struct {
@@ -142,6 +144,8 @@ typedef struct
     gchar            **installonlypkgs;
     gchar            *base_arch;
     gchar            *release_ver;
+    gchar            *release_ver_major;
+    gchar            *release_ver_minor;
     gchar            *platform_module;
     gchar            *cache_dir;
     gchar            *solv_dir;
@@ -1263,7 +1267,9 @@ dnf_context_set_vars_dir(DnfContext *context, const gchar * const *vars_dir)
  * @context: a #DnfContext instance.
  * @release_ver: the release version, e.g. "20"
  *
- * Sets the release version.
+ * Sets the release version. Sets the major and minor release version by splitting `release_ver` on
+ * the first ".". The derived major and minor versions can later be overridden by calling
+ *`dnf_context_set_release_ver_major` and `dnf_context_set_release_ver_minor`, respectively.
  *
  * Since: 0.1.0
  **/
@@ -1273,6 +1279,46 @@ dnf_context_set_release_ver(DnfContext *context, const gchar *release_ver)
     DnfContextPrivate *priv = GET_PRIVATE(context);
     g_free(priv->release_ver);
     priv->release_ver = g_strdup(release_ver);
+
+    g_free(priv->release_ver_major);
+    g_free(priv->release_ver_minor);
+    dnf_split_releasever(release_ver, &priv->release_ver_major, &priv->release_ver_minor);
+}
+
+/**
+ * dnf_context_set_release_ver_major:
+ * @context: a #DnfContext instance.
+ * @release_ver_major: the release major version, e.g. "10"
+ *
+ * Sets the release major version, which is usually derived by splitting releasever on the first
+ * ".". This setter does not update the value of $releasever.
+ *
+ * Since: 0.74.0
+ **/
+void
+dnf_context_set_release_ver_major(DnfContext *context, const gchar *release_ver_major)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    g_free(priv->release_ver_major);
+    priv->release_ver_major = g_strdup(release_ver_major);
+}
+
+/**
+ * dnf_context_set_release_ver_minor:
+ * @context: a #DnfContext instance.
+ * @release_ver_minor: the release minor version, e.g. "1"
+ *
+ * Sets the release minor version, which is usually derived by splitting releasever on the first
+ * ".". This setter does not update the value of $releasever.
+ *
+ * Since: 0.74.0
+ **/
+void
+dnf_context_set_release_ver_minor(DnfContext *context, const gchar *release_ver_minor)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    g_free(priv->release_ver_minor);
+    priv->release_ver_minor = g_strdup(release_ver_minor);
 }
 
 /**
@@ -1649,13 +1695,26 @@ dnf_context_set_os_release(DnfContext *context, GError **error) try
     Header hdr;
     while ((hdr = rpmdbNextIterator (mi)) != NULL) {
         const char *v = headerGetString (hdr, RPMTAG_VERSION);
+        const char *v_major = nullptr;
+        const char *v_minor = nullptr;
         rpmds ds = rpmdsNew (hdr, RPMTAG_PROVIDENAME, 0);
         while (rpmdsNext (ds) >= 0) {
-            if (strcmp (rpmdsN (ds), RELEASEVER_PROV) == 0 && rpmdsFlags (ds) == RPMSENSE_EQUAL)
+            if (strcmp (rpmdsN (ds), RELEASEVER_PROV) == 0 && rpmdsFlags (ds) == RPMSENSE_EQUAL) {
                 v = rpmdsEVR (ds);
+            } else if (strcmp (rpmdsN (ds), RELEASEVER_MAJOR_PROV) == 0 && rpmdsFlags (ds) == RPMSENSE_EQUAL) {
+                v_major = rpmdsEVR(ds);
+            } else if (strcmp (rpmdsN (ds), RELEASEVER_MINOR_PROV) == 0 && rpmdsFlags (ds) == RPMSENSE_EQUAL) {
+                v_minor = rpmdsEVR(ds);
+            }
         }
         found_in_rpmdb = TRUE;
-        dnf_context_set_release_ver (context, v);
+        dnf_context_set_release_ver(context, v);
+        if (v_major != nullptr) {
+            dnf_context_set_release_ver_major(context, v_major);
+        }
+        if (v_minor != nullptr) {
+            dnf_context_set_release_ver_minor(context, v_minor);
+        }
         rpmdsFree (ds);
         break;
     }
