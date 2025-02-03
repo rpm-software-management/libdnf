@@ -120,6 +120,8 @@ const gchar     *dnf_context_get_base_arch              (DnfContext     *context
 const gchar     *dnf_context_get_os_info                (DnfContext     *context);
 const gchar     *dnf_context_get_arch_info              (DnfContext     *context);
 const gchar     *dnf_context_get_release_ver            (DnfContext     *context);
+const gchar     *dnf_context_get_release_ver_major      (DnfContext     *context);
+const gchar     *dnf_context_get_release_ver_minor      (DnfContext     *context);
 const gchar     *dnf_context_get_platform_module        (DnfContext     *context);
 const gchar     *dnf_context_get_cache_dir              (DnfContext     *context);
 const gchar     *dnf_context_get_arch                   (DnfContext     *context);

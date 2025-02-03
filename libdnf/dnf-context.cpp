@@ -621,6 +621,42 @@ dnf_context_get_release_ver(DnfContext *context)
 }
 
 /**
+ * dnf_context_get_release_ver_major:
+ * @context: a #DnfContext instance.
+ *
+ * Gets the release major version. Usually derived by taking the substring of releasever before the
+ * first ".", but can be overridden by the distribution.
+ *
+ * Returns: the release major version, e.g. "10"
+ *
+ * Since: 0.74.0
+ **/
+const gchar *
+dnf_context_get_release_ver_major(DnfContext *context)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    return priv->release_ver_major;
+}
+
+/**
+ * dnf_context_get_release_ver_minor:
+ * @context: a #DnfContext instance.
+ *
+ * Gets the release minor version. Usually derived by taking the substring of releasever after the
+ * first ".", but can be overridden by the distribution.
+ *
+ * Returns: the release minor version, e.g. "1"
+ *
+ * Since: 0.74.0
+ **/
+const gchar *
+dnf_context_get_release_ver_minor(DnfContext *context)
+{
+    DnfContextPrivate *priv = GET_PRIVATE(context);
+    return priv->release_ver_minor;
+}
+
+/**
  * dnf_context_get_platform_module:
  * @context: a #DnfContext instance.
  *
