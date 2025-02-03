@@ -164,6 +164,10 @@ void             dnf_context_set_vars_dir               (DnfContext     *context
                                                          const gchar * const *vars_dir);
 void             dnf_context_set_release_ver            (DnfContext     *context,
                                                          const gchar    *release_ver);
+void             dnf_context_set_release_ver_major      (DnfContext     *context,
+                                                         const gchar    *release_ver_major);
+void             dnf_context_set_release_ver_minor      (DnfContext     *context,
+                                                         const gchar    *release_ver_minor);
 void             dnf_context_set_platform_module        (DnfContext     *context,
                                                          const gchar    *platform_module);
 void             dnf_context_set_cache_dir              (DnfContext     *context,
