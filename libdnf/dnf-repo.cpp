@@ -1191,8 +1191,8 @@ dnf_repo_setup(DnfRepo *repo, GError **error) try
     DnfRepoEnabled enabled = DNF_REPO_ENABLED_NONE;
     g_autofree gchar *basearch = NULL;
     g_autofree gchar *release = NULL;
-    g_autofree gchar *major = NULL;
-    g_autofree gchar *minor = NULL;
+    g_autofree gchar *release_major = NULL;
+    g_autofree gchar *release_minor = NULL;
 
     basearch = g_key_file_get_string(priv->keyfile, "general", "arch", NULL);
     if (basearch == NULL)
@@ -1205,8 +1205,14 @@ dnf_repo_setup(DnfRepo *repo, GError **error) try
         return FALSE;
     }
     release = g_key_file_get_string(priv->keyfile, "general", "version", NULL);
-    if (release == NULL)
+    if (release == NULL) {
         release = g_strdup(dnf_context_get_release_ver(priv->context));
+        release_major = g_strdup(dnf_context_get_release_ver_major(priv->context));
+        release_minor = g_strdup(dnf_context_get_release_ver_minor(priv->context));
+    } else {
+        dnf_split_releasever(release, &release_major, &release_minor);
+    }
+
     if (release == NULL) {
         g_set_error_literal(error,
                             DNF_ERROR,
@@ -1220,10 +1226,9 @@ dnf_repo_setup(DnfRepo *repo, GError **error) try
         return FALSE;
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_INTERRUPTIBLE, 0L))
         return FALSE;
-    dnf_split_releasever(release, &major, &minor);
     priv->urlvars = lr_urlvars_set(priv->urlvars, "releasever", release);
-    priv->urlvars = lr_urlvars_set(priv->urlvars, "releasever_major", major);
-    priv->urlvars = lr_urlvars_set(priv->urlvars, "releasever_minor", minor);
+    priv->urlvars = lr_urlvars_set(priv->urlvars, "releasever_major", release_major);
+    priv->urlvars = lr_urlvars_set(priv->urlvars, "releasever_minor", release_minor);
     priv->urlvars = lr_urlvars_set(priv->urlvars, "basearch", basearch);
     /* Call libdnf::dnf_context_load_vars(priv->context); only when values not in cache.
      * But what about if variables on disk change during long running programs (PackageKit daemon)?
