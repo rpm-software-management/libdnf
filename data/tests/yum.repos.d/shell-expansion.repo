@@ -1,0 +1,5 @@
+[shell-expansion]
+name=${unset:-${var1:+${var2:+$var2}}}
+baseurl=https://${unset:-${var1:+${var2:+$var2}}}
+enabled=1
+gpgcheck=0

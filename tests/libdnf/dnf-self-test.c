@@ -842,6 +842,7 @@ dnf_repo_loader_func(void)
     DnfState *state;
     gboolean ret;
     g_autofree gchar *repos_dir = NULL;
+    g_autofree gchar *vars_dir = NULL;
     g_autoptr(DnfContext) ctx = NULL;
     g_autoptr(DnfRepoLoader) repo_loader = NULL;
     guint metadata_expire;
@@ -849,8 +850,10 @@ dnf_repo_loader_func(void)
     /* set up local context */
     ctx = dnf_context_new();
     repos_dir = dnf_test_get_filename("yum.repos.d");
+    vars_dir = dnf_test_get_filename("vars");
     dnf_context_set_repo_dir(ctx, repos_dir);
     dnf_context_set_solv_dir(ctx, "/tmp");
+    dnf_context_set_vars_dir(ctx, (const gchar *[]){vars_dir, NULL});
     ret = dnf_context_setup(ctx, NULL, &error);
     g_assert_no_error(error);
     g_assert(ret);
@@ -906,6 +909,13 @@ dnf_repo_loader_func(void)
     g_assert_error(error, DNF_ERROR, DNF_ERROR_REPO_NOT_AVAILABLE);
     g_assert(!ret);
     g_clear_error(&error);
+
+    /* check that shell-style variable expressions are correctly expanded in repo values */
+    dnf_state_reset(state);
+    repo = dnf_repo_loader_get_repo_by_id(repo_loader, "shell-expansion", &error);
+    g_assert_no_error(error);
+    g_assert(repo != NULL);
+    g_assert_cmpstr(dnf_repo_get_description(repo), ==, "456");
 }
 
 static void
