@@ -34,6 +34,7 @@
  */
 
 #include "conf/OptionBool.hpp"
+#include "conf/ConfigParser.hpp"
 
 #include "dnf-context.hpp"
 #include "hy-repo-private.hpp"
@@ -45,6 +46,7 @@
 #include <glib/gstdio.h>
 #include "hy-util.h"
 #include <librepo/librepo.h>
+#include <librepo/url_substitution.h>
 #include <rpm/rpmts.h>
 #include <librepo/yum.h>
 
@@ -242,14 +244,17 @@ static gchar *
 dnf_repo_substitute(DnfRepo *repo, const gchar *url)
 {
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
-    char *tmp;
-    gchar *substituted;
 
-    /* do a little dance so we can use g_free() rather than lr_free() */
-    tmp = lr_url_substitute(url, priv->urlvars);
-    substituted = g_strdup(tmp);
-    lr_free(tmp);
+    std::map<std::string, std::string> substitutions;
+    for (LrUrlVars *elem = priv->urlvars; elem; elem = g_slist_next(elem)) {
+        const auto * pair = static_cast<LrVar*>(elem->data);
+        substitutions.insert({std::string{pair->var}, std::string{pair->val}});
+    }
 
+    std::string tmp{url};
+    libdnf::ConfigParser::substitute(tmp, substitutions);
+
+    auto * substituted = g_strdup(tmp.c_str());
     return substituted;
 }
 
