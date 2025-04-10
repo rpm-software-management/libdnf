@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <cstring>
+#include <glob.h>
 #include <stdexcept>
 
 extern "C" {
@@ -233,8 +234,15 @@ bool isDIR(const std::string& dirPath)
     return S_ISDIR(buf.st_mode);
 }
 
+std::string pathJoin(const std::string & p1, const std::string & p2)
+{
+    auto ret = p1;
+    if (ret.back() != '/')
+        ret.push_back('/');
+    return ret + p2;
+}
 
-std::vector<std::string> getDirContent(const std::string &dirPath)
+std::vector<std::string> getDirContent(const std::string & dirPath)
 {
     std::vector<std::string> content{};
     struct dirent *ent;
@@ -242,21 +250,56 @@ std::vector<std::string> getDirContent(const std::string &dirPath)
 
     if (dir != nullptr) {
         while ((ent = readdir(dir)) != nullptr) {
-            if (strcmp(ent->d_name, "..") == 0 ||
-                    strcmp(ent->d_name, ".") == 0 )
+            const auto * file_name = ent->d_name;
+            if (strcmp(file_name, "..") == 0 ||
+                    strcmp(file_name, ".") == 0 )
                 continue;
 
-            auto fullPath = dirPath;
-            if (!string::endsWith(fullPath, "/"))
-                fullPath += "/";
-            fullPath += ent->d_name;
-
-            content.emplace_back(fullPath);
+            content.emplace_back(pathJoin(dirPath, file_name));
         }
         closedir (dir);
     }
 
     return content;
+}
+
+std::vector<std::string> createSortedFileList(
+    const std::vector<std::string> & directories, const std::string & file_name_pattern) {
+    std::vector<std::string> paths;
+
+    for (const auto & dir : directories) {
+        const auto pattern = pathJoin(dir, file_name_pattern);
+        glob_t globResult;
+        auto ret = glob(pattern.c_str(), GLOB_MARK | GLOB_NOSORT, NULL, &globResult );
+        if (ret != 0 && ret != GLOB_NOMATCH) {
+            globfree(&globResult);
+            continue;
+        }
+        for (size_t i = 0; i < globResult.gl_pathc; ++i) {
+            auto path = globResult.gl_pathv[i];
+            if (path[strlen(path)-1] == '/') {
+                continue;
+            }
+            bool found{false};
+            for (const auto & path_in_list : paths) {
+                if (path == basename(path_in_list.c_str())) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                paths.push_back(path);
+            }
+        }
+        globfree(&globResult);
+    }
+
+    // sort all drop-in configuration files alphabetically by their names
+    std::sort(paths.begin(), paths.end(), [](const std::string & p1, const std::string & p2) {
+        return strcmp(basename(p1.c_str()), basename(p2.c_str()));
+    });
+
+    return paths;
 }
 
 void decompress(const char * inPath, const char * outPath, mode_t outMode, const char * compressType)

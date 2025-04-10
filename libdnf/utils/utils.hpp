@@ -57,7 +57,16 @@ bool updateFile(const char * filePath, const char * newFileContent);
 namespace filesystem {
 bool exists (const std::string &name);
 bool isDIR(const std::string& dirPath);
+std::string pathJoin(const std::string & p1, const std::string & p2);
 std::vector<std::string> getDirContent(const std::string &dirPath);
+
+/**
+*  Creates an alphabetically sorted list of all files in `directories` which names match the `pattern_file_name`.
+*  If a file with the same name is in multiple directories, only the first file found is added to the list.
+*  Directories are traversed in the same order as they are in the input vector.
+*/
+std::vector<std::string> createSortedFileList(
+    const std::vector<std::string> & directories, const std::string & file_name_pattern);
 
 /**
 * @brief Decompress file.
