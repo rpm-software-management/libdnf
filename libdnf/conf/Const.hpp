@@ -30,6 +30,13 @@ constexpr const char * PERSISTDIR = "/var/lib/dnf";
 constexpr const char * SYSTEM_CACHEDIR = "/var/cache/dnf";
 
 constexpr const char * CONF_FILENAME = "/etc/dnf/dnf.conf";
+// drop-in configuration directories
+constexpr const char * CONF_DIR = "/etc/dnf/libdnf5.conf.d";
+constexpr const char * DISTRIBUTION_CONF_DIR = "/usr/share/dnf5/libdnf.conf.d/";
+
+// directories with repository configuration overides
+constexpr const char * REPOS_OVERRIDE_DIR = "/etc/dnf/repos.override.d";
+constexpr const char * DISTRIBUTION_REPOS_OVERRIDE_DIR = "/usr/share/dnf5/repos.override.d";
 
 // More important varsdirs must be on the end of vector
 const std::vector<std::string> VARS_DIRS{"/etc/yum/vars", "/etc/dnf/vars"};

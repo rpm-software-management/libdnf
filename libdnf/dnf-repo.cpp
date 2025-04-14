@@ -33,6 +33,7 @@
  * See also: #DnfRepo
  */
 
+#include "conf/Const.hpp"
 #include "conf/OptionBool.hpp"
 #include "conf/ConfigParser.hpp"
 
@@ -924,6 +925,53 @@ dnf_repo_conf_from_gkeyfile(DnfRepo *repo, const char *repoId, GKeyFile *gkeyFil
     }
 }
 
+/* Loads repository configuration overrides */
+static void
+dnf_repo_conf_load_overrides(DnfRepo *repo, const char *repoId)
+{
+    DnfRepoPrivate *priv = GET_PRIVATE(repo);
+    auto & config = *priv->repo->getConfig();
+
+    const auto paths = libdnf::filesystem::createSortedFileList(
+        {libdnf::REPOS_OVERRIDE_DIR, libdnf::DISTRIBUTION_REPOS_OVERRIDE_DIR}, "*.repo");
+
+    for (const auto & path : paths) {
+        libdnf::ConfigParser parser;
+        parser.read(path);
+        const auto & cfg_parser_data = parser.getData();
+        for (const auto & cfg_parser_data_iter : cfg_parser_data) {
+            const auto & section = cfg_parser_data_iter.first;
+            g_autofree gchar * repo_id_pattern = dnf_repo_substitute(repo, section.c_str());
+
+            if (fnmatch(repo_id_pattern, repoId, FNM_EXTMATCH) != 0) {
+                continue;
+            }
+
+            auto optBinds = config.optBinds();
+            for (const auto & opt : cfg_parser_data_iter.second) {
+                auto optBindsIter = optBinds.find(opt.first);
+                if (optBindsIter != optBinds.end()) {
+
+                    // Substitute vars.
+                    g_autofree gchar * subst_value = dnf_repo_substitute(repo, opt.second.c_str());
+
+                    try {
+                        optBindsIter->second.newString(libdnf::Option::Priority::REPOCONFIG, subst_value);
+                    } catch (const std::exception & ex) {
+                        g_warning("Config error in file \"%s\" section \"%s\" key \"%s\": %s",
+                                    path.c_str(), repo_id_pattern, opt.first.c_str(), ex.what());
+                    }
+                } else {
+                    g_debug("Unknown configuration option in file \"%s\": %s = %s", path.c_str(), opt.first.c_str(),
+                            opt.second.c_str());
+                }
+            }
+        }
+    }
+
+}
+
+
 static void
 dnf_repo_apply_setopts(libdnf::ConfigRepo &config, const char *repoId)
 {
@@ -967,6 +1015,7 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, gboolean reloadFromGKeyFile, GError **e
     // Reload repository configuration from keyfile.
     if (reloadFromGKeyFile) {
         dnf_repo_conf_from_gkeyfile(repo, repoId, priv->keyfile);
+        dnf_repo_conf_load_overrides(repo, repoId);
         dnf_repo_apply_setopts(*conf, repoId);
     }
 
@@ -1248,6 +1297,7 @@ dnf_repo_setup(DnfRepo *repo, GError **error) try
 
     auto conf = priv->repo->getConfig();
     dnf_repo_conf_from_gkeyfile(repo, repoId, priv->keyfile);
+    dnf_repo_conf_load_overrides(repo, repoId);
     dnf_repo_apply_setopts(*conf, repoId);
 
     auto sslverify = conf->sslverify().getValue();

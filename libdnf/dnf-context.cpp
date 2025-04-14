@@ -3992,6 +3992,27 @@ dnf_main_conf_apply_setopts()
     globalSetoptsInSync = true;
 }
 
+static void
+load_from_parser(const libdnf::ConfigParser & parser, const std::string & cfgPath) {
+    const auto & cfgParserData = parser.getData();
+    auto cfgParserDataIter = cfgParserData.find("main");
+    if (cfgParserDataIter != cfgParserData.end()) {
+        auto optBinds = globalMainConfig->optBinds();
+        const auto & cfgParserMainSect = cfgParserDataIter->second;
+        for (const auto & opt : cfgParserMainSect) {
+            auto optBindsIter = optBinds.find(opt.first);
+            if (optBindsIter != optBinds.end()) {
+                try {
+                    optBindsIter->second.newString(libdnf::Option::Priority::MAINCONFIG, opt.second);
+                } catch (const std::exception & ex) {
+                    g_warning("Config error in file \"%s\" section \"main\" key \"%s\": %s",
+                                cfgPath.c_str(), opt.first.c_str(), ex.what());
+                }
+            }
+        }
+    }
+}
+
 libdnf::ConfigMain & getGlobalMainConfig(bool canReadConfigFile)
 {
     std::lock_guard<std::mutex> guard(getGlobalMainConfigMutex);
@@ -4010,27 +4031,22 @@ libdnf::ConfigMain & getGlobalMainConfig(bool canReadConfigFile)
             }
         }
 
-        libdnf::ConfigParser parser;
         const std::string cfgPath{globalMainConfig->config_file_path().getValue()};
         try {
-            parser.read(cfgPath);
-            const auto & cfgParserData = parser.getData();
-            auto cfgParserDataIter = cfgParserData.find("main");
-            if (cfgParserDataIter != cfgParserData.end()) {
-                auto optBinds = globalMainConfig->optBinds();
-                const auto & cfgParserMainSect = cfgParserDataIter->second;
-                for (const auto & opt : cfgParserMainSect) {
-                    auto optBindsIter = optBinds.find(opt.first);
-                    if (optBindsIter != optBinds.end()) {
-                        try {
-                            optBindsIter->second.newString(libdnf::Option::Priority::MAINCONFIG, opt.second);
-                        } catch (const std::exception & ex) {
-                            g_warning("Config error in file \"%s\" section \"main\" key \"%s\": %s",
-                                      cfgPath.c_str(), opt.first.c_str(), ex.what());
-                        }
-                    }
-                }
+            // Loads configuration from drop-in directories
+            const auto paths = libdnf::filesystem::createSortedFileList({CONF_DIR, DISTRIBUTION_CONF_DIR}, "*.conf");
+            for (const auto & path : paths) {
+                libdnf::ConfigParser parser;
+                parser.read(path);
+                load_from_parser(parser, path);
             }
+
+            // Finally, if a user configuration filename is defined or the file exists in the default location,
+            // it will be loaded.
+            libdnf::ConfigParser parser;
+            parser.read(cfgPath);
+            load_from_parser(parser, cfgPath);
+
         } catch (const libdnf::ConfigParser::CantOpenFile & ex) {
             if (configFilePath) {
                 // Only warning is logged. But error is reported to the caller during loading
