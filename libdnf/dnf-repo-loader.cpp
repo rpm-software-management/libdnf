@@ -31,8 +31,9 @@
  * See also: #DnfRepo
  */
 
-#include <strings.h>
+#include "conf/Const.hpp"
 
+#include <strings.h>
 #include <gio/gunixmounts.h>
 #include <librepo/util.h>
 #include <string.h>
@@ -595,6 +596,14 @@ dnf_repo_loader_setup_watch(DnfRepoLoader *self)
         auto repo_dir = *iter;
         dnf_repo_loader_setup_monitor(self, repo_dir, true);
     }
+
+    /* setup a file monitor on the drop-in configuration directories */
+    dnf_repo_loader_setup_monitor(self, libdnf::CONF_DIR, true);
+    dnf_repo_loader_setup_monitor(self, libdnf::DISTRIBUTION_CONF_DIR, true);
+
+    /* setup a file monitor on the repositories overrides directories */
+    dnf_repo_loader_setup_monitor(self, libdnf::REPOS_OVERRIDE_DIR, true);
+    dnf_repo_loader_setup_monitor(self, libdnf::DISTRIBUTION_REPOS_OVERRIDE_DIR, true);
 }
 
 /**
