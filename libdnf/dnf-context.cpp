@@ -1516,6 +1516,9 @@ dnf_context_set_install_root(DnfContext *context, const gchar *install_root)
     DnfContextPrivate *priv = GET_PRIVATE(context);
     g_free(priv->install_root);
     priv->install_root = g_strdup(install_root);
+
+    auto & mainConf = libdnf::getGlobalMainConfig(false);
+    mainConf.installroot().set(libdnf::Option::Priority::RUNTIME, install_root);
 }
 
 /**
