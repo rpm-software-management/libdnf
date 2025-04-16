@@ -80,6 +80,7 @@
 #include "plugin/plugin-private.hpp"
 #include "utils/GLibLogger.hpp"
 #include "utils/os-release.hpp"
+#include "utils/utils.hpp"
 
 
 #define MAX_NATIVE_ARCHES    12
@@ -4036,8 +4037,21 @@ libdnf::ConfigMain & getGlobalMainConfig(bool canReadConfigFile)
 
         const std::string cfgPath{globalMainConfig->config_file_path().getValue()};
         try {
+            std::string conf_dir_path{CONF_DIR};
+            std::string dist_conf_dir_path{DISTRIBUTION_CONF_DIR};
+
+            // If the main configuration file is from install_root, read drop-in directories from install_root
+            const std::string installroot_path = globalMainConfig->installroot().getValue();
+            if (installroot_path != "/") {
+                const bool from_installroot = libdnf::filesystem::isSubdirectory(installroot_path, cfgPath);
+                if (from_installroot) {
+                    conf_dir_path = libdnf::filesystem::pathJoin(installroot_path, conf_dir_path);
+                    dist_conf_dir_path = libdnf::filesystem::pathJoin(installroot_path, dist_conf_dir_path);
+                }
+            }
+
             // Loads configuration from drop-in directories
-            const auto paths = libdnf::filesystem::createSortedFileList({CONF_DIR, DISTRIBUTION_CONF_DIR}, "*.conf");
+            const auto paths = libdnf::filesystem::createSortedFileList({conf_dir_path, dist_conf_dir_path}, "*.conf");
             for (const auto & path : paths) {
                 libdnf::ConfigParser parser;
                 parser.read(path);

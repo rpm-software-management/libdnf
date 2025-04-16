@@ -932,8 +932,21 @@ dnf_repo_conf_load_overrides(DnfRepo *repo, const char *repoId)
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     auto & config = *priv->repo->getConfig();
 
+    std::string repos_override_dir_path{libdnf::REPOS_OVERRIDE_DIR};
+    std::string dist_repos_override_dir_path{libdnf::DISTRIBUTION_REPOS_OVERRIDE_DIR};
+
+    // If the repoconfig file is from install_root, read overrides from install_root
+    const std::string installroot_path = dnf_context_get_install_root(priv->context);
+    if (priv->filename && installroot_path != "/") {
+        const bool from_installroot = libdnf::filesystem::isSubdirectory(installroot_path, priv->filename);
+        if (from_installroot) {
+            repos_override_dir_path = libdnf::filesystem::pathJoin(installroot_path, repos_override_dir_path);
+            dist_repos_override_dir_path = libdnf::filesystem::pathJoin(installroot_path, dist_repos_override_dir_path);
+        }
+    }
+
     const auto paths = libdnf::filesystem::createSortedFileList(
-        {libdnf::REPOS_OVERRIDE_DIR, libdnf::DISTRIBUTION_REPOS_OVERRIDE_DIR}, "*.repo");
+        {repos_override_dir_path, dist_repos_override_dir_path}, "*.repo");
 
     for (const auto & path : paths) {
         libdnf::ConfigParser parser;
@@ -968,7 +981,6 @@ dnf_repo_conf_load_overrides(DnfRepo *repo, const char *repoId)
             }
         }
     }
-
 }
 
 
