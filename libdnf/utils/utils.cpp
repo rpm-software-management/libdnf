@@ -19,7 +19,9 @@ extern "C" {
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <string.h>
+#include <memory>
 #include <random>
 
 namespace libdnf {
@@ -232,6 +234,32 @@ bool isDIR(const std::string& dirPath)
     struct stat buf;
     lstat(dirPath.c_str(), &buf);
     return S_ISDIR(buf.st_mode);
+}
+
+std::string getRealpath(const std::string & path)
+{
+    char * resolved = realpath(path.c_str(), nullptr);
+    if (!resolved) {
+        //throw std::runtime_error("realpath error for \"" + path + "\": " + strerror(errno));
+        return {};
+    }
+    std::unique_ptr<char, decltype(&::free)> resolved_owner(resolved, &::free);
+    return resolved;
+}
+
+bool isSubdirectory(const std::string & parent, const std::string & child)
+{
+    std::string parent_path = getRealpath(parent);
+    std::string child_path = getRealpath(child);
+
+    if (parent_path.empty() || child_path.empty()) {
+        return false;
+    }
+
+    if (parent_path.back() != '/')
+        parent_path += '/';
+
+    return child_path.compare(0, parent_path.size(), parent_path) == 0;
 }
 
 std::string pathJoin(const std::string & p1, const std::string & p2)

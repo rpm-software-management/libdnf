@@ -57,6 +57,8 @@ bool updateFile(const char * filePath, const char * newFileContent);
 namespace filesystem {
 bool exists (const std::string &name);
 bool isDIR(const std::string& dirPath);
+std::string getRealpath(const std::string & path);
+bool isSubdirectory(const std::string & parent, const std::string & child);
 std::string pathJoin(const std::string & p1, const std::string & p2);
 std::vector<std::string> getDirContent(const std::string &dirPath);
 
