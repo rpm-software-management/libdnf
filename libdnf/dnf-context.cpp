@@ -4037,6 +4037,7 @@ libdnf::ConfigMain & getGlobalMainConfig(bool canReadConfigFile)
 
         const std::string cfgPath{globalMainConfig->config_file_path().getValue()};
         try {
+#ifdef DNF5_CONF_DROP_IN
             std::string conf_dir_path{CONF_DIR};
             std::string dist_conf_dir_path{DISTRIBUTION_CONF_DIR};
 
@@ -4057,6 +4058,7 @@ libdnf::ConfigMain & getGlobalMainConfig(bool canReadConfigFile)
                 parser.read(path);
                 load_from_parser(parser, path);
             }
+#endif
 
             // Finally, if a user configuration filename is defined or the file exists in the default location,
             // it will be loaded.
