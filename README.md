@@ -4,10 +4,7 @@ libdnf
 This library provides a high level package-manager. It's core library of [dnf](https://github.com/rpm-software-management/dnf), [PackageKit](https://github.com/hughsie/PackageKit) and [rpm-ostree](https://github.com/projectatomic/rpm-ostree). It's replacement for deprecated [hawkey library](https://github.com/rpm-software-management/hawkey) which it contains inside and uses [librepo](https://github.com/rpm-software-management/librepo) under the hood.
 
 :warning: :warning: :warning:
-**Note that libdnf is currently being reworked and is
-considered unstable. Once major users like PackageKit and
-DNF are fully ported, a new stable release will be
-considered.**
+**Note that DNF4 and libdnf are superseded by [DNF5 and libdnf5](https://github.com/rpm-software-management/dnf5). DNF5 is the default package manager in Fedora as of Fedora 41. New projects should integrate with libdnf5 instead.**
 :warning: :warning: :warning:
 
 License
