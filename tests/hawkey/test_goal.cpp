@@ -50,8 +50,8 @@ get_latest_pkg(DnfSack *sack, const char *name)
     hy_query_filter(q, HY_PKG_REPONAME, HY_NEQ, HY_SYSTEM_REPO_NAME);
     hy_query_filter_latest_per_arch(q, 1);
     GPtrArray *plist = hy_query_run(q);
-    fail_unless(plist->len == 1,
-                "get_latest_pkg() failed finding '%s'.", name);
+    ck_assert_msg(plist->len == 1,
+                  "get_latest_pkg() failed finding '%s'.", name);
     auto pkg = static_cast<DnfPackage *>(g_object_ref(g_ptr_array_index(plist, 0)));
     hy_query_free(q);
     g_ptr_array_unref(plist);
@@ -436,7 +436,7 @@ assert_list_names(bool wanted, GPtrArray *plist, ...)
     va_start(names, plist);
     while ((name = va_arg(names, char *)) != NULL) {
         if (i++ >= count) {
-            fail("assert_list_names(): list too short");
+            ck_abort_msg("assert_list_names(): list too short");
         }
         bool found = false;
         for (auto string: stringVector) {
@@ -446,8 +446,8 @@ assert_list_names(bool wanted, GPtrArray *plist, ...)
             }
         }
         if ((wanted && !found) || (!wanted && found)) {
-            fail_unless(false, "assert_list_names(): element '%s' %sfound '%zu'",
-                        name, wanted ? "not ": "", stringVector.size());
+            ck_abort_msg("assert_list_names(): element '%s' %sfound '%zu'",
+                         name, wanted ? "not ": "", stringVector.size());
         }
     }
     // In the wanted case; we expect all the pkgs in the lists to fully
@@ -455,7 +455,7 @@ assert_list_names(bool wanted, GPtrArray *plist, ...)
     // all the passed pkg arguments are *not* found in the list, which is
     // already checked above.
     if (wanted) {
-        fail_unless(i == count, "assert_list_names(): too many items in the list (%d vs %d)", i, count);
+        ck_assert_msg(i == count, "assert_list_names(): too many items in the list (%d vs %d)", i, count);
     }
     va_end(names);
 }
@@ -493,7 +493,7 @@ START_TEST(test_goal_upgrade_all)
     g_ptr_array_unref(plist_obs);
     g_ptr_array_unref(plist);
 
-    fail_unless(size_and_free(hy_goal_list_installs(goal, NULL)) == 0);
+    ck_assert(size_and_free(hy_goal_list_installs(goal, NULL)) == 0);
     hy_goal_free(goal);
 }
 END_TEST
