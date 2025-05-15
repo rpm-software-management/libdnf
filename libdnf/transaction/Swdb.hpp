@@ -114,6 +114,7 @@ public:
 
     // misc
     void setReleasever(std::string value);
+    void setPersistence(TransactionPersistence value);
     void addConsoleOutputLine(int fileDescriptor, std::string line);
 
     /**

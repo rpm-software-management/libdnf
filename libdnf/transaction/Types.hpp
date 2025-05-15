@@ -56,6 +56,12 @@ enum class TransactionItemAction : int {
     REASON_CHANGE = 11 // a package was kept on the system but it's reason has changed
 };
 
+enum class TransactionPersistence : int {
+    UNKNOWN = 0,
+    PERSIST = 1,
+    TRANSIENT = 2,
+};
+
 } // namespace libdnf
 /*
 Install
