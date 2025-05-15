@@ -385,6 +385,14 @@ Swdb::setReleasever(std::string value)
     transactionInProgress->setReleasever(value);
 }
 
+void
+Swdb::setPersistence(TransactionPersistence persistence)
+{
+    if (!transactionInProgress) {
+        throw std::logic_error(_("Not in progress"));
+    }
+    transactionInProgress->setPersistence(persistence);
+}
 
 void
 Swdb::addConsoleOutputLine(int fileDescriptor, std::string line)
