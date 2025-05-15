@@ -42,6 +42,7 @@ public:
     void setReleasever(const std::string &value) { releasever = value; }
     void setUserId(uint32_t value) { userId = value; }
     void setCmdline(const std::string &value) { cmdline = value; }
+    void setPersistence(TransactionPersistence value) { persistence = value; }
     void setState(TransactionState value) { state = value; }
     void setComment(const std::string &value) { comment = value; }
 
