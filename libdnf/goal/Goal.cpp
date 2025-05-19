@@ -87,8 +87,8 @@ enum {RULE_DISTUPGRADE=1, RULE_INFARCH, RULE_UPDATE, RULE_JOB, RULE_JOB_UNSUPPOR
 };
 
 static const std::map<int, const char *> PKG_PROBLEMS_DICT = {
-    {RULE_DISTUPGRADE, M_("%s from %s  does not belong to a distupgrade repository")},
-    {RULE_INFARCH, M_("%s from %s  has inferior architecture")},
+    {RULE_DISTUPGRADE, M_("%s from %s does not belong to a distupgrade repository")},
+    {RULE_INFARCH, M_("%s from %s has inferior architecture")},
     {RULE_UPDATE, M_("problem with installed package ")},
     {RULE_JOB, M_("conflicting requests")},
     {RULE_JOB_UNSUPPORTED, M_("unsupported request")},
