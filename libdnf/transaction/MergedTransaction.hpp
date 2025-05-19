@@ -47,6 +47,7 @@ public:
     std::vector< int64_t > listIds() const;
     std::vector< uint32_t > listUserIds() const;
     std::vector< std::string > listCmdlines() const;
+    std::vector< TransactionPersistence > listPersistences() const;
     std::vector< TransactionState > listStates() const;
     std::vector< std::string > listReleasevers() const;
     std::vector< std::string > listComments() const;

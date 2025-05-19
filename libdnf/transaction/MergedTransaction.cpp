@@ -97,6 +97,16 @@ MergedTransaction::listCmdlines() const
     return cmdLines;
 }
 
+std::vector< TransactionPersistence >
+MergedTransaction::listPersistences() const
+{
+    std::vector< TransactionPersistence > persistences;
+    for (auto t : transactions) {
+        persistences.push_back(t->getPersistence());
+    }
+    return persistences;
+}
+
 std::vector< TransactionState >
 MergedTransaction::listStates() const
 {
