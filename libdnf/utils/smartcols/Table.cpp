@@ -99,22 +99,10 @@ void Table::addLine(const std::shared_ptr<Line> &line)
     lines.push_back(line);
 }
 
-void Table::removeColumn(const std::shared_ptr<Column> &column)
-{
-    std::remove(std::begin(columns), std::end(columns), column);
-    scols_table_remove_column(table, column->column);
-}
-
 void Table::removeColumns()
 {
     columns.clear();
     scols_table_remove_columns(table);
-}
-
-void Table::removeLine(const std::shared_ptr<Line> &line)
-{
-    std::remove(std::begin(lines), std::end(lines), line);
-    scols_table_remove_line(table, line->line);
 }
 
 void Table::removeLines()
