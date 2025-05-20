@@ -92,14 +92,12 @@ public:
     void enableNolinesep(bool enable) { scols_table_enable_nolinesep(table, enable); }
 
     void addColumn(const std::shared_ptr<Column> &column);
-    void removeColumn(const std::shared_ptr<Column> &column);
     void removeColumns();
     void moveColumn(const std::shared_ptr<Column> &before, const std::shared_ptr<Column> &toMove);
     std::shared_ptr<Column> newColumn(const std::string &name, double widthHint = 0, int flags = 0);
     std::shared_ptr<Column> nextColumn(std::vector<std::shared_ptr<Column>>::iterator &iterator) { return *(iterator++); }
 
     void addLine(const std::shared_ptr<Line> &line);
-    void removeLine(const std::shared_ptr<Line> &line);
     void removeLines();
     std::shared_ptr<Line> newLine();
     std::shared_ptr<Line> newLine(const std::shared_ptr<Line> &parent);
