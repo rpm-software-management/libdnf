@@ -122,7 +122,7 @@ START_TEST(test_dnf_solvfile_userdata)
     repowriter_free(writer);
     fclose(fp);
 
-    fp = fopen(new_file, "r");
+    fail_if((fp = fopen(new_file, "r")) == NULL);
     std::unique_ptr<SolvUserdata, decltype(solv_free)*> dnf_solvfile = solv_userdata_read(fp);
     fail_unless(dnf_solvfile);
     fail_unless(solv_userdata_verify(dnf_solvfile.get(), cs_computed));
