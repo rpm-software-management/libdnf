@@ -308,9 +308,10 @@ std::vector<std::string> createSortedFileList(
             if (path[strlen(path)-1] == '/') {
                 continue;
             }
+            auto * path_fname = basename(path);
             bool found{false};
             for (const auto & path_in_list : paths) {
-                if (path == basename(path_in_list.c_str())) {
+                if (strcmp(path_fname, basename(path_in_list.c_str())) == 0) {
                     found = true;
                     break;
                 }
