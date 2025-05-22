@@ -70,6 +70,35 @@ const char * IniParser::MissingEqual::what() const noexcept
     return "IniParser: Missing '='";
 }
 
+
+namespace {
+
+// Returns the position of the first ']' character that does not define a list/range.
+std::size_t findEndOfSectionName(const std::string & str, std::size_t pos) {
+    if (pos >= str.size()) {
+        return std::string::npos;
+    }
+
+    bool range = false;
+    for (std::size_t idx = pos;; ++idx) {
+        const auto ch = str[idx];
+        if (ch == ']') {
+            if (range) {
+                range = false;
+            } else {
+                return idx;
+            }
+        } else if (ch == '[') {
+            range = true;
+        } else if (ch == '\0' || ch == '\n' || ch == '\r') {
+            return std::string::npos;
+        }
+    }
+}
+
+}  // namespace
+
+
 IniParser::IniParser(const std::string & filePath)
 : is(new std::ifstream(filePath))
 {
@@ -161,7 +190,7 @@ IniParser::ItemType IniParser::next()
         }
 
         if (line[start] == '[') {
-            auto endSectPos = line.find("]", ++start);
+            auto endSectPos = findEndOfSectionName(line, ++start);
             if (endSectPos == line.npos)
                 throw MissingBracket(lineNumber);
             else if (endSectPos == start)
