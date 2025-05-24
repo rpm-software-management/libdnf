@@ -4001,7 +4001,7 @@ load_from_parser(const libdnf::ConfigParser & parser, const std::string & cfgPat
     const auto & cfgParserData = parser.getData();
     auto cfgParserDataIter = cfgParserData.find("main");
     if (cfgParserDataIter != cfgParserData.end()) {
-        auto optBinds = globalMainConfig->optBinds();
+        auto & optBinds = globalMainConfig->optBinds();
         const auto & cfgParserMainSect = cfgParserDataIter->second;
         for (const auto & opt : cfgParserMainSect) {
             auto optBindsIter = optBinds.find(opt.first);
