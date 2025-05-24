@@ -972,7 +972,7 @@ dnf_repo_conf_load_overrides(DnfRepo *repo, const char *repoId)
                 continue;
             }
 
-            auto optBinds = config.optBinds();
+            auto & optBinds = config.optBinds();
             for (const auto & opt : cfg_parser_data_iter.second) {
                 auto optBindsIter = optBinds.find(opt.first);
                 if (optBindsIter != optBinds.end()) {
