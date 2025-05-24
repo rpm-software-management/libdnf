@@ -325,7 +325,7 @@ std::vector<std::string> createSortedFileList(
 
     // sort all drop-in configuration files alphabetically by their names
     std::sort(paths.begin(), paths.end(), [](const std::string & p1, const std::string & p2) {
-        return strcmp(basename(p1.c_str()), basename(p2.c_str()));
+        return strcmp(basename(p1.c_str()), basename(p2.c_str())) < 0;
     });
 
     return paths;
