@@ -293,6 +293,8 @@ class ConfigMain::Impl {
     OptionBool countme{false};
     OptionBool protect_running_kernel{true};
 
+    OptionStringList usr_drift_protected_paths{resolveGlobs("glob:/etc/dnf/usr-drift-protected-paths.d/*.conf")};
+
     // Repo main config
 
     OptionNumber<std::uint32_t> retries{10};
@@ -460,6 +462,12 @@ ConfigMain::Impl::Impl(Config & owner)
     owner.optBinds().add("countme", countme);
     owner.optBinds().add("protect_running_kernel", protect_running_kernel);
     owner.optBinds().add("persistence", persistence);
+    owner.optBinds().add("usr_drift_protected_paths", usr_drift_protected_paths,
+        [&](Option::Priority priority, const std::string & value){
+            if (priority >= usr_drift_protected_paths.getPriority())
+                usr_drift_protected_paths.set(priority, resolveGlobs(value));
+        }, nullptr, false
+    );
 
     // Repo main config
 
@@ -616,6 +624,7 @@ OptionString & ConfigMain::comment() { return pImpl->comment; }
 OptionBool & ConfigMain::downloadonly() { return pImpl->downloadonly; }
 OptionBool & ConfigMain::ignorearch() { return pImpl->ignorearch; }
 OptionEnum<std::string> & ConfigMain::persistence() { return pImpl->persistence; }
+OptionStringList & ConfigMain::usr_drift_protected_paths() { return pImpl->usr_drift_protected_paths; }
 
 OptionString & ConfigMain::module_platform_id() { return pImpl->module_platform_id; }
 OptionBool & ConfigMain::module_stream_switch() { return pImpl->module_stream_switch; }
