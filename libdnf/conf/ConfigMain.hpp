@@ -124,6 +124,7 @@ public:
     OptionBool & downloadonly();
     OptionBool & ignorearch();
     OptionEnum<std::string> & persistence();
+    OptionStringList & usr_drift_protected_paths();
 
     OptionString & module_platform_id();
     OptionBool & module_stream_switch();
