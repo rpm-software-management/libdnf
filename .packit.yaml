@@ -3,6 +3,12 @@
 
 specfile_path: libdnf.spec
 
+# Build the package with the current specfile version (otherwise it uses last git tag).
+# This is needed because other packages can depend on the new version.
+actions:
+  get-current-version:
+    - rpmspec --srpm --query --queryformat "%{version}" libdnf.spec
+
 jobs:
   - job: copr_build
     trigger: pull_request
