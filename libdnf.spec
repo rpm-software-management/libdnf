@@ -204,7 +204,7 @@ pushd build-py2
   %endif
   %cmake -DPYTHON_DESIRED:FILEPATH=%{__python2} -DWITH_MAN=OFF ../ %{!?with_zchunk:-DWITH_ZCHUNK=OFF} %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts} -DLIBDNF_MAJOR_VERSION=%{libdnf_major_version} -DLIBDNF_MINOR_VERSION=%{libdnf_minor_version} -DLIBDNF_MICRO_VERSION=%{libdnf_micro_version} \
     -DWITH_SANITIZERS=%{?with_sanitizers:ON}%{!?with_sanitizers:OFF}
-  %make_build
+  %cmake_build
 popd
 %endif
 # endif with python2
@@ -218,28 +218,28 @@ pushd build-py3
   %endif
   %cmake -DPYTHON_DESIRED:FILEPATH=%{__python3} -DWITH_GIR=0 -DWITH_MAN=0 -Dgtkdoc=0 ../ %{!?with_zchunk:-DWITH_ZCHUNK=OFF} %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts} -DLIBDNF_MAJOR_VERSION=%{libdnf_major_version} -DLIBDNF_MINOR_VERSION=%{libdnf_minor_version} -DLIBDNF_MICRO_VERSION=%{libdnf_micro_version} \
     -DWITH_SANITIZERS=%{?with_sanitizers:ON}%{!?with_sanitizers:OFF}
-  %make_build
+  %cmake_build
 popd
 %endif
 
 %check
 %if %{with python2}
 pushd build-py2
-  make ARGS="-V" test
+  %ctest -V
 popd
 %endif
 %if %{with python3}
 # If we didn't run the general tests yet, do it now.
 %if %{without python2}
 pushd build-py3
-  make ARGS="-V" test
+  %ctest -V
 popd
 %else
 # Otherwise, run just the Python tests, not all of
 # them, since we have coverage of the core from the
 # first build
 pushd build-py3/python/hawkey/tests
-  make ARGS="-V" test
+  %ctest -V
 popd
 %endif
 %endif
@@ -247,12 +247,12 @@ popd
 %install
 %if %{with python2}
 pushd build-py2
-  %make_install
+  %cmake_install
 popd
 %endif
 %if %{with python3}
 pushd build-py3
-  %make_install
+  %cmake_install
 popd
 %endif
 
