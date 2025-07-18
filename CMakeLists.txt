@@ -42,6 +42,9 @@ option(WITH_TESTS "Enables unit tests" ON)
 option(WITH_SANITIZERS "Build with address, leak and undefined sanitizers (DEBUG ONLY)" OFF)
 
 
+# always place our header files before system ones
+include_directories(${CMAKE_SOURCE_DIR} libdnf/utils/)
+
 # load pkg-config first; it's required by other modules
 find_package(PkgConfig REQUIRED)
 if(APPLE)
@@ -68,9 +71,6 @@ link_directories(${REPO_LIBRARY_DIRS})
 pkg_check_modules(RPM REQUIRED rpm>=4.15.0)
 pkg_check_modules(SMARTCOLS REQUIRED smartcols)
 pkg_check_modules(SQLite3 REQUIRED sqlite3)
-
-# always enable linking with libdnf utils
-include_directories(${CMAKE_SOURCE_DIR} libdnf/utils/)
 
 if (WITH_ZCHUNK)
     pkg_check_modules(ZCHUNKLIB zck>=0.9.11 REQUIRED)
