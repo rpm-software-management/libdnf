@@ -140,6 +140,14 @@ hy_detect_arch(char **arch)
     else if (!strcmp(un.machine, "mips64"))
         strcpy(un.machine, "mips64el");
 #endif
+#if defined(__e2k__)
+    if (__builtin_cpu_is("elbrus-v4") || __builtin_cpu_is("elbrus-8c") || __builtin_cpu_is("elbrus-1c+"))
+        strcpy(un.machine, "e2kv4");
+    else if (__builtin_cpu_is("elbrus-v5") || __builtin_cpu_is("elbrus-8c2"))
+        strcpy(un.machine, "e2kv5");
+    else if (__builtin_cpu_is("elbrus-v6") || __builtin_cpu_is("elbrus-12c") || __builtin_cpu_is("elbrus-16c") || __builtin_cpu_is("elbrus-2c3"))
+        strcpy(un.machine, "e2kv6");
+#endif
     *arch = g_strdup(un.machine);
     return 0;
 }
