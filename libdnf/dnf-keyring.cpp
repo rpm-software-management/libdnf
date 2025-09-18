@@ -131,6 +131,10 @@ dnf_keyring_add_public_key(rpmKeyring keyring,
         goto out;
     }
 
+#ifndef RPM_AUTOADDS_SUBKEYS
+    /* RPM before 5.99.90 required adding subkeys explicitly.
+     * RPM >= 5.99.90 processes subkeys automatically with a primary key and
+     * fails on processing standalone subkeys in rpmKeyringAddKey(). */
     subkeys = rpmGetSubkeys(pubkey, &nsubkeys);
     for (int i = 0; i < nsubkeys; i++) {
         rpmPubkey subkey = subkeys[i];
@@ -144,6 +148,7 @@ dnf_keyring_add_public_key(rpmKeyring keyring,
             goto out;
         }
     }
+#endif
 
     /* success */
     g_debug("added missing public key %s to rpmdb", filename);
