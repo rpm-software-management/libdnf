@@ -67,7 +67,12 @@ pkg_check_modules(LIBMODULEMD REQUIRED modulemd-2.0>=2.11.2)
 pkg_check_modules(REPO REQUIRED librepo>=1.18.0)
 include_directories(${REPO_INCLUDE_DIRS})
 link_directories(${REPO_LIBRARY_DIRS})
+
 pkg_check_modules(RPM REQUIRED rpm>=4.15.0)
+if (RPM_VERSION VERSION_GREATER_EQUAL "5.99.90")
+    add_definitions(-DRPM_AUTOADDS_SUBKEYS)
+endif()
+
 pkg_check_modules(SMARTCOLS REQUIRED smartcols)
 pkg_check_modules(SQLite3 REQUIRED sqlite3)
 
