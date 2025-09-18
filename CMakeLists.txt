@@ -59,7 +59,6 @@ find_package(LibSolv 0.7.21 REQUIRED COMPONENTS ext)
 
 
 # build dependencies via pkg-config
-pkg_check_modules(CHECK REQUIRED check)
 pkg_check_modules(GLIB REQUIRED gio-unix-2.0>=2.46.0)
 include_directories(${GLIB_INCLUDE_DIRS})
 pkg_check_modules(JSONC REQUIRED json-c)
