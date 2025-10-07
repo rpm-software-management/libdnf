@@ -22,6 +22,7 @@
 #define _LIBDNF_CONFIG_PRIVATE_HPP
 
 #include "Option.hpp"
+#include "OptionStringList.hpp"
 
 namespace libdnf {
 
@@ -33,7 +34,7 @@ static void optionTListAppend(T & option, Option::Priority priority, const std::
         return;
     }
     auto addPriority = priority < option.getPriority() ? option.getPriority() : priority;
-    auto val = option.fromString(value);
+    auto val = OptionStringList(std::vector<std::string>{}).fromString(value);
     bool first = true;
     for (auto & item : val) {
         if (item.empty()) {
