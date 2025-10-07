@@ -145,7 +145,13 @@ ConfigRepo::Impl::Impl(Config & owner, ConfigMain & mainConfig)
     owner.optBinds().add("proxy_auth_method", proxy_auth_method);
     owner.optBinds().add("username", username);
     owner.optBinds().add("password", password);
-    owner.optBinds().add("protected_packages", protected_packages);
+
+    owner.optBinds().add("protected_packages", protected_packages,
+        [&](Option::Priority priority, const std::string & value){
+            optionTListAppend(protected_packages, priority, value);
+        }, nullptr, true
+    );
+
     owner.optBinds().add("gpgcheck", gpgcheck);
     owner.optBinds().add("repo_gpgcheck", repo_gpgcheck);
     owner.optBinds().add("enablegroups", enablegroups);

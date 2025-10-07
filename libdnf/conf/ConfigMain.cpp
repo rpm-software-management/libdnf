@@ -514,11 +514,11 @@ ConfigMain::Impl::Impl(Config & owner)
     owner.optBinds().add("proxy_username", proxy_username);
     owner.optBinds().add("proxy_password", proxy_password);
     owner.optBinds().add("proxy_auth_method", proxy_auth_method);
+
     owner.optBinds().add("protected_packages", protected_packages,
         [&](Option::Priority priority, const std::string & value){
-            if (priority >= protected_packages.getPriority())
-                protected_packages.set(priority, resolveGlobs(value));
-        }, nullptr, false
+            optionTListAppend(protected_packages, priority, resolveGlobs(value));
+        }, nullptr, true
     );
 
     owner.optBinds().add("username", username);
