@@ -226,6 +226,10 @@ popd
 %endif
 
 %check
+%if 0%{?rhel} == 9 && %{defined ctest}
+# Work around broken passing options to ctest macro, RHEL-120543
+%global ctest(-) %{expand:%{macrobody:ctest}}
+%endif
 %if %{with python2}
 pushd build-py2
   %ctest -V
