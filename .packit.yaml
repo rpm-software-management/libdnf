@@ -13,6 +13,8 @@ jobs:
   - job: copr_build
     trigger: pull_request
     targets:
+      - epel-9
+      - epel-10
       - fedora-all
     additional_repos:
       - "copr://rpmsoftwaremanagement/dnf-nightly"
@@ -20,6 +22,7 @@ jobs:
     trigger: pull_request
     identifier: "dnf-tests"
     targets:
+      # EPELs fail now for unrelated reasons
       - fedora-all
     fmf_url: https://github.com/rpm-software-management/ci-dnf-stack.git
     fmf_ref: enable-tmt-dnf-4-stack
