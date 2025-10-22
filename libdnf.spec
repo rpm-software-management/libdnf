@@ -274,7 +274,7 @@ popd
 
 %files -f %{name}.lang
 %license COPYING
-%doc README.md AUTHORS
+%doc AUTHORS README.md docs/release_notes.rst
 %{_libdir}/%{name}.so.*
 %dir %{_libdir}/libdnf/
 %dir %{_libdir}/libdnf/plugins/
