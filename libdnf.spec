@@ -144,7 +144,7 @@ Python 2 bindings for the libdnf library.
 %if %{with python3}
 %package -n python3-%{name}
 %{?python_provide:%python_provide python3-%{name}}
-Summary:        Python 3 bindings for the libdnf library.
+Summary:        Python 3 bindings for the libdnf library
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 BuildRequires:  python3-devel
 BuildRequires:  %{requires_python3_sphinx}
