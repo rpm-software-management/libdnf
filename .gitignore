@@ -4,5 +4,6 @@
 /libdnf/dnf-version.h
 build
 *.pyc
+data/tests/gpg-wrong-asc.tmp
 data/tests/modules/yum.repos.d/test.repo
 libdnf/config-64.h
