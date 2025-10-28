@@ -1826,9 +1826,34 @@ dnf_context_set_os_release(DnfContext *context, GError **error) try
                                                  "os-release",
                                                  "VERSION_ID",
                                                  error);
-    if (maybe_quoted_version == NULL)
-        return FALSE;
-    version = g_shell_unquote(maybe_quoted_version, error);
+    if (maybe_quoted_version == NULL) {
+        /* rolling releases like Arch or Debian Unstable have no VERSION_ID */
+        g_clear_error(error);
+        g_autofree gchar *maybe_quoted_id = NULL;
+        maybe_quoted_id = g_key_file_get_string(key_file,
+                                                "os-release",
+                                                "ID",
+                                                error);
+        if (!maybe_quoted_id)
+            return FALSE;
+
+        g_autofree gchar *id = g_shell_unquote(maybe_quoted_id, error);
+        if (!id)
+            return FALSE;
+        if (g_ascii_strncasecmp(id, "debian", strlen("debian")) != 0 &&
+                g_ascii_strncasecmp(id, "arch", strlen("arch")) != 0) {
+            g_set_error(error, DNF_ERROR, DNF_ERROR_FAILED,
+                        "'VERSION_ID' not found in os-release and source root "
+                        "'%s' is not a known rolling release (debian or arch)",
+                        source_root);
+            return FALSE;
+        }
+
+        /* Fake a low version number */
+        version = g_strdup("0");
+    } else {
+        version = g_shell_unquote(maybe_quoted_version, error);
+    }
     if (!version)
         return FALSE;
     dnf_context_set_release_ver(context, version);
