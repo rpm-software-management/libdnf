@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <cstring>
+#include <libgen.h>
 #include <glob.h>
 #include <stdexcept>
 
@@ -311,7 +312,7 @@ std::vector<std::string> createSortedFileList(
             auto * path_fname = basename(path);
             bool found{false};
             for (const auto & path_in_list : paths) {
-                if (strcmp(path_fname, basename(path_in_list.c_str())) == 0) {
+                if (strcmp(path_fname, basename((char*)path_in_list.c_str())) == 0) {
                     found = true;
                     break;
                 }
@@ -325,7 +326,7 @@ std::vector<std::string> createSortedFileList(
 
     // sort all drop-in configuration files alphabetically by their names
     std::sort(paths.begin(), paths.end(), [](const std::string & p1, const std::string & p2) {
-        return strcmp(basename(p1.c_str()), basename(p2.c_str())) < 0;
+        return strcmp(basename((char*)p1.c_str()), basename((char*)p2.c_str())) < 0;
     });
 
     return paths;
