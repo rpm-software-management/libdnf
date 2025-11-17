@@ -69,6 +69,10 @@
 #include <string>
 #include <vector>
 
+#if !defined(FNM_EXTMATCH)
+#define FNM_EXTMATCH 0
+#endif
+
 typedef struct
 {
     DnfRepoEnabled   enabled;
