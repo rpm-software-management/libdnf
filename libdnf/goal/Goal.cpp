@@ -987,6 +987,15 @@ Goal::jobLength()
 bool
 Goal::run(DnfGoalActions flags)
 {
+    // Automatically mark all protected packages as user installed.
+    // When a protected package is installed as a dependency it can block
+    // removal of the last package that depends on it (because the protected
+    // package cannot be removed, not even as an unused dependency).
+    // To prevent this and still correctly resolve dependencies of the protected
+    // packages mark them all as user installed.
+    if (pImpl->protectedPkgs) {
+        userInstalled(*pImpl->protectedPkgs);
+    }
     auto job = pImpl->constructJob(flags);
     pImpl->actions = static_cast<DnfGoalActions>(pImpl->actions | flags);
     int ret = pImpl->solve(job->getQueue(), flags);
