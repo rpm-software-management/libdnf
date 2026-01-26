@@ -820,6 +820,52 @@ filter_unneeded(PyObject *self, PyObject *args, PyObject *kwds) try
 } CATCH_TO_PYTHON
 
 static PyObject *
+filter_unneeded_extra_userinstalled(PyObject *self, PyObject *args, PyObject *kwds) try
+{
+    const char *kwlist[] = {"swdb", "extra_userinstalled", "debug_solver", NULL};
+    PyObject *pySwdb;
+    PyObject *extra_userinstalled;
+    PyObject *debug_solver = NULL;
+
+    if (!PyArg_ParseTupleAndKeywords(
+            args, kwds, "OO|O!", (char **)kwlist, &pySwdb, &extra_userinstalled, &PyBool_Type, &debug_solver)) {
+        return NULL;
+    }
+
+    UniquePtrPyObject thisPySwdb(PyObject_GetAttrString(pySwdb, "this"));
+    auto swigSwdb = reinterpret_cast< SwdbSwigPyObject * >(thisPySwdb.get());
+    if (swigSwdb == nullptr) {
+        PyErr_SetString(PyExc_SystemError, "Unable to parse SwigPyObject");
+        return NULL;
+    }
+    libdnf::Swdb *swdb = swigSwdb->ptr;
+    if (swdb == NULL) {
+        PyErr_SetString(PyExc_SystemError, "Unable to parse swig object");
+        return NULL;
+    }
+
+    HyQuery query = ((_QueryObject *) self)->query;
+    auto extra_userinstalled_pset = pyseq_to_packageset(extra_userinstalled, query->getSack());
+    if (!extra_userinstalled_pset) {
+        PyErr_SetString(PyExc_SystemError, "Unable to parse SwigPyObject: extra_userinstalled PackageSet");
+        return NULL;
+    }
+
+    std::unique_ptr<libdnf::Query> self_query_copy(new libdnf::Query(*query));
+    gboolean c_debug_solver = debug_solver != NULL && PyObject_IsTrue(debug_solver);
+
+    int ret = self_query_copy->filterUnneededExtraUserinstalled(*swdb, *extra_userinstalled_pset, c_debug_solver);
+    if (ret == -1) {
+        PyErr_SetString(PyExc_SystemError, "Unable to provide query with unneded filter");
+        return NULL;
+    }
+
+    PyObject *final_query = queryToPyObject(self_query_copy.release(), ((_QueryObject *) self)->sack,
+                                            Py_TYPE(self));
+    return final_query;
+} CATCH_TO_PYTHON
+
+static PyObject *
 q_add(_QueryObject *self, PyObject *list) try
 {
     if (!PyList_Check(list)) {
@@ -1081,6 +1127,7 @@ static struct PyMethodDef query_methods[] = {
     {"_nevra", (PyCFunction)add_nevra_or_other_filter, METH_VARARGS, NULL},
     {"_recent", (PyCFunction)add_filter_recent, METH_VARARGS, NULL},
     {"_unneeded", (PyCFunction)filter_unneeded, METH_KEYWORDS|METH_VARARGS, NULL},
+    {"_unneeded_extra_userinstalled", (PyCFunction)filter_unneeded_extra_userinstalled, METH_KEYWORDS|METH_VARARGS, NULL},
     {"_safe_to_remove", (PyCFunction)filter_safe_to_remove, METH_KEYWORDS|METH_VARARGS, NULL},
     {NULL}                      /* sentinel */
 };

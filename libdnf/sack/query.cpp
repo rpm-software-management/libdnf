@@ -830,7 +830,7 @@ private:
     void filterUpdownByPriority(const Filter & f, Map *m);
     void filterUpdownAble(const Filter  &f, Map *m);
     void filterDataiterator(const Filter & f, Map *m);
-    int filterUnneededOrSafeToRemove(const Swdb &swdb, bool debug_solver, bool safeToRemove);
+    int filterUnneededOrSafeToRemove(const Swdb &swdb, bool debug_solver, bool safeToRemove, PackageSet *extra_userinstalled);
     void obsoletesByPriority(Pool * pool, Solvable * candidate, Map * m, const Map * target, int obsprovides);
 
     bool isGlob(const std::vector<const char *> &matches) const;
@@ -2245,7 +2245,7 @@ Query::Impl::filterDataiterator(const Filter & f, Map *m)
 }
 
 int
-Query::Impl::filterUnneededOrSafeToRemove(const Swdb &swdb, bool debug_solver, bool safeToRemove)
+Query::Impl::filterUnneededOrSafeToRemove(const Swdb &swdb, bool debug_solver, bool safeToRemove, PackageSet *extra_userinstalled)
 {
     apply();
     Goal goal(sack);
@@ -2259,6 +2259,10 @@ Query::Impl::filterUnneededOrSafeToRemove(const Swdb &swdb, bool debug_solver, b
         *userInstalled -= *result;
     }
     goal.userInstalled(*userInstalled);
+
+    if (extra_userinstalled != NULL) {
+        goal.userInstalled(*extra_userinstalled);
+    }
 
     int ret1 = goal.run(DNF_NONE);
     if (ret1)
@@ -2575,13 +2579,19 @@ Query::filterDuplicated()
 int
 Query::filterUnneeded(const Swdb &swdb, bool debug_solver)
 {
-    return pImpl->filterUnneededOrSafeToRemove(swdb, debug_solver, false);
+    return pImpl->filterUnneededOrSafeToRemove(swdb, debug_solver, false, NULL);
 }
 
 int
 Query::filterSafeToRemove(const Swdb &swdb, bool debug_solver)
 {
-    return pImpl->filterUnneededOrSafeToRemove(swdb, debug_solver, true);
+    return pImpl->filterUnneededOrSafeToRemove(swdb, debug_solver, true, NULL);
+}
+
+int
+Query::filterUnneededExtraUserinstalled(const Swdb &swdb, PackageSet &extra_userinstalled, bool debug_solver)
+{
+    return pImpl->filterUnneededOrSafeToRemove(swdb, debug_solver, false, &extra_userinstalled);
 }
 
 void
