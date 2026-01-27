@@ -1108,7 +1108,6 @@ Goal::describeProblemRules(unsigned i, bool pkgs)
     auto problem = pImpl->describeProtectedRemoval();
     if (!problem.empty()) {
         output.push_back(std::move(problem));
-        return output;
     }
     auto solv = pImpl->solv;
 
