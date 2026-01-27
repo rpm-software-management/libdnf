@@ -1697,11 +1697,11 @@ Goal::Impl::protectedInRemovals()
 std::string
 Goal::Impl::describeProtectedRemoval()
 {
-    std::string message(_("The operation would result in removing"
-                          " the following protected packages: "));
     Pool * pool = solv->pool;
 
     if (removalOfProtected && removalOfProtected->size()) {
+        const std::string removal_message(_("The operation would result in removing "
+                                            "the following protected packages: "));
         Id id = -1;
         std::vector<const char *> names;
         while((id = removalOfProtected->next(id)) != -1) {
@@ -1711,9 +1711,13 @@ Goal::Impl::describeProtectedRemoval()
         if (names.empty()) {
             return {};
         }
-        return message + std::accumulate(std::next(names.begin()), names.end(),
-                std::string(names[0]), [](std::string a, std::string b) { return a + ", " + b; });
+        return removal_message +
+            std::accumulate(std::next(names.begin()), names.end(), std::string(names[0]),
+                            [](std::string a, std::string b) { return a + ", " + b; });
     }
+
+    const std::string broken_dependency_message(_("The operation would result in broken "
+                                                  "dependencies for the following protected packages: "));
     auto pset = brokenDependencyAllPkgs(DNF_PACKAGE_STATE_INSTALLED);
     Id id = -1;
     Id protected_kernel = protectedRunningKernel();
@@ -1726,8 +1730,9 @@ Goal::Impl::describeProtectedRemoval()
     }
     if (names.empty())
         return {};
-    return message + std::accumulate(std::next(names.begin()), names.end(), std::string(names[0]),
-                           [](std::string a, std::string b) { return a + ", " + b; });
+    return broken_dependency_message +
+        std::accumulate(std::next(names.begin()), names.end(), std::string(names[0]),
+                        [](std::string a, std::string b) { return a + ", " + b; });
 }
 
 }
