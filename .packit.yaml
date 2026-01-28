@@ -24,8 +24,8 @@ jobs:
     targets:
       # EPELs fail now for unrelated reasons
       - fedora-all
-    fmf_url: https://github.com/rpm-software-management/ci-dnf-stack.git
-    fmf_ref: enable-tmt-dnf-4-stack
+    fmf_url: https://github.com/mfocko/ci-dnf-stack.git
+    fmf_ref: "fix/RHEL-81778,RHEL-81779/enable-test"
     tmt_plan: "^/plans/integration/behave-dnf$"
     tf_extra_params:
       environments:
