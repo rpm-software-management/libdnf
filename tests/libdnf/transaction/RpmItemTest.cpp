@@ -119,3 +119,64 @@ RpmItemTest::testGetTransactionItems()
     //CPPUNIT_ASSERT(createMs.count() == 0);
     //CPPUNIT_ASSERT(readMs.count() == 0);
 }
+
+/**
+ * Regression test for RHEL-81778
+ * Regression test for RHEL-81779
+ */
+void
+RpmItemTest::testComparison()
+{
+    auto a = std::make_shared< RPMItem >(conn);
+    a->setName("rsyslog");
+    a->setEpoch(0);
+    a->setVersion("8.2102.0");
+    a->setRelease("1.el9");
+    a->setArch("aarch64");
+
+    auto b = std::make_shared< RPMItem >(conn);
+    b->setName("rsyslog");
+    b->setEpoch(0);
+    b->setVersion("8.2102.0");
+    b->setRelease("5.el9");
+    b->setArch("aarch64");
+
+    // rsyslog-8.2102.0-1.el9.aarch64 < rsyslog-8.2102.0-5.el9.aarch64
+    CPPUNIT_ASSERT(*a < *b);
+    CPPUNIT_ASSERT(!(*b < *a));
+
+    a->setRelease("2.el9");
+    b->setRelease("1.el9");
+
+    // rsyslog-8.2102.0-1.el9.aarch64 < rsyslog-8.2102.0-2.el9.aarch64
+    CPPUNIT_ASSERT(*b < *a);
+    CPPUNIT_ASSERT(!(*a < *b));
+
+    b->setRelease("10.el9");
+
+    // rsyslog-8.2102.0-2.el9.aarch64 < rsyslog-8.2102.0-10.el9.aarch64
+    CPPUNIT_ASSERT(*a < *b);
+    CPPUNIT_ASSERT(!(*b < *a));
+
+    // Cover fixed comparison of epochs (previously falling through to version
+    // comparison when left side being newer)
+    {
+        auto a = std::make_shared< RPMItem >(conn);
+        a->setName("rsyslog");
+        a->setEpoch(0);
+        a->setVersion("8.2102.0");
+        a->setRelease("1.el9");
+        a->setArch("aarch64");
+
+        auto b = std::make_shared< RPMItem >(conn);
+        b->setName("rsyslog");
+        b->setEpoch(3);
+        b->setVersion("8.2101.0");
+        b->setRelease("1.el9");
+        b->setArch("aarch64");
+
+        // rsyslog-0:8.2102.0-1.el9.aarch64 < rsyslog-3:8.2101.0-1.el9.aarch64
+        CPPUNIT_ASSERT(*a < *b);
+        CPPUNIT_ASSERT(!(*b < *a));
+    }
+}
