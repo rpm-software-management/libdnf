@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <map>
+#include <rpm/rpmver.h>
 #include <sstream>
 
 #include "../hy-subject.h"
@@ -343,35 +344,29 @@ RPMItem::resolveTransactionItemReason(SQLite3Ptr conn,
  * Compare RPM packages
  * This method doesn't care about compare package names
  * \param other RPMItem to compare with
- * \return true if other package is newer (has higher version and/or epoch)
+ * \return true if other package is newer (has higher epoch, version, or release)
  */
 bool
 RPMItem::operator<(const RPMItem &other) const
 {
-    // compare epochs
-    int32_t epochDif = other.getEpoch() - getEpoch();
-    if (epochDif > 0) {
-        return true;
-    } else if (epoch < 0) {
-        return false;
+    // Compare epochs
+    if (getEpoch() != other.getEpoch()) {
+        return getEpoch() < other.getEpoch();
     }
 
-    // compare versions
-    std::stringstream versionThis(getVersion());
-    std::stringstream versionOther(other.getVersion());
-
-    std::string bufferThis;
-    std::string bufferOther;
-    while (std::getline(versionThis, bufferThis, '.') &&
-           std::getline(versionOther, bufferOther, '.')) {
-        int subVersionThis = std::stoi(bufferThis);
-        int subVersionOther = std::stoi(bufferOther);
-        if (subVersionThis == subVersionOther) {
-            continue;
-        }
-        return subVersionOther > subVersionThis;
+    // Compare versions
+    auto version = getVersion();
+    auto otherVersion = other.getVersion();
+    auto cmpResult = ::rpmvercmp(version.c_str(), otherVersion.c_str());
+    if (cmpResult != 0) {
+        return cmpResult < 0;
     }
-    return false;
+
+    // Compare releases
+    auto release = getRelease();
+    auto otherRelease = other.getRelease();
+    cmpResult = ::rpmvercmp(release.c_str(), otherRelease.c_str());
+    return cmpResult < 0;
 }
 
 std::vector< int64_t >
