@@ -10,6 +10,7 @@ class RpmItemTest : public CppUnit::TestCase {
     CPPUNIT_TEST(testCreate);
     CPPUNIT_TEST(testCreateDuplicates);
     CPPUNIT_TEST(testGetTransactionItems);
+    CPPUNIT_TEST(testComparison);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -19,6 +20,7 @@ public:
     void testCreate();
     void testCreateDuplicates();
     void testGetTransactionItems();
+    void testComparison();
 
 private:
     std::shared_ptr< SQLite3 > conn;
