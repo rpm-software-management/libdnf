@@ -86,6 +86,15 @@ dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError **error) try
     gint rc;
     g_autoptr(GString) string = NULL;
 
+    /* anything to do? */
+    if (hy_goal_req_length(goal) == 0) {
+        g_set_error_literal(error,
+                            DNF_ERROR,
+                            DNF_ERROR_NO_PACKAGES_TO_UPDATE,
+                            "The transaction was empty");
+        return FALSE;
+    }
+
     DnfSack * sack = hy_goal_get_sack(goal);
 
     libdnf::Query query(sack);
@@ -132,14 +141,6 @@ dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError **error) try
         return FALSE;
     }
 
-    /* anything to do? */
-    if (hy_goal_req_length(goal) == 0) {
-        g_set_error_literal(error,
-                            DNF_ERROR,
-                            DNF_ERROR_NO_PACKAGES_TO_UPDATE,
-                            "The transaction was empty");
-        return FALSE;
-    }
     auto moduleContainer = dnf_sack_get_module_container(sack);
     if (moduleContainer) {
         auto installSet = goal->listInstalls();
