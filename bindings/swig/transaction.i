@@ -80,6 +80,7 @@ typedef libdnf::CompsPackageType CompsPackageType;
 %template() std::vector<std::shared_ptr<libdnf::CompsGroupPackage> >;
 %template() std::vector<std::shared_ptr<libdnf::CompsEnvironmentGroup> >;
 %template(TransactionStateVector) std::vector<libdnf::TransactionState>;
+%template(TransactionPersistenceVector) std::vector<libdnf::TransactionPersistence>;
 
 %template() std::vector<uint32_t>;
 %template() std::vector<int64_t>;
