@@ -334,7 +334,12 @@ public:
         open();
     }
 
-    ~SQLite3() { close(); }
+    ~SQLite3() {
+        try {
+            close();
+        } catch (...) {
+        }
+    }
 
     const std::string &getPath() const { return path; }
 
