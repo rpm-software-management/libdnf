@@ -115,9 +115,9 @@ START_TEST(test_load_repo_err)
     DnfSack *sack = dnf_sack_new();
     dnf_sack_set_cachedir(sack, test_globals.tmpdir);
     fail_unless(dnf_sack_setup(sack, DNF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, &error));
-    g_assert(sack != NULL);
+    g_assert_nonnull(sack);
     HyRepo repo = hy_repo_create("crabalocker");
-    g_assert(repo != NULL);
+    g_assert_nonnull(repo);
     hy_repo_set_string(repo, HY_REPO_MD_FN, "/non/existing");
     fail_unless(!dnf_sack_load_repo(sack, repo, 0, &error));
     fail_unless(g_error_matches (error, DNF_ERROR, DNF_ERROR_FILE_INVALID));

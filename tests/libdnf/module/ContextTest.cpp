@@ -52,12 +52,12 @@ void ContextTest::testLoadModules()
     dnf_context_set_solv_dir(context, "/tmp");
     auto ret = dnf_context_setup(context, nullptr, &error);
     g_assert_no_error(error);
-    g_assert(ret);
+    g_assert_true(ret);
 
     /* load local metadata repo */
     DnfRepo *repo = dnf_repo_loader_get_repo_by_id(dnf_context_get_repo_loader(context), "test", &error);
     g_assert_no_error(error);
-    g_assert(repo != nullptr);
+    g_assert_nonnull(repo);
     g_assert_cmpint(dnf_repo_get_enabled(repo), ==, DNF_REPO_ENABLED_METADATA | DNF_REPO_ENABLED_PACKAGES);
     g_assert_cmpint(dnf_repo_get_kind(repo), ==, DNF_REPO_KIND_LOCAL);
 
@@ -134,56 +134,56 @@ void ContextTest::testLoadModules()
 
     // try to install a nonexistent module
     const char *module_specs[] = {"nonexistent", NULL};
-    g_assert(!dnf_context_module_install(context, module_specs, &error));
-    g_assert(error);
-    g_assert(strstr(error->message, "Unable to resolve argument 'nonexistent'"));
+    g_assert_false(dnf_context_module_install(context, module_specs, &error));
+    g_assert_nonnull(error);
+    g_assert_nonnull(strstr(error->message, "Unable to resolve argument 'nonexistent'"));
     g_clear_pointer(&error, g_error_free);
 
     // wrong stream
     module_specs[0] = "httpd:nonexistent";
-    g_assert(!dnf_context_module_install(context, module_specs, &error));
-    g_assert(error);
-    g_assert(strstr(error->message, "Unable to resolve argument 'httpd:nonexistent'"));
+    g_assert_false(dnf_context_module_install(context, module_specs, &error));
+    g_assert_nonnull(error);
+    g_assert_nonnull(strstr(error->message, "Unable to resolve argument 'httpd:nonexistent'"));
     g_clear_pointer(&error, g_error_free);
 
     // try to install non-existent profile
     module_specs[0] = "httpd:2.4/nonexistent";
-    g_assert(!dnf_context_module_install(context, module_specs, &error));
-    g_assert(error);
-    g_assert(strstr(error->message, "No profile found matching 'nonexistent'"));
+    g_assert_false(dnf_context_module_install(context, module_specs, &error));
+    g_assert_nonnull(error);
+    g_assert_nonnull(strstr(error->message, "No profile found matching 'nonexistent'"));
     g_clear_pointer(&error, g_error_free);
 
     // disable all modules
-    g_assert(dnf_context_module_disable_all(context, &error));
+    g_assert_true(dnf_context_module_disable_all(context, &error));
     g_assert_no_error(error);
 
     // installing a modular package should fail
-    g_assert(!dnf_context_install(context, "httpd-2.4.25-8.x86_64", &error));
-    g_assert(error);
-    g_assert(strstr(error->message, "No package matches 'httpd-2.4.25-8.x86_64'"));
+    g_assert_false(dnf_context_install(context, "httpd-2.4.25-8.x86_64", &error));
+    g_assert_nonnull(error);
+    g_assert_nonnull(strstr(error->message, "No package matches 'httpd-2.4.25-8.x86_64'"));
     g_clear_pointer(&error, g_error_free);
 
     // reset all modules
-    g_assert(dnf_context_reset_all_modules(context, sack, &error));
+    g_assert_true(dnf_context_reset_all_modules(context, sack, &error));
     g_assert_no_error(error);
 
     // enable and install default profile from modulemd-defaults
     module_specs[0] = "httpd:2.4";
-    g_assert(dnf_context_module_install(context, module_specs, &error));
+    g_assert_true(dnf_context_module_install(context, module_specs, &error));
     g_assert_no_error(error);
     HyGoal goal = dnf_context_get_goal(context);
     g_assert_cmpint(hy_goal_run_flags(goal, DNF_NONE), ==, 0);
     g_autoptr(GPtrArray) pkgs = hy_goal_list_installs(goal, &error);
     g_assert_no_error(error);
-    g_assert(pkgs);
-    g_assert(pkglist_has_nevra(pkgs, "httpd-2.4.25-8.x86_64"));
-    g_assert(pkglist_has_nevra(pkgs, "libnghttp2-1.21.1-1.x86_64"));
+    g_assert_nonnull(pkgs);
+    g_assert_true(pkglist_has_nevra(pkgs, "httpd-2.4.25-8.x86_64"));
+    g_assert_true(pkglist_has_nevra(pkgs, "libnghttp2-1.21.1-1.x86_64"));
 
     // Verify we can install the default stream from modulemd-defaults.
     // This would fail with EnableMultipleStreamsException if it didn't match
     // the 2.4 stream since we enabled the 2.4 stream just above.
     module_specs[0] = "httpd";
-    g_assert(dnf_context_module_install(context, module_specs, &error));
+    g_assert_true(dnf_context_module_install(context, module_specs, &error));
     g_assert_no_error(error);
 }
 
