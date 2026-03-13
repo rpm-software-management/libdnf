@@ -43,67 +43,40 @@
 #include "dnf-utils.h"
 
 /**
- * dnf_keyring_add_public_key:
+ * dnf_keyring_add_public_key_from_memory:
  * @keyring: a #rpmKeyring instance.
- * @filename: The public key filename.
+ * @filename: a public key filename.
+ * @pkt: a memory block with dearmored single OpenPGP public key packet
+ * @len: a length of the memory block
  * @error: a #GError or %NULL.
  *
  * Adds a specific public key to the keyring.
  *
  * Returns: %TRUE for success, %FALSE otherwise
- *
- * Since: 0.1.0
  **/
-gboolean
-dnf_keyring_add_public_key(rpmKeyring keyring,
-                           const gchar *filename,
-                           GError **error) try
+static gboolean
+dnf_keyring_add_public_key_from_memory(rpmKeyring keyring,
+                                       const gchar *filename,
+                                       const uint8_t *pkt,
+                                       size_t len,
+                                       GError **error) try
 {
     gboolean ret = TRUE;
     int rc;
-    gsize len;
-    pgpArmor armor;
     rpmPubkey pubkey = NULL;
     rpmPubkey *subkeys = NULL;
     int nsubkeys = 0;
-    uint8_t *pkt = NULL;
-    g_autofree gchar *data = NULL;
 
-    /* ignore symlinks and directories */
-    if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
-        goto out;
-    if (g_file_test(filename, G_FILE_TEST_IS_SYMLINK))
-        goto out;
-
-    /* get data */
-    ret = g_file_get_contents(filename, &data, &len, error);
-    if (!ret)
-        goto out;
-
-    /* rip off the ASCII armor and parse it */
-    armor = pgpParsePkts(data, &pkt, &len);
-    if (armor < 0) {
+    if (pkt == NULL || len == 0) {
         ret = FALSE;
         g_set_error(error,
                     DNF_ERROR,
-                    DNF_ERROR_GPG_SIGNATURE_INVALID,
-                    "failed to parse PKI file %s",
-                    filename);
+                    DNF_ERROR_INTERNAL_ERROR,
+                    "empty memory block passed to dnf_keyring_add_public_key_from_memory()");
         goto out;
     }
 
-    /* make sure it's something we can add to rpm */
-    if (armor != PGPARMOR_PUBKEY) {
-        ret = FALSE;
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_GPG_SIGNATURE_INVALID,
-                    "PKI file %s is not a public key",
-                    filename);
-        goto out;
-    }
-
-    /* test each one */
+    /* Parse the public key */
     pubkey = rpmPubkeyNew(pkt, len);
     if (pubkey == NULL) {
         ret = FALSE;
@@ -149,13 +122,7 @@ dnf_keyring_add_public_key(rpmKeyring keyring,
         }
     }
 #endif
-
-    /* success */
-    g_debug("added missing public key %s to rpmdb", filename);
-    ret = TRUE;
 out:
-    if (pkt != NULL)
-        free(pkt); /* yes, free() */
     if (pubkey != NULL)
         rpmPubkeyFree(pubkey);
     if (subkeys != NULL) {
@@ -164,6 +131,74 @@ out:
         }
         free(subkeys);
     }
+    return ret;
+} CATCH_TO_GERROR(FALSE)
+
+/**
+ * dnf_keyring_add_public_key:
+ * @keyring: a #rpmKeyring instance.
+ * @filename: The public key filename.
+ * @error: a #GError or %NULL.
+ *
+ * Adds a specific public key to the keyring.
+ *
+ * Returns: %TRUE for success, %FALSE otherwise
+ *
+ * Since: 0.1.0
+ **/
+gboolean
+dnf_keyring_add_public_key(rpmKeyring keyring,
+                           const gchar *filename,
+                           GError **error) try
+{
+    gboolean ret = TRUE;
+    gsize len;
+    pgpArmor armor;
+    uint8_t *pkt = NULL;
+    g_autofree gchar *data = NULL;
+
+    /* ignore symlinks and directories */
+    if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
+        goto out;
+    if (g_file_test(filename, G_FILE_TEST_IS_SYMLINK))
+        goto out;
+
+    /* get data */
+    ret = g_file_get_contents(filename, &data, &len, error);
+    if (!ret)
+        goto out;
+
+    /* rip off the ASCII armor and parse it */
+    armor = pgpParsePkts(data, &pkt, &len);
+    if (armor < 0) {
+        ret = FALSE;
+        g_set_error(error,
+                    DNF_ERROR,
+                    DNF_ERROR_GPG_SIGNATURE_INVALID,
+                    "failed to parse PKI file %s",
+                    filename);
+        goto out;
+    }
+
+    /* make sure it's something we can add to rpm */
+    if (armor != PGPARMOR_PUBKEY) {
+        ret = FALSE;
+        g_set_error(error,
+                    DNF_ERROR,
+                    DNF_ERROR_GPG_SIGNATURE_INVALID,
+                    "PKI file %s is not a public key",
+                    filename);
+        goto out;
+    }
+
+    ret = dnf_keyring_add_public_key_from_memory(keyring, filename, pkt, len, error);
+    if (ret) {
+        /* success */
+        g_debug("added missing public key %s to rpmdb", filename);
+    }
+out:
+    if (pkt != NULL)
+        free(pkt); /* yes, free() */
     return ret;
 } CATCH_TO_GERROR(FALSE)
 
