@@ -22,10 +22,18 @@
 
 #include "libdnf/libdnf.h"
 
+#include <glib.h>
 #include <glib-object.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <glib/gstdio.h>
+#include <rpm/rpmcrypto.h>
+#include <rpm/rpmlib.h>
+#include <rpm/rpmpgp.h>
+#include <rpm/rpmts.h>
+
+G_DEFINE_AUTO_CLEANUP_FREE_FUNC(rpmts, rpmtsFree, NULL)
+G_DEFINE_AUTO_CLEANUP_FREE_FUNC(rpmKeyring, rpmKeyringFree, NULL)
 
 /**
  * cd_test_get_filename:
@@ -55,6 +63,174 @@ dnf_lock_state_changed_cb(DnfLock *lock, guint bitfield, gpointer user_data)
 {
     g_debug("lock state now %i", bitfield);
     _dnf_lock_state_changed++;
+}
+
+/* Verify a signature in @signature_filename for data in @data_filename using
+ * RPM keyring @keyring.
+ * Return 0 on successul verification, 1 on failed verification, -1 on
+ * internal error. */
+static int
+verifyfile(rpmKeyring keyring, const char *data_filename, const char *signature_filename)
+{
+    gchar *data = NULL;
+    size_t data_size;
+    gchar *signature = NULL;
+    size_t signature_size;
+    pgpDigParams parsed_signature = NULL;
+    DIGEST_CTX digest_context = NULL;
+    rpmRC verification_result;
+
+    if (!g_file_get_contents(data_filename, &data, &data_size, NULL)) {
+        printf("Failed to load data from %s\n", data_filename);
+        return -1;
+    }
+
+    if (!g_file_get_contents(signature_filename, &signature, &signature_size, NULL)) {
+        printf("Failed to load a signature\n");
+        g_free(data);
+        return -1;
+    }
+
+    if (0 != pgpPrtParams((uint8_t *)signature, signature_size, PGPTAG_SIGNATURE, &parsed_signature)) {
+        printf("Failed to parse an OpenPGP signature in %s\n", signature_filename);
+        g_free(signature);
+        g_free(data);
+        return -1;
+    }
+
+    digest_context = rpmDigestInit(pgpDigParamsAlgo(parsed_signature, PGPVAL_HASHALGO), RPMDIGEST_NONE);
+    if (digest_context == NULL) {
+        printf("Failed to initialize a digest context\n");
+        (void)pgpDigParamsFree(parsed_signature);
+        g_free(signature);
+        g_free(data);
+        return -1;
+    }
+
+    if (0 != rpmDigestUpdate(digest_context, data, data_size)) {
+        printf("Failed to compute a digest from the data\n");
+        (void)rpmDigestFinal(digest_context, NULL, NULL, 0);
+        (void)pgpDigParamsFree(parsed_signature);
+        g_free(signature);
+        g_free(data);
+        return -1;
+    }
+
+    verification_result = rpmKeyringVerifySig(keyring, parsed_signature, digest_context);
+
+    (void)rpmDigestFinal(digest_context, NULL, NULL, 0);
+    (void)pgpDigParamsFree(parsed_signature);
+    g_free(signature);
+    g_free(data);
+
+    return (verification_result == RPMRC_OK ? 0 : 1);
+}
+
+/* This function imports keys from @key_filename with
+ * dnf_keyring_add_public_key() and then verifies a signature in
+ * @signature_filename on data in @data_filename against the imported keys.
+ * Key import status returns in @import_passed and @import_error arguments,
+ * signature verification status in @verification_passed argument. Dies on
+ * internal errors. */
+static void
+import_and_verify(gboolean *import_passed, GError **import_error, gboolean *verification_passed,
+        const char *key_filename, const char *data_filename, const char *signature_filename) {
+    g_assert_nonnull(import_passed);
+    g_assert_nonnull(import_error);
+    g_assert_nonnull(verification_passed);
+    g_assert_nonnull(key_filename);
+    g_assert_nonnull(data_filename);
+    g_assert_nonnull(signature_filename);
+
+    g_assert_cmpint(0, ==, rpmReadConfigFiles(NULL, NULL));
+
+    g_auto(rpmts) ts = rpmtsCreate();
+    g_assert_nonnull(ts);
+
+    g_assert_cmpint(0, ==, rpmtsSetRootDir(ts, NULL));
+
+    g_auto(rpmKeyring) keyring = rpmtsGetKeyring(ts, 1);
+    g_assert_nonnull(keyring);
+
+    /* Make sure a signature verification fails before the import. */
+    g_debug("File %s verification against signature %s before importing %s should fail",
+            data_filename, signature_filename, key_filename);
+    g_assert_cmpint (0, !=, verifyfile(keyring, data_filename, signature_filename));
+
+    /* Do the import. */
+    *import_passed = dnf_keyring_add_public_key(keyring, key_filename, import_error);
+    if (*import_passed) {
+        g_debug("Import passed.\n");
+    } else {
+        g_debug("Import failed\n");
+    }
+
+    /* Perform the the signature verification after the import and return the result. */
+    g_debug("File %s verification against signature %s after importing %s:\n",
+            data_filename, signature_filename, key_filename);
+    *verification_passed = (0 == verifyfile(keyring, data_filename, signature_filename));
+    if (*verification_passed) {
+        g_debug("Verification passed.\n");
+    } else {
+        g_debug("Verification failed\n");
+    }
+}
+
+/* This test suite exhibits dnf_keyring_add_public_key() which imports keys
+ * from a file to an in-memory keyring. This keyring is never stored into RPM
+ * database, or its adjacent in-filesystem key store. Therefore one cannot
+ * test an effect of the import by inspecting the RPM database for the
+ * synthetic gpg-pubkey packages.
+ *
+ * RPM 6 supports inspecting in-memory keyrings with rpmKeyringInitIterator()
+ * and rpmKeyringIteratorNext() functions. But we want support RPM older than
+ * that. Therefore this test suite does that by verifying a signature of data
+ * signed with the supposedly imported keys. */
+
+/* Test importing a valid key. */
+static void
+dnf_keyring_add_public_key_valid(void)
+{
+    g_autofree gchar *key_filename = NULL;
+    g_autofree gchar *data_filename = NULL;
+    g_autofree gchar *signature_filename = NULL;
+    gboolean import_passed;
+    g_autoptr(GError) import_error = NULL;
+    gboolean verification_passed;
+
+    key_filename = dnf_test_get_filename("dnf_keyring_add_public_key/rsa.pub");
+    data_filename = dnf_test_get_filename("dnf_keyring_add_public_key/input");
+    signature_filename = dnf_test_get_filename("dnf_keyring_add_public_key/input.rsa.sig");
+
+    import_and_verify(&import_passed, &import_error, &verification_passed,
+            key_filename, data_filename, signature_filename);
+    g_assert_true(import_passed);
+    g_assert_no_error(import_error);
+    g_clear_error(&import_error);
+    g_assert_true(verification_passed);
+}
+
+/* Test importing an invalid key. */
+static void
+dnf_keyring_add_public_key_invalid(void)
+{
+    g_autofree gchar *key_filename = NULL;
+    g_autofree gchar *data_filename = NULL;
+    g_autofree gchar *signature_filename = NULL;
+    gboolean import_passed;
+    g_autoptr(GError) import_error = NULL;
+    gboolean verification_passed;
+
+    key_filename = dnf_test_get_filename("dnf_keyring_add_public_key/input");
+    data_filename = dnf_test_get_filename("dnf_keyring_add_public_key/input");
+    signature_filename = dnf_test_get_filename("dnf_keyring_add_public_key/input.rsa.sig");
+
+    import_and_verify(&import_passed, &import_error, &verification_passed,
+            key_filename, data_filename, signature_filename);
+    g_assert_false(import_passed);
+    g_assert_nonnull(import_error);
+    g_clear_error(&import_error);
+    g_assert_false(verification_passed);
 }
 
 static void
@@ -1274,6 +1450,8 @@ main(int argc, char **argv)
     g_test_add_func("/libdnf/repo_loader{cache-dir-check}", dnf_repo_loader_cache_dir_check_func);
     g_test_add_func("/libdnf/context", dnf_context_func);
     g_test_add_func("/libdnf/context{cache-clean-check}", dnf_context_cache_clean_check_func);
+    g_test_add_func("/libdnf/dnf_keyring_add_public_key[valid]", dnf_keyring_add_public_key_valid);
+    g_test_add_func("/libdnf/dnf_keyring_add_public_key[invalid]", dnf_keyring_add_public_key_invalid);
     g_test_add_func("/libdnf/lock", dnf_lock_func);
     g_test_add_func("/libdnf/lock[threads]", dnf_lock_threads_func);
     g_test_add_func("/libdnf/split_releasever", dnf_split_releasever_func);
