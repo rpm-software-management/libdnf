@@ -234,6 +234,7 @@ dnf_keyring_add_public_key(rpmKeyring keyring,
                            GError **error) try
 {
     gboolean ret = TRUE;
+    bool importable_certificates_found = FALSE;
     gsize len;
     pgpArmor armor;
     uint8_t *pkt = NULL;
@@ -273,7 +274,41 @@ dnf_keyring_add_public_key(rpmKeyring keyring,
         goto out;
     }
 
-    ret = dnf_keyring_add_public_key_from_memory(keyring, filename, pkt, len, error);
+    {
+        /* Iterate over all public keys in this dearmored block */
+        uint8_t *tpkt = pkt;
+        size_t cert_len;
+        while (len > 0) {
+                if (pgpPubKeyCertLen(tpkt, len, &cert_len))
+                    break;
+                if (cert_len > len)
+                    break;
+
+                if (!dnf_keyring_add_public_key_from_memory(keyring, filename, tpkt, cert_len,
+                            /* Remember first error message */
+                            error == NULL || *error != NULL ? NULL : error))
+                    ret = FALSE;
+
+                tpkt += cert_len;
+                len -= cert_len;
+                importable_certificates_found = TRUE;
+        }
+    }
+
+    if (!ret)
+        /* Prevent overwriting error messages */
+        goto out;
+
+    if (!importable_certificates_found) {
+        ret = FALSE;
+        g_set_error(error,
+                    DNF_ERROR,
+                    DNF_ERROR_GPG_SIGNATURE_INVALID,
+                    "PKI file %s contains no valid public key",
+                    filename);
+        goto out;
+    }
+
     if (ret) {
         /* success */
         g_debug("added missing public key %s to rpmdb", filename);
