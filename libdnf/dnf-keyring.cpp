@@ -42,6 +42,40 @@
 #include "dnf-keyring.h"
 #include "dnf-utils.h"
 
+/* Return a key ID as a hexadecimal string.
+ * @key: a public key
+ * Returns: A pointer to be freed, NULL on error. */
+static char *formatkeyid(rpmPubkey key) {
+    char *string = NULL;
+#ifdef RPM_HAS_KEYIDASHEX
+    string = strdup(rpmPubkeyKeyIDAsHex(key));
+#else
+    /* A fallback implementation for rpmPubkeyKeyIDAsHex() which is available
+     * since RPM 6. */
+    static const char table[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    pgpDigParams parameters = NULL; /* weak pointer */
+    const uint8_t *keyid = NULL;    /* weak pointer */
+
+    if (!key)
+        return NULL;
+    string = (char*)malloc(PGP_KEYID_LEN*2+1);
+    if (!string)
+        return NULL;
+    parameters = rpmPubkeyPgpDigParams(key);
+    if (!parameters) {
+        free(string);
+        return NULL;
+    }
+    keyid = pgpDigParamsSignID(parameters);
+    for (int i = 0; i < PGP_KEYID_LEN; i++) {
+        string[i*2] = table[keyid[i] >> 4];
+        string[i*2 + 1] = table[keyid[i] & 0x0f];
+    }
+    string[PGP_KEYID_LEN*2] = '\0';
+#endif
+    return string;
+}
+
 /**
  * dnf_keyring_add_public_key_from_memory:
  * @keyring: a #rpmKeyring instance.
@@ -66,6 +100,7 @@ dnf_keyring_add_public_key_from_memory(rpmKeyring keyring,
     rpmPubkey pubkey = NULL;
     rpmPubkey *subkeys = NULL;
     int nsubkeys = 0;
+    char *keyid = NULL;
 
     if (pkt == NULL || len == 0) {
         ret = FALSE;
@@ -87,33 +122,79 @@ dnf_keyring_add_public_key_from_memory(rpmKeyring keyring,
                     filename);
         goto out;
     }
+    keyid = formatkeyid(pubkey);
 
     /* add to in-memory keyring */
     rc = rpmKeyringAddKey(keyring, pubkey);
     if (rc == 1) {
         ret = TRUE;
-        g_debug("%s is already added", filename);
+        if (keyid == NULL)
+            g_debug("a key from %s is already added", filename);
+        else
+            g_debug("0x%s key from %s is already added", keyid, filename);
         goto out;
     } else if (rc < 0) {
         ret = FALSE;
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_GPG_SIGNATURE_INVALID,
-                    "failed to add public key %s to rpmdb",
-                    filename);
+        if (keyid == NULL)
+            g_set_error(error,
+                        DNF_ERROR,
+                        DNF_ERROR_GPG_SIGNATURE_INVALID,
+                        "failed to add a public key from %s to rpmdb",
+                        filename);
+        else
+            g_set_error(error,
+                        DNF_ERROR,
+                        DNF_ERROR_GPG_SIGNATURE_INVALID,
+                        "failed to add 0x%s public key from %s to rpmdb",
+                        keyid,
+                        filename);
         goto out;
     }
+    if (keyid == NULL)
+        g_debug("added missing public key from %s to rpmdb", filename);
+    else
+        g_debug("added missing 0x%s public key from %s to rpmdb", keyid, filename);
 
     subkeys = rpmGetSubkeys(pubkey, &nsubkeys);
     for (int i = 0; i < nsubkeys; i++) {
         rpmPubkey subkey = subkeys[i];
         if (rpmKeyringAddKey(keyring, subkey) < 0) {
+            char *subkeyid = formatkeyid(subkey);
             ret = FALSE;
-            g_set_error(error,
-                        DNF_ERROR,
-                        DNF_ERROR_GPG_SIGNATURE_INVALID,
-                        "failed to add subkeys for %s to rpmdb",
-                        filename);
+            if (keyid == NULL)
+                if (subkey == NULL)
+                    g_set_error(error,
+                                DNF_ERROR,
+                                DNF_ERROR_GPG_SIGNATURE_INVALID,
+                                "failed to add a subkey from %s to rpmdb",
+                                filename);
+                else
+                    g_set_error(error,
+                                DNF_ERROR,
+                                DNF_ERROR_GPG_SIGNATURE_INVALID,
+                                "failed to add 0x%s subkey from %s to rpmdb",
+                                subkeyid,
+                                keyid,
+                                filename);
+            else
+                if (subkeyid == NULL)
+                    g_set_error(error,
+                                DNF_ERROR,
+                                DNF_ERROR_GPG_SIGNATURE_INVALID,
+                                "failed to add a subkey for 0x%s primary key from %s to rpmdb",
+                                subkeyid,
+                                keyid,
+                                filename);
+                else
+                    g_set_error(error,
+                                DNF_ERROR,
+                                DNF_ERROR_GPG_SIGNATURE_INVALID,
+                                "failed to add 0x%s subkey for 0x%s primary key from %s to rpmdb",
+                                subkeyid,
+                                keyid,
+                                filename);
+            if (subkeyid != NULL)
+                free(subkeyid);
             goto out;
         }
     }
@@ -122,6 +203,8 @@ dnf_keyring_add_public_key_from_memory(rpmKeyring keyring,
     g_debug("added missing public key %s to rpmdb", filename);
     ret = TRUE;
 out:
+    if (keyid != NULL)
+        free(keyid);
     if (pubkey != NULL)
         rpmPubkeyFree(pubkey);
     if (subkeys != NULL) {
