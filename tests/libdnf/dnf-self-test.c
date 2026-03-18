@@ -266,6 +266,73 @@ dnf_keyring_add_public_key_two_packets(void)
     g_assert_true(verification_passed);
 }
 
+/* Test importing two keys from a file with two ASCII-armored blocks, each
+ * with a public key OpenPGP packet. */
+static void
+dnf_keyring_add_public_key_two_blocks(void)
+{
+    g_autofree gchar *key_filename = NULL;
+    g_autofree gchar *data_filename = NULL;
+    g_autofree gchar *rsa_signature_filename = NULL;
+    g_autofree gchar *edsa_signature_filename = NULL;
+    gboolean import_passed;
+    g_autoptr(GError) import_error = NULL;
+    gboolean verification_passed;
+
+    key_filename = dnf_test_get_filename("dnf_keyring_add_public_key/twoblocks.pub");
+    data_filename = dnf_test_get_filename("dnf_keyring_add_public_key/input");
+    rsa_signature_filename = dnf_test_get_filename("dnf_keyring_add_public_key/input.rsa.sig");
+    edsa_signature_filename = dnf_test_get_filename("dnf_keyring_add_public_key/input.edsa.sig");
+
+    import_and_verify(&import_passed, &import_error, &verification_passed,
+            key_filename, data_filename, rsa_signature_filename);
+    g_assert_true(import_passed);
+    g_assert_no_error(import_error);
+    g_clear_error(&import_error);
+    g_assert_true(verification_passed);
+
+    import_and_verify(&import_passed, &import_error, &verification_passed,
+            key_filename, data_filename, edsa_signature_filename);
+    g_assert_true(import_passed);
+    g_assert_no_error(import_error);
+    g_clear_error(&import_error);
+    g_assert_true(verification_passed);
+}
+
+/* Test importing two ASCII-armored blocks, first invalid, second valid. Test
+ * that the second valid key was imported despite importing the first one
+ * failed. */
+static void
+dnf_keyring_add_public_key_blocks_invalid_valid(void)
+{
+    g_autofree gchar *key_filename = NULL;
+    g_autofree gchar *data_filename = NULL;
+    g_autofree gchar *rsa_signature_filename = NULL;
+    g_autofree gchar *edsa_signature_filename = NULL;
+    gboolean import_passed;
+    g_autoptr(GError) import_error = NULL;
+    gboolean verification_passed;
+
+    key_filename = dnf_test_get_filename("dnf_keyring_add_public_key/blocks_invalid_valid.pub");
+    data_filename = dnf_test_get_filename("dnf_keyring_add_public_key/input");
+    rsa_signature_filename = dnf_test_get_filename("dnf_keyring_add_public_key/input.rsa.sig");
+    edsa_signature_filename = dnf_test_get_filename("dnf_keyring_add_public_key/input.edsa.sig");
+
+    import_and_verify(&import_passed, &import_error, &verification_passed,
+            key_filename, data_filename, rsa_signature_filename);
+    g_assert_false(import_passed);
+    g_assert_nonnull(import_error);
+    g_clear_error(&import_error);
+    g_assert_false(verification_passed);
+
+    import_and_verify(&import_passed, &import_error, &verification_passed,
+            key_filename, data_filename, edsa_signature_filename);
+    g_assert_false(import_passed);
+    g_assert_nonnull(import_error);
+    g_clear_error(&import_error);
+    g_assert_true(verification_passed);
+}
+
 static void
 dnf_lock_func(void)
 {
@@ -1486,6 +1553,8 @@ main(int argc, char **argv)
     g_test_add_func("/libdnf/dnf_keyring_add_public_key[valid]", dnf_keyring_add_public_key_valid);
     g_test_add_func("/libdnf/dnf_keyring_add_public_key[invalid]", dnf_keyring_add_public_key_invalid);
     g_test_add_func("/libdnf/dnf_keyring_add_public_key[two-packets]", dnf_keyring_add_public_key_two_packets);
+    g_test_add_func("/libdnf/dnf_keyring_add_public_key[two-blocks]", dnf_keyring_add_public_key_two_blocks);
+    g_test_add_func("/libdnf/dnf_keyring_add_public_key[valid-and-invalid-blocks]", dnf_keyring_add_public_key_blocks_invalid_valid);
     g_test_add_func("/libdnf/lock", dnf_lock_func);
     g_test_add_func("/libdnf/lock[threads]", dnf_lock_threads_func);
     g_test_add_func("/libdnf/split_releasever", dnf_split_releasever_func);
