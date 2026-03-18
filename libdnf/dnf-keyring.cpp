@@ -31,6 +31,7 @@
 
 
 #include <stdlib.h>
+#include <string.h>
 #include <glib.h>
 #include <rpm/rpmlib.h>
 #include <rpm/rpmts.h>
@@ -235,9 +236,8 @@ dnf_keyring_add_public_key(rpmKeyring keyring,
 {
     gboolean ret = TRUE;
     bool importable_certificates_found = FALSE;
-    gsize len;
-    pgpArmor armor;
     uint8_t *pkt = NULL;
+    gsize len;
     g_autofree gchar *data = NULL;
 
     /* ignore symlinks and directories */
@@ -251,47 +251,60 @@ dnf_keyring_add_public_key(rpmKeyring keyring,
     if (!ret)
         goto out;
 
-    /* rip off the ASCII armor and parse it */
-    armor = pgpParsePkts(data, &pkt, &len);
-    if (armor < 0) {
-        ret = FALSE;
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_GPG_SIGNATURE_INVALID,
-                    "failed to parse PKI file %s",
-                    filename);
-        goto out;
-    }
+    /* Iterate over multiple ASCII-armored blocks.
+     * There is no function for it in the RPM library yet. */
+    for (
+            const gchar *block = data;
+            NULL != (block = strstr(block, "-----BEGIN PGP PUBLIC KEY BLOCK-----"));
+            free(pkt), pkt = NULL, block++) {
+        pgpArmor armor;
 
-    /* make sure it's something we can add to rpm */
-    if (armor != PGPARMOR_PUBKEY) {
-        ret = FALSE;
-        g_set_error(error,
-                    DNF_ERROR,
-                    DNF_ERROR_GPG_SIGNATURE_INVALID,
-                    "PKI file %s is not a public key",
-                    filename);
-        goto out;
-    }
+        /* rip off the ASCII armor and parse it */
+        armor = pgpParsePkts(block, &pkt, &len);
+        if (armor < 0) {
+            ret = FALSE;
+            if (error && !*error) {
+                g_set_error(error,
+                            DNF_ERROR,
+                            DNF_ERROR_GPG_SIGNATURE_INVALID,
+                            "failed to parse PKI file %s",
+                            filename);
+            }
+            continue;
+        }
 
-    {
-        /* Iterate over all public keys in this dearmored block */
-        uint8_t *tpkt = pkt;
-        size_t cert_len;
-        while (len > 0) {
-                if (pgpPubKeyCertLen(tpkt, len, &cert_len))
-                    break;
-                if (cert_len > len)
-                    break;
+        /* make sure it's something we can add to rpm */
+        if (armor != PGPARMOR_PUBKEY) {
+            ret = FALSE;
+            if (error && !*error) {
+                g_set_error(error,
+                            DNF_ERROR,
+                            DNF_ERROR_GPG_SIGNATURE_INVALID,
+                            "PKI file %s is not a public key",
+                            filename);
+            }
+            continue;
+        }
 
-                if (!dnf_keyring_add_public_key_from_memory(keyring, filename, tpkt, cert_len,
-                            /* Remember first error message */
-                            error == NULL || *error != NULL ? NULL : error))
-                    ret = FALSE;
+        {
+            /* Iterate over all public keys in this dearmored block */
+            uint8_t *tpkt = pkt;
+            size_t cert_len;
+            while (len > 0) {
+                    if (pgpPubKeyCertLen(tpkt, len, &cert_len))
+                        break;
+                    if (cert_len > len)
+                        break;
 
-                tpkt += cert_len;
-                len -= cert_len;
-                importable_certificates_found = TRUE;
+                    if (!dnf_keyring_add_public_key_from_memory(keyring, filename, tpkt, cert_len,
+                                /* Remember first error message */
+                                error == NULL || *error != NULL ? NULL : error))
+                        ret = FALSE;
+
+                    tpkt += cert_len;
+                    len -= cert_len;
+                    importable_certificates_found = TRUE;
+            }
         }
     }
 
