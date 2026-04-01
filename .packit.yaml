@@ -1,7 +1,9 @@
 # See the documentation for more information:
-# https://packit.dev/docs/configuration/
+# https://packit.dev/docs/configuration
 
 specfile_path: libdnf.spec
+version_suffix: "^{PACKIT_PROJECT_SNAPSHOTID}"
+update_release: false
 
 # Build the package with the current specfile version (otherwise it uses last git tag).
 # This is needed because other packages can depend on the new version.
