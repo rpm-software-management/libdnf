@@ -167,7 +167,7 @@ dnf_keyring_add_public_key_from_memory(rpmKeyring keyring,
             char *subkeyid = formatkeyid(subkey);
             ret = FALSE;
             if (keyid == NULL)
-                if (subkey == NULL)
+                if (subkeyid == NULL)
                     g_set_error(error,
                                 DNF_ERROR,
                                 DNF_ERROR_GPG_SIGNATURE_INVALID,
@@ -179,7 +179,6 @@ dnf_keyring_add_public_key_from_memory(rpmKeyring keyring,
                                 DNF_ERROR_GPG_SIGNATURE_INVALID,
                                 "failed to add 0x%s subkey from %s to rpmdb",
                                 subkeyid,
-                                keyid,
                                 filename);
             else
                 if (subkeyid == NULL)
@@ -187,7 +186,6 @@ dnf_keyring_add_public_key_from_memory(rpmKeyring keyring,
                                 DNF_ERROR,
                                 DNF_ERROR_GPG_SIGNATURE_INVALID,
                                 "failed to add a subkey for 0x%s primary key from %s to rpmdb",
-                                subkeyid,
                                 keyid,
                                 filename);
                 else
