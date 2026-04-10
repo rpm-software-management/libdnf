@@ -721,7 +721,7 @@ write_ext(DnfSack *sack, HyRepo hrepo, _hy_repo_repodata which_repodata,
     repo_update_state(hrepo, which_repodata, _HY_WRITTEN);
     success = TRUE;
  done:
-    if (ret && tmp_fd >=0 )
+    if (!success && tmp_fd >= 0)
         unlink(tmp_fn_templ);
     g_free(tmp_fn_templ);
     g_free(fn);
