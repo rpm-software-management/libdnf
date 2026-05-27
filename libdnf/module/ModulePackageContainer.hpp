@@ -216,6 +216,9 @@ public:
     ModuleState getModuleState(const std::string & name);
     std::set<std::string> getInstalledPkgNames();
 
+    /// Return package names from artifacts of all active module streams.
+    std::set<std::string> getActiveModulePackageNames();
+
     std::string getReport();
 
     /**

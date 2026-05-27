@@ -157,6 +157,18 @@ std::vector<AdvisoryModule> Advisory::getModules() const
 void
 Advisory::getApplicablePackages(std::vector<AdvisoryPkg> & pkglist, bool withFilemanes) const
 {
+    std::set<std::string> activeNames;
+    auto moduleContainer = dnf_sack_get_module_container(sack);
+    if (moduleContainer) {
+        activeNames = moduleContainer->getActiveModulePackageNames();
+    }
+    getApplicablePackages(pkglist, withFilemanes, activeNames);
+}
+
+void
+Advisory::getApplicablePackages(std::vector<AdvisoryPkg> & pkglist, bool withFilemanes,
+                                const std::set<std::string> & activeModuleArtifactNames) const
+{
     Dataiterator di;
     Dataiterator di_inner;
     Pool *pool = dnf_sack_get_pool(sack);
@@ -166,8 +178,10 @@ Advisory::getApplicablePackages(std::vector<AdvisoryPkg> & pkglist, bool withFil
         dataiterator_setpos(&di);
 
         bool isModuleCollectionApplicable = true;
+        bool hasModuleMetadata = false;
         dataiterator_init(&di_inner, pool, 0, SOLVID_POS, UPDATE_MODULE, 0, 0);
         while (dataiterator_step(&di_inner)) {
+            hasModuleMetadata = true;
             dataiterator_setpos(&di_inner);
             Id name = pool_lookup_id(pool, SOLVID_POS, UPDATE_MODULE_NAME);
             Id stream = pool_lookup_id(pool, SOLVID_POS, UPDATE_MODULE_STREAM);
@@ -183,6 +197,23 @@ Advisory::getApplicablePackages(std::vector<AdvisoryPkg> & pkglist, bool withFil
             }
         }
         dataiterator_free(&di_inner);
+
+        if (!hasModuleMetadata && !activeModuleArtifactNames.empty()) {
+            // Collection has no <module> tag and we have active module artifact names
+            dataiterator_setpos(&di);
+            dataiterator_init(&di_inner, pool, 0, SOLVID_POS, UPDATE_COLLECTION, 0, 0);
+            while (dataiterator_step(&di_inner)) {
+                dataiterator_setpos(&di_inner);
+                Id pkgName = pool_lookup_id(pool, SOLVID_POS, UPDATE_COLLECTION_NAME);
+                if (pkgName && activeModuleArtifactNames.count(pool_id2str(pool, pkgName))) {
+                    // Non-modular collection (has no <module> tag) references
+                    // a package provided by an active module => not applicable.
+                    isModuleCollectionApplicable = false;
+                    break;
+                }
+            }
+            dataiterator_free(&di_inner);
+        }
 
         if (isModuleCollectionApplicable) {
             const char * filename = nullptr;
