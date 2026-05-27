@@ -14,6 +14,7 @@ class ModulePackageContainerTest : public CppUnit::TestCase
         CPPUNIT_TEST(testDisableEnableModules);
         CPPUNIT_TEST(testRollback);
         CPPUNIT_TEST(testInstallRemoveProfile);
+        CPPUNIT_TEST(testGetActiveModulePackageNames);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -24,6 +25,7 @@ public:
     void testDisableEnableModules();
     void testRollback();
     void testInstallRemoveProfile();
+    void testGetActiveModulePackageNames();
 
 private:
     DnfContext *context;
