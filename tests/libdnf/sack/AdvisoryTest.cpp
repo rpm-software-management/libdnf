@@ -146,3 +146,63 @@ void AdvisoryTest::testGetReferences()
     advisory->getReferences(refsvector);
     CPPUNIT_ASSERT(refsvector.size() == 2);
 }
+
+void AdvisoryTest::testGetApplicablePackagesNonModularFiltered()
+{
+    // Self-contained test with its own sack and data (advisory-nonmodular-for-modular-pkg/).
+    //
+    // Repository layout:
+    //   modules.yaml: perl-DBI:master module with artifact test-perl-DBI
+    //   primary.xml:  modular test-perl-DBI-0:1-2.module_el8+6745+9879ate3
+    //                 non-modular test-perl-DBI-0:2-1.el8
+    //   updateinfo.xml: one advisory (NONMODULAR-2024-001) without a <module> tag,
+    //                   referencing test-perl-DBI-0:2-1.el8
+
+    g_autoptr(GError) error = nullptr;
+    char *test_tmpdir = g_strdup("/tmp/libdnfXXXXXX");
+    CPPUNIT_ASSERT(mkdtemp(test_tmpdir));
+
+    DnfSack *test_sack = dnf_sack_new();
+    dnf_sack_set_cachedir(test_sack, test_tmpdir);
+    dnf_sack_set_arch(test_sack, "x86_64", NULL);
+    dnf_sack_setup(test_sack, 0, NULL);
+    HyRepo test_repo = hy_repo_create("test_advisory_repo");
+    std::string repodata = std::string(TESTDATADIR "/advisory-nonmodular-for-modular-pkg/repodata/");
+    hy_repo_set_string(test_repo, HY_REPO_MD_FN, (repodata + "repomd.xml").c_str());
+    hy_repo_set_string(test_repo, HY_REPO_PRIMARY_FN, (repodata + "primary.xml.gz").c_str());
+    hy_repo_set_string(test_repo, HY_REPO_UPDATEINFO_FN, (repodata + "updateinfo.xml.gz").c_str());
+    hy_repo_set_string(test_repo, MODULES_FN, (repodata + "modules.yaml.gz").c_str());
+    dnf_sack_load_repo(test_sack, test_repo, DNF_SACK_LOAD_FLAG_USE_UPDATEINFO, &error);
+
+    // No modules enabled - get the advisory object and verify it's applicable
+    dnf_sack_filter_modules_v2(test_sack, nullptr, nullptr, test_tmpdir, "platform_id:f33", false, false, false);
+
+    HyQuery query = new libdnf::Query(test_sack);
+    std::vector<libdnf::AdvisoryPkg> advisoryPkgs;
+    query->getAdvisoryPkgs(HY_EQ, advisoryPkgs);
+    CPPUNIT_ASSERT(advisoryPkgs.size() == 1);
+    libdnf::Advisory *test_advisory = advisoryPkgs[0].getAdvisory();
+    delete query;
+
+    std::vector<libdnf::AdvisoryPkg> pkgsvector;
+    test_advisory->getApplicablePackages(pkgsvector);
+    CPPUNIT_ASSERT(pkgsvector.size() == 1);
+    CPPUNIT_ASSERT(!g_strcmp0(pkgsvector[0].getNameString(), "test-perl-DBI"));
+    CPPUNIT_ASSERT(!g_strcmp0(pkgsvector[0].getEVRString(), "2-1.el8"));
+
+    // Enable perl-DBI:master - the same advisory is no longer applicable
+    libdnf::ModulePackageContainer * modules = dnf_sack_get_module_container(test_sack);
+    CPPUNIT_ASSERT(modules->enable("perl-DBI", "master", false));
+    dnf_sack_filter_modules_v2(test_sack, modules, nullptr, test_tmpdir, nullptr, true, false, false);
+    pkgsvector.clear();
+
+    test_advisory->getApplicablePackages(pkgsvector);
+    CPPUNIT_ASSERT(pkgsvector.size() == 0);
+
+    delete test_advisory;
+
+    dnf_remove_recursive_v2(test_tmpdir, NULL);
+    delete test_repo;
+    g_object_unref(test_sack);
+    g_free(test_tmpdir);
+}

@@ -23,6 +23,8 @@
 #define __ADVISORY_HPP
 
 #include <memory>
+#include <set>
+#include <string>
 #include <vector>
 
 #include <solv/pooltypes.h>
@@ -44,7 +46,17 @@ public:
     const char *getName() const;
     void getPackages(std::vector<AdvisoryPkg> & pkglist, bool withFilemanes = true) const;
     std::vector<AdvisoryModule> getModules() const;
+    /// Return advisory packages from applicable collections. Collections with
+    /// a <module> tag are checked against active module streams. Non-modular
+    /// collections (no <module> tag) are excluded when any of their package
+    /// names appears in activeModuleArtifactNames.
+    void getApplicablePackages(std::vector<AdvisoryPkg> & pkglist, bool withFilemanes,
+                               const std::set<std::string> & activeModuleArtifactNames) const;
+    /// Convenience overload that computes the active module artifact names
+    /// internally. When processing multiple advisories, prefer the overload
+    /// above with a precomputed set for better performance.
     void getApplicablePackages(std::vector<AdvisoryPkg> & pkglist, bool withFilemanes = true) const;
+
     void getReferences(std::vector<AdvisoryRef> & reflist) const;
     const char *getRights() const;
     const char *getSeverity() const;

@@ -42,6 +42,7 @@ extern "C" {
 #include "libdnf/goal/Goal.hpp"
 #include "libdnf/repo/Repo-private.hpp"
 #include "libdnf/sack/selector.hpp"
+#include "libdnf/nevra.hpp"
 #include "libdnf/conf/Const.hpp"
 
 #include "bgettext/bgettext-lib.h"
@@ -911,6 +912,33 @@ std::set<std::string> ModulePackageContainer::getInstalledPkgNames()
         }
     }
     return pkgNames;
+}
+
+std::set<std::string> ModulePackageContainer::getActiveModulePackageNames()
+{
+    pImpl->addVersion2Modules();
+    std::set<std::string> names;
+    Nevra nevra;
+    for (auto * mod : getModulePackages()) {
+        if (isModuleActive(mod)) {
+            auto demodularized = mod->getDemodularizedRpms();
+            for (const auto & rpm : mod->getArtifacts()) {
+                if (nevra.parse(rpm.c_str(), HY_FORM_NEVRA)) {
+                    auto arch = nevra.getArch();
+                    if (arch == "src" || arch == "nosrc") {
+                        continue;
+                    }
+                    auto pkgName = nevra.getName();
+                    if (std::find(demodularized.begin(), demodularized.end(),
+                                  pkgName) != demodularized.end()) {
+                        continue;
+                    }
+                    names.insert(pkgName);
+                }
+            }
+        }
+    }
+    return names;
 }
 
 std::string

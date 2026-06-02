@@ -24,6 +24,7 @@ class AdvisoryTest : public CppUnit::TestCase
         CPPUNIT_TEST(testGetApplicablePackagesMultipleApplicableCollections);
         CPPUNIT_TEST(testGetModules);
         CPPUNIT_TEST(testGetReferences);
+        CPPUNIT_TEST(testGetApplicablePackagesNonModularFiltered);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -42,6 +43,7 @@ public:
     void testGetApplicablePackagesMultipleApplicableCollections();
     void testGetModules();
     void testGetReferences();
+    void testGetApplicablePackagesNonModularFiltered();
 
 private:
     DnfContext *context = nullptr;

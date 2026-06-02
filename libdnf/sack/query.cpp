@@ -23,6 +23,8 @@
 #include <algorithm>
 #include <assert.h>
 #include <fnmatch.h>
+#include <set>
+#include <string>
 #include <vector>
 
 extern "C" {
@@ -2604,12 +2606,18 @@ Query::getAdvisoryPkgs(int cmpType, std::vector<AdvisoryPkg> & advisoryPkgs)
     Dataiterator di;
     auto resultPset = pImpl->result.get();
 
+    std::set<std::string> activeModuleArtifactNames;
+    auto moduleContainer = dnf_sack_get_module_container(sack);
+    if (moduleContainer) {
+        activeModuleArtifactNames = moduleContainer->getActiveModulePackageNames();
+    }
+
     // iterate over advisories
     dataiterator_init(&di, pool, 0, 0, 0, 0, 0);
     dataiterator_prepend_keyname(&di, UPDATE_COLLECTION);
     while (dataiterator_step(&di)) {
         Advisory advisory(sack, di.solvid);
-        advisory.getApplicablePackages(pkgs);
+        advisory.getApplicablePackages(pkgs, true, activeModuleArtifactNames);
         dataiterator_skip_solvable(&di);
     }
     dataiterator_free(&di);

@@ -156,3 +156,22 @@ void ModulePackageContainerTest::testInstallRemoveProfile()
 
     modules->save();
 }
+
+void ModulePackageContainerTest::testGetActiveModulePackageNames()
+{
+    // httpd:2.4 and base-runtime:f26 are enabled in setUp
+    auto names = modules->getActiveModulePackageNames();
+
+    CPPUNIT_ASSERT(!names.empty());
+    // httpd:2.4 artifacts contain httpd, httpd-doc, libnghttp2
+    CPPUNIT_ASSERT(names.count("httpd"));
+    CPPUNIT_ASSERT(names.count("httpd-doc"));
+    CPPUNIT_ASSERT(names.count("libnghttp2"));
+    // base-runtime:f26 artifacts contain bash, glibc, etc.
+    CPPUNIT_ASSERT(names.count("bash"));
+    CPPUNIT_ASSERT(names.count("glibc"));
+    // non-active module package names should not be present
+    // (httpd:2.2 is not enabled, but has the same artifact names — that's fine,
+    //  we just verify a name from a completely non-existent module is absent)
+    CPPUNIT_ASSERT(!names.count("non-existent-pkg"));
+}
