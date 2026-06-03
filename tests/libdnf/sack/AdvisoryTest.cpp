@@ -146,3 +146,65 @@ void AdvisoryTest::testGetReferences()
     advisory->getReferences(refsvector);
     CPPUNIT_ASSERT(refsvector.size() == 2);
 }
+
+void AdvisoryTest::testNonModularAdvisoryFiltering()
+{
+    g_autoptr(GError) error = nullptr;
+
+    // Create a separate sack with test data containing:
+    // - a non-modular package test-perl-DBI-0:1-2.el9.x86_64
+    // - a modular package test-perl-DBI-0:1-2.module_el8+6587+9879afr5.x86_64
+    // - module perl-DBI:master with the modular package as artifact
+    // - advisory RHSA-2026:0001 with a non-modular collection referencing the non-modular package
+    DnfSack *testSack = dnf_sack_new();
+    char *testTmpdir = g_strdup("/tmp/libdnfAdvNonModXXXXXX");
+    char *retptr = mkdtemp(testTmpdir);
+    CPPUNIT_ASSERT(retptr);
+    dnf_sack_set_cachedir(testSack, testTmpdir);
+    dnf_sack_set_arch(testSack, "x86_64", NULL);
+    dnf_sack_setup(testSack, 0, NULL);
+
+    HyRepo testRepo = hy_repo_create("test_nonmodular_advisory_repo");
+    std::string repodata = std::string(TESTDATADIR "/advisory-nonmodular-for-modular-pkg/repodata/");
+    hy_repo_set_string(testRepo, HY_REPO_MD_FN, (repodata + "repomd.xml").c_str());
+    hy_repo_set_string(testRepo, HY_REPO_PRIMARY_FN, (repodata + "primary.xml").c_str());
+    hy_repo_set_string(testRepo, HY_REPO_UPDATEINFO_FN, (repodata + "updateinfo.xml").c_str());
+    hy_repo_set_string(testRepo, MODULES_FN, (repodata + "modules.yaml").c_str());
+    dnf_sack_load_repo(testSack, testRepo, DNF_SACK_LOAD_FLAG_USE_UPDATEINFO, &error);
+    CPPUNIT_ASSERT(!error);
+
+    // Load module metadata but don't enable any module yet
+    dnf_sack_filter_modules_v2(testSack, nullptr, nullptr, testTmpdir, "platform_id:f33", false, false, false);
+
+    // With no module enabled, the non-modular advisory should be applicable.
+    // Use getAdvisoryPkgs to discover the advisory and verify the package is returned.
+    HyQuery query = new libdnf::Query(testSack);
+    std::vector<libdnf::AdvisoryPkg> advisoryPkgs;
+    query->getAdvisoryPkgs(HY_EQ, advisoryPkgs);
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), advisoryPkgs.size());
+
+    // Get the Advisory object for direct getApplicablePackages testing
+    libdnf::Advisory *adv = advisoryPkgs[0].getAdvisory();
+    std::vector<libdnf::AdvisoryPkg> applicablePkgs;
+    adv->getApplicablePackages(applicablePkgs);
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), applicablePkgs.size());
+
+    // Now enable perl-DBI:master and apply modular filtering
+    libdnf::ModulePackageContainer *testModules = dnf_sack_get_module_container(testSack);
+    CPPUNIT_ASSERT(testModules);
+    CPPUNIT_ASSERT(testModules->enable("perl-DBI", "master", false));
+    dnf_sack_filter_modules_v2(testSack, testModules, nullptr, testTmpdir, nullptr, true, false, false);
+
+    // With the module active, the non-modular collection should be filtered out
+    applicablePkgs.clear();
+    adv->getApplicablePackages(applicablePkgs);
+    CPPUNIT_ASSERT(applicablePkgs.empty());
+
+    delete adv;
+    delete query;
+
+    dnf_remove_recursive_v2(testTmpdir, NULL);
+    delete testRepo;
+    g_object_unref(testSack);
+    g_free(testTmpdir);
+}

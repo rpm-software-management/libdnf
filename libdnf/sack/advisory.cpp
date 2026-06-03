@@ -19,6 +19,7 @@
  */
 
 #include <assert.h>
+#include <memory>
 
 #include <solv/repo.h>
 
@@ -160,14 +161,17 @@ Advisory::getApplicablePackages(std::vector<AdvisoryPkg> & pkglist, bool withFil
     Dataiterator di;
     Dataiterator di_inner;
     Pool *pool = dnf_sack_get_pool(sack);
+    std::unique_ptr<PackageSet> moduleExcludes(dnf_sack_get_module_excludes(sack));
 
     dataiterator_init(&di, pool, 0, advisory, UPDATE_COLLECTIONLIST, 0, 0);
     while (dataiterator_step(&di)) {
         dataiterator_setpos(&di);
 
         bool isModuleCollectionApplicable = true;
+        bool hasModuleMetadata = false;
         dataiterator_init(&di_inner, pool, 0, SOLVID_POS, UPDATE_MODULE, 0, 0);
         while (dataiterator_step(&di_inner)) {
+            hasModuleMetadata = true;
             dataiterator_setpos(&di_inner);
             Id name = pool_lookup_id(pool, SOLVID_POS, UPDATE_MODULE_NAME);
             Id stream = pool_lookup_id(pool, SOLVID_POS, UPDATE_MODULE_STREAM);
@@ -183,6 +187,38 @@ Advisory::getApplicablePackages(std::vector<AdvisoryPkg> & pkglist, bool withFil
             }
         }
         dataiterator_free(&di_inner);
+
+        if (!hasModuleMetadata && moduleExcludes) {
+            // Collection has no <module> tag — check whether any of its
+            // packages have been excluded by modular filtering.  If so the
+            // collection is a non-modular advisory for a package whose name
+            // is governed by an active module stream and should not be shown.
+            dataiterator_setpos(&di);
+            dataiterator_init(&di_inner, pool, 0, SOLVID_POS, UPDATE_COLLECTION, 0, 0);
+            while (dataiterator_step(&di_inner)) {
+                dataiterator_setpos(&di_inner);
+                Id name = pool_lookup_id(pool, SOLVID_POS, UPDATE_COLLECTION_NAME);
+                Id evr = pool_lookup_id(pool, SOLVID_POS, UPDATE_COLLECTION_EVR);
+                Id arch = pool_lookup_id(pool, SOLVID_POS, UPDATE_COLLECTION_ARCH);
+                if (name) {
+                    Id p, pp;
+                    FOR_PROVIDES(p, pp, name) {
+                        Solvable *s = pool_id2solvable(pool, p);
+                        if (s->name == name && s->evr == evr && s->arch == arch
+                            && moduleExcludes->has(p)) {
+                            // Non-modular collection references a package
+                            // whose exact NEVRA is module-excluded.
+                            isModuleCollectionApplicable = false;
+                            break;
+                        }
+                    }
+                }
+                if (!isModuleCollectionApplicable) {
+                    break;
+                }
+            }
+            dataiterator_free(&di_inner);
+        }
 
         if (isModuleCollectionApplicable) {
             const char * filename = nullptr;
