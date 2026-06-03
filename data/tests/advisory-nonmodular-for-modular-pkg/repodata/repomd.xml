@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<repomd xmlns="http://linux.duke.edu/metadata/repo" xmlns:rpm="http://linux.duke.edu/metadata/rpm">
+  <revision>1700000000</revision>
+  <data type="primary">
+    <checksum type="sha256">7696ee2ac469dbb6c534f7ff1cae57c335b657a024f1b4fab401b6fa1d4a73db</checksum>
+    <open-checksum type="sha256">7696ee2ac469dbb6c534f7ff1cae57c335b657a024f1b4fab401b6fa1d4a73db</open-checksum>
+    <location href="repodata/primary.xml"/>
+    <timestamp>1700000000</timestamp>
+    <size>2345</size>
+    <open-size>2345</open-size>
+  </data>
+  <data type="filelists">
+    <checksum type="sha256">0f12a94d5ede8c9abc888b9622d304dc65a69a77d4dd0bf890559d9fba624c45</checksum>
+    <open-checksum type="sha256">0f12a94d5ede8c9abc888b9622d304dc65a69a77d4dd0bf890559d9fba624c45</open-checksum>
+    <location href="repodata/filelists.xml"/>
+    <timestamp>1700000000</timestamp>
+    <size>491</size>
+    <open-size>491</open-size>
+  </data>
+  <data type="other">
+    <checksum type="sha256">25ceecb3b0f641ef8cab6bae4c0008a44c72855ba2c8b3ec8ad3a870292e3dea</checksum>
+    <open-checksum type="sha256">25ceecb3b0f641ef8cab6bae4c0008a44c72855ba2c8b3ec8ad3a870292e3dea</open-checksum>
+    <location href="repodata/other.xml"/>
+    <timestamp>1700000000</timestamp>
+    <size>487</size>
+    <open-size>487</open-size>
+  </data>
+  <data type="modules">
+    <checksum type="sha256">706bc241db05ffa580be0cbd0d80a4b4dfa2dae62adc06ed484d8bee5723dba0</checksum>
+    <open-checksum type="sha256">706bc241db05ffa580be0cbd0d80a4b4dfa2dae62adc06ed484d8bee5723dba0</open-checksum>
+    <location href="repodata/modules.yaml"/>
+    <timestamp>1700000000</timestamp>
+    <size>346</size>
+    <open-size>346</open-size>
+  </data>
+  <data type="updateinfo">
+    <checksum type="sha256">f58cc48119e480727253f6c6805b629b8912883aa564c483b75ae798dd40900c</checksum>
+    <open-checksum type="sha256">f58cc48119e480727253f6c6805b629b8912883aa564c483b75ae798dd40900c</open-checksum>
+    <location href="repodata/updateinfo.xml"/>
+    <timestamp>1700000000</timestamp>
+    <size>872</size>
+    <open-size>872</open-size>
+  </data>
+</repomd>
