@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xmlns="http://linux.duke.edu/metadata/common" xmlns:rpm="http://linux.duke.edu/metadata/rpm" packages="2">
+<package type="rpm">
+  <name>test-perl-DBI</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1" rel="2.el9"/>
+  <checksum type="sha256" pkgid="YES">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</checksum>
+  <summary>testpkg Package</summary>
+  <description>Non-modular test-perl-DBI package</description>
+  <packager></packager>
+  <url></url>
+  <time file="1620046385" build="1585914063"/>
+  <size package="6084" installed="0" archive="124"/>
+  <location href="test-perl-DBI-1-2.el9.x86_64.rpm"/>
+  <format>
+    <rpm:license>MIT</rpm:license>
+    <rpm:vendor></rpm:vendor>
+    <rpm:group>System Environment/Base</rpm:group>
+    <rpm:buildhost>localhost</rpm:buildhost>
+    <rpm:sourcerpm>test-perl-DBI-1-2.el9.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="4504" end="6040"/>
+    <rpm:provides>
+      <rpm:entry name="test-perl-DBI" flags="EQ" epoch="0" ver="1" rel="2.el9"/>
+      <rpm:entry name="test-perl-DBI(x86-64)" flags="EQ" epoch="0" ver="1" rel="2.el9"/>
+    </rpm:provides>
+  </format>
+</package>
+<package type="rpm">
+  <name>test-perl-DBI</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1" rel="2.module_el8+6587+9879afr5"/>
+  <checksum type="sha256" pkgid="YES">bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb</checksum>
+  <summary>testpkg Package</summary>
+  <description>Modular test-perl-DBI package</description>
+  <packager></packager>
+  <url></url>
+  <time file="1620046385" build="1585914212"/>
+  <size package="6084" installed="0" archive="124"/>
+  <location href="test-perl-DBI-1-2.module_el8+6587+9879afr5.x86_64.rpm"/>
+  <format>
+    <rpm:license>MIT</rpm:license>
+    <rpm:vendor></rpm:vendor>
+    <rpm:group>System Environment/Base</rpm:group>
+    <rpm:buildhost>localhost</rpm:buildhost>
+    <rpm:sourcerpm>test-perl-DBI-1-2.module_el8+6587+9879afr5.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="4504" end="6040"/>
+    <rpm:provides>
+      <rpm:entry name="test-perl-DBI" flags="EQ" epoch="0" ver="1" rel="2.module_el8+6587+9879afr5"/>
+      <rpm:entry name="test-perl-DBI(x86-64)" flags="EQ" epoch="0" ver="1" rel="2.module_el8+6587+9879afr5"/>
+    </rpm:provides>
+  </format>
+</package>
+</metadata>

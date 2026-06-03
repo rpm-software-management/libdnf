@@ -1,0 +1,23 @@
+---
+document: modulemd
+version: 2
+data:
+  name: perl-DBI
+  stream: "master"
+  version: 2
+  context: 2b
+  arch: x86_64
+  summary: Perl-DBI
+  description: >-
+    Perl-DBI
+  license:
+    module:
+    - MIT
+  profiles:
+    default:
+      rpms:
+      - test-perl-DBI
+  artifacts:
+    rpms:
+    - test-perl-DBI-0:1-2.module_el8+6587+9879afr5.x86_64
+...

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<otherdata xmlns="http://linux.duke.edu/metadata/other" packages="2">
+<package pkgid="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" name="test-perl-DBI" arch="x86_64">
+  <version epoch="0" ver="1" rel="2.el9"/>
+</package>
+<package pkgid="bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" name="test-perl-DBI" arch="x86_64">
+  <version epoch="0" ver="1" rel="2.module_el8+6587+9879afr5"/>
+</package>
+</otherdata>
