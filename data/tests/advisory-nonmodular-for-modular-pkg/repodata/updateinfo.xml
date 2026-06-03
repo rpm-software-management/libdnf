@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<updates>
+  <update from="secresponseteam@foo.bar" status="final" type="security" version="1">
+    <id>RHSA-2026:0001</id>
+    <title>test-perl-DBI security update</title>
+    <issued date="2026-01-01 00:00:00"/>
+    <updated date="2026-01-01 00:00:00"/>
+    <severity>Important</severity>
+    <rights>Copyright 2026</rights>
+    <summary>A security fix for test-perl-DBI</summary>
+    <description>Non-modular advisory for a package governed by a module</description>
+    <pkglist>
+      <collection short="non-modular-collection">
+        <name>Non-modular component</name>
+        <package name="test-perl-DBI" version="1" release="2.el9" epoch="0" arch="x86_64" src="http://www.foo.org">
+          <filename>test-perl-DBI-1-2.el9.x86_64.rpm</filename>
+        </package>
+      </collection>
+    </pkglist>
+  </update>
+</updates>
