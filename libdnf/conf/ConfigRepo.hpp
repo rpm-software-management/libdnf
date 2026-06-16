@@ -68,6 +68,7 @@ public:
     OptionChild<OptionStringList> & protected_packages();
     OptionChild<OptionBool> & gpgcheck();
     OptionChild<OptionBool> & repo_gpgcheck();
+    OptionChild<OptionBool> & repo_gpgcheck_auto_import_keys();
     OptionChild<OptionBool> & enablegroups();
     OptionChild<OptionNumber<std::uint32_t> > & retries();
     OptionChild<OptionNumber<std::uint32_t> > & bandwidth();

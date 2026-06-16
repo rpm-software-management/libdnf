@@ -152,6 +152,7 @@ public:
     OptionString & password();
     OptionBool & gpgcheck();
     OptionBool & repo_gpgcheck();
+    OptionBool & repo_gpgcheck_auto_import_keys();
     OptionBool & enabled();
     OptionBool & enablegroups();
     OptionNumber<std::uint32_t> & bandwidth();

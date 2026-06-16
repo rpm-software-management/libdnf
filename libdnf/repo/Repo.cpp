@@ -689,7 +689,20 @@ void Repo::Impl::importRepoKeys()
                 continue;
             }
 
-            if (callbacks) {
+            // When repo_gpgcheck_auto_import_keys is enabled, the metadata
+            // signing key configured via gpgkey is trusted from the repo
+            // configuration and imported without prompting. This lets
+            // repo_gpgcheck be used in unattended runs where the per-repo
+            // pubring would otherwise trigger an interactive confirmation
+            // every time the repository serves content at a new URL.
+            // Otherwise the import is confirmed through the callback (which,
+            // on the command line, prompts the user).
+            if (conf->repo_gpgcheck_auto_import_keys().getValue()) {
+                logger->info(tfm::format(
+                    _("repo %s: automatically importing key 0x%s (%s) from %s "
+                      "for metadata signature verification"),
+                    id, keyInfo.getId(), keyInfo.getUserId(), keyInfo.getUrl()));
+            } else if (callbacks) {
                 if (!callbacks->repokeyImport(keyInfo.getId(), keyInfo.getUserId(), keyInfo.getFingerprint(),
                                               keyInfo.getUrl(), keyInfo.getTimestamp()))
                     continue;
