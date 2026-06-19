@@ -694,7 +694,7 @@ static int create_temporary_directory(char *name_template) {
             logger->debug(tfm::format("Failed to open a SELinux labeling handle: %s",
                         strerror(errno)));
         } else {
-            if (selabel_lookup(labeling_handle, &new_default_context, name_template, 0700)) {
+            if (selabel_lookup(labeling_handle, &new_default_context, name_template, S_IFDIR|0700)) {
                 /* Here we could hard-code "system_u:object_r:user_tmp_t:s0", but
                  * that value should be really defined in default file context
                  * SELinux policy. Only log that the policy is incpomplete. */
