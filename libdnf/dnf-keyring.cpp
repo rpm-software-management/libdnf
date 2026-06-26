@@ -390,8 +390,8 @@ rpmcliverifysignatures_log_handler_cb(rpmlogRec rec, rpmlogCallbackData data)
         g_string_append(*string, ": ");
     g_string_append(*string, rpmlogRecMessage(rec));
 
-    /* remove the trailing /n which rpm does */
-    if ((*string)->len > 0)
+    /* remove the trailing \n which rpm does */
+    if ((*string)->len > 0 && (*string)->str[(*string)->len - 1] == '\n')
         g_string_truncate(*string,(*string)->len - 1);
     return 0;
 }
