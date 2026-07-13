@@ -697,11 +697,16 @@ void Repo::Impl::importRepoKeys()
             // every time the repository serves content at a new URL.
             // Otherwise the import is confirmed through the callback (which,
             // on the command line, prompts the user).
-            if (conf->repo_gpgcheck_auto_import_keys().getValue()) {
+            // assumeno takes precedence over the option: the import then goes
+            // through the callback as usual, which shows the key details and
+            // declines, so assumeno never changes the system.
+            if (conf->repo_gpgcheck_auto_import_keys().getValue()
+                && !conf->getMainConfig().assumeno().getValue()) {
                 logger->info(tfm::format(
-                    _("repo %s: automatically importing key 0x%s (%s) from %s "
+                    _("repo %s: automatically importing key 0x%s (%s, fingerprint %s) from %s "
                       "for metadata signature verification"),
-                    id, keyInfo.getId(), keyInfo.getUserId(), keyInfo.getUrl()));
+                    id, keyInfo.getId(), keyInfo.getUserId(), keyInfo.getFingerprint(),
+                    keyInfo.getUrl()));
             } else if (callbacks) {
                 if (!callbacks->repokeyImport(keyInfo.getId(), keyInfo.getUserId(), keyInfo.getFingerprint(),
                                               keyInfo.getUrl(), keyInfo.getTimestamp()))
