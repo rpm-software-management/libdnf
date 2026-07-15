@@ -68,6 +68,7 @@ public:
     OptionChild<OptionStringList> & protected_packages();
     OptionChild<OptionBool> & gpgcheck();
     OptionChild<OptionBool> & repo_gpgcheck();
+    /// Auto-import applies only to keys from local (file://) gpgkey URLs.
     OptionChild<OptionBool> & repo_gpgcheck_auto_import_keys();
     OptionChild<OptionBool> & enablegroups();
     OptionChild<OptionNumber<std::uint32_t> > & retries();

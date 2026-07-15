@@ -681,7 +681,14 @@ void Repo::Impl::importRepoKeys()
 
     auto gpgDir = getCachedir() + "/pubring";
     auto knownKeys = keyidsFromPubring(gpgDir);
+    // With repo_gpgcheck_auto_import_keys enabled, keys from local (file://) gpgkey URLs
+    // are imported without confirmation. Remote keys still go through the callback so the
+    // fingerprint can be verified before the key is trusted. assumeno takes precedence:
+    // the callback shows the key details and declines the import as usual.
+    const bool autoImportKeys = conf->repo_gpgcheck_auto_import_keys().getValue()
+        && !conf->getMainConfig().assumeno().getValue();
     for (const auto & gpgkeyUrl : conf->gpgkey().getValue()) {
+        const bool keyIsLocal = gpgkeyUrl.compare(0, 7, "file://") == 0;
         auto keyInfos = retrieve(gpgkeyUrl);
         for (auto & keyInfo : keyInfos) {
             if (std::find(knownKeys.begin(), knownKeys.end(), keyInfo.getId()) != knownKeys.end()) {
@@ -689,25 +696,19 @@ void Repo::Impl::importRepoKeys()
                 continue;
             }
 
-            // When repo_gpgcheck_auto_import_keys is enabled, the metadata
-            // signing key configured via gpgkey is trusted from the repo
-            // configuration and imported without prompting. This lets
-            // repo_gpgcheck be used in unattended runs where the per-repo
-            // pubring would otherwise trigger an interactive confirmation
-            // every time the repository serves content at a new URL.
-            // Otherwise the import is confirmed through the callback (which,
-            // on the command line, prompts the user).
-            // assumeno takes precedence over the option: the import then goes
-            // through the callback as usual, which shows the key details and
-            // declines, so assumeno never changes the system.
-            if (conf->repo_gpgcheck_auto_import_keys().getValue()
-                && !conf->getMainConfig().assumeno().getValue()) {
+            if (autoImportKeys && keyIsLocal) {
                 logger->info(tfm::format(
                     _("repo %s: automatically importing key 0x%s (%s, fingerprint %s) from %s "
                       "for metadata signature verification"),
                     id, keyInfo.getId(), keyInfo.getUserId(), keyInfo.getFingerprint(),
                     keyInfo.getUrl()));
             } else if (callbacks) {
+                if (autoImportKeys && !keyIsLocal) {
+                    logger->info(tfm::format(
+                        _("repo %s: repo_gpgcheck_auto_import_keys ignored for key from %s: "
+                          "only local (file://) gpgkey URLs are auto-imported"),
+                        id, keyInfo.getUrl()));
+                }
                 if (!callbacks->repokeyImport(keyInfo.getId(), keyInfo.getUserId(), keyInfo.getFingerprint(),
                                               keyInfo.getUrl(), keyInfo.getTimestamp()))
                     continue;
