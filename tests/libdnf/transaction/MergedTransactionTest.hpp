@@ -31,6 +31,13 @@ class MergedTransactionTest : public CppUnit::TestCase {
 
     CPPUNIT_TEST(test_multilib_identity);
 
+    CPPUNIT_TEST(test_installonly_multiple_installs);
+    CPPUNIT_TEST(test_installonly_install_then_remove_one);
+    CPPUNIT_TEST(test_installonly_remove_missing);
+    CPPUNIT_TEST(test_installonly_remove_unrelated_nevra);
+    CPPUNIT_TEST(test_installonly_reinstall_orphan_nets_nothing);
+    CPPUNIT_TEST(test_installonly_reason_change_does_not_erase_sibling);
+
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -61,6 +68,13 @@ public:
     void test_downgrade_upgrade_remove();
 
     void test_multilib_identity();
+
+    void test_installonly_multiple_installs();
+    void test_installonly_install_then_remove_one();
+    void test_installonly_remove_missing();
+    void test_installonly_remove_unrelated_nevra();
+    void test_installonly_reinstall_orphan_nets_nothing();
+    void test_installonly_reason_change_does_not_erase_sibling();
 private:
     std::shared_ptr< SQLite3 > conn;
 };
