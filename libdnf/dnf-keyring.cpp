@@ -345,34 +345,41 @@ out:
 gboolean
 dnf_keyring_add_public_keys(rpmKeyring keyring, GError **error) try
 {
-    const gchar *gpg_dir = "/etc/pki/rpm-gpg";
-    gboolean ret = TRUE;
-    g_autoptr(GDir) dir = NULL;
-    GError *localError = NULL;
+    /* Search both GPG key locations: /etc/pki/rpm-gpg for user-added keys
+     * and /usr/share/pki/rpm-gpg for distribution-provided keys.
+     */
+    const gchar *gpg_dirs[] = { "/etc/pki/rpm-gpg", "/usr/share/pki/rpm-gpg", NULL };
 
-    /* search all the public key files */
-    dir = g_dir_open(gpg_dir, 0, &localError);
-    if (dir == NULL) {
-        if (localError->domain != G_FILE_ERROR || localError->code != G_FILE_ERROR_NOENT) {
-            g_warning("%s", localError->message);
-        }
-        g_error_free(localError);
-        return TRUE;
-    }
-    do {
-        const gchar *filename;
-        g_autofree gchar *path_tmp = NULL;
-        filename = g_dir_read_name(dir);
-        if (filename == NULL)
-            break;
-        path_tmp = g_build_filename(gpg_dir, filename, NULL);
-        ret = dnf_keyring_add_public_key(keyring, path_tmp, &localError);
-        if (!ret) {
-            g_warning("%s", localError->message);
+    for (const gchar **gpg_dir_p = gpg_dirs; *gpg_dir_p != NULL; gpg_dir_p++) {
+        const gchar *gpg_dir = *gpg_dir_p;
+        gboolean ret = TRUE;
+        g_autoptr(GDir) dir = NULL;
+        GError *localError = NULL;
+
+        /* search all the public key files */
+        dir = g_dir_open(gpg_dir, 0, &localError);
+        if (dir == NULL) {
+            if (localError->domain != G_FILE_ERROR || localError->code != G_FILE_ERROR_NOENT) {
+                g_warning("%s", localError->message);
+            }
             g_error_free(localError);
-            localError = NULL;
+            continue;
         }
-    } while (true);
+        do {
+            const gchar *filename;
+            g_autofree gchar *path_tmp = NULL;
+            filename = g_dir_read_name(dir);
+            if (filename == NULL)
+                break;
+            path_tmp = g_build_filename(gpg_dir, filename, NULL);
+            ret = dnf_keyring_add_public_key(keyring, path_tmp, &localError);
+            if (!ret) {
+                g_warning("%s", localError->message);
+                g_error_free(localError);
+                localError = NULL;
+            }
+        } while (true);
+    }
     return TRUE;
 } CATCH_TO_GERROR(FALSE)
 
