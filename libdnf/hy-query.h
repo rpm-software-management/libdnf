@@ -103,7 +103,7 @@ bool hy_query_is_applied(const HyQuery query);
 const Map *hy_query_get_result(const HyQuery query);
 DnfSack *hy_query_get_sack(HyQuery query);
 void hy_add_filter_nevra_object(HyQuery query, HyNevra nevra, bool icase);
-void hy_add_filter_extras(HyQuery query);
+void hy_add_filter_extras(HyQuery query, bool with_evr);
 void hy_filter_recent(HyQuery query, const long unsigned int recent_limit);
 void hy_filter_duplicated(HyQuery query);
 GPtrArray * hy_query_get_advisory_pkgs(HyQuery query, int cmp_type);

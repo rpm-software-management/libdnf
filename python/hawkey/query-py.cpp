@@ -603,10 +603,16 @@ duplicated_filter(_QueryObject *self, PyObject *unused) try
 } CATCH_TO_PYTHON
 
 static PyObject *
-add_filter_extras(_QueryObject *self, PyObject *unused) try
+add_filter_extras(_QueryObject *self, PyObject *args, PyObject *kwds) try
 {
+    PyObject *with_evr = NULL;
+    const char *kwlist[] = {"with_evr", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O!", (char**) kwlist, &PyBool_Type, &with_evr))
+        return NULL;
+    gboolean c_with_evr = with_evr != NULL && PyObject_IsTrue(with_evr);
+
     HyQuery self_query_copy = new libdnf::Query(*self->query);
-    self_query_copy->filterExtras();
+    self_query_copy->filterExtras(c_with_evr);
     PyObject *final_query = queryToPyObject(self_query_copy, self->sack, Py_TYPE(self));
     return final_query;
 } CATCH_TO_PYTHON
@@ -1111,7 +1117,7 @@ static struct PyMethodDef query_methods[] = {
     {"available", (PyCFunction)add_available_filter, METH_NOARGS, NULL},
     {"downgrades", (PyCFunction)add_downgrades_filter, METH_NOARGS, NULL},
     {"duplicated", (PyCFunction)duplicated_filter, METH_NOARGS, NULL},
-    {"extras", (PyCFunction)add_filter_extras, METH_NOARGS, NULL},
+    {"extras", (PyCFunction)add_filter_extras, METH_KEYWORDS|METH_VARARGS, NULL},
     {"installed", (PyCFunction)add_installed_filter, METH_NOARGS, NULL},
     {"latest", (PyCFunction)add_filter_latest, METH_VARARGS, NULL},
     {"union", (PyCFunction)q_union, METH_VARARGS, NULL},
