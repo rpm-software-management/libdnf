@@ -187,7 +187,7 @@ class ConfigMain::Impl {
     OptionNumber<std::int32_t> log_rotate{4, 0};
     OptionBool log_compress{false};
     OptionStringList varsdir{VARS_DIRS};
-    OptionStringList reposdir{{"/etc/yum.repos.d", "/etc/yum/repos.d", "/etc/distro.repos.d"}};
+    OptionStringList reposdir{{"/etc/yum.repos.d", "/etc/yum/repos.d", "/etc/distro.repos.d", "/usr/share/dnf5/repos.d"}};
     OptionBool debug_solver{false};
     OptionStringList installonlypkgs{INSTALLONLYPKGS};
     OptionStringList group_package_types{GROUP_PACKAGE_TYPES};
