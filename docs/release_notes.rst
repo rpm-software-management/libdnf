@@ -19,6 +19,29 @@
 ######################
 
 ====================
+0.76.0 Release Notes
+====================
+
+- Add `/usr/share/dnf5/repos.d` reposdir
+- [context] do not fail on rolling releases with no VERSION_ID
+- keyring: Also search /usr/share/pki/rpm-gpg for GPG keys
+- fix rpmlog callback truncate corrupts multi-byte UTF-8 sequence
+- advisory: filter non-modular collections by module_excludes
+- [context] automatically setup $arch variable
+- Fix formatting error messages when importing subkeys
+- Fix dnf_keyring_add_public_key() to add keys from all ASCII-armored blocks
+- Fix dnf_keyring_add_public_key() to add all keys from an ASCII-armored block
+- Log identifiers of keys imported by dnf_keyring_add_public_key()
+- Add support for E2K architecture
+- Clearer error for protected package broken dependencies
+- Describe all problems even when there are protected removals
+- fix: compare RPMItem in transaction with rpmvercmp
+- Add `filterUnneededExtraUserinstalled` and Python version to the API
+- Mark all protected packages as user installed for all transactions
+- Enable implicitobsoleteusescolors flag.
+
+
+====================
 0.75.0 Release Notes
 ====================
 
