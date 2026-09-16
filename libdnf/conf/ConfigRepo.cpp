@@ -53,6 +53,7 @@ class ConfigRepo::Impl {
     OptionChild<OptionStringList> protected_packages{mainConfig.protected_packages()};
     OptionChild<OptionBool> gpgcheck{mainConfig.gpgcheck()};
     OptionChild<OptionBool> repo_gpgcheck{mainConfig.repo_gpgcheck()};
+    OptionChild<OptionBool> repo_gpgcheck_auto_import_keys{mainConfig.repo_gpgcheck_auto_import_keys()};
     OptionChild<OptionBool> enablegroups{mainConfig.enablegroups()};
     OptionChild<OptionNumber<std::uint32_t> > retries{mainConfig.retries()};
     OptionChild<OptionNumber<std::uint32_t> > bandwidth{mainConfig.bandwidth()};
@@ -154,6 +155,7 @@ ConfigRepo::Impl::Impl(Config & owner, ConfigMain & mainConfig)
 
     owner.optBinds().add("gpgcheck", gpgcheck);
     owner.optBinds().add("repo_gpgcheck", repo_gpgcheck);
+    owner.optBinds().add("repo_gpgcheck_auto_import_keys", repo_gpgcheck_auto_import_keys);
     owner.optBinds().add("enablegroups", enablegroups);
     owner.optBinds().add("retries", retries);
     owner.optBinds().add("bandwidth", bandwidth);
@@ -211,6 +213,7 @@ OptionChild<OptionString> & ConfigRepo::password() { return pImpl->password; }
 OptionChild<OptionStringList> & ConfigRepo::protected_packages() { return pImpl->protected_packages; }
 OptionChild<OptionBool> & ConfigRepo::gpgcheck() { return pImpl->gpgcheck; }
 OptionChild<OptionBool> & ConfigRepo::repo_gpgcheck() { return pImpl->repo_gpgcheck; }
+OptionChild<OptionBool> & ConfigRepo::repo_gpgcheck_auto_import_keys() { return pImpl->repo_gpgcheck_auto_import_keys; }
 OptionChild<OptionBool> & ConfigRepo::enablegroups() { return pImpl->enablegroups; }
 OptionChild<OptionNumber<std::uint32_t> > & ConfigRepo::retries() { return pImpl->retries; }
 OptionChild<OptionNumber<std::uint32_t> > & ConfigRepo::bandwidth() { return pImpl->bandwidth; }
