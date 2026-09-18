@@ -35,3 +35,7 @@ jobs:
             - type: repository-file
               # We use the rawhide repo file for all fedora releases, the url doesn't change and it is not rawhide specific (it contains "fedora-$releasever-$basearch")
               id: https://copr.fedorainfracloud.org/coprs/rpmsoftwaremanagement/dnf-nightly/repo/fedora-rawhide/rpmsoftwaremanagement-dnf-nightly-fedora-rawhide.repo
+  - job: propose_downstream
+    trigger: release
+    dist_git_branches:
+      - fedora-rawhide
