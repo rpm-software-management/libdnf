@@ -33,6 +33,11 @@ if cachedir is None:
     cachedir = tempfile.mkdtemp(dir=os.path.dirname(hawkey.test.UNITTEST_DIR),
                                 prefix='pyhawkey')
 
+# run tests with C locales to avoid test failures in Ubuntu/Debian
+os.environ["LC_ALL"] = "C"
+os.environ["LANG"] = "C.UTF-8"
+os.environ["LANGUAGE"] = "en_US:en"
+
 class TestCase(unittest.TestCase):
     repo_dir = os.path.normpath(os.path.join(__file__, "../../../../../data/tests/hawkey/"))
 
