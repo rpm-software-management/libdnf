@@ -304,9 +304,9 @@ hy_add_filter_nevra_object(HyQuery query, HyNevra nevra, bool icase)
 }
 
 void
-hy_add_filter_extras(HyQuery query)
+hy_add_filter_extras(HyQuery query, bool with_evr)
 {
-    query->filterExtras();
+    query->filterExtras(with_evr);
 }
 
 void

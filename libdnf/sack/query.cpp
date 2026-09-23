@@ -2475,7 +2475,7 @@ Query::empty()
 }
 
 void
-Query::filterExtras()
+Query::filterExtras(bool with_evr)
 {
     apply();
 
@@ -2489,31 +2489,46 @@ Query::filterExtras()
         return;
     }
 
-    // create query with available packages without non-modular excludes. As a extras should be
-    // considered anso packages in non-active modules
+    // create query with available packages without non-modular excludes, since extras should also
+    // consider packages in non-active modules
     Query query_available(pImpl->sack, Query::ExcludeFlags::IGNORE_REGULAR_EXCLUDES);
     query_available.available();
 
     auto resultAvailable = query_available.pImpl->result.get();
     Id id_available = -1;
 
+    NameArchEVRComparator nevra_cmp(pool);
+
     // make vector of available solvables
-    std::vector<Solvable *> namesArch;
-    namesArch.reserve(resultAvailable->size());
+    std::vector<Solvable *> availSolvables;
+    availSolvables.reserve(resultAvailable->size());
     while ((id_available = resultAvailable->next(id_available)) != -1) {
-        namesArch.push_back(pool_id2solvable(pool, id_available));
+        availSolvables.push_back(pool_id2solvable(pool, id_available));
     }
-    std::sort(namesArch.begin(), namesArch.end(), NameArchSolvableComparator);
+    if (with_evr) {
+        std::sort(availSolvables.begin(), availSolvables.end(), nevra_cmp);
+    } else {
+        std::sort(availSolvables.begin(), availSolvables.end(), NameArchSolvableComparator);
+    }
     Id id_installed = -1;
     auto resultInstalled = query_installed.pImpl->result.get();
 
     while ((id_installed = resultInstalled->next(id_installed)) != -1) {
         Solvable * s_installed = pool_id2solvable(pool, id_installed);
-        auto low = std::lower_bound(namesArch.begin(), namesArch.end(), s_installed,
-                                    NameArchSolvableComparator);
-        if (low == namesArch.end() || (*low)->name != s_installed->name ||
-            (*low)->arch != s_installed->arch) {
-            MAPSET(resultMap, id_installed);
+        if (with_evr) {
+            auto low = std::lower_bound(availSolvables.begin(), availSolvables.end(), s_installed,
+                                        nevra_cmp);
+            if (low == availSolvables.end() || (*low)->name != s_installed->name ||
+                (*low)->arch != s_installed->arch) {
+                MAPSET(resultMap, id_installed);
+            }
+        } else {
+            auto low = std::lower_bound(availSolvables.begin(), availSolvables.end(), s_installed,
+                                        NameArchSolvableComparator);
+            if (low == availSolvables.end() || (*low)->name != s_installed->name ||
+                (*low)->arch != s_installed->arch) {
+                MAPSET(resultMap, id_installed);
+            }
         }
     }
 }
