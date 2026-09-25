@@ -245,10 +245,11 @@ MergedTransaction::getItems()
 
     std::vector< TransactionItemBasePtr > items;
     for (const auto &row : itemPairMap) {
-        ItemPair itemPair = row.second;
-        items.push_back(itemPair.first);
-        if (itemPair.second != nullptr) {
-            items.push_back(itemPair.second);
+        for (const auto &itemPair : row.second) {
+            items.push_back(itemPair.first);
+            if (itemPair.second != nullptr) {
+                items.push_back(itemPair.second);
+            }
         }
     }
     return items;
@@ -277,16 +278,17 @@ getItemIdentifier(ItemPtr item)
  *  and create a ItemPair of Upgrade, Downgrade or remove the item from the merged
  *  transaction set in case of both packages are the same.
  * Method is called when original package is being removed and then installed again.
- * \param itemPairMap merged transaction set
- * \param previousItemPair original item pair
+ * \param entries NEVRA entries tracked for this name.arch
+ * \param entryIt entry being resolved
  * \param mTransItem new transaction item
  * \return true if the original and new transaction item differ
  */
 bool
-MergedTransaction::resolveRPMDifference(ItemPairMap &itemPairMap,
-                                        ItemPair &previousItemPair,
+MergedTransaction::resolveRPMDifference(std::vector< ItemPair > &entries,
+                                        ItemPairEntry entryIt,
                                         TransactionItemBasePtr mTransItem)
 {
+    ItemPair &previousItemPair = *entryIt;
     auto firstItem = previousItemPair.first->getItem();
     auto secondItem = mTransItem->getItem();
 
@@ -297,7 +299,7 @@ MergedTransaction::resolveRPMDifference(ItemPairMap &itemPairMap,
         firstRPM->getEpoch() == secondRPM->getEpoch() &&
         firstRPM->getRelease() == secondRPM->getRelease()) {
         // Drop the item from merged transaction
-        itemPairMap.erase(getItemIdentifier(firstItem));
+        entries.erase(entryIt);
         return false;
     } else if ((*firstRPM) < (*secondRPM)) {
         // Upgrade to secondRPM
@@ -313,10 +315,11 @@ MergedTransaction::resolveRPMDifference(ItemPairMap &itemPairMap,
 }
 
 void
-MergedTransaction::resolveErase(ItemPairMap &itemPairMap,
-                                ItemPair &previousItemPair,
+MergedTransaction::resolveErase(std::vector< ItemPair > &entries,
+                                ItemPairEntry entryIt,
                                 TransactionItemBasePtr mTransItem)
 {
+    ItemPair &previousItemPair = *entryIt;
     /*
      * The original item has been removed - it has to be installed now unless the rpmdb
      *  has changed. Resolve the difference between packages and mark it as Upgrade,
@@ -325,7 +328,7 @@ MergedTransaction::resolveErase(ItemPairMap &itemPairMap,
     if (mTransItem->getAction() == TransactionItemAction::INSTALL) {
         if (mTransItem->getItem()->getItemType() == ItemType::RPM) {
             // resolve the difference between RPM packages
-            if (!resolveRPMDifference(itemPairMap, previousItemPair, mTransItem)) {
+            if (!resolveRPMDifference(entries, entryIt, mTransItem)) {
                 return;
             }
         } else {
@@ -344,15 +347,16 @@ MergedTransaction::resolveErase(ItemPairMap &itemPairMap,
  * transaction - new package is used to complete the pair. Items are stored in pairs (Upgrade,
  * Upgrade) or (Downgraded, Downgrade). With complete transaction pair we need to get the new
  * Upgrade/Downgrade item and compare its version with the original item from the pair.
- * \param itemPairMap merged transaction set
- * \param previousItemPair original item pair
+ * \param entries NEVRA entries tracked for this name.arch
+ * \param entryIt entry being resolved
  * \param mTransItem new transaction item
  */
 void
-MergedTransaction::resolveAltered(ItemPairMap &itemPairMap,
-                                  ItemPair &previousItemPair,
+MergedTransaction::resolveAltered(std::vector< ItemPair > &entries,
+                                  ItemPairEntry entryIt,
                                   TransactionItemBasePtr mTransItem)
 {
+    ItemPair &previousItemPair = *entryIt;
     auto newState = mTransItem->getAction();
     auto firstState = previousItemPair.first->getAction();
 
@@ -393,7 +397,7 @@ MergedTransaction::resolveAltered(ItemPairMap &itemPairMap,
         } else {
             if (mTransItem->getItem()->getItemType() == ItemType::RPM) {
                 // resolve the difference between RPM packages
-                resolveRPMDifference(itemPairMap, previousItemPair, mTransItem);
+                resolveRPMDifference(entries, entryIt, mTransItem);
             } else {
                 // difference between comps can't be resolved
                 previousItemPair.second->setAction(TransactionItemAction::REINSTALL);
@@ -405,7 +409,36 @@ MergedTransaction::resolveAltered(ItemPairMap &itemPairMap,
 }
 
 /**
- * Merge transaction item into merged transaction set
+ * Merge transaction item into merged transaction set.
+ *
+ * With at most one entry tracked for this name.arch, dispatch is
+ * unambiguous and uses the state machine above exactly like before several
+ * coexisting NEVRAs were supported - including pairing a forward action
+ * (typically Install) with the sole entry regardless of NEVRA when that
+ * entry is currently Removed, which is how an Upgrade/Downgrade gets
+ * synthesized out of two independently-recorded transactions. The only
+ * addition is a relevance guard on backward actions: one whose NEVRA
+ * doesn't match the sole tracked entry doesn't belong to it at all (e.g. a
+ * Remove of some other NEVRA of the same name.arch that predates the merge
+ * window) and becomes its own new, independent entry instead of being
+ * misattributed to an unrelated package. A backward action that does match
+ * proceeds through the state machine exactly as before (e.g. still doing
+ * nothing while waiting for the paired forward half to arrive).
+ *
+ * Once a second entry exists, matching has to be NEVRA-exact rather than
+ * reusing the state machine above: with several independent NEVRAs in play
+ * there's no single "the" entry left to loosely pair anything with, and
+ * reusing the mutation-heavy pairing logic here would also misinterpret
+ * residue of an already-resolved Upgrade/Downgrade (its outgoing half
+ * permanently relabeled Install by an earlier getItems() call, since
+ * transaction items are mutable and cached) as a fresh, unrelated
+ * coexisting NEVRA. Instead: a NEVRA that's already tracked either cancels
+ * out (Install cancels a Remove and vice versa) or is a defensive no-op
+ * (the same direction seen again, which shouldn't occur); anything else -
+ * a second Install of a different NEVRA (installonly packages are the
+ * common real-world reason two NEVRAs of the same name.arch coexist), or a
+ * Remove of a NEVRA that predates the merge window - becomes its own new,
+ * independent entry.
  * \param itemPairMap merged transaction set
  * \param mTransItem transaction item
  */
@@ -414,53 +447,134 @@ MergedTransaction::mergeItem(ItemPairMap &itemPairMap, TransactionItemBasePtr mT
 {
     // get item identifier
     std::string name = getItemIdentifier(mTransItem->getItem());
+    auto &entries = itemPairMap[name];
+    bool isRPM = mTransItem->getItem()->getItemType() == ItemType::RPM;
 
-    auto previous = itemPairMap.find(name);
-    if (previous == itemPairMap.end()) {
-        itemPairMap[name] = ItemPair(mTransItem, nullptr);
+    if (entries.size() <= 1) {
+        if (entries.empty()) {
+            entries.push_back(ItemPair(mTransItem, nullptr));
+            return;
+        }
+
+        auto entryIt = entries.begin();
+
+        if (isRPM && mTransItem->isBackwardAction()) {
+            // Use whatever NEVRA this entry currently represents - the
+            // completed side of an Upgrade/Downgrade pair if there is one,
+            // otherwise the sole tracked item - since a backward action
+            // continuing that pair (e.g. an Upgraded/Downgraded item
+            // referencing the version it's replacing) names the *current*
+            // NEVRA, not the original one still sitting in `first`.
+            auto currentItem = (entryIt->second != nullptr) ? entryIt->second : entryIt->first;
+            auto entryRPM = std::dynamic_pointer_cast< RPMItem >(currentItem->getItem());
+            auto itemRPM = std::dynamic_pointer_cast< RPMItem >(mTransItem->getItem());
+            if (entryRPM->getNEVRA() != itemRPM->getNEVRA()) {
+                entries.push_back(ItemPair(mTransItem, nullptr));
+                return;
+            }
+        }
+
+        ItemPair &previousItemPair = *entryIt;
+        auto firstState = previousItemPair.first->getAction();
+        auto newState = mTransItem->getAction();
+
+        switch (firstState) {
+            case TransactionItemAction::REMOVE:
+            case TransactionItemAction::OBSOLETED:
+                resolveErase(entries, entryIt, mTransItem);
+                break;
+            case TransactionItemAction::INSTALL:
+                // the original package has been installed -> it may be either Removed, or altered
+                if (newState == TransactionItemAction::REMOVE ||
+                    newState == TransactionItemAction::OBSOLETED) {
+                    // Install -> Remove = (nothing)
+                    entries.erase(entryIt);
+                    break;
+                } else if (mTransItem->isBackwardAction()) {
+                    break;
+                } else if (newState == TransactionItemAction::INSTALL && isRPM) {
+                    // A second Install for the same name.arch with a
+                    // different NEVRA - the transition to several
+                    // coexisting entries. Track the new NEVRA independently
+                    // instead of discarding the previous one.
+                    auto firstRPM = std::dynamic_pointer_cast< RPMItem >(previousItemPair.first->getItem());
+                    auto secondRPM = std::dynamic_pointer_cast< RPMItem >(mTransItem->getItem());
+                    if (firstRPM->getNEVRA() != secondRPM->getNEVRA()) {
+                        entries.push_back(ItemPair(mTransItem, nullptr));
+                        break;
+                    }
+                }
+                // altered -> transfer install to the altered package
+                mTransItem->setAction(TransactionItemAction::INSTALL);
+                // don't break
+            case TransactionItemAction::REINSTALL:
+            case TransactionItemAction::REASON_CHANGE:
+                // The original item has been reinstalled or the reason has been changed
+                // keep the new action
+                previousItemPair.first = mTransItem;
+                previousItemPair.second = nullptr;
+                break;
+            case TransactionItemAction::DOWNGRADE:
+            case TransactionItemAction::DOWNGRADED:
+            case TransactionItemAction::UPGRADE:
+            case TransactionItemAction::UPGRADED:
+            case TransactionItemAction::OBSOLETE:
+                resolveAltered(entries, entryIt, mTransItem);
+                break;
+            case TransactionItemAction::REINSTALLED:
+                break;
+        }
+
+        if (entries.empty()) {
+            itemPairMap.erase(name);
+        }
         return;
     }
 
-    ItemPair &previousItemPair = previous->second;
-
-    auto firstState = previousItemPair.first->getAction();
-    auto newState = mTransItem->getAction();
-
-    switch (firstState) {
-        case TransactionItemAction::REMOVE:
-        case TransactionItemAction::OBSOLETED:
-            resolveErase(itemPairMap, previousItemPair, mTransItem);
-            break;
-        case TransactionItemAction::INSTALL:
-            // the original package has been installed -> it may be either Removed, or altered
-            if (newState == TransactionItemAction::REMOVE ||
-                newState == TransactionItemAction::OBSOLETED) {
-                // Install -> Remove = (nothing)
-                itemPairMap.erase(name);
-                break;
-            } else if (mTransItem->isBackwardAction()) {
-                break;
+    // Several entries already coexist for this name.arch - each one is
+    // always a standalone Install or Remove (never a pending
+    // Upgrade/Downgrade pair), so resolution is a simple, mutation-free
+    // NEVRA-exact match instead of the pairing state machine above.
+    if (isRPM) {
+        auto itemNEVRA = std::dynamic_pointer_cast< RPMItem >(mTransItem->getItem())->getNEVRA();
+        auto newState = mTransItem->getAction();
+        for (auto entryIt = entries.begin(); entryIt != entries.end(); ++entryIt) {
+            auto entryRPM = std::dynamic_pointer_cast< RPMItem >(entryIt->first->getItem());
+            if (entryRPM->getNEVRA() != itemNEVRA) {
+                continue;
             }
-            // altered -> transfer install to the altered package
-            mTransItem->setAction(TransactionItemAction::INSTALL);
-            // don't break
-        case TransactionItemAction::REINSTALL:
-        case TransactionItemAction::REASON_CHANGE:
-            // The original item has been reinstalled or the reason has been changed
-            // keep the new action
-            previousItemPair.first = mTransItem;
-            previousItemPair.second = nullptr;
-            break;
-        case TransactionItemAction::DOWNGRADE:
-        case TransactionItemAction::DOWNGRADED:
-        case TransactionItemAction::UPGRADE:
-        case TransactionItemAction::UPGRADED:
-        case TransactionItemAction::OBSOLETE:
-            resolveAltered(itemPairMap, previousItemPair, mTransItem);
-            break;
-        case TransactionItemAction::REINSTALLED:
-            break;
+
+            if (newState == TransactionItemAction::REASON_CHANGE) {
+                // Neither installs nor removes the NEVRA, and unlike every
+                // other action it's neither forward nor backward (dnf's own
+                // reason inheritance for installonly packages can emit this
+                // against a sibling NEVRA when another one is removed) - so
+                // it can't be classified by direction like the branch
+                // below. Absorb it into the existing entry instead, keeping
+                // the entry's Install/Remove status unchanged (matching the
+                // single-entry state machine's handling of the same
+                // action).
+                if (entryIt->first->getAction() == TransactionItemAction::INSTALL) {
+                    mTransItem->setAction(TransactionItemAction::INSTALL);
+                }
+                entryIt->first = mTransItem;
+            } else if (entryIt->first->isForwardAction() == mTransItem->isForwardAction()) {
+                // Same NEVRA, same direction seen again - defensive no-op
+                // (shouldn't occur), just keep tracking the newer item.
+                entryIt->first = mTransItem;
+            } else {
+                // Install and Remove of the identical NEVRA cancel out.
+                entries.erase(entryIt);
+                if (entries.empty()) {
+                    itemPairMap.erase(name);
+                }
+            }
+            return;
+        }
     }
+
+    // No match - independent new item.
+    entries.push_back(ItemPair(mTransItem, nullptr));
 }
 
 } // namespace libdnf
