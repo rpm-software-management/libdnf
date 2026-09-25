@@ -324,6 +324,7 @@ class ConfigMain::Impl {
     OptionString password{""};
     OptionBool gpgcheck{false};
     OptionBool repo_gpgcheck{false};
+    OptionBool repo_gpgcheck_auto_import_keys{false};
     OptionBool enabled{true};
     OptionBool enablegroups{true};
     OptionNumber<std::uint32_t> bandwidth{0, strToBytes};
@@ -525,6 +526,7 @@ ConfigMain::Impl::Impl(Config & owner)
     owner.optBinds().add("password", password);
     owner.optBinds().add("gpgcheck", gpgcheck);
     owner.optBinds().add("repo_gpgcheck", repo_gpgcheck);
+    owner.optBinds().add("repo_gpgcheck_auto_import_keys", repo_gpgcheck_auto_import_keys);
     owner.optBinds().add("enabled", enabled);
     owner.optBinds().add("enablegroups", enablegroups);
     owner.optBinds().add("bandwidth", bandwidth);
@@ -650,6 +652,7 @@ OptionString & ConfigMain::username() { return pImpl->username; }
 OptionString & ConfigMain::password() { return pImpl->password; }
 OptionBool & ConfigMain::gpgcheck() { return pImpl->gpgcheck; }
 OptionBool & ConfigMain::repo_gpgcheck() { return pImpl->repo_gpgcheck; }
+OptionBool & ConfigMain::repo_gpgcheck_auto_import_keys() { return pImpl->repo_gpgcheck_auto_import_keys; }
 OptionBool & ConfigMain::enabled() { return pImpl->enabled; }
 OptionBool & ConfigMain::enablegroups() { return pImpl->enablegroups; }
 OptionNumber<std::uint32_t> & ConfigMain::bandwidth() { return pImpl->bandwidth; }

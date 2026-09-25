@@ -152,6 +152,8 @@ public:
     OptionString & password();
     OptionBool & gpgcheck();
     OptionBool & repo_gpgcheck();
+    /// Auto-import applies only to keys from local (file://) gpgkey URLs.
+    OptionBool & repo_gpgcheck_auto_import_keys();
     OptionBool & enabled();
     OptionBool & enablegroups();
     OptionNumber<std::uint32_t> & bandwidth();
