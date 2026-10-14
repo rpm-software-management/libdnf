@@ -160,6 +160,20 @@ public:
      */
     std::string getLocalBaseurl() const;
     /**
+    * @brief Returns whether the OpenPGP key at the URL may be imported without asking for a
+    * confirmation.
+    *
+    * True only when the auto_import_local_keys option is enabled, assumeno is not set, the URL is
+    * spelled "file:///path" and the real path of the key file is inside one of the trusted keys
+    * directories set at build time (AUTO_IMPORT_KEYS_DIRS). Any other key goes through the
+    * RepoCB::repokeyImport() confirmation. libdnf uses the rule for the repository metadata keys
+    * and a caller can use it for the package signing keys. The signature checks are not affected.
+    *
+    * @param keyUrl   a URL from the gpgkey option of the repository
+    * @return true if the key may be imported without a confirmation
+    */
+    bool isKeyAutoImportable(const std::string & keyUrl) const;
+    /**
     * @brief Initialize the repo with metadata
     *
     * Fetches new metadata from the origin or just reuses local cache if still valid.

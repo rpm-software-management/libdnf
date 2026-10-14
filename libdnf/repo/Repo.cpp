@@ -367,6 +367,11 @@ std::string Repo::getLocalBaseurl() const
     return urlDecode(pImpl->conf->baseurl().getValue()[0].substr(7));
 }
 
+bool Repo::isKeyAutoImportable(const std::string & keyUrl) const
+{
+    return Impl::isKeyAutoImportable(*pImpl->conf, keyUrl, AUTO_IMPORT_KEYS_DIRS);
+}
+
 bool Repo::load() { return pImpl->load(); }
 bool Repo::loadCache(bool throwExcept, bool ignoreMissing) { return pImpl->loadCache(throwExcept, ignoreMissing); }
 void Repo::downloadMetadata(const std::string & destdir) { pImpl->downloadMetadata(destdir); }
@@ -675,6 +680,44 @@ std::vector<Key> Repo::Impl::retrieve(const std::string & url)
 }
 
 
+bool Repo::Impl::isKeyAutoImportable(ConfigRepo & conf, const std::string & keyUrl,
+                                     const std::string & keysDirs)
+{
+    if (!conf.auto_import_local_keys().getValue())
+        return false;
+    // assumeno never changes the system: the key goes through the confirmation and is declined.
+    if (conf.getMainConfig().assumeno().getValue())
+        return false;
+    // Only the "file:///path" spelling is accepted. Other spellings keep the confirmation.
+    if (keyUrl.compare(0, 8, "file:///") != 0)
+        return false;
+    // The path starts after "file://". It is URL-decoded because librepo decodes the URL when it
+    // reads the key file. A URL that does not decode is not a path and keeps the confirmation.
+    std::string keyPath;
+    try {
+        keyPath = urlDecode(keyUrl.substr(7));
+    } catch (const std::exception &) {
+        return false;
+    }
+    // realpath() works on a C string and would stop at an encoded zero byte.
+    if (keyPath.find('\0') != std::string::npos)
+        return false;
+    // The key must be inside one of the trusted directories. isSubdirectory() resolves symlinks
+    // and ".." on both sides and compares the resolved paths with a trailing slash, so a symlink
+    // that leaves the directory, a sibling directory that shares the prefix such as
+    // "/etc/pki/rpm-gpg-other" and a key file that does not exist are all rejected.
+    std::string::size_type start = 0;
+    while (start <= keysDirs.size()) {
+        auto end = keysDirs.find(':', start);
+        if (end == std::string::npos)
+            end = keysDirs.size();
+        if (end > start && filesystem::isSubdirectory(keysDirs.substr(start, end - start), keyPath))
+            return true;
+        start = end + 1;
+    }
+    return false;
+}
+
 void Repo::Impl::importRepoKeys()
 {
     auto logger(Log::getLogger());
@@ -683,13 +726,20 @@ void Repo::Impl::importRepoKeys()
     auto knownKeys = keyidsFromPubring(gpgDir);
     for (const auto & gpgkeyUrl : conf->gpgkey().getValue()) {
         auto keyInfos = retrieve(gpgkeyUrl);
+        // Keys allowed by auto_import_local_keys skip the confirmation callback.
+        const bool autoImport = isKeyAutoImportable(*conf, gpgkeyUrl, AUTO_IMPORT_KEYS_DIRS);
         for (auto & keyInfo : keyInfos) {
             if (std::find(knownKeys.begin(), knownKeys.end(), keyInfo.getId()) != knownKeys.end()) {
                 logger->debug(tfm::format(_("repo %s: 0x%s already imported"), id, keyInfo.getId()));
                 continue;
             }
 
-            if (callbacks) {
+            if (autoImport) {
+                logger->info(tfm::format(
+                    _("repo %s: automatically importing key 0x%s (%s, fingerprint %s) from %s"),
+                    id, keyInfo.getId(), keyInfo.getUserId(), keyInfo.getFingerprint(),
+                    keyInfo.getUrl()));
+            } else if (callbacks) {
                 if (!callbacks->repokeyImport(keyInfo.getId(), keyInfo.getUserId(), keyInfo.getFingerprint(),
                                               keyInfo.getUrl(), keyInfo.getTimestamp()))
                     continue;
