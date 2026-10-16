@@ -9,17 +9,6 @@
 
 %define __cmake_in_source_build 1
 
-# set sphinx package name according to distro
-%global requires_python2_sphinx python2-sphinx
-%global requires_python3_sphinx python3-sphinx
-%if 0%{?rhel} == 7
-    %global requires_python2_sphinx python-sphinx
-%endif
-%if 0%{?suse_version}
-    %global requires_python2_sphinx python2-Sphinx
-    %global requires_python3_sphinx python3-Sphinx
-%endif
-
 %bcond_with valgrind
 
 # Do not build bindings for python3 for RHEL <= 7
@@ -127,9 +116,6 @@ Development files for %{name}.
 Summary:        Python 2 bindings for the libdnf library.
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 BuildRequires:  python2-devel
-%if !0%{?mageia}
-BuildRequires:  %{requires_python2_sphinx}
-%endif
 %if 0%{?rhel} == 7
 BuildRequires:  swig3 >= %{swig_version}
 %else
@@ -147,7 +133,6 @@ Python 2 bindings for the libdnf library.
 Summary:        Python 3 bindings for the libdnf library
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 BuildRequires:  python3-devel
-BuildRequires:  %{requires_python3_sphinx}
 BuildRequires:  swig >= %{swig_version}
 
 %description -n python3-%{name}
@@ -205,7 +190,7 @@ pushd build-py2
     %define _cmake_builddir build-py2
     %define __builddir build-py2
   %endif
-  %cmake -DPYTHON_DESIRED:FILEPATH=%{__python2} -DWITH_MAN=OFF ../ %{!?with_zchunk:-DWITH_ZCHUNK=OFF} %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts} -DLIBDNF_MAJOR_VERSION=%{libdnf_major_version} -DLIBDNF_MINOR_VERSION=%{libdnf_minor_version} -DLIBDNF_MICRO_VERSION=%{libdnf_micro_version} \
+  %cmake -DPYTHON_DESIRED:FILEPATH=%{__python2} -DWITH_HTML=OFF -DWITH_MAN=OFF ../ %{!?with_zchunk:-DWITH_ZCHUNK=OFF} %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts} -DLIBDNF_MAJOR_VERSION=%{libdnf_major_version} -DLIBDNF_MINOR_VERSION=%{libdnf_minor_version} -DLIBDNF_MICRO_VERSION=%{libdnf_micro_version} \
     -DWITH_SANITIZERS=%{?with_sanitizers:ON}%{!?with_sanitizers:OFF}
   %cmake_build
 popd
@@ -219,7 +204,7 @@ pushd build-py3
     %define _cmake_builddir build-py3
     %define __builddir build-py3
   %endif
-  %cmake -DPYTHON_DESIRED:FILEPATH=%{__python3} -DWITH_GIR=0 -DWITH_MAN=0 -Dgtkdoc=0 ../ %{!?with_zchunk:-DWITH_ZCHUNK=OFF} %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts} -DLIBDNF_MAJOR_VERSION=%{libdnf_major_version} -DLIBDNF_MINOR_VERSION=%{libdnf_minor_version} -DLIBDNF_MICRO_VERSION=%{libdnf_micro_version} \
+  %cmake -DPYTHON_DESIRED:FILEPATH=%{__python3} -DWITH_GIR=0 -DWITH_HTML=0 -DWITH_MAN=0 -Dgtkdoc=0 ../ %{!?with_zchunk:-DWITH_ZCHUNK=OFF} %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts} -DLIBDNF_MAJOR_VERSION=%{libdnf_major_version} -DLIBDNF_MINOR_VERSION=%{libdnf_minor_version} -DLIBDNF_MICRO_VERSION=%{libdnf_micro_version} \
     -DWITH_SANITIZERS=%{?with_sanitizers:ON}%{!?with_sanitizers:OFF}
   %cmake_build
 popd
