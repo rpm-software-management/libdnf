@@ -352,9 +352,26 @@ bool Repo::isLocal() const
     if ((!conf->metalink().empty() && !conf->metalink().getValue().empty()) ||
         (!conf->mirrorlist().empty() && !conf->mirrorlist().getValue().empty()))
         return false;
-    if (!conf->baseurl().getValue().empty() && conf->baseurl().getValue()[0].compare(0, 7, "file://") == 0)
-        return true;
-    return false;
+
+    const auto & urls = conf->baseurl().getValue();
+    if (urls.empty())
+        return false;
+
+    /* A repository is local only when every baseurl is local.
+     * Hybrid file:// + http(s):// must use the download/mirror path so packages
+     * can fail over when the local path is missing. */
+    bool saw_local = false;
+    for (const auto & url : urls) {
+        if (url.compare(0, 7, "file://") == 0 || url.compare(0, 5, "file:") == 0) {
+            saw_local = true;
+            continue;
+        }
+        if (url.find("://") != std::string::npos)
+            return false; /* remote protocol present -> not a pure local repo */
+        /* bare filesystem path */
+        saw_local = true;
+    }
+    return saw_local;
 }
 
 std::string Repo::getLocalBaseurl() const
@@ -363,7 +380,7 @@ std::string Repo::getLocalBaseurl() const
         throw Exception("Invalid call getLocalBaseurl() on a non-local repository.");
     }
 
-    // isLocal() already ensured the first item in the list starts with "file://"
+    // isLocal() ensured all baseurls are local; use the first file:// baseurl
     return urlDecode(pImpl->conf->baseurl().getValue()[0].substr(7));
 }
 
