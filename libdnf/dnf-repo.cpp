@@ -1084,19 +1084,35 @@ dnf_repo_set_keyfile_data(DnfRepo *repo, gboolean reloadFromGKeyFile, GError **e
     if (!lr_handle_setopt(priv->repo_handle, error, LRO_METALINKURL, metalinkurl))
         return FALSE;
 
-    /* file:// */
+    /* file:// - only mark LOCAL when every baseurl is local.
+     * Hybrid file:// + http(s):// must remain remote so package downloads
+     * can fail over via librepo mirrors when the local path is missing. */
     if (baseurls != NULL && baseurls[0] != NULL &&
         mirrorlisturl == NULL && metalinkurl == NULL) {
-        g_autofree gchar *url = NULL;
-        url = lr_prepend_url_protocol(baseurls[0]);
-        if (url != NULL && strncasecmp(url, "file://", 7) == 0) {
-            if (!priv->unit_test_mode) {
-                priv->kind = DNF_REPO_KIND_LOCAL;
+        gboolean all_local = TRUE;
+        for (guint i = 0; baseurls[i] != NULL; i++) {
+            g_autofree gchar *tmp_url = lr_prepend_url_protocol(baseurls[i]);
+            if (tmp_url != NULL && strncasecmp(tmp_url, "file://", 7) == 0)
+                continue;
+            if (tmp_url != NULL && strstr(tmp_url, "://") != NULL) {
+                all_local = FALSE;
+                break;
             }
-            g_free(priv->location);
-            g_free(priv->keyring);
-            priv->location = dnf_repo_substitute(repo, url + 7);
-            priv->keyring = g_build_filename(url + 7, "gpgdir", NULL);
+            /* bare path counts as local */
+        }
+
+        if (all_local) {
+            g_autofree gchar *url = NULL;
+            url = lr_prepend_url_protocol(baseurls[0]);
+            if (url != NULL && strncasecmp(url, "file://", 7) == 0) {
+                if (!priv->unit_test_mode) {
+                    priv->kind = DNF_REPO_KIND_LOCAL;
+                }
+                g_free(priv->location);
+                g_free(priv->keyring);
+                priv->location = dnf_repo_substitute(repo, url + 7);
+                priv->keyring = g_build_filename(url + 7, "gpgdir", NULL);
+            }
         }
     }
 
