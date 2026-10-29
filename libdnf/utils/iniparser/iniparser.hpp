@@ -32,6 +32,12 @@
 * @brief Simple .INI file parser
 *
 * The goal is to be compatible with dnf / yum .ini configuration files.
+*
+* @note Comments are recognized only when '#' or ';' is the first character
+* of a line. A line that starts with whitespace followed by '#' or ';' is
+* treated as a continuation of the previous key's value (and rejected if no
+* such key precedes it), and '#' or ';' inside a value are kept as part of
+* the value.
 */
 class IniParser {
 public:
