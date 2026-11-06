@@ -29,7 +29,9 @@
 #include "hy-util.h"
 #include "dnf-version.h"
 #include "dnf-sack-private.hpp"
+#ifdef LIBDNF_WITH_MODULEMD
 #include "libdnf/module/ModulePackageContainer.hpp"
+#endif
 
 // pyhawkey
 #include "exception-py.hpp"
@@ -50,7 +52,9 @@ typedef struct {
     DnfSack *sack;
     PyObject *custom_package_class;
     PyObject *custom_package_val;
+#ifdef LIBDNF_WITH_MODULEMD
     PyObject * ModulePackageContainerPy;
+#endif
 
     // g_log handler IDs
     // Multiple sacks can be created during a run of an application and each
@@ -70,6 +74,7 @@ typedef struct {
     FILE *log_out;
 } _SackObject;
 
+#ifdef LIBDNF_WITH_MODULEMD
 typedef struct {
     PyObject_HEAD
     libdnf::ModulePackageContainer * ptr;
@@ -77,6 +82,7 @@ typedef struct {
     int own;
     PyObject * next;
 } ModulePackageContainerPyObject;
+#endif
 
 PyObject *
 new_package(PyObject *sack, Id id)
@@ -140,10 +146,12 @@ sack_dealloc(_SackObject *o)
     Py_XDECREF(o->custom_package_class);
     Py_XDECREF(o->custom_package_val);
     if (o->sack) {
+#ifdef LIBDNF_WITH_MODULEMD
         if (auto moduleContainer = o->ModulePackageContainerPy) {
             dnf_sack_set_module_container(o->sack, NULL);
             Py_DECREF(moduleContainer);
         }
+#endif
         g_object_unref(o->sack);
     }
 
@@ -165,7 +173,9 @@ sack_new(PyTypeObject *type, PyObject *args, PyObject *kwds) try
         self->sack = NULL;
         self->custom_package_class = NULL;
         self->custom_package_val = NULL;
+#ifdef LIBDNF_WITH_MODULEMD
         self->ModulePackageContainerPy = NULL;
+#endif
     }
     return (PyObject *)self;
 } CATCH_TO_PYTHON
@@ -379,6 +389,7 @@ set_installonly_limit(_SackObject *self, PyObject *obj, void *unused) try
     return 0;
 } CATCH_TO_PYTHON_INT
 
+#ifdef LIBDNF_WITH_MODULEMD
 static int
 set_module_container(_SackObject *self, PyObject *obj, void *unused) try
 {
@@ -414,6 +425,7 @@ get_module_container(_SackObject *self, void *unused) try
     }
     Py_RETURN_NONE;
 } CATCH_TO_PYTHON
+#endif
 
 static int
 set_allow_vendor_change(_SackObject *self, PyObject *obj, void *unused) try
@@ -431,8 +443,10 @@ static PyGetSetDef sack_getsetters[] = {
     {(char*)"installonly_limit",        NULL, (setter)set_installonly_limit, NULL, NULL},
     {(char*)"allow_vendor_change", NULL,
                                     (setter)set_allow_vendor_change, NULL, NULL},
+#ifdef LIBDNF_WITH_MODULEMD
     {(char*)"_moduleContainer",        (getter)get_module_container, (setter)set_module_container,
         NULL, NULL},
+#endif
     {NULL}                        /* sentinel */
 };
 
@@ -601,6 +615,7 @@ list_arches(_SackObject *self, PyObject *unused) try
     }
 } CATCH_TO_PYTHON
 
+#ifdef LIBDNF_WITH_MODULEMD
 static PyObject *
 filter_modules(_SackObject *self, PyObject *args, PyObject *kwds) try
 {
@@ -673,6 +688,7 @@ set_modules_enabled_by_pkgset(_SackObject *self, PyObject *args, PyObject *kwds)
     moduleContainer->enableDependencyTree(modules);
     Py_RETURN_NONE;
 } CATCH_TO_PYTHON
+#endif
 
 typedef struct {
     PyObject_HEAD
@@ -844,9 +860,11 @@ PyMethodDef sack_methods[] = {
      NULL},
     {"list_arches", (PyCFunction)list_arches, METH_NOARGS,
      NULL},
+#ifdef LIBDNF_WITH_MODULEMD
     {"filter_modules", (PyCFunction)filter_modules, METH_VARARGS | METH_KEYWORDS, NULL},
     {"set_modules_enabled_by_pkgset", (PyCFunction)set_modules_enabled_by_pkgset,
         METH_VARARGS | METH_KEYWORDS, NULL},
+#endif
     {"load_system_repo", (PyCFunction)load_system_repo,
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"load_repo", (PyCFunction)load_repo, METH_VARARGS | METH_KEYWORDS,

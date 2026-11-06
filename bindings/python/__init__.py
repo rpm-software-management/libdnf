@@ -12,7 +12,10 @@ from . import error
 # supposed to be caught in another.
 from . import common_types
 from . import conf
-from . import module
+# There is no module.py when libdnf is built without modularity support
+# (WITH_MODULEMD=OFF)
+if os.path.exists(os.path.join(os.path.dirname(__file__), 'module.py')):
+    from . import module
 from . import repo
 from . import transaction
 from . import utils

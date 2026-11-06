@@ -26,21 +26,29 @@
 
 #include <gio/gio.h>
 
+#include <libdnf/dnf-version.h>
+
 #ifdef __cplusplus
 namespace libdnf {
+#ifdef LIBDNF_WITH_MODULEMD
     struct ModulePackageContainer;
+#endif
     struct Swdb;
     struct PackageSet;
     struct Dependency;
     struct DependencyContainer;
 }
+#ifdef LIBDNF_WITH_MODULEMD
 typedef struct libdnf::ModulePackageContainer DnfModulePackageContainer;
+#endif
 typedef struct libdnf::Swdb DnfDb;
 typedef struct libdnf::PackageSet DnfPackageSet;
 typedef struct libdnf::Dependency DnfReldep;
 typedef struct libdnf::DependencyContainer DnfReldepList;
 #else
+#ifdef LIBDNF_WITH_MODULEMD
 typedef struct ModulePackageContainer   DnfModulePackageContainer;
+#endif
 typedef struct Swdb DnfDb;
 typedef struct PackageSet DnfPackageSet;
 typedef struct Dependency DnfReldep;

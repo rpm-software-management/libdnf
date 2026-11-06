@@ -379,6 +379,7 @@ dnf_repo_get_cost(DnfRepo *repo)
     return repoGetImpl(priv->repo)->conf->cost().getValue();
 }
 
+#ifdef LIBDNF_WITH_MODULEMD
 /**
  * dnf_repo_get_module_hotfixes:
  * @repo: a #DnfRepo instance.
@@ -395,6 +396,7 @@ dnf_repo_get_module_hotfixes(DnfRepo *repo)
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     return priv->repo->getConfig()->module_hotfixes().getValue();
 }
+#endif
 
 /**
  * dnf_repo_get_kind:
@@ -719,6 +721,7 @@ dnf_repo_set_cost(DnfRepo *repo, guint cost)
     repoGetImpl(priv->repo)->conf->cost().set(libdnf::Option::Priority::RUNTIME, cost);
 }
 
+#ifdef LIBDNF_WITH_MODULEMD
 /**
  * dnf_repo_set_module_hotfixes:
  * @repo: a #DnfRepo instance.
@@ -734,6 +737,7 @@ dnf_repo_set_module_hotfixes(DnfRepo *repo, gboolean module_hotfixes)
     DnfRepoPrivate *priv = GET_PRIVATE(repo);
     priv->repo->getConfig()->module_hotfixes().set(libdnf::Option::Priority::RUNTIME, module_hotfixes);
 }
+#endif
 
 /**
  * dnf_repo_set_kind:
@@ -1496,7 +1500,10 @@ dnf_repo_check_internal(DnfRepo *repo,
     auto repoImpl = libdnf::repoGetImpl(priv->repo);
 
     std::vector<const char *> download_list = {"primary", "group", "updateinfo", "appstream",
-        "appstream-icons", "modules"};
+        "appstream-icons"};
+#ifdef LIBDNF_WITH_MODULEMD
+    download_list.push_back("modules");
+#endif
     /* This one is huge, and at least rpm-ostree jigdo mode doesn't require it.
      * https://github.com/projectatomic/rpm-ostree/issues/1127
      */

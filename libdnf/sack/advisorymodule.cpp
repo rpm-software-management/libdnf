@@ -75,6 +75,7 @@ AdvisoryModule::nsvcaEQ(AdvisoryModule & other)
 
 bool
 AdvisoryModule::isApplicable() const {
+#ifdef LIBDNF_WITH_MODULEMD
     auto moduleContainer = dnf_sack_get_module_container(pImpl->sack);
     if (!moduleContainer) {
         return false;
@@ -85,6 +86,7 @@ AdvisoryModule::isApplicable() const {
             return true;
         }
     }
+#endif
 
     return false;
 }

@@ -42,12 +42,15 @@ elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
     set(MULTILIB_ARCH "32")
     configure_file("config-64.h.in" ${CMAKE_CURRENT_SOURCE_DIR}/config-32.h)
 endif()
+set(LIBDNF_WITH_MODULEMD ${WITH_MODULEMD})
 configure_file("dnf-version.h.in"  ${CMAKE_CURRENT_SOURCE_DIR}/dnf-version.h)
 configure_file("libdnf.pc.in" ${CMAKE_CURRENT_BINARY_DIR}/libdnf.pc @ONLY)
 
 add_subdirectory(goal)
 add_subdirectory(repo)
-add_subdirectory(module)
+if(WITH_MODULEMD)
+    add_subdirectory(module)
+endif()
 add_subdirectory(utils)
 add_subdirectory(conf)
 add_subdirectory(sack)
@@ -79,9 +82,14 @@ target_link_libraries(libdnf
     ${SCOLS_LIBRARIES}
     ${SQLite3_LIBRARIES}
     ${JSONC_LIBRARIES}
-    ${LIBMODULEMD_LIBRARIES}
     ${SMARTCOLS_LIBRARIES}
 )
+
+# Not in the list above: pkg_check_modules() caches the libraries, which
+# would keep libmodulemd linked after reconfiguring from ON to OFF.
+if(WITH_MODULEMD)
+    target_link_libraries(libdnf ${LIBMODULEMD_LIBRARIES})
+endif()
 
 if(ENABLE_RHSM_SUPPORT)
     target_link_libraries(libdnf ${RHSM_LIBRARIES})

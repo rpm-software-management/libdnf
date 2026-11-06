@@ -40,6 +40,7 @@
 #include "goal/Goal.hpp"
 
 #include <memory>
+#include <mutex>
 #include <set>
 #include <vector>
 #include <unordered_set>
@@ -148,7 +149,9 @@ typedef struct
     gchar            *release_ver;
     gchar            *release_ver_major;
     gchar            *release_ver_minor;
+#ifdef LIBDNF_WITH_MODULEMD
     gchar            *platform_module;
+#endif
     gchar            *cache_dir;
     gchar            *solv_dir;
     gchar            *vendor_cache_dir;
@@ -244,7 +247,9 @@ dnf_context_finalize(GObject *object)
     g_strfreev(priv->installonlypkgs);
     g_free(priv->base_arch);
     g_free(priv->release_ver);
+#ifdef LIBDNF_WITH_MODULEMD
     g_free(priv->platform_module);
+#endif
     g_free(priv->cache_dir);
     g_free(priv->solv_dir);
     g_free(priv->vendor_cache_dir);
@@ -658,6 +663,7 @@ dnf_context_get_release_ver_minor(DnfContext *context)
     return priv->release_ver_minor;
 }
 
+#ifdef LIBDNF_WITH_MODULEMD
 /**
  * dnf_context_get_platform_module:
  * @context: a #DnfContext instance.
@@ -674,6 +680,7 @@ dnf_context_get_platform_module(DnfContext *context)
     DnfContextPrivate *priv = GET_PRIVATE(context);
     return priv->platform_module;
 }
+#endif
 
 /**
  * dnf_context_get_cache_dir:
@@ -1367,6 +1374,7 @@ dnf_context_set_release_ver_minor(DnfContext *context, const gchar *release_ver_
     priv->release_ver_minor = g_strdup(release_ver_minor);
 }
 
+#ifdef LIBDNF_WITH_MODULEMD
 /**
  * dnf_context_set_platform_module:
  * @context: a #DnfContext instance.
@@ -1383,6 +1391,7 @@ dnf_context_set_platform_module(DnfContext *context, const gchar *platform_modul
     g_free(priv->platform_module);
     priv->platform_module = g_strdup(platform_module);
 }
+#endif
 
 /**
  * dnf_context_set_cache_dir:
@@ -1973,6 +1982,7 @@ dnf_context_setup_sack_with_flags(DnfContext               *context,
     if (!ret)
         return FALSE;
 
+#ifdef LIBDNF_WITH_MODULEMD
     DnfSack *sack = priv->sack;
     if (sack != nullptr) {
         std::vector<const char *> hotfixRepos;
@@ -1992,6 +2002,7 @@ dnf_context_setup_sack_with_flags(DnfContext               *context,
             return FALSE;
         }
     }
+#endif
 
     /* create goal */
     if (priv->goal != nullptr)
@@ -3198,6 +3209,7 @@ dnf_context_plugin_hook(DnfContext * context, PluginHookId id, DnfPluginHookData
     return priv->plugins->hook(id, hookData, error);
 }
 
+#ifdef LIBDNF_WITH_MODULEMD
 gchar *
 dnf_context_get_module_report(DnfContext * context)
 {
@@ -3217,6 +3229,7 @@ dnf_context_get_module_report(DnfContext * context)
     }
     return g_strdup(report.c_str());
 }
+#endif
 
 DnfContext *
 pluginGetContext(DnfPluginInitData * data)
@@ -3234,6 +3247,7 @@ pluginGetContext(DnfPluginInitData * data)
     return (static_cast<PluginHookContextInitData *>(data)->context);
 }
 
+#ifdef LIBDNF_WITH_MODULEMD
 static std::vector<std::tuple<libdnf::ModulePackageContainer::ModuleErrorType, std::string, std::string>>
 recompute_modular_filtering(libdnf::ModulePackageContainer * moduleContainer, DnfSack * sack, std::vector<const char *> & hotfixRepos)
 {
@@ -3936,6 +3950,7 @@ dnf_context_module_switched_check(DnfContext * context, GError ** error) try
     g_set_error_literal(error, DNF_ERROR, DNF_ERROR_FAILED, msg_error);
     return FALSE;
 } CATCH_TO_GERROR(FALSE)
+#endif
 
 namespace libdnf {
 

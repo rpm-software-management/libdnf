@@ -122,7 +122,9 @@ const gchar     *dnf_context_get_arch_info              (DnfContext     *context
 const gchar     *dnf_context_get_release_ver            (DnfContext     *context);
 const gchar     *dnf_context_get_release_ver_major      (DnfContext     *context);
 const gchar     *dnf_context_get_release_ver_minor      (DnfContext     *context);
+#ifdef LIBDNF_WITH_MODULEMD
 const gchar     *dnf_context_get_platform_module        (DnfContext     *context);
+#endif
 const gchar     *dnf_context_get_cache_dir              (DnfContext     *context);
 const gchar     *dnf_context_get_arch                   (DnfContext     *context);
 const gchar     *dnf_context_get_solv_dir               (DnfContext     *context);
@@ -170,8 +172,10 @@ void             dnf_context_set_release_ver_major      (DnfContext     *context
                                                          const gchar    *release_ver_major);
 void             dnf_context_set_release_ver_minor      (DnfContext     *context,
                                                          const gchar    *release_ver_minor);
+#ifdef LIBDNF_WITH_MODULEMD
 void             dnf_context_set_platform_module        (DnfContext     *context,
                                                          const gchar    *platform_module);
+#endif
 void             dnf_context_set_cache_dir              (DnfContext     *context,
                                                          const gchar    *cache_dir);
 void             dnf_context_set_arch                   (DnfContext     *context,
@@ -284,6 +288,8 @@ bool             dnf_context_plugin_hook                (DnfContext     *context
                                                          PluginHookId    id,
                                                          DnfPluginHookData *hookData,
                                                          DnfPluginError *error);
+
+#ifdef LIBDNF_WITH_MODULEMD
 /// String must be dealocated by g_free()
 gchar *          dnf_context_get_module_report          (DnfContext * context);
 
@@ -411,6 +417,7 @@ gboolean         dnf_context_module_reset               (DnfContext * context,
  **/
 gboolean         dnf_context_module_switched_check      (DnfContext * context,
                                                          GError ** error);
+#endif
 
 G_END_DECLS
 

@@ -33,6 +33,7 @@
 #include "../hy-util-private.hpp"
 #include "../hy-iutil-private.hpp"
 #include "../hy-types.h"
+#include <libdnf/dnf-version.h>
 #include "libdnf/utils/File.hpp"
 #include "libdnf/utils/utils.hpp"
 #include "libdnf/utils/os-release.hpp"
@@ -406,9 +407,7 @@ std::string Repo::getCompsFn() {
 }
 
 
-#ifdef MODULEMD
 std::string Repo::getModulesFn() { return pImpl->getMetadataPath(MD_TYPE_MODULES); }
-#endif
 
 int Repo::getAge() const { return pImpl->getAge(); }
 void Repo::expire() { pImpl->expire(); }
@@ -456,7 +455,7 @@ std::unique_ptr<LrHandle> Repo::Impl::lrHandleInitBase()
     auto loadFilelists = std::find(optionalMetadataTypes.begin(), optionalMetadataTypes.end(), "filelists") !=
                          optionalMetadataTypes.end();
 
-#ifdef MODULEMD
+#ifdef LIBDNF_WITH_MODULEMD
     dlist.push_back(MD_TYPE_MODULES);
 #endif
     if (loadFilelists) {

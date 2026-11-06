@@ -76,8 +76,10 @@ extern "C" {
 #include "nevra.hpp"
 #include "conf/ConfigParser.hpp"
 #include "conf/OptionBool.hpp"
+#ifdef LIBDNF_WITH_MODULEMD
 #include "module/ModulePackageContainer.hpp"
 #include "module/ModulePackage.hpp"
+#endif
 #include "repo/Repo-private.hpp"
 #include "repo/solvable/DependencyContainer.hpp"
 #include "utils/File.hpp"
@@ -111,7 +113,9 @@ typedef struct
     char                *arch;
     dnf_sack_running_kernel_fn_t  running_kernel_fn;
     guint                installonly_limit;
+#ifdef LIBDNF_WITH_MODULEMD
     libdnf::ModulePackageContainer * moduleContainer;
+#endif
 } DnfSackPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(DnfSack, dnf_sack, G_TYPE_OBJECT)
@@ -148,9 +152,11 @@ dnf_sack_finalize(GObject *object)
     free_map_fully(pool->considered);
     free_map_fully(priv->pkg_solvables);
     pool_free(priv->pool);
+#ifdef LIBDNF_WITH_MODULEMD
     if (priv->moduleContainer) {
         delete priv->moduleContainer;
     }
+#endif
 
     G_OBJECT_CLASS(dnf_sack_parent_class)->finalize(object);
 }
@@ -2114,6 +2120,7 @@ dnf_sack_get_pool(DnfSack *sack)
     return priv->pool;
 }
 
+#ifdef LIBDNF_WITH_MODULEMD
 /**
  * dnf_sack_set_module_container: (skip)
  * @sack: a #DnfSack instance.
@@ -2149,6 +2156,7 @@ dnf_sack_get_module_container(DnfSack *sack)
     DnfSackPrivate *priv = GET_PRIVATE(sack);
     return priv->moduleContainer;
 }
+#endif
 
 /**********************************************************************/
 
@@ -2383,6 +2391,7 @@ dnf_sack_add_repos(DnfSack *sack,
     return TRUE;
 } CATCH_TO_GERROR(FALSE)
 
+#ifdef LIBDNF_WITH_MODULEMD
 namespace {
 void readModuleMetadataFromRepo(DnfSack * sack, libdnf::ModulePackageContainer * modulePackages,
     const char * platformModule)
@@ -2628,3 +2637,4 @@ std::pair<std::vector<std::vector<std::string>>, libdnf::ModulePackageContainer:
     setModuleExcludes(sack, hotfixRepos, *moduleContainer);
     return ret;
 }
+#endif

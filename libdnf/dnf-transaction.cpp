@@ -50,7 +50,9 @@
 #include "hy-util-private.hpp"
 #include "plugin/plugin-private.hpp"
 
+#ifdef LIBDNF_WITH_MODULEMD
 #include "module/ModulePackageContainer.hpp"
+#endif
 #include "transaction/Swdb.hpp"
 #include "transaction/Transformer.hpp"
 #include "utils/bgettext/bgettext-lib.h"
@@ -1138,7 +1140,9 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
     DnfTransactionPrivate *priv = GET_PRIVATE(transaction);
     libdnf::Swdb *swdb = priv->swdb;
     PluginHookContextTransactionData data{PLUGIN_HOOK_ID_CONTEXT_PRE_TRANSACTION, transaction, goal, state};
+#ifdef LIBDNF_WITH_MODULEMD
     DnfSack * sack = hy_goal_get_sack(goal);
+#endif
     std::unique_ptr<char, decltype(free)*> rpmdb_cookie_uptr{nullptr, free};
     std::string rpmdb_cookie;
 
@@ -1543,12 +1547,14 @@ dnf_transaction_commit(DnfTransaction *transaction, HyGoal goal, DnfState *state
             goto out;
     }
 
+#ifdef LIBDNF_WITH_MODULEMD
     if (sack) {
         if (auto moduleContainer = dnf_sack_get_module_container(sack)) {
             moduleContainer->save();
             moduleContainer->updateFailSafeData();
         }
     }
+#endif
 
     /* all sacks are invalid now */
     dnf_context_invalidate_full(priv->context,

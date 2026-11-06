@@ -38,6 +38,7 @@ extern "C" {
 #include "../hy-goal-private.hpp"
 #include "../hy-iutil-private.hpp"
 #include "../hy-package-private.hpp"
+#include "../hy-repo-private.hpp"
 #include "../dnf-sack-private.hpp"
 #include "../sack/packageset.hpp"
 #include "../sack/query.hpp"

@@ -29,8 +29,10 @@
 #include "hy-query.h"
 #include "sack/packageset.hpp"
 #include "sack/query.hpp"
+#ifdef LIBDNF_WITH_MODULEMD
 #include "module/ModulePackage.hpp"
 #include "module/ModulePackageContainer.hpp"
+#endif
 
 typedef Id  (*dnf_sack_running_kernel_fn_t) (DnfSack    *sack);
 
@@ -59,9 +61,6 @@ int dnf_sack_get_pool_nsolvables(DnfSack *sack);
  * @return Map*
  */
 libdnf::PackageSet *dnf_sack_get_pkg_solvables(DnfSack *sack);
-libdnf::ModulePackageContainer * dnf_sack_set_module_container(
-    DnfSack *sack, libdnf::ModulePackageContainer * newConteiner);
-libdnf::ModulePackageContainer * dnf_sack_get_module_container(DnfSack *sack);
 void         dnf_sack_make_provides_ready   (DnfSack    *sack);
 Id           dnf_sack_running_kernel        (DnfSack    *sack);
 void         dnf_sack_recompute_considered_map  (DnfSack * sack, Map ** considered, libdnf::Query::ExcludeFlags flags);
@@ -75,10 +74,16 @@ void         dnf_sack_set_running_kernel_fn (DnfSack    *sack,
                                              dnf_sack_running_kernel_fn_t fn);
 DnfPackage  *dnf_sack_add_cmdline_package_flags   (DnfSack *sack,
                             const char *fn, const int flags);
+
+#ifdef LIBDNF_WITH_MODULEMD
+libdnf::ModulePackageContainer * dnf_sack_set_module_container(
+    DnfSack *sack, libdnf::ModulePackageContainer * newConteiner);
+libdnf::ModulePackageContainer * dnf_sack_get_module_container(DnfSack *sack);
 std::pair<std::vector<std::vector<std::string>>, libdnf::ModulePackageContainer::ModuleErrorType> dnf_sack_filter_modules_v2(
     DnfSack *sack, libdnf::ModulePackageContainer * moduleContainer, const char ** hotfixRepos,
     const char *install_root, const char * platformModule, bool updateOnly, bool debugSolver, bool applyObsoletes);
 
 std::vector<libdnf::ModulePackage *> requiresModuleEnablement(DnfSack * sack, const libdnf::PackageSet * installSet);
+#endif
 
 #endif // HY_SACK_INTERNAL_H
