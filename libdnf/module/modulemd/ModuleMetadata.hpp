@@ -21,7 +21,7 @@
 #ifndef LIBDNF_MODULEMETADATA_HPP
 #define LIBDNF_MODULEMETADATA_HPP
 
-#include <modulemd-2.0/modulemd.h>
+#include "modulemd-compat.hpp"
 
 #include "../ModulePackage.hpp"
 

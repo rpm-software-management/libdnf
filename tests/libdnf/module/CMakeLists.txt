@@ -1,13 +1,26 @@
 set(LIBDNF_TEST_SOURCES
     ${LIBDNF_TEST_SOURCES}
-    ${CMAKE_CURRENT_SOURCE_DIR}/ContextTest.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/ModulePackageContainerTest.cpp
-    PARENT_SCOPE
+    ${CMAKE_CURRENT_SOURCE_DIR}/ModularityLabelTest.cpp
 )
 
 set(LIBDNF_TEST_HEADERS
     ${LIBDNF_TEST_HEADERS}
-    ${CMAKE_CURRENT_SOURCE_DIR}/ContextTest.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/ModulePackageContainerTest.hpp
-    PARENT_SCOPE
+    ${CMAKE_CURRENT_SOURCE_DIR}/ModularityLabelTest.hpp
 )
+
+if(WITH_MODULEMD)
+    list(APPEND LIBDNF_TEST_SOURCES
+        ${CMAKE_CURRENT_SOURCE_DIR}/ContextTest.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ModulePackageContainerTest.cpp
+    )
+    list(APPEND LIBDNF_TEST_HEADERS
+        ${CMAKE_CURRENT_SOURCE_DIR}/ContextTest.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ModulePackageContainerTest.hpp
+    )
+else()
+    list(APPEND LIBDNF_TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/NoModulemdTest.cpp)
+    list(APPEND LIBDNF_TEST_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/NoModulemdTest.hpp)
+endif()
+
+set(LIBDNF_TEST_SOURCES ${LIBDNF_TEST_SOURCES} PARENT_SCOPE)
+set(LIBDNF_TEST_HEADERS ${LIBDNF_TEST_HEADERS} PARENT_SCOPE)
