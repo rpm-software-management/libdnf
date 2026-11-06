@@ -2,11 +2,16 @@ pkg_check_modules(CHECK REQUIRED check)
 pkg_check_modules(CPPUNIT REQUIRED cppunit)
 
 add_subdirectory(libdnf/conf)
-add_subdirectory(libdnf/module/modulemd)
+if(WITH_MODULEMD)
+    add_subdirectory(libdnf/module/modulemd)
+endif()
 add_subdirectory(libdnf/module)
 add_subdirectory(libdnf/repo)
 add_subdirectory(libdnf/transaction)
-add_subdirectory(libdnf/sack)
+# The sack tests enable modules from their test repository
+if(WITH_MODULEMD)
+    add_subdirectory(libdnf/sack)
+endif()
 add_subdirectory(hawkey)
 add_subdirectory(libdnf)
 
