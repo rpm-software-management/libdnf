@@ -162,6 +162,12 @@ Advisory::getApplicablePackages(std::vector<AdvisoryPkg> & pkglist, bool withFil
     Dataiterator di_inner;
     Pool *pool = dnf_sack_get_pool(sack);
     std::unique_ptr<PackageSet> moduleExcludes(dnf_sack_get_module_excludes(sack));
+    if (moduleExcludes) {
+        // The provider index is normally created while a query applies its
+        // excludes. A query that ignores all excludes skips that step, so make
+        // sure the index exists before iterating over providers.
+        dnf_sack_make_provides_ready(sack);
+    }
 
     dataiterator_init(&di, pool, 0, advisory, UPDATE_COLLECTIONLIST, 0, 0);
     while (dataiterator_step(&di)) {
