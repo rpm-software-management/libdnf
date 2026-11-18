@@ -176,6 +176,16 @@ void AdvisoryTest::testNonModularAdvisoryFiltering()
     // Load module metadata but don't enable any module yet
     dnf_sack_filter_modules_v2(testSack, nullptr, nullptr, testTmpdir, "platform_id:f33", false, false, false);
 
+    // A query ignoring all excludes does not initialize the provider index as
+    // a side effect, unlike the default APPLY_EXCLUDES query. This is the
+    // first query against the sack and exercises the provider lookup done by
+    // the non-modular collection filtering.
+    libdnf::Query ignoreExcludesQuery(
+        testSack, libdnf::Query::ExcludeFlags::IGNORE_EXCLUDES);
+    std::vector<libdnf::AdvisoryPkg> ignoredAdvisoryPkgs;
+    ignoreExcludesQuery.getAdvisoryPkgs(HY_EQ, ignoredAdvisoryPkgs);
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ignoredAdvisoryPkgs.size());
+
     // With no module enabled, the non-modular advisory should be applicable.
     // Use getAdvisoryPkgs to discover the advisory and verify the package is returned.
     HyQuery query = new libdnf::Query(testSack);
