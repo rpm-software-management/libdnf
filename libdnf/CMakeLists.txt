@@ -79,9 +79,14 @@ target_link_libraries(libdnf
     ${SCOLS_LIBRARIES}
     ${SQLite3_LIBRARIES}
     ${JSONC_LIBRARIES}
-    ${LIBMODULEMD_LIBRARIES}
     ${SMARTCOLS_LIBRARIES}
 )
+
+# Not in the list above: pkg_check_modules() caches the libraries, which
+# would keep libmodulemd linked after reconfiguring from ON to OFF.
+if(WITH_MODULEMD)
+    target_link_libraries(libdnf ${LIBMODULEMD_LIBRARIES})
+endif()
 
 if(ENABLE_RHSM_SUPPORT)
     target_link_libraries(libdnf ${RHSM_LIBRARIES})

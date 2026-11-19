@@ -26,7 +26,11 @@
 #include "tinyformat/tinyformat.hpp"
 #include "../../log.hpp"
 
+#include <atomic>
+
 namespace libdnf {
+
+#ifdef WITH_MODULEMD
 
 ModuleMetadata::ModuleMetadata(): resultingModuleIndex(NULL), moduleMerger(NULL) {}
 
@@ -229,5 +233,56 @@ ModulemdObsoletes * ModuleMetadata::getNewestActiveObsolete(ModulePackage *modul
 
     return modulemd_module_stream_v2_get_obsoletes_resolved(MODULEMD_MODULE_STREAM_V2(myStream));
 }
+
+#else // !WITH_MODULEMD
+
+/* Without libmodulemd, module metadata cannot be parsed: no module streams or
+ * defaults are ever loaded, so every package is treated as non-modular. */
+
+ModuleMetadata::ModuleMetadata(): resultingModuleIndex(nullptr), moduleMerger(nullptr) {}
+
+ModuleMetadata::ModuleMetadata(const ModuleMetadata &) : ModuleMetadata() {}
+
+ModuleMetadata & ModuleMetadata::operator=(const ModuleMetadata &)
+{
+    return *this;
+}
+
+ModuleMetadata::~ModuleMetadata() = default;
+
+void ModuleMetadata::addMetadataFromString(const std::string & yaml, int)
+{
+    static std::atomic<bool> warned{false};
+    if (!yaml.empty() && !warned.exchange(true)) {
+        auto logger(libdnf::Log::getLogger());
+        logger->warning(_("Ignoring modular metadata: libdnf was built without modularity support"));
+    }
+}
+
+void ModuleMetadata::resolveAddedMetadata() {}
+
+std::vector<ModulePackage *> ModuleMetadata::getAllModulePackages(DnfSack *, LibsolvRepo *,
+                                                                  const std::string &,
+                                                                  std::vector<std::tuple<LibsolvRepo *, ModulemdModuleStream *, std::string>> &)
+{
+    return {};
+}
+
+std::map<std::string, std::string> ModuleMetadata::getDefaultStreams()
+{
+    return {};
+}
+
+std::vector<std::string> ModuleMetadata::getDefaultProfiles(std::string, std::string)
+{
+    return {};
+}
+
+ModulemdObsoletes * ModuleMetadata::getNewestActiveObsolete(ModulePackage *)
+{
+    return nullptr;
+}
+
+#endif // WITH_MODULEMD
 
 }

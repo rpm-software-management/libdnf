@@ -68,6 +68,7 @@ test_fail_safe(Header * hdr, DnfPackage * pkg, GError **error)
     } else {
         return TRUE;
     }
+#ifdef WITH_MODULEMD
     rpmtd td = rpmtdNew();
     gboolean ret = TRUE;
     if (headerGet(*hdr, RPMTAG_MODULARITYLABEL, td, HEADERGET_MINMEM)) {
@@ -86,6 +87,11 @@ test_fail_safe(Header * hdr, DnfPackage * pkg, GError **error)
     rpmtdFreeData(td);
     rpmtdFree(td);
     return ret;
+#else
+    // Without libmodulemd no module metadata is ever loaded, so every
+    // package is non-modular, whatever its modularity label says.
+    return TRUE;
+#endif
 }
 
 static gboolean
