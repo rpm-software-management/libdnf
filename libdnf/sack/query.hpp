@@ -169,11 +169,11 @@ public:
     bool empty();
     /**
      * @brief Applies all filters and keep only installed packages that have no available package
-     * with a same name and architecture.
+     * with a same name and architecture or NEVRA.
      * Excluded available packages are handled like other available packages. Modular excludes are
      * applied.
      */
-    void filterExtras();
+    void filterExtras(bool with_evr);
     void filterRecent(const long unsigned int recent_limit);
     void filterDuplicated();
     int filterUnneeded(const Swdb &swdb, bool debug_solver);
