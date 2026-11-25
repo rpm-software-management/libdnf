@@ -74,12 +74,17 @@ protected:
         TransactionItemBasePtr second = nullptr;
     };
 
-    typedef std::map< std::string, ItemPair > ItemPairMap;
+    // one or more NEVRA entries tracked per name.arch (or per comps id) -
+    // normally exactly one, but several coexisting NEVRAs of the same
+    // name.arch can be tracked independently, regardless of why the
+    // history contains them
+    typedef std::map< std::string, std::vector< ItemPair > > ItemPairMap;
+    typedef std::vector< ItemPair >::iterator ItemPairEntry;
 
     void mergeItem(ItemPairMap &itemPairMap, TransactionItemBasePtr transItem);
-    bool resolveRPMDifference(ItemPairMap &itemPairMap, ItemPair &previousItemPair, TransactionItemBasePtr mTransItem);
-    void resolveErase(ItemPairMap &itemPairMap, ItemPair &previousItemPair, TransactionItemBasePtr mTransItem);
-    void resolveAltered(ItemPairMap &itemPairMap, ItemPair &previousItemPair, TransactionItemBasePtr mTransItem);
+    bool resolveRPMDifference(std::vector< ItemPair > &entries, ItemPairEntry entryIt, TransactionItemBasePtr mTransItem);
+    void resolveErase(std::vector< ItemPair > &entries, ItemPairEntry entryIt, TransactionItemBasePtr mTransItem);
+    void resolveAltered(std::vector< ItemPair > &entries, ItemPairEntry entryIt, TransactionItemBasePtr mTransItem);
 };
 
 } // namespace libdnf

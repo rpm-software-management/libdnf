@@ -1,3 +1,4 @@
+#include <map>
 #include <set>
 #include <string>
 
@@ -893,6 +894,244 @@ MergedTransactionTest::test_multilib_identity()
     CPPUNIT_ASSERT_EQUAL(std::string("repo2"), item3->getRepoid());
     CPPUNIT_ASSERT_EQUAL(TransactionItemAction::DOWNGRADE, item3->getAction());
     CPPUNIT_ASSERT_EQUAL(TransactionItemReason::USER, item3->getReason());
+}
+
+/// Several coexisting installonly NEVRAs installed in one transaction must
+/// all survive the merge instead of being collapsed to the latest one.
+void
+MergedTransactionTest::test_installonly_multiple_installs()
+{
+    auto trans = std::make_shared< libdnf::swdb_private::Transaction >(conn);
+    trans->addItem(
+        nevraToRPMItem(conn, "kernel-devel-0:4.18.0-162.fc35.x86_64"),
+        "repo1",
+        TransactionItemAction::INSTALL,
+        TransactionItemReason::DEPENDENCY
+    );
+    trans->addItem(
+        nevraToRPMItem(conn, "kernel-devel-0:5.14.0-284.fc35.x86_64"),
+        "repo1",
+        TransactionItemAction::INSTALL,
+        TransactionItemReason::DEPENDENCY
+    );
+    trans->addItem(
+        nevraToRPMItem(conn, "kernel-devel-0:5.14.0-362.fc35.x86_64"),
+        "repo1",
+        TransactionItemAction::INSTALL,
+        TransactionItemReason::DEPENDENCY
+    );
+
+    MergedTransaction merged(trans);
+
+    auto items = merged.getItems();
+    CPPUNIT_ASSERT_EQUAL(3, (int)items.size());
+
+    std::set< std::string > nevras;
+    for (auto item : items) {
+        CPPUNIT_ASSERT_EQUAL(TransactionItemAction::INSTALL, item->getAction());
+        nevras.insert(item->getItem()->toStr());
+    }
+    std::set< std::string > expected = {
+        "kernel-devel-4.18.0-162.fc35.x86_64",
+        "kernel-devel-5.14.0-284.fc35.x86_64",
+        "kernel-devel-5.14.0-362.fc35.x86_64",
+    };
+    CPPUNIT_ASSERT(nevras == expected);
+}
+
+/// Removing one of several coexisting installonly NEVRAs must drop only
+/// that NEVRA and leave the others installed.
+void
+MergedTransactionTest::test_installonly_install_then_remove_one()
+{
+    auto trans1 = std::make_shared< libdnf::swdb_private::Transaction >(conn);
+    trans1->addItem(
+        nevraToRPMItem(conn, "kernel-devel-0:4.18.0-162.fc35.x86_64"),
+        "repo1",
+        TransactionItemAction::INSTALL,
+        TransactionItemReason::DEPENDENCY
+    );
+    trans1->addItem(
+        nevraToRPMItem(conn, "kernel-devel-0:5.14.0-284.fc35.x86_64"),
+        "repo1",
+        TransactionItemAction::INSTALL,
+        TransactionItemReason::DEPENDENCY
+    );
+
+    auto trans2 = std::make_shared< libdnf::swdb_private::Transaction >(conn);
+    trans2->addItem(
+        nevraToRPMItem(conn, "kernel-devel-0:5.14.0-284.fc35.x86_64"),
+        "repo1",
+        TransactionItemAction::REMOVE,
+        TransactionItemReason::DEPENDENCY
+    );
+
+    MergedTransaction merged(trans1);
+    merged.merge(trans2);
+
+    auto items = merged.getItems();
+    CPPUNIT_ASSERT_EQUAL(1, (int)items.size());
+
+    auto item = items.at(0);
+    CPPUNIT_ASSERT_EQUAL(std::string("kernel-devel-4.18.0-162.fc35.x86_64"), item->getItem()->toStr());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemAction::INSTALL, item->getAction());
+}
+
+/// Removing a NEVRA that was never seen as installed within the merge
+/// window behaves like today's existing "remove of untracked item" case.
+void
+MergedTransactionTest::test_installonly_remove_missing()
+{
+    auto trans = std::make_shared< libdnf::swdb_private::Transaction >(conn);
+    trans->addItem(
+        nevraToRPMItem(conn, "kernel-devel-0:4.18.0-162.fc35.x86_64"),
+        "repo1",
+        TransactionItemAction::REMOVE,
+        TransactionItemReason::DEPENDENCY
+    );
+
+    MergedTransaction merged(trans);
+
+    auto items = merged.getItems();
+    CPPUNIT_ASSERT_EQUAL(1, (int)items.size());
+
+    auto item = items.at(0);
+    CPPUNIT_ASSERT_EQUAL(std::string("kernel-devel-4.18.0-162.fc35.x86_64"), item->getItem()->toStr());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemAction::REMOVE, item->getAction());
+}
+
+/// Removing a NEVRA that matches neither the primary nor an extra slot -
+/// e.g. an older coexisting NEVRA that predates the merge window - must be
+/// tracked as its own standalone Remove instead of being misattributed to
+/// an unrelated, still-installed NEVRA of the same name.arch.
+void
+MergedTransactionTest::test_installonly_remove_unrelated_nevra()
+{
+    auto trans1 = std::make_shared< libdnf::swdb_private::Transaction >(conn);
+    trans1->addItem(
+        nevraToRPMItem(conn, "kernel-devel-0:4.18.0-162.fc35.x86_64"),
+        "repo1",
+        TransactionItemAction::INSTALL,
+        TransactionItemReason::DEPENDENCY
+    );
+    trans1->addItem(
+        nevraToRPMItem(conn, "kernel-devel-0:5.14.0-284.fc35.x86_64"),
+        "repo1",
+        TransactionItemAction::INSTALL,
+        TransactionItemReason::DEPENDENCY
+    );
+
+    auto trans2 = std::make_shared< libdnf::swdb_private::Transaction >(conn);
+    trans2->addItem(
+        nevraToRPMItem(conn, "kernel-devel-0:3.10.0-100.fc35.x86_64"),
+        "repo1",
+        TransactionItemAction::REMOVE,
+        TransactionItemReason::DEPENDENCY
+    );
+
+    MergedTransaction merged(trans1);
+    merged.merge(trans2);
+
+    auto items = merged.getItems();
+    CPPUNIT_ASSERT_EQUAL(3, (int)items.size());
+
+    std::map< std::string, TransactionItemAction > actionsByNEVRA;
+    for (auto item : items) {
+        actionsByNEVRA[item->getItem()->toStr()] = item->getAction();
+    }
+    CPPUNIT_ASSERT(actionsByNEVRA.at("kernel-devel-4.18.0-162.fc35.x86_64") == TransactionItemAction::INSTALL);
+    CPPUNIT_ASSERT(actionsByNEVRA.at("kernel-devel-5.14.0-284.fc35.x86_64") == TransactionItemAction::INSTALL);
+    CPPUNIT_ASSERT(actionsByNEVRA.at("kernel-devel-3.10.0-100.fc35.x86_64") == TransactionItemAction::REMOVE);
+}
+
+/// An unrelated NEVRA that gets tracked as a standalone Remove (because it
+/// predates the merge window) must still net out to nothing if it's
+/// reinstalled at the exact same NEVRA later within the same window,
+/// instead of leaving both a stale Remove and the reinstalling Install in
+/// the result.
+void
+MergedTransactionTest::test_installonly_reinstall_orphan_nets_nothing()
+{
+    auto trans1 = std::make_shared< libdnf::swdb_private::Transaction >(conn);
+    trans1->addItem(
+        nevraToRPMItem(conn, "kernel-devel-0:5.14.0-284.fc35.x86_64"),
+        "repo1",
+        TransactionItemAction::INSTALL,
+        TransactionItemReason::DEPENDENCY
+    );
+
+    auto trans2 = std::make_shared< libdnf::swdb_private::Transaction >(conn);
+    trans2->addItem(
+        nevraToRPMItem(conn, "kernel-devel-0:3.10.0-100.fc35.x86_64"),
+        "repo1",
+        TransactionItemAction::REMOVE,
+        TransactionItemReason::DEPENDENCY
+    );
+
+    auto trans3 = std::make_shared< libdnf::swdb_private::Transaction >(conn);
+    trans3->addItem(
+        nevraToRPMItem(conn, "kernel-devel-0:3.10.0-100.fc35.x86_64"),
+        "repo1",
+        TransactionItemAction::INSTALL,
+        TransactionItemReason::DEPENDENCY
+    );
+
+    MergedTransaction merged(trans1);
+    merged.merge(trans2);
+    merged.merge(trans3);
+
+    auto items = merged.getItems();
+    CPPUNIT_ASSERT_EQUAL(1, (int)items.size());
+
+    auto item = items.at(0);
+    CPPUNIT_ASSERT_EQUAL(std::string("kernel-devel-5.14.0-284.fc35.x86_64"), item->getItem()->toStr());
+    CPPUNIT_ASSERT_EQUAL(TransactionItemAction::INSTALL, item->getAction());
+}
+
+/// dnf's own reason-inheritance logic for installonly packages can record a
+/// REASON_CHANGE against a still-installed coexisting NEVRA in the very
+/// same transaction that removes a sibling NEVRA (e.g. "dnf remove
+/// kernel-core-1.0.0" also reason-changes the still-installed
+/// kernel-core-2.0.0). REASON_CHANGE is neither a forward nor a backward
+/// action, so it must not be misclassified as "the opposite direction" and
+/// wrongly cancel out the still-installed entry it refers to.
+void
+MergedTransactionTest::test_installonly_reason_change_does_not_erase_sibling()
+{
+    auto trans1 = std::make_shared< libdnf::swdb_private::Transaction >(conn);
+    trans1->addItem(
+        nevraToRPMItem(conn, "kernel-core-0:2.0.0-1.fc29.x86_64"),
+        "repo1",
+        TransactionItemAction::INSTALL,
+        TransactionItemReason::USER
+    );
+
+    auto trans2 = std::make_shared< libdnf::swdb_private::Transaction >(conn);
+    trans2->addItem(
+        nevraToRPMItem(conn, "kernel-core-0:1.0.0-1.fc29.x86_64"),
+        "repo1",
+        TransactionItemAction::REMOVE,
+        TransactionItemReason::USER
+    );
+    trans2->addItem(
+        nevraToRPMItem(conn, "kernel-core-0:2.0.0-1.fc29.x86_64"),
+        "repo1",
+        TransactionItemAction::REASON_CHANGE,
+        TransactionItemReason::USER
+    );
+
+    MergedTransaction merged(trans1);
+    merged.merge(trans2);
+
+    auto items = merged.getItems();
+    CPPUNIT_ASSERT_EQUAL(2, (int)items.size());
+
+    std::map< std::string, TransactionItemAction > actionsByNEVRA;
+    for (auto item : items) {
+        actionsByNEVRA[item->getItem()->toStr()] = item->getAction();
+    }
+    CPPUNIT_ASSERT(actionsByNEVRA.at("kernel-core-2.0.0-1.fc29.x86_64") == TransactionItemAction::INSTALL);
+    CPPUNIT_ASSERT(actionsByNEVRA.at("kernel-core-1.0.0-1.fc29.x86_64") == TransactionItemAction::REMOVE);
 }
 
 /*
