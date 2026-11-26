@@ -246,23 +246,37 @@ dnf_repo_loader_get_repos_removable(DnfRepoLoader *self, GError **error)
     guint idx = 0;
 
     /* coldplug the mounts */
-    mounts = g_unix_mounts_get(NULL);
+#if !GLIB_CHECK_VERSION(2, 84, 0)
+#define g_unix_mount_entries_get g_unix_mounts_get
+#define g_unix_mount_entry_is_readonly g_unix_mount_is_readonly
+#define g_unix_mount_entry_get_fs_type g_unix_mount_get_fs_type
+#define g_unix_mount_entry_get_mount_path g_unix_mount_get_mount_path
+#define g_unix_mount_entry_free g_unix_mount_free
+#endif
+    mounts = g_unix_mount_entries_get(NULL);
     for (l = mounts; l != NULL; l = l->next) {
         GUnixMountEntry *e =(GUnixMountEntry *) l->data;
-        if (!g_unix_mount_is_readonly(e))
+        if (!g_unix_mount_entry_is_readonly(e))
             continue;
-        if (g_strcmp0(g_unix_mount_get_fs_type(e), "iso9660") != 0)
+        if (g_strcmp0(g_unix_mount_entry_get_fs_type(e), "iso9660") != 0)
             continue;
         ret = dnf_repo_loader_add_sack_from_mount_point(self,
-                                                  g_unix_mount_get_mount_path(e),
+                                                  g_unix_mount_entry_get_mount_path(e),
                                                   &idx,
                                                   error);
         if (!ret)
             goto out;
     }
 out:
-    g_list_foreach(mounts,(GFunc) g_unix_mount_free, NULL);
+    g_list_foreach(mounts,(GFunc) g_unix_mount_entry_free, NULL);
     g_list_free(mounts);
+#if !GLIB_CHECK_VERSION(2, 84, 0)
+#undef g_unix_mount_entries_get
+#undef g_unix_mount_entry_is_readonly
+#undef g_unix_mount_entry_get_fs_type
+#undef g_unix_mount_entry_get_mount_path
+#undef g_unix_mount_entry_free
+#endif
     return ret;
 }
 
