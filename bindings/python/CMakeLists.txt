@@ -16,6 +16,8 @@ endif()
 
 # The libdnf API is under development now. This enables it for internal usage.
 set(CMAKE_SWIG_FLAGS ${CMAKE_SWIG_FLAGS} "-DLIBDNF_UNSTABLE_API")
+# Do not warn about bindings to libdnf's deprecated functions.
+add_compile_options("-Wno-deprecated-declarations")
 
 function(libdnf_swig_module name)
     set(source ../swig/${name}.i)
