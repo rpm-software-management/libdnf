@@ -19,6 +19,26 @@
 ######################
 
 ====================
+0.77.0 Release Notes
+====================
+
+Enhancements:
+
+- Add AUTO_IMPORT_KEYS_DIRS CMake cache variable to redefine at build time
+  a list of trusted directories for automatically importing OpenPGP keys for
+  repository signature verification. Default is
+  "/usr/share/pki/rpm-gpg:/etc/pki/rpm-gpg".
+- Add auto_import_local_keys main and repository configuration option for
+  enabling automatic import of OpenPGP keys whose gpgkey URL matches
+  directories in AUTO_IMPORT_KEYS_DIRS CMake variable list. Default is false.
+- Document comment syntax at IniParser class.
+
+Fixes:
+
+- Treat hybrid file:// + http(s) repositories as non-local. Now a repository
+  is handled as local only if every baseurl is local.
+
+====================
 0.76.0 Release Notes
 ====================
 
