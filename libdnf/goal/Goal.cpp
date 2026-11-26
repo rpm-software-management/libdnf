@@ -1715,7 +1715,6 @@ Goal::Impl::protectedRunningKernel()
 bool
 Goal::Impl::protectedInRemovals()
 {
-    guint i = 0;
     bool ret = false;
     if ((!protectedPkgs || !protectedPkgs->size()) && !protect_running_kernel)
         return false;
@@ -1745,7 +1744,6 @@ Goal::Impl::protectedInRemovals()
 
         if (protectedPkgs->has(id) || id == protected_kernel) {
             ret = true;
-            i++;
         } else {
             removalOfProtected->remove(id);
         }
