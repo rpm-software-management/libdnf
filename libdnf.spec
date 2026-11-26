@@ -11,19 +11,8 @@
 
 %bcond_with valgrind
 
-# Do not build bindings for python3 for RHEL <= 7
-%if 0%{?rhel} && 0%{?rhel} <= 7
-%bcond_with python3
-%else
+# Build Python3 bindings
 %bcond_without python3
-%endif
-
-%if 0%{?rhel} > 7 || 0%{?fedora} > 29
-# Disable python2 build by default
-%bcond_with python2
-%else
-%bcond_without python2
-%endif
 
 %if 0%{?rhel} && ! 0%{?centos}
 %bcond_without rhsm
@@ -89,16 +78,6 @@ Requires:       librepo%{?_isa} >= %{librepo_version}
 Requires:       rpm-libs%{?_isa} >= 5.99.90
 %endif
 
-%if %{without python2}
-# Obsoleted from here so we can track the fast growing version easily.
-# We intentionally only obsolete and not provide, this is a broken upgrade
-# prevention, not providing the removed functionality.
-Obsoletes:      python2-%{name} < %{version}-%{release}
-Obsoletes:      python2-hawkey < %{version}-%{release}
-Obsoletes:      python2-hawkey-debuginfo < %{version}-%{release}
-Obsoletes:      python2-libdnf-debuginfo < %{version}-%{release}
-%endif
-
 %description
 A Library providing simplified C and Python API to libsolv.
 
@@ -109,23 +88,6 @@ Requires:       libsolv-devel%{?_isa} >= %{libsolv_version}
 
 %description devel
 Development files for %{name}.
-
-%if %{with python2}
-%package -n python2-%{name}
-%{?python_provide:%python_provide python2-%{name}}
-Summary:        Python 2 bindings for the libdnf library.
-Requires:       %{name}%{?_isa} = %{version}-%{release}
-BuildRequires:  python2-devel
-%if 0%{?rhel} == 7
-BuildRequires:  swig3 >= %{swig_version}
-%else
-BuildRequires:  swig >= %{swig_version}
-%endif
-
-%description -n python2-%{name}
-Python 2 bindings for the libdnf library.
-%endif
-# endif with python2
 
 %if %{with python3}
 %package -n python3-%{name}
@@ -139,23 +101,6 @@ BuildRequires:  swig >= %{swig_version}
 Python 3 bindings for the libdnf library.
 %endif
 
-%if %{with python2}
-%package -n python2-hawkey
-Summary:        Python 2 bindings for the hawkey library
-%{?python_provide:%python_provide python2-hawkey}
-BuildRequires:  python2-devel
-Requires:       %{name}%{?_isa} = %{version}-%{release}
-Requires:       python2-%{name} = %{version}-%{release}
-# Fix problem with hawkey - dnf version incompatibility
-# Can be deleted for distros where only python2-dnf >= 2.0.0
-Conflicts:      python2-dnf < %{dnf_conflict}
-Conflicts:      python-dnf < %{dnf_conflict}
-
-%description -n python2-hawkey
-Python 2 bindings for the hawkey library.
-%endif
-# endif with python2
-
 %if %{with python3}
 %package -n python3-hawkey
 Summary:        Python 3 bindings for the hawkey library
@@ -166,8 +111,6 @@ Requires:       python3-%{name} = %{version}-%{release}
 # Fix problem with hawkey - dnf version incompatibility
 # Can be deleted for distros where only python3-dnf >= 2.0.0
 Conflicts:      python3-dnf < %{dnf_conflict}
-# Obsoletes F27 packages
-Obsoletes:      platform-python-hawkey < %{version}-%{release}
 
 %description -n python3-hawkey
 Python 3 bindings for the hawkey library.
@@ -175,28 +118,11 @@ Python 3 bindings for the hawkey library.
 
 %prep
 %autosetup
-%if %{with python2}
-mkdir build-py2
-%endif
 %if %{with python3}
 mkdir build-py3
 %endif
 
 %build
-%if %{with python2}
-pushd build-py2
-  %if 0%{?mageia} || 0%{?suse_version}
-    cd ..
-    %define _cmake_builddir build-py2
-    %define __builddir build-py2
-  %endif
-  %cmake -DPYTHON_DESIRED:FILEPATH=%{__python2} -DWITH_HTML=OFF -DWITH_MAN=OFF ../ %{!?with_zchunk:-DWITH_ZCHUNK=OFF} %{!?with_valgrind:-DDISABLE_VALGRIND=1} %{_cmake_opts} -DLIBDNF_MAJOR_VERSION=%{libdnf_major_version} -DLIBDNF_MINOR_VERSION=%{libdnf_minor_version} -DLIBDNF_MICRO_VERSION=%{libdnf_micro_version} \
-    -DWITH_SANITIZERS=%{?with_sanitizers:ON}%{!?with_sanitizers:OFF}
-  %cmake_build
-popd
-%endif
-# endif with python2
-
 %if %{with python3}
 pushd build-py3
   %if 0%{?mageia} || 0%{?suse_version}
@@ -215,33 +141,14 @@ popd
 # Work around broken passing options to ctest macro, RHEL-120543
 %global ctest(-) %{expand:%{macrobody:ctest}}
 %endif
-%if %{with python2}
-pushd build-py2
-  %ctest -V
-popd
-%endif
 %if %{with python3}
 # If we didn't run the general tests yet, do it now.
-%if %{without python2}
-pushd build-py3
+  pushd build-py3
   %ctest -V
 popd
-%else
-# Otherwise, run just the Python tests, not all of
-# them, since we have coverage of the core from the
-# first build
-pushd build-py3/python/hawkey/tests
-  %ctest -V
-popd
-%endif
 %endif
 
 %install
-%if %{with python2}
-pushd build-py2
-  %cmake_install
-popd
-%endif
 %if %{with python3}
 pushd build-py3
   %cmake_install
@@ -250,7 +157,7 @@ popd
 
 %find_lang %{name}
 
-%if (0%{?rhel} && 0%{?rhel} <= 7) || 0%{?suse_version}
+%if 0%{?suse_version}
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
 %else
@@ -274,20 +181,10 @@ popd
 %{_libdir}/pkgconfig/%{name}.pc
 %{_includedir}/%{name}/
 
-%if %{with python2}
-%files -n python2-%{name}
-%{python2_sitearch}/%{name}/
-%endif
-
 %if %{with python3}
 %files -n python3-%{name}
 %{python3_sitearch}/%{name}-*.dist-info
 %{python3_sitearch}/%{name}/
-%endif
-
-%if %{with python2}
-%files -n python2-hawkey
-%{python2_sitearch}/hawkey/
 %endif
 
 %if %{with python3}
