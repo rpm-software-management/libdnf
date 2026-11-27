@@ -140,6 +140,7 @@ dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError **error) try
                             "The transaction was empty");
         return FALSE;
     }
+#ifdef LIBDNF_WITH_MODULEMD
     auto moduleContainer = dnf_sack_get_module_container(sack);
     if (moduleContainer) {
         auto installSet = goal->listInstalls();
@@ -148,6 +149,7 @@ dnf_goal_depsolve(HyGoal goal, DnfGoalActions flags, GError **error) try
             moduleContainer->enable(module->getName(), module->getStream());
         }
     }
+#endif
     return TRUE;
 } CATCH_TO_GERROR(FALSE)
 

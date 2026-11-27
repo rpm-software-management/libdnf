@@ -38,6 +38,7 @@ extern "C" {
 #include "../hy-iutil.h"
 #include "../nevra.hpp"
 #include "../hy-query-private.hpp"
+#include "../hy-repo-private.hpp"
 #include "../dnf-sack-private.hpp"
 #include "../dnf-advisorypkg.h"
 #include "../dnf-advisory-private.hpp"

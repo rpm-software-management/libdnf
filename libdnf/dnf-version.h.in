@@ -48,4 +48,9 @@
      (LIBDNF_MAJOR_VERSION == (major) && LIBDNF_MINOR_VERSION == (minor) && \
       LIBDNF_MICRO_VERSION >= (micro)))
 
+/* defined if libdnf was built with libmodulemd (WITH_MODULEMD), otherwise
+ * there is no modularity API
+ */
+#cmakedefine LIBDNF_WITH_MODULEMD 1
+
 #endif /* __DNF_VERSION_H */

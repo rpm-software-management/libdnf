@@ -29,6 +29,7 @@
 
 #include "dnf-context.h"
 #include "dnf-state.h"
+#include <libdnf/dnf-version.h>
 
 #include <librepo/librepo.h>
 
@@ -112,7 +113,9 @@ gchar **         dnf_repo_get_public_keys       (DnfRepo              *repo);
 DnfRepoEnabled   dnf_repo_get_enabled           (DnfRepo              *repo);
 gboolean         dnf_repo_get_required          (DnfRepo              *repo);
 guint            dnf_repo_get_cost              (DnfRepo              *repo);
+#ifdef LIBDNF_WITH_MODULEMD
 gboolean         dnf_repo_get_module_hotfixes   (DnfRepo              *repo);
+#endif
 guint            dnf_repo_get_metadata_expire   (DnfRepo              *repo);
 DnfRepoKind      dnf_repo_get_kind              (DnfRepo              *repo);
 gchar          **dnf_repo_get_exclude_packages  (DnfRepo              *repo);
@@ -149,8 +152,10 @@ void             dnf_repo_set_required          (DnfRepo              *repo,
                                                  gboolean              required);
 void             dnf_repo_set_cost              (DnfRepo              *repo,
                                                  guint                 cost);
+#ifdef LIBDNF_WITH_MODULEMD
 void             dnf_repo_set_module_hotfixes   (DnfRepo              *repo,
                                                  gboolean              module_hotfixes);
+#endif
 void             dnf_repo_set_kind              (DnfRepo              *repo,
                                                  DnfRepoKind           kind);
 void             dnf_repo_set_gpgcheck          (DnfRepo              *repo,
