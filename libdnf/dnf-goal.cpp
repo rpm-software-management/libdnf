@@ -161,13 +161,12 @@ dnf_goal_get_packages(HyGoal goal, ...)
     DnfPackage *pkg;
     gint info_tmp;
     guint i;
-    guint j;
     va_list args;
 
     /* process the valist */
     va_start(args, goal);
     array = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
-    for (j = 0;; j++) {
+    while (1) {
         GPtrArray *pkglist = NULL;
         info_tmp = va_arg(args, gint);
         if (info_tmp == -1)

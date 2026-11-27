@@ -159,12 +159,12 @@ typedef struct
     gchar            *install_root;
     gchar            *source_root;
     gchar            *rpm_verbosity;
-    gchar            **native_arches{NULL};
+    gchar            **native_arches;
     gchar            *http_proxy;
     gchar            *user_agent;
     gchar            *arch;
     guint            cache_age;     /*seconds*/
-    gboolean         cacheOnly{false};
+    gboolean         cacheOnly;
     gboolean         check_disk_space;
     gboolean         check_transaction;
     gboolean         only_trusted;

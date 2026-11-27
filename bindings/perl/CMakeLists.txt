@@ -9,6 +9,8 @@ find_package(PerlLibs REQUIRED)
 
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${PERL_INCLUDE_PATH})
+# Do not warn about bindings to libdnf's deprecated functions.
+add_compile_options("-Wno-deprecated-declarations")
 include(UseSWIG)
 
 
